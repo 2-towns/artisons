@@ -324,7 +324,7 @@ Pour le css, deux modes peuvent être utilisés:
 - **classless**: Cela consiste à cibler sans utiliser de classe, ou alors une seule classe parente. Cette méthode à l'avantage de laisser le code HTML très propre, mais ne doit être utilisée que si les sélecteurs sont simples.
 - **BEM**: [Référence](https://en.bem.info/methodology)
 
-Pour le reste des fichiers (HTML, JS), prettier sera utilisé pour le formatage.
+Pour le reste des fichiers (HTML, JS), prettier est utilisé pour le formatage.
 
 # 11 Tests
 
