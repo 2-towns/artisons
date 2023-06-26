@@ -93,7 +93,7 @@ Un bouton permet d’ajouter le produit au panier. Lors du clic sur ce dernier, 
 
 Un autre bouton permet d’accéder au panier.
 
-Les produits qui sont liés ([voir](#5.1-Importation-CSV-de-produits)), sont affichés en liste avec la photo et le titre. Le clic sur un produit redirige vers le détail de ce dernier.
+Les produits qui sont liés ([voir](#51-importation-csv-de-produits)), sont affichés en liste avec la photo et le titre. Le clic sur un produit redirige vers le détail de ce dernier.
 
 Si le produit n'est pas en ligne, une page de type `404` est affichée.
 
