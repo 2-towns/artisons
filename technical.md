@@ -297,7 +297,7 @@ La protection CSRF est assurée par la vérification du header `HX-Request` et l
 
 Les cookies ont le niveau de sécurité maximum.
 
-# 7 Configuration
+# 8 Configuration
 
 Les éléments de configuration de la plateforme sont disponible au format json avec les éléments suivants:
 
@@ -312,11 +312,11 @@ Les éléments de configuration de la plateforme sont disponible au format json 
 - **langs**: Liste de langues supportées par l'application. La valeur par défaut est `["fr"]`.
 - **session_expiration**: La durée de la session utilisateur. La valeur par défaut est 7\*24 \* 3600.
 
-# 7 Internationalisation
+# 9 Internationalisation
 
 Le socle serveur gère les traductions de chaque texte dans des fichiers dédiés à la traduction dans différentes langues. Les URLs doivent être traduite
 
-# 6 Style du code
+# 10 Style du code
 
 GoLang impose un format unique.  
 Pour le css, deux modes peuvent être utilisés:
@@ -326,17 +326,17 @@ Pour le css, deux modes peuvent être utilisés:
 
 Pour le reste des fichiers (HTML, JS), prettier sera utilisé pour le formatage.
 
-# 9 Tests
+# 11 Tests
 
 Les tests les plus importants sont les tests fonctionnels. [HURL](https://hurl.dev) est utilisé pour cela.
 
 Cependant, il est vivement recommandé d'écrire des tests unitaires en utilisant l'approche de GoLang, au fur et à mesure, car cela permet de s'assurer de la qualité du projet.
 
-# 10 Livrables
+# 12 Livrables
 
 Un exécutable sera généré en fonction de la distribution du serveur, et des fichiers statiques (HTML, JS, CSS, JPG...) seront disponibles. Idéalement, ces fichiers pourront varier selon les implémentations des sites e-commerce, sans avoir des développements spécifiques du socle serveur.
 
-# 11 Points d’entrée
+# 13 Points d’entrée
 
 L'application intercepte les erreurs et traite le retour selon le type de requête:
 
