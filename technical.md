@@ -58,7 +58,7 @@ Une couche ne peut appeler que la couche directement en dessous d’elle. Une co
 
 # 5 Description technique
 
-## 4.1 Layout
+## 5.1 Layout
 
 La layout comprend une entête disposant des éléments suivants:
 
@@ -69,11 +69,11 @@ La layout comprend une entête disposant des éléments suivants:
 
 Le pied de page contient les liens vers les pages statiques.
 
-## 4.1 Page d’accueil
+## 5.1 Page d’accueil
 
 La page d’accueil affiche les X produits les plus récents. X étant à définir dans la configuration. Les produits sont récupérés à l'aide de Redis Search. Le clic sur un élément renvoie sur la page de détails du produit.
 
-## 4.2 Liste des produits
+## 5.2 Liste des produits
 
 La page d’accueil affiche les X produits les plus récents. X étant à définir dans la configuration. Les produits sont récupérés à l'aide de Redis Search. Le clic sur un élément renvoie sur la page de détails du produit.
 
@@ -81,7 +81,7 @@ L’application peut activer le filtre par tags à l’aide d’une configuratio
 
 La pagination est gérée à l'aide d'un bouton qui, lors du clic sur dernier, lance une requête vers le serveur à l’aide de HTMX, en incrémentant la page courante.
 
-## 4.3 Détail d’un produit
+## 5.3 Détail d’un produit
 
 Tous les champs du produit présents dans le CSV sont affichés dans le détail.
 
@@ -99,7 +99,7 @@ Si le produit n'est pas en ligne, une page de type `404` est affichée.
 
 Si le produit n'est plus en stock, il n'est pas possible d'ajouter le produit au panier et le bouton est grisé.
 
-## 4.4 Panier
+## 5.4 Panier
 
 Le panier affiche la liste des produits qui ont été ajoutés par l’utilisateur. Lorsque ce dernier souhaite ajouter un produit dans un panier, le serveur va d’abord vérifier qu’un cookie contenant l’identifiant du panier `cartID`, une sorte de session, existe. S’il n’existe pas, il est créé et stocké dans les cookies.
 
@@ -117,7 +117,7 @@ Le bouton permettant de valider la commande redirige sur la page de saisie de l�
 
 **Remarque** On considère que le paiement d'une commande ne peut contenir que les produits d’une même devise.
 
-## 4.5 Paiements
+## 5.5 Paiements
 
 La paiement commence par la saisie de l’adresse de facturation avec les champs suivants:
 
@@ -155,7 +155,7 @@ Lorsque la commande est terminée, l'écran de confirmation affiche le numéro d
 
 Les commandes stockées dans Redis contiennent les mêmes éléments du panier avec le statut en plus. Le panier est ensuite supprimé de Redis. Les identifiants de commande sont stockées dans un _sorted set_ dont le score est le _timestamp_.
 
-## 4.6 Compte utilisateur
+## 5.6 Compte utilisateur
 
 Un utilisateur peut se connecteur à l'aide du couple `email` et `password`. S'il a oublié son mot de passe, il peut cliquer sur un lien pour récupérer son mot de passe. Il recevra alors un email et/ou une PUSH notification contenant un lien magique qui, lors du clic, le redirige sur un formulaire de mise à jour de son mot de passe. Une fois cela réalisé, il est automatiquement connecté.
 
@@ -181,15 +181,15 @@ Les identifiants seront stockés dans un _sorted set_ dont la clé de stockage s
 
 Un identifiant de session est créé, `session_id`, et la relation entre le `session_id` et l'identifiant utilisateur est stocké dans redis. La session expire si aucune requête n'a faite durant un temps _T_, _T_ étant définit dans la configuration.
 
-## 4.7 Recherche
+## 5.7 Recherche
 
 Si l'application autorise la recherche, elle est réalisée à l'aide de Redis Search. Un simple champs texte est disponible et recherche dans dans les champs `title` et `description` des produits.
 
-# 5 Administration
+# 6 Administration
 
 Les paramètres seront gérés à l'aide de `flags`. L'identifiant marchant est optionnel. S'il n'est pas renseigné, la valeur par défaut dans la configuration sera utilisée.
 
-## 5.1 Importation CSV de produits
+## 6.1 Importation CSV de produits
 
 Les paramètres sont:
 
@@ -232,7 +232,7 @@ Pour faciliter la récupération des produits lors de l'importation, le lien ent
 
 **Remarque**: L’utilisation d’un identifiant vendeur permet de généraliser le projet à un marketplace. Cet identifiant est renseigné à travers la configuration pour des sites e-commerce, tandis que pour les marketplace, il est renseigné soit manuellement lors de l'importation des produits, soit grâce à l'identifiant du marchand qui s'est connecté à son interface.
 
-## 5.2 Liste des produits
+## 6.2 Liste des produits
 
 Les paramètres sont:
 
@@ -241,7 +241,7 @@ Les paramètres sont:
 
 La pagination est un nombre qui représente un coefficient multiplicateur par le nombre d'éléments à afficher par page, disponible dans la configuration.
 
-## 5.3 Détail d'un produit
+## 6.3 Détail d'un produit
 
 Les paramètres sont:
 
@@ -249,7 +249,7 @@ Les paramètres sont:
 
 Le détail récupère tous les éléments stocké dans Redis.
 
-## 5.4 Liste des utilisateurs
+## 6.4 Liste des utilisateurs
 
 Les paramètres sont:
 
@@ -257,7 +257,7 @@ Les paramètres sont:
 
 Renvoie la liste des utilisateurs donc les premiers sont les plus récents.
 
-## 5.5 Liste des commandes
+## 6.5 Liste des commandes
 
 Les paramètres sont:
 
@@ -265,7 +265,7 @@ Les paramètres sont:
 
 Renvoie la liste des commandes donc les premières sont les plus récents.
 
-# 5.6 Modifier le statut d'une commande
+## 6.6 Modifier le statut d'une commande
 
 Les paramètres sont:
 
@@ -278,18 +278,18 @@ Les statuts disponibles sont:
 - `payment_progress`
 - `payment_refused`
 
-# 5.6 Ajouter une note à la commande
+## 6.7 Ajouter une note à la commande
 
 Les paramètres sont:
 
 - --id: L'identifiant de la commande
 - --note: La note à ajouter
 
-# 6 Performances
+# 7 Performances
 
 Les performances sont d’une importance capitale. Les requêtes serveurs doivent répondre le plus rapidement possible. Le client doit contenir le minimum de javascript et le style CSS doit être optimisé, sans sélecteur complexe.
 
-# 7 Sécurité
+# 8 Sécurité
 
 Les recommandations d'[OWASP](https://cheatsheetseries.owasp.org/index.html) sont respectées au maximum.
 
@@ -297,7 +297,7 @@ La protection CSRF est assurée par la vérification du header `HX-Request` et l
 
 Les cookies ont le niveau de sécurité maximum.
 
-# 8 Configuration
+# 9 Configuration
 
 Les éléments de configuration de la plateforme sont disponible au format json avec les éléments suivants:
 
@@ -312,11 +312,11 @@ Les éléments de configuration de la plateforme sont disponible au format json 
 - **langs**: Liste de langues supportées par l'application. La valeur par défaut est `["fr"]`.
 - **session_expiration**: La durée de la session utilisateur. La valeur par défaut est 7 \*24 \* 3600.
 
-# 9 Internationalisation
+# 10 Internationalisation
 
 Le socle serveur gère les traductions de chaque texte dans des fichiers dédiés à la traduction dans différentes langues. Les URLs doivent être traduites.
 
-# 10 Style du code
+# 11 Style du code
 
 GoLang impose un format unique.  
 Pour le css, deux modes peuvent être utilisés:
@@ -326,17 +326,17 @@ Pour le css, deux modes peuvent être utilisés:
 
 Pour le reste des fichiers (HTML, JS), prettier est utilisé pour le formatage.
 
-# 11 Tests
+# 12 Tests
 
 Les tests les plus importants sont les tests fonctionnels. [HURL](https://hurl.dev) est utilisé pour cela.
 
 Cependant, il est vivement recommandé d'écrire des tests unitaires en utilisant l'approche de GoLang, au fur et à mesure, car cela permet de s'assurer de la qualité du projet.
 
-# 12 Livrables
+# 13 Livrables
 
 Un exécutable sera généré en fonction de la distribution du serveur, et des fichiers statiques (HTML, JS, CSS, JPG...) seront disponibles. Idéalement, ces fichiers pourront varier selon les implémentations des sites e-commerce, sans avoir des développements spécifiques du socle serveur.
 
-# 13 Points d’entrée
+# 14 Points d’entrée
 
 L'application intercepte les erreurs et traite le retour selon le type de requête:
 
