@@ -310,11 +310,11 @@ Les éléments de configuration de la plateforme sont disponible au format json 
 - **push_notification**: `true` si les push notifications sont activées. La valeur par défaut est `false`.
 - **merchant**: L'identifiant du marchant par défaut. La valeur par défaut est `me`.
 - **langs**: Liste de langues supportées par l'application. La valeur par défaut est `["fr"]`.
-- **session_expiration**: La durée de la session utilisateur. La valeur par défaut est 7\*24 \* 3600.
+- **session_expiration**: La durée de la session utilisateur. La valeur par défaut est 7 \*24 \* 3600.
 
 # 9 Internationalisation
 
-Le socle serveur gère les traductions de chaque texte dans des fichiers dédiés à la traduction dans différentes langues. Les URLs doivent être traduite
+Le socle serveur gère les traductions de chaque texte dans des fichiers dédiés à la traduction dans différentes langues. Les URLs doivent être traduites.
 
 # 10 Style du code
 
