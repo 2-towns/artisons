@@ -1,0 +1,28 @@
+.text-center {
+  text-align: center;
+}
+
+.grid--products {
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-row-gap: calc(var(--spacing) * 2);
+}
+
+.grid--quantity {
+  grid-template-columns: 85px 1fr;
+}
+
+.grid--detail img {
+  height: 600px;
+}
+
+@media (max-width: 992px) {
+  .grid--products {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .grid--products {
+    grid-template-columns: 1fr;
+  }
+}
