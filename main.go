@@ -1,10 +1,10 @@
 package main
 
 import (
+	"gifthub/locales"
+	"gifthub/middlewares"
+	"gifthub/routes"
 	"log"
-	"mustafir/locales"
-	"mustafir/middlewares"
-	"mustafir/routes"
 	"net/http"
 	"os"
 

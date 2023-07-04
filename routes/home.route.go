@@ -2,8 +2,8 @@ package routes
 
 import (
 	"context"
+	"gifthub/util"
 	"html/template"
-	"mustafir/util"
 	"net/http"
 
 	"golang.org/x/text/language"
@@ -22,7 +22,7 @@ func homeI18n(lang language.Tag) map[string]string {
 
 func getProducts(ctx context.Context) ([]util.Product, error) {
 	products := make([]util.Product, 0, util.ItemsPerPage)
-	
+
 	return products, nil
 }
 

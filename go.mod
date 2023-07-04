@@ -1,4 +1,4 @@
-module mustafir
+module gifthub
 
 go 1.19
 

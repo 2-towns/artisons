@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"context"
-	"mustafir/util"
+	"gifthub/util"
 	"net/http"
 	"strings"
 
