@@ -93,7 +93,7 @@ Un bouton permet d’ajouter le produit au panier. Lors du clic sur ce dernier, 
 
 Un autre bouton permet d’accéder au panier.
 
-Les produits qui sont liés ([voir](#51-importation-csv-de-produits)), sont affichés en liste avec la photo et le titre. Le clic sur un produit redirige vers le détail de ce dernier.
+Les produits qui sont liés ([voir](#61-importation-csv-de-produits)), sont affichés en liste avec la photo et le titre. Le clic sur un produit redirige vers le détail de ce dernier.
 
 Si le produit n'est pas en ligne, une page de type `404` est affichée.
 
@@ -107,7 +107,7 @@ Le préfixe utilisé pour la clé de stockage est: `cart`.
 
 La clé de stockage est la combinaison du préfixe et du `cartID`. _Example: cart:cartID_.
 
-Les produits sont stockés sous la forme de hash dont la clé est la combinaise du préfixe et du `cartID`. Le hash a la valeur du `PID` ([voir](#5.1-Importation-CSV-de-produits)) et sa valeur est la quantité. _Example: cart:12331 1221FD3X3_.
+Les produits sont stockés sous la forme de hash dont la clé est la combinaise du préfixe et du `cartID`. Le hash a la valeur du `PID` ([voir](#61-Importation-CSV-de-produits)) et sa valeur est la quantité. _Example: cart:12331 1221FD3X3_.
 
 Si la configuration précise une durée de vie du panier, la commande `EXPIRE` de Redis sera utilisée. Dans ce cas, l'expiration sera rafraîchie à chaque nouvelle requête.
 
