@@ -326,7 +326,7 @@ Pour le css, deux modes peuvent être utilisés:
 
 Pour le reste des fichiers (HTML, JS), prettier est utilisé pour le formatage.
 
-Il est important de suivre les [conventions de documentation de Golang](https://go.dev/blog/godoc) pour faciliter le travail en collaboration.
+Il est important de suivre les [conventions de documentation de Golang](https://go.dev/blog/godoc) pour faciliter le travail en collaboration. La documentation du code, ainsi que les messages sur git, doivent être rédigés en anglais afin de maitenir une certaine cohérence.
 
 # 12 Tests
 
