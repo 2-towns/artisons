@@ -326,6 +326,8 @@ Pour le css, deux modes peuvent être utilisés:
 
 Pour le reste des fichiers (HTML, JS), prettier est utilisé pour le formatage.
 
+Il est important de suivre les [conventions de documentation de Golang](https://go.dev/blog/godoc) pour faciliter le travail en collaboration.
+
 # 12 Tests
 
 Les tests les plus importants sont les tests fonctionnels. [HURL](https://hurl.dev) est utilisé pour cela.
