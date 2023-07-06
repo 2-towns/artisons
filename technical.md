@@ -195,22 +195,21 @@ Les paramètres sont:
 
 - --file: Chemin vers le fichier à importer
 
-Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du fichier CSV n’a pas d’importance, contrairement au nom des colonnes. Voici les champs disponibles:
+Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du fichier CSV doit être respecté, contrairement au nom des colonnes, à l'exception de la première cellule qui doit être _sku_. Le séparateur utilisé à l'intérieur d'une cellule est le point-virgule `;`. Si une cellule contient une virgule, la valeur doit être entourée par des guillements. Voici les champs disponibles:
 
 - **sku**: Référence unique du produit
 - **title**: Le titre du produit
 - **price**: Le prix du produit
 - **currency**: La devise du prix du produit
 - **quantity**: La quantité du produit
-- **online**: `true` si le produit est en ligne, `false` sinon
 - **status**: Le statut du produit: `offline` ou `online`.
 - **description**: La description du produit
-- **images**: Les images produit séparées par un espace.
-- **option names**: Les noms de des options séparées par un espace. Si le nom possède un espace, alors il doit être entouré de guillemets (optionnel)
-- **option values**: Les valeurs des options correspondantes respectivement aux noms des options, séparées par un espace. Si le nom possède un espace, alors il doit être entouré de guillemets (optionnel)
-- **links**: Les identifiants des produits séparés par un espace (optionnel)
+- **images**: Les images produit séparées
+- **weight**: Le poids du produit (optionnel)
 - **tags**: Les tags (ou catégories) des produits (optionnel)
-- **date**: La date au format JSON incluant le fuseau horaire (optionnel)
+- **links**: Les identifiants des produits (optionnel)
+- **position**: La position du produit dans la recherche. Le tri est utilisé de façon ascendante, plus un nombre est petit, meilleur sera sa position. La valeur par défaut est `1`. (optionnel)
+- **options**: Les options correspondent à un couple nom/valeur séparé par deux poinst `:` (optionnel)
 
 Le modèle présenté ci-dessus essaie d’être le plus minimaliste possible. Les options sont un bon moyen d’afficher des informations spécifiques selon les différents projets. Ils seront affichés dynamiquement dans la description du produit.
 
@@ -327,6 +326,8 @@ Pour le css, deux modes peuvent être utilisés:
 Pour le reste des fichiers (HTML, JS), prettier est utilisé pour le formatage.
 
 Il est important de suivre les [conventions de documentation de Golang](https://go.dev/blog/godoc) pour faciliter le travail en collaboration. La documentation du code, ainsi que les messages sur git, doivent être rédigés en anglais afin de maitenir une certaine cohérence.
+
+Les logs doivent utiliser des mots clés standards afin de faciliter l'exploitation. Le base est celle d'[OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Vocabulary_Cheat_Sheet.html) et peut être enrichie par les besoins de l'application.
 
 # 12 Tests
 
