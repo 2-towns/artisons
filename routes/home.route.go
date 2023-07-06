@@ -26,6 +26,8 @@ func getProducts(ctx context.Context) ([]util.Product, error) {
 	return products, nil
 }
 
+// HomeRoute loads the most recent products in order to
+// display them on the home page.
 func HomeRoute(w http.ResponseWriter, r *http.Request) {
 	tpl, err := template.ParseFiles("views/base.html", "views/home.html")
 	if err != nil {

@@ -39,6 +39,20 @@ go run main.go
 
 Le serveur est démarré sur le port `8080` par défault.
 
+## Tester
+
+Pour lancer les tests, utiliser la commande suivante:
+
+```
+go test ./...
+```
+
+Il est possible d'utiliser le mode verbose:
+
+```
+go test ./... -v
+```
+
 ## Profiter
 
 Siroter un bon café.

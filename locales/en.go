@@ -1,3 +1,4 @@
+// Package locales provides locale resources for languages
 package locales
 
 import (

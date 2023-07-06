@@ -1,3 +1,5 @@
+// Package middlewares provides middlewares for the application.
+// Middlewares are called by every request.
 package middlewares
 
 import (
@@ -9,6 +11,10 @@ import (
 	"golang.org/x/text/language"
 )
 
+// Lang load the detected language in the context.
+// It looks into Accept-Language header and fallback
+// to english language when the detected language is
+// missing or not recognized.
 func Lang(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		langs := strings.Split(r.Header.Get("Accept-Language"), "-")
@@ -22,6 +28,8 @@ func Lang(next http.Handler) http.Handler {
 
 		switch lang {
 		case "en":
+			tag = language.English
+		default:
 			tag = language.English
 		}
 
