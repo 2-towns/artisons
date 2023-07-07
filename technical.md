@@ -195,7 +195,7 @@ Les paramètres sont:
 
 - --file: Chemin vers le fichier à importer
 
-Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du fichier CSV doit être respecté, contrairement au nom des colonnes, à l'exception de la première cellule qui doit être _sku_. Le séparateur utilisé à l'intérieur d'une cellule est le point-virgule `;`. Si une cellule contient une virgule, la valeur doit être entourée par des guillements. Voici les champs disponibles:
+Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du fichier CSV doit être respecté, contrairement au nom des colonnes, à l'exception de la première cellule qui doit être _sku_. Le séparateur utilisé à l'intérieur d'une cellule est le point-virgule `;`. Si une cellule contient une virgule, la valeur doit être entourée par des guillements. Si une line contient une erreur, la ligne est entièrement ignorée. Voici les champs disponibles:
 
 - **sku**: Référence unique du produit
 - **title**: Le titre du produit
@@ -204,7 +204,7 @@ Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du 
 - **quantity**: La quantité du produit
 - **status**: Le statut du produit: `offline` ou `online`.
 - **description**: La description du produit
-- **images**: Les images produit séparées
+- **images**: Les images produits sous la form d'URL à télécharger ou de chemins relatifs. Les extensions acceptéss sont: `jpg`, `jpeg`, `png`.
 - **weight**: Le poids du produit (optionnel)
 - **tags**: Les tags (ou catégories) des produits (optionnel)
 - **links**: Les identifiants des produits (optionnel)
