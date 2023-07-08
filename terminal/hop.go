@@ -8,6 +8,7 @@ import (
 	"gifthub/util"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
@@ -22,6 +23,8 @@ func main() {
 
 	defer f.Close()
 
+	start := time.Now()
+
 	csvReader := csv.NewReader(f)
 	data, err := csvReader.ReadAll()
 	if err != nil {
@@ -33,5 +36,8 @@ func main() {
 		log.Panicln(err)
 	}
 
-	fmt.Printf("Import successful, %d line(s) imported.", lines)
+	// Code to measure
+	duration := time.Since(start)
+
+	fmt.Printf("Import successful, %d line(s) imported in %s.\n", lines, duration)
 }
