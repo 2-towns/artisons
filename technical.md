@@ -195,12 +195,12 @@ Les paramètres sont:
 
 - --file: Chemin vers le fichier à importer
 
-Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du fichier CSV doit être respecté, contrairement au nom des colonnes, à l'exception de la première cellule qui doit être _sku_. Le séparateur utilisé à l'intérieur d'une cellule est le point-virgule `;`. Si une cellule contient une virgule, la valeur doit être entourée par des guillements. Si une line contient une erreur, la ligne est entièrement ignorée. Voici les champs disponibles:
+Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du fichier CSV doit être respecté, contrairement au nom des colonnes, à l'exception de la première cellule qui doit être _sku_. Le séparateur utilisé à l'intérieur d'une cellule est le point-virgule `;`. Voici les champs disponibles:
 
-- **sku**: Référence unique du produit
+- **sku**: Référence unique du produit contenant uniquement des caractères alphanumériques en minuscule.
 - **title**: Le titre du produit
-- **price**: Le prix du produit
 - **currency**: La devise du prix du produit
+- **price**: Le prix du produit
 - **quantity**: La quantité du produit
 - **status**: Le statut du produit: `offline` ou `online`.
 - **description**: La description du produit
@@ -215,13 +215,21 @@ Le modèle présenté ci-dessus essaie d’être le plus minimaliste possible. L
 
 Si les valeurs contiennent des virgules, alors elles doivent être entourées de guillemets.
 
+Si une line contient une erreur, la ligne est entièrement ignorée.
+
 Les tags sont des moyens plus flexibles pour grouper des produits. Il sera possible de proposer dans la recherche, des tags prédéfinis que l’utilisateur pourra sélectionner. L’application peut aussi restreindre les tags possibles.
 
 Les images devront être téléchargées et stockées dans le dossier servi par Imgproxy.
 
 Si un marchand souhaite ajouter ses produits dans plusieurs langues, il doit créer une ligne pour chaque langue.
 
-Si un marchand souhaite ajouter un produit avec différentes déclinaisons, il doit créer une ligne pour chaque produit. Il peut lier les produits entre eux, à l’aide des champs `links`. Sur la fiche produit, les produits liés affichent leur photo et il est possible de les consulter en cliquant dessus. La clé de stockage est `links`, le hash est le `PID` du produit et la valeur le `PID` du lien.
+Si un marchand souhaite ajouter un produit avec différentes déclinaisons, il doit créer une ligne pour chaque produit. Il peut lier les produits entre eux, à l’aide des champs `links`. Sur la fiche produit, les produits liés affichent leur photo et il est possible de les consulter en cliquant dessus.
+
+Les clés de stockage sont:
+
+- Pour les liens, `product:links:PID` et le format est un set.
+- Pour les tags, `product:tags:PID` et le format est un set.
+- Pour les options, `product:options:PID` et le format est un hash dont la clé est le nom de l'option et la valeur est la valeur de l'option.
 
 Si un produit existe, les données sont écrasées par la nouvelle importation. Si des options et des liens existaient, ils sont supprimés au profit des nouveaux liens et options.
 

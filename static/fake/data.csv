@@ -1,0 +1,2 @@
+sku,title,price,currency,quantity,status,description,images,weight,tags,links,options
+1,Mon beau produit,15,EUR,2,online,Très beau produit,./static/fake/product.png,200,gift,124,color:blue

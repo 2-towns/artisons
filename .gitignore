@@ -19,3 +19,6 @@
 
 # Go workspace file
 go.work
+
+# improxy folder
+static/images

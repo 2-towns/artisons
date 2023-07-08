@@ -2,7 +2,11 @@
 package util
 
 import (
+	"fmt"
+	"gifthub/conf"
+	"math/rand"
 	"strings"
+	"time"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -73,3 +77,33 @@ func Slugify(title string) string {
 
 // CsvLines representes the lines of a csv
 type CsvLines [][]string
+
+var r *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+// RandomString provides a random unique string
+func RandomString() string {
+	length := 16
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = letters[r.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+// ImageExtensions is the allowed extensions in the application
+const ImageExtensions = "jpg jpeg png"
+
+const (
+	Online  = "online"  // Make th product available in the application
+	Offline = "offline" // Hide th product  in the application
+)
+
+// GetImagePath returns the imgproxy path for a file
+// Later on, the method should be improve to generate subfolders path,
+// if the products are more than the unix file limit
+func GetImagePath(pid string, index int) (string, string) {
+	folder := fmt.Sprintf("%s/%s", conf.ImgProxyPath, pid)
+	return folder, fmt.Sprintf("%s/%d", folder, index)
+}

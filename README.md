@@ -53,6 +53,18 @@ Il est possible d'utiliser le mode verbose:
 go test ./... -v
 ```
 
+## Terminal
+
+### Importation de CSV
+
+Pour importer un csv, lancer la commande:
+
+```
+go run terminal/hop.go
+```
+
+Par défault, le path est `./static/fake/data.csv`. Il est possible de préciser un fichier en utilisant le flag `--file` suivi du chemin du fichier.
+
 ## Profiter
 
 Siroter un bon café.
