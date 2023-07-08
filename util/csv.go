@@ -60,13 +60,13 @@ func getUrlExtension(raw string) (string, error) {
 
 	position := strings.LastIndex(u.Path, ".")
 	if position == -1 {
-		return "", fmt.Errorf("the url %s does not contain image extension", raw)
+		return "", fmt.Errorf("input_validation_fail: the url %s does not contain image extension", raw)
 	}
 
 	extension := strings.ToLower(u.Path[position+1 : len(u.Path)])
 
 	if !strings.Contains(ImageExtensions, extension) {
-		return "", fmt.Errorf("the extension %s is not supported", extension)
+		return "", fmt.Errorf("input_validation_fail: the extension %s is not supported", extension)
 	}
 
 	return u.Path[position+1 : len(u.Path)], nil
@@ -90,7 +90,7 @@ func downloadFile(url string) (string, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		return "", fmt.Errorf("the status code %d is not correct", response.StatusCode)
+		return "", fmt.Errorf("input_validation_fail: the status code %d is not correct", response.StatusCode)
 	}
 
 	id := RandomString()
@@ -121,7 +121,7 @@ func downloadFile(url string) (string, error) {
 func copyFile(src string) (string, error) {
 	extension := strings.Replace(filepath.Ext(src), ".", "", 1)
 	if !strings.Contains(ImageExtensions, extension) {
-		return "", fmt.Errorf("the extension %s is not supported", extension)
+		return "", fmt.Errorf("input_validation_fail: the extension %s is not supported", extension)
 	}
 
 	stat, err := os.Stat(src)
@@ -130,7 +130,7 @@ func copyFile(src string) (string, error) {
 	}
 
 	if !stat.Mode().IsRegular() {
-		return "", fmt.Errorf("the file %s is not a regular file", src)
+		return "", fmt.Errorf("input_validation_fail: the file %s is not a regular file", src)
 	}
 
 	s, err := os.Open(src)
@@ -284,7 +284,7 @@ func parseCsvLine(line []string) (csvLine, error) {
 		}
 
 		if len(links) != len(options) {
-			return product, errors.New("input_validation_fail in line %d, the options contain error")
+			return product, errors.New("input_validation_fail: the options contain error")
 		}
 	}
 
