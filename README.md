@@ -60,7 +60,7 @@ go test ./... -v
 Pour importer un csv, lancer la commande:
 
 ```
-go run terminal/hop.go
+go run terminal/hop.go import
 ```
 
 Par défault, le path est `./static/fake/data.csv`. Il est possible de préciser un fichier en utilisant le flag `--file` suivi du chemin du fichier.

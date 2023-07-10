@@ -177,12 +177,12 @@ func parseCsvLine(line []string) (csvLine, error) {
 
 	product.Sku = sku
 
-	title := line[ititle]
+	title :=  line[ititle]
 	if title == "" {
 		return product, errors.New("input_validation_fail: the title is required")
 	}
 
-	product.Title = title
+	product.Title = strings.ReplaceAll(title,"\"","")
 
 	price, priceErr := strconv.ParseFloat(line[iprice], 32)
 	if priceErr != nil {
@@ -217,7 +217,7 @@ func parseCsvLine(line []string) (csvLine, error) {
 		return product, errors.New("input_validation_fail: the description is required")
 	}
 
-	product.Description = description
+	product.Description = strings.ReplaceAll(description,"\"","")
 
 	images := strings.Split(line[iimages], ";")
 	if len(images) == 0 {
@@ -280,7 +280,10 @@ func parseCsvLine(line []string) (csvLine, error) {
 				return product, fmt.Errorf("input_validation_fail: the option %d is not correct %s", j, v)
 			}
 
-			options[parts[0]] = parts[1]
+			k := strings.ReplaceAll(parts[0],"\"","")
+			v := strings.ReplaceAll(parts[1],"\"","")
+			
+			options[k] = v
 		}
 
 		if len(links) != len(options) {
@@ -426,7 +429,6 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 
 			return
 		}
-
 	} else {
 		deletePreviousImages(ctx, pid)
 	}

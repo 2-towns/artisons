@@ -191,6 +191,8 @@ Les paramètres seront gérés à l'aide de `flags`. L'identifiant marchant est 
 
 ## 6.1 Importation CSV de produits
 
+Le nom de la commande dest `import`.
+
 Les paramètres sont:
 
 - --file: Chemin vers le fichier à importer
@@ -213,7 +215,7 @@ Le séparateur est celui par défaut, la virgule `,`. L’ordre des colonnes du 
 
 Le modèle présenté ci-dessus essaie d’être le plus minimaliste possible. Les options sont un bon moyen d’afficher des informations spécifiques selon les différents projets. Ils seront affichés dynamiquement dans la description du produit.
 
-Si les valeurs contiennent des virgules, alors elles doivent être entourées de guillemets.
+Si les title, description et/ou options contiennent des virgules, alors elles doivent être entourées de guillemets.
 
 Si une line contient une erreur, la ligne est entièrement ignorée.
 
@@ -241,6 +243,8 @@ Pour faciliter la récupération des produits lors de l'importation, le lien ent
 
 ## 6.2 Liste des produits
 
+Le nom de la commande dest `productlist`.
+
 Les paramètres sont:
 
 - --page: Pagination
@@ -250,6 +254,8 @@ La pagination est un nombre qui représente un coefficient multiplicateur par le
 
 ## 6.3 Détail d'un produit
 
+Le nom de la commande dest `productdetail`.
+
 Les paramètres sont:
 
 - --pid: Le `PID` du produit
@@ -257,6 +263,8 @@ Les paramètres sont:
 Le détail récupère tous les éléments stocké dans Redis.
 
 ## 6.4 Liste des utilisateurs
+
+Le nom de la commande dest `userlist`.
 
 Les paramètres sont:
 
@@ -266,6 +274,8 @@ Renvoie la liste des utilisateurs donc les premiers sont les plus récents.
 
 ## 6.5 Liste des commandes
 
+Le nom de la commande dest `orderlist`.
+
 Les paramètres sont:
 
 - --page: Pagination
@@ -273,6 +283,8 @@ Les paramètres sont:
 Renvoie la liste des commandes donc les premières sont les plus récents.
 
 ## 6.6 Modifier le statut d'une commande
+
+Le nom de la commande dest `orderstatusedit`.
 
 Les paramètres sont:
 
@@ -286,6 +298,8 @@ Les statuts disponibles sont:
 - `payment_refused`
 
 ## 6.7 Ajouter une note à la commande
+
+Le nom de la commande dest `ordernoteadd`.
 
 Les paramètres sont:
 

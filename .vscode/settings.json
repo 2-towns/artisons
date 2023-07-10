@@ -1,11 +1,5 @@
 {
-  "cSpell.language": "en,fr",
-  "cSpell.words": [
-    "Deville",
-    "HTMX",
-    "Imgproxy",
-    "Madjoub",
-    "Pico",
-    "Reda"
-  ]
+  "go.testEnvVars": {
+    "WORKSPACE_DIR": "${workspaceFolder}"
+  }
 }
