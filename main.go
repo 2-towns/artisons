@@ -2,8 +2,7 @@ package main
 
 import (
 	"gifthub/locales"
-	"gifthub/middlewares"
-	"gifthub/routes"
+	"gifthub/pages"
 	"log"
 	"net/http"
 	"os"
@@ -21,7 +20,7 @@ func main() {
 
 	locales.LoadEn()
 
-	log.Println("Will look for views in", pwd+"/views/*")
+	log.Println("Will look for views in", pwd+"/web/views/*")
 
 	// p := message.NewPrinter(language.English)
 
@@ -30,12 +29,12 @@ func main() {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
-	router.Use(middlewares.Lang)
+	router.Use(locales.Middleware)
 
-	fs := http.FileServer(http.Dir("public"))
+	fs := http.FileServer(http.Dir("web/public"))
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
 
-	router.Get("/", routes.HomeRoute)
+	router.Get("/", pages.Home)
 
 	http.ListenAndServe(":8080", router)
 

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"gifthub/conf"
-	"gifthub/util"
+	"gifthub/console/parser"
 	"log"
 	"os"
 	"time"
@@ -23,7 +23,7 @@ func main() {
 	switch command {
 	case "import":
 		{
-			file := flag.String("file", "./static/fake/data.csv", "The path to the csv file")
+			file := flag.String("file", "./web/testdata/data.csv", "The path to the csv file")
 
 			log.Printf("Will try to import %s csv, hop!", *file)
 
@@ -34,13 +34,13 @@ func main() {
 
 			defer f.Close()
 
-			csvReader := csv.NewReader(f)
-			data, err := csvReader.ReadAll()
+			reader := csv.NewReader(f)
+			data, err := reader.ReadAll()
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			lines, err := util.CsvImport(data, conf.DefaultMID)
+			lines, err := parser.Import(data, conf.DefaultMID)
 			if err != nil {
 				log.Panicln(err)
 			}

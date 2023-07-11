@@ -1,4 +1,4 @@
-package util
+package parser
 
 import (
 	"gifthub/conf"
@@ -19,9 +19,9 @@ func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {
 	h := make([]string, 3)
 	copy(h, header)
 
-	csv := CsvLines{h}
+	csv := lines{h}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err == nil {
 		t.Fatal(`The import should failed because the csv header is not correct`)
@@ -41,9 +41,9 @@ func TestCsvImportHeaderFirstCellMisvalue(t *testing.T) {
 
 	h[0] = "id"
 
-	csv := CsvLines{h}
+	csv := lines{h}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err == nil {
 		t.Fatal(`The import should failed because the first csv header value is not sku`)
@@ -63,9 +63,9 @@ func TestCsvImportRequiredLineValuesMisnumber(t *testing.T) {
 	l := make([]string, 3)
 	copy(l, line)
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should failed because the first line does not contains the required fields`)
@@ -87,9 +87,9 @@ func TestCsvImportSkuMissing(t *testing.T) {
 
 	l[0] = ""
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -111,9 +111,9 @@ func TestCsvImportSkuMisvalue(t *testing.T) {
 
 	l[0] = "sku!"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -135,9 +135,9 @@ func TestCsvImportTitleMissing(t *testing.T) {
 
 	l[1] = ""
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -159,9 +159,9 @@ func TestCsvImportPriceMissing(t *testing.T) {
 
 	l[2] = ""
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -183,9 +183,9 @@ func TestCsvImportPriceMisvalue(t *testing.T) {
 
 	l[2] = "toto"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -207,9 +207,9 @@ func TestCsvImportCurrencyMisvalue(t *testing.T) {
 
 	l[3] = "toto"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -231,9 +231,9 @@ func TestCsvImportQuantityMissing(t *testing.T) {
 
 	l[4] = ""
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -255,9 +255,9 @@ func TestCsvImportQuantiyMisvalue(t *testing.T) {
 
 	l[4] = "toto"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -279,9 +279,9 @@ func TestCsvImportStatusMisvalue(t *testing.T) {
 
 	l[5] = "toto"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -303,9 +303,9 @@ func TestCsvImportDescriptionMissing(t *testing.T) {
 
 	l[6] = ""
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -327,9 +327,9 @@ func TestCsvImportImagesMisvalue(t *testing.T) {
 
 	l[7] = "toto"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -351,9 +351,9 @@ func TestCsvImportImagesMissing(t *testing.T) {
 
 	l[7] = ""
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -376,9 +376,9 @@ func TestCsvImportImagesNotFound(t *testing.T) {
 	const image = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1_toto.png"
 	l[7] = image
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -401,9 +401,9 @@ func TestCsvImportImagesBadExtension(t *testing.T) {
 	const image = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.svg"
 	l[7] = image
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -423,11 +423,11 @@ func TestCsvImportLocalImageBadExtension(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../static/fake/product.svg"
+	l[7] = "../web/testdata/product.svg"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -447,11 +447,11 @@ func TestCsvImportLocalImageNotFound(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../static/fake/toto.png"
+	l[7] = "../web/testdata/toto.png"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -473,9 +473,9 @@ func TestCsvImportWeightMisvalue(t *testing.T) {
 
 	l[8] = "toto"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -497,9 +497,9 @@ func TestCsvImportOptionsMisvalue(t *testing.T) {
 
 	l[11] = "toto"
 
-	csv := CsvLines{h, l}
+	csv := lines{h, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -513,9 +513,9 @@ func TestCsvImportOptionsMisvalue(t *testing.T) {
 // TestCsvImportOk calls util.CsvImport with a csv data
 // line that contains a bad options value
 func TestCsvImportOk(t *testing.T) {
-	csv := CsvLines{header, line}
+	csv := lines{header, line}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -532,11 +532,11 @@ func TestCsvImportLocalImageOk(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../static/fake/product.png"
+	l[7] = "../web/testdata/product.png"
 
-	csv := CsvLines{header, l}
+	csv := lines{header, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -555,9 +555,9 @@ func TestCsvImportWihoutOptionsOk(t *testing.T) {
 
 	l[11] = ""
 
-	csv := CsvLines{header, l}
+	csv := lines{header, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -576,9 +576,9 @@ func TestCsvImportWihoutLinksOk(t *testing.T) {
 
 	l[10] = ""
 
-	csv := CsvLines{header, l}
+	csv := lines{header, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)
@@ -597,9 +597,9 @@ func TestCsvImportWihoutWeightOk(t *testing.T) {
 
 	l[8] = ""
 
-	csv := CsvLines{header, l}
+	csv := lines{header, l}
 
-	count, err := CsvImport(csv, conf.DefaultMID)
+	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
 		t.Fatal(`The import should not failed`)

@@ -1,8 +1,11 @@
-package routes
+// Package pages provides the application pages
+package pages
 
 import (
 	"context"
-	"gifthub/util"
+	"gifthub/conf"
+	"gifthub/locales"
+	"gifthub/products"
 	"html/template"
 	"net/http"
 
@@ -13,33 +16,33 @@ import (
 func homeI18n(lang language.Tag) map[string]string {
 	p := message.NewPrinter(lang)
 
-	t := util.GetPage(lang, "home")
+	t := locales.GetPage(lang, "home")
 	t["detail"] = p.Sprintf("detail")
 	t["product_url"] = p.Sprintf("product_url")
 
 	return t
 }
 
-func getProducts(ctx context.Context) ([]util.Product, error) {
-	products := make([]util.Product, 0, util.ItemsPerPage)
+func getProducts(ctx context.Context) ([]products.Product, error) {
+	products := make([]products.Product, 0, conf.ItemsPerPage)
 
 	return products, nil
 }
 
-// HomeRoute loads the most recent products in order to
+// Home loads the most recent products in order to
 // display them on the home page.
-func HomeRoute(w http.ResponseWriter, r *http.Request) {
-	tpl, err := template.ParseFiles("views/base.html", "views/home.html")
+func Home(w http.ResponseWriter, r *http.Request) {
+	tpl, err := template.ParseFiles("web/views/base.html", "web/views/home.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	ctx := r.Context()
-	lang := ctx.Value(util.ContextLangKey).(language.Tag)
+	lang := ctx.Value(locales.ContextKey).(language.Tag)
 	t := homeI18n(lang)
 
-	products, err := getProducts(ctx)
+	p, err := getProducts(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
@@ -48,10 +51,10 @@ func HomeRoute(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		T        map[string]string
-		Products []util.Product
+		Products []products.Product
 	}{
 		t,
-		products,
+		p,
 	}
 
 	tpl.Execute(w, &data)

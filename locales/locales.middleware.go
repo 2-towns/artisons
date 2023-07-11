@@ -1,10 +1,7 @@
-// Package middlewares provides middlewares for the application.
-// Middlewares are called by every request.
-package middlewares
+package locales
 
 import (
 	"context"
-	"gifthub/util"
 	"net/http"
 	"strings"
 
@@ -15,13 +12,13 @@ import (
 // It looks into Accept-Language header and fallback
 // to english language when the detected language is
 // missing or not recognized.
-func Lang(next http.Handler) http.Handler {
+func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		langs := strings.Split(r.Header.Get("Accept-Language"), "-")
 		lang := langs[0]
 
-		if !util.Contains(util.Languages, lang) {
-			lang = util.DefaultLanguage
+		if strings.Contains(Languages, lang) {
+			lang = DefaultLanguage
 		}
 
 		var tag language.Tag
@@ -35,7 +32,7 @@ func Lang(next http.Handler) http.Handler {
 
 		// create new context from `r` request context, and assign key `"user"`
 		// to value of `"123"`
-		ctx := context.WithValue(r.Context(), util.ContextLangKey, tag)
+		ctx := context.WithValue(r.Context(), ContextKey, tag)
 
 		// call the next handler in the chain, passing the response writer and
 		// the updated request object with the new context value.

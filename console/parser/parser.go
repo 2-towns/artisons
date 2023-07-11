@@ -1,10 +1,14 @@
-package util
+// Package parser provides features related to csv parsing
+package parser
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"gifthub/conf"
+	"gifthub/db"
+	"gifthub/products"
+	"gifthub/string/stringutil"
 	"io"
 	"log"
 	"net/http"
@@ -20,7 +24,10 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type csvLine struct {
+// lines representes the lines of a csv
+type lines [][]string
+
+type csvline struct {
 	Mid         string
 	Sku         string
 	Title       string
@@ -65,7 +72,7 @@ func getUrlExtension(raw string) (string, error) {
 
 	extension := strings.ToLower(u.Path[position+1 : len(u.Path)])
 
-	if !strings.Contains(ImageExtensions, extension) {
+	if !strings.Contains(products.ImageExtensions, extension) {
 		return "", fmt.Errorf("input_validation_fail: the extension %s is not supported", extension)
 	}
 
@@ -93,7 +100,7 @@ func downloadFile(url string) (string, error) {
 		return "", fmt.Errorf("input_validation_fail: the status code %d is not correct", response.StatusCode)
 	}
 
-	id := RandomString()
+	id := stringutil.Random()
 
 	extension, err := getUrlExtension(url)
 	if err != nil {
@@ -120,7 +127,7 @@ func downloadFile(url string) (string, error) {
 
 func copyFile(src string) (string, error) {
 	extension := strings.Replace(filepath.Ext(src), ".", "", 1)
-	if !strings.Contains(ImageExtensions, extension) {
+	if !strings.Contains(products.ImageExtensions, extension) {
 		return "", fmt.Errorf("input_validation_fail: the extension %s is not supported", extension)
 	}
 
@@ -140,7 +147,7 @@ func copyFile(src string) (string, error) {
 
 	defer s.Close()
 
-	id := RandomString()
+	id := stringutil.Random()
 	p := path.Join(os.TempDir(), fmt.Sprintf("%s.%s", id, extension))
 
 	d, err := os.Create(p)
@@ -158,8 +165,8 @@ func copyFile(src string) (string, error) {
 	return p, nil
 }
 
-func parseCsvLine(line []string) (csvLine, error) {
-	product := csvLine{}
+func parseCsvLine(line []string) (csvline, error) {
+	product := csvline{}
 
 	if len(line) < requiredFields {
 		return product, errors.New("input_validation_fail: csv not valid")
@@ -177,12 +184,12 @@ func parseCsvLine(line []string) (csvLine, error) {
 
 	product.Sku = sku
 
-	title :=  line[ititle]
+	title := line[ititle]
 	if title == "" {
 		return product, errors.New("input_validation_fail: the title is required")
 	}
 
-	product.Title = strings.ReplaceAll(title,"\"","")
+	product.Title = strings.ReplaceAll(title, "\"", "")
 
 	price, priceErr := strconv.ParseFloat(line[iprice], 32)
 	if priceErr != nil {
@@ -217,7 +224,7 @@ func parseCsvLine(line []string) (csvLine, error) {
 		return product, errors.New("input_validation_fail: the description is required")
 	}
 
-	product.Description = strings.ReplaceAll(description,"\"","")
+	product.Description = strings.ReplaceAll(description, "\"", "")
 
 	images := strings.Split(line[iimages], ";")
 	if len(images) == 0 {
@@ -280,9 +287,9 @@ func parseCsvLine(line []string) (csvLine, error) {
 				return product, fmt.Errorf("input_validation_fail: the option %d is not correct %s", j, v)
 			}
 
-			k := strings.ReplaceAll(parts[0],"\"","")
-			v := strings.ReplaceAll(parts[1],"\"","")
-			
+			k := strings.ReplaceAll(parts[0], "\"", "")
+			v := strings.ReplaceAll(parts[1], "\"", "")
+
 			options[k] = v
 		}
 
@@ -299,20 +306,20 @@ func parseCsvLine(line []string) (csvLine, error) {
 func deletePreviousImages(ctx context.Context, pid string) error {
 	key := "product:" + pid
 
-	v, err := RedisClient.HGet(ctx, key, "images").Result()
+	v, err := db.Client.HGet(ctx, key, "images").Result()
 
 	if err != nil {
 		return err
 	}
 
-	images, err := strconv.Atoi(v)
+	img, err := strconv.Atoi(v)
 	if err != nil {
 		return err
 	}
 
 	var i int = 0
-	for i = 0; i < images; i++ {
-		_, p := GetImagePath(pid, i)
+	for i = 0; i < img; i++ {
+		_, p := products.ImagePath(pid, i)
 
 		err := os.Rename(v, p)
 
@@ -325,9 +332,9 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 	return nil
 }
 
-func createImages(pid string, product csvLine) error {
+func createImages(pid string, product csvline) error {
 	for i, v := range product.Images {
-		folder, p := GetImagePath(pid, i)
+		folder, p := products.ImagePath(pid, i)
 
 		err := os.MkdirAll(folder, os.ModePerm)
 		if err != nil {
@@ -345,7 +352,7 @@ func createImages(pid string, product csvLine) error {
 	return nil
 }
 
-func removeTmpFiles(product csvLine) {
+func removeTmpFiles(product csvline) {
 	if len(product.Images) > 0 {
 		for _, v := range product.Images {
 			err := os.Remove(v)
@@ -357,13 +364,13 @@ func removeTmpFiles(product csvLine) {
 	}
 }
 
-func addProductToRedis(ctx context.Context, pid string, product csvLine) error {
+func addProductToRedis(ctx context.Context, pid string, product csvline) error {
 	key := "product:" + pid
 	lkey := "product:links:" + pid
 	tkey := "product:tags:" + pid
 	okey := "product:options:" + pid
 
-	_, err := RedisClient.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+	_, err := db.Client.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, lkey)
 		rdb.Del(ctx, okey)
 		rdb.Del(ctx, tkey)
@@ -416,12 +423,12 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 
 	ctx := context.Background()
 	key := "merchant:" + mid + ":" + product.Sku
-	pid, err := RedisClient.Get(ctx, key).Result()
+	pid, err := db.Client.Get(ctx, key).Result()
 
 	if pid == "" || err != nil {
-		pid = RandomString()
+		pid = stringutil.Random()
 
-		_, err := RedisClient.Set(ctx, key, pid, 0).Result()
+		_, err := db.Client.Set(ctx, key, pid, 0).Result()
 		if err != nil {
 			log.Printf("sequence_fail at line %d - %s", i, err.Error())
 
@@ -454,7 +461,7 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 	chans <- 1
 }
 
-// CsvImport imports csv data into redis.
+// Import imports csv data into redis.
 // The first line has to contain the headers ordered as the following list:
 //   - sku: the unique reference (per merchant)
 //   - title: the product title
@@ -480,7 +487,7 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 //
 // If a product link references a non existing product id, it will be ignored when the
 // product details will be displayed.
-func CsvImport(data [][]string, mid string) (int, error) {
+func Import(data [][]string, mid string) (int, error) {
 	// ctx := context.Background()
 	lines := 0
 	chans := make(chan int, len(data)-1)
