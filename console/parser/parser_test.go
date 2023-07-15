@@ -423,7 +423,7 @@ func TestCsvImportLocalImageBadExtension(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../web/testdata/product.svg"
+	l[7] = "../../web/testdata/product.svg"
 
 	csv := lines{h, l}
 
@@ -447,7 +447,7 @@ func TestCsvImportLocalImageNotFound(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../web/testdata/toto.png"
+	l[7] = "../../web/testdata/toto.png"
 
 	csv := lines{h, l}
 
@@ -532,7 +532,7 @@ func TestCsvImportLocalImageOk(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../web/testdata/product.png"
+	l[7] = "../../web/testdata/product.png"
 
 	csv := lines{header, l}
 

@@ -6,7 +6,7 @@ import (
 	"gifthub/conf"
 )
 
-// Product is the product representation in the applicatio
+// Product is the product representation in the application
 type Product struct {
 	ID          string            `redis:"id"` // ID is an unique identifier
 	Title       string            `redis:"title"`

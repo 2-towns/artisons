@@ -306,7 +306,7 @@ func parseCsvLine(line []string) (csvline, error) {
 func deletePreviousImages(ctx context.Context, pid string) error {
 	key := "product:" + pid
 
-	v, err := db.Client.HGet(ctx, key, "images").Result()
+	v, err := db.Redis.HGet(ctx, key, "images").Result()
 
 	if err != nil {
 		return err
@@ -370,7 +370,7 @@ func addProductToRedis(ctx context.Context, pid string, product csvline) error {
 	tkey := "product:tags:" + pid
 	okey := "product:options:" + pid
 
-	_, err := db.Client.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+	_, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, lkey)
 		rdb.Del(ctx, okey)
 		rdb.Del(ctx, tkey)
@@ -423,12 +423,12 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 
 	ctx := context.Background()
 	key := "merchant:" + mid + ":" + product.Sku
-	pid, err := db.Client.Get(ctx, key).Result()
+	pid, err := db.Redis.Get(ctx, key).Result()
 
 	if pid == "" || err != nil {
 		pid = stringutil.Random()
 
-		_, err := db.Client.Set(ctx, key, pid, 0).Result()
+		_, err := db.Redis.Set(ctx, key, pid, 0).Result()
 		if err != nil {
 			log.Printf("sequence_fail at line %d - %s", i, err.Error())
 

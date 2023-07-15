@@ -16,3 +16,6 @@ var DefaultMID = "1234"
 // ItemsPerPage is the number of items displayed per page or pagination
 // Deprecated: Should be moved into the configuration
 const ItemsPerPage = 12
+
+// Database index for redis
+const DatabaseIndex = 0

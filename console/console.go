@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/console/parser"
+	"gifthub/console/populate"
+	"gifthub/users"
 	"log"
 	"os"
 	"time"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 func main() {
@@ -47,6 +51,35 @@ func main() {
 
 			fmt.Printf("Import successful, %d line(s) imported.\n", lines)
 
+		}
+
+	case "populate":
+		{
+			err := populate.Run()
+
+			if err != nil {
+				log.Panic(err)
+			}
+		}
+
+	case "userlist":
+		{
+			page := flag.Int64("page", 0, "The page used in pagination")
+
+			u, err := users.List(*page)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			t := table.NewWriter()
+			t.SetOutputMirror(os.Stdout)
+			t.AppendHeader(table.Row{"ID", "First Name", "Last Name", "Email", "Phone", "City", "Updated at"})
+
+			for _, user := range u {
+				t.AppendRow([]interface{}{user.ID, user.Firstname, user.Lastname, user.Email, user.Phone, user.City, user.UpdatedAt})
+			}
+
+			t.Render()
 		}
 	default:
 		{
