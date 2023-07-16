@@ -169,7 +169,7 @@ Il peut aussi modifier ses coordonnées de facturation et livraison, changer act
 
 Lors du clic sur le détail de la commande, l'utilisateur voit la liste des produits contenu dans cette commande, ainsi que les éventuelles notes ajoutées.
 
-Le préfixe utilisé pour stocker les utilisateur est `user`. Chaque utilisateur possède un identifiant incrémenté dont la clé est `users:next_id`.
+Le préfixe utilisé pour stocker les utilisateur est `user`. Chaque utilisateur possède un identifiant incrémenté dont la clé est `user_next_id`.
 
 La clé de stockage est la combinaison du préfixe et de l’identifiant de l'utilisateur. _Example: user:123455_.
 

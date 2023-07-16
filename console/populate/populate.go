@@ -22,7 +22,7 @@ func Run() error {
 	key := "user:1"
 
 	_, err := db.Redis.Pipelined(ctx, func(pipe redis.Pipeliner) error {
-		pipe.Set(ctx, "users:next_id", 2, 0)
+		pipe.Set(ctx, "user_next_id", 2, 0)
 		pipe.HSet(ctx, key, "id", "1")
 		pipe.HSet(ctx, key, "email", faker.Email())
 		pipe.HSet(ctx, key, "firstname", faker.FirstName())
