@@ -100,7 +100,10 @@ func downloadFile(url string) (string, error) {
 		return "", fmt.Errorf("input_validation_fail: the status code %d is not correct", response.StatusCode)
 	}
 
-	id := stringutil.Random()
+	id, err := stringutil.Random()
+	if err != nil {
+		return "", fmt.Errorf("sequence_fail: something went wrong when generating id %s", err.Error())
+	}
 
 	extension, err := getUrlExtension(url)
 	if err != nil {
@@ -147,7 +150,11 @@ func copyFile(src string) (string, error) {
 
 	defer s.Close()
 
-	id := stringutil.Random()
+	id, err := stringutil.Random()
+	if err != nil {
+		return "", fmt.Errorf("sequence_fail: something went wrong when generating id %s", err.Error())
+	}
+
 	p := path.Join(os.TempDir(), fmt.Sprintf("%s.%s", id, extension))
 
 	d, err := os.Create(p)
@@ -410,30 +417,32 @@ func addProductToRedis(ctx context.Context, pid string, product csvline) error {
 func processLine(chans chan<- int, i int, mid string, line []string) {
 	product, err := parseCsvLine(line)
 	if err != nil {
-		log.Printf("%s at line %d", err.Error(), i)
-
-		removeTmpFiles(product)
-
 		chans <- 0
-
 		return
+	}
+
+	catchError := func(err error) {
+		log.Printf("%s at line %d", err.Error(), i)
+		removeTmpFiles(product)
+		chans <- 0
 	}
 
 	product.Mid = mid
 
 	ctx := context.Background()
 	key := "merchant:" + mid + ":" + product.Sku
-	pid, err := db.Redis.Get(ctx, key).Result()
 
+	pid, err := db.Redis.Get(ctx, key).Result()
 	if pid == "" || err != nil {
-		pid = stringutil.Random()
+		pid, err = stringutil.Random()
+		if err != nil {
+			catchError(err)
+			return
+		}
 
 		_, err := db.Redis.Set(ctx, key, pid, 0).Result()
 		if err != nil {
-			log.Printf("sequence_fail at line %d - %s", i, err.Error())
-
-			chans <- 0
-
+			catchError(err)
 			return
 		}
 	} else {
@@ -442,19 +451,13 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 
 	err = createImages(pid, product)
 	if err != nil {
-		log.Printf("%s at line %d", err.Error(), i)
-
-		chans <- 0
-
+		catchError(err)
 		return
 	}
 
 	err = addProductToRedis(ctx, pid, product)
 	if err != nil {
-		log.Printf("%s at line %d", err.Error(), i)
-
-		chans <- 0
-
+		catchError(err)
 		return
 	}
 

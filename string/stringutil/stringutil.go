@@ -2,23 +2,21 @@
 package stringutil
 
 import (
-	"math/rand"
+	"crypto/rand"
+	"encoding/base64"
+	"io"
 	"strings"
-	"time"
 )
 
-var r *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 // Random provides a random unique string
-func Random() string {
-	length := 16
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = letters[r.Intn(len(letters))]
+func Random() (string,error) {
+	b := make([]byte, 24)
+	if _, err := io.ReadFull(rand.Reader, b); err != nil {
+		return "",err
 	}
-	return string(b)
+
+	return base64.URLEncoding.EncodeToString(b),nil
 }
 
 // Slugify returns the slug representation of a title
