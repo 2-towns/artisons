@@ -157,7 +157,15 @@ Les commandes stockées dans Redis contiennent les mêmes éléments du panier a
 
 ## 5.6 Compte utilisateur
 
-Un utilisateur peut se connecteur à l'aide du couple `email` et `password`. S'il a oublié son mot de passe, il peut cliquer sur un lien pour récupérer son mot de passe. Il recevra alors un email et/ou une PUSH notification contenant un lien magique qui, lors du clic, le redirige sur un formulaire de mise à jour de son mot de passe. Une fois cela réalisé, il est automatiquement connecté.
+Un utilisateur est définit pas les champs suivants: 
+
+- **username**: Le nom d'utilisateur en minuscule 
+- **email**: L'email de l'utilisateur 
+- **password**: Le mot de passe de l'utilisateur
+- **created_at**: La date de création de l'utilisateur
+- **updated_at**: La date de mise à jour de l'utilisateur
+
+S'il a oublié son mot de passe, il peut cliquer sur un lien pour récupérer son mot de passe. Il recevra alors un email et/ou une PUSH notification contenant un lien magique qui, lors du clic, le redirige sur un formulaire de mise à jour de son mot de passe. Une fois cela réalisé, il est automatiquement connecté.
 
 Il peut aussi modifier ses coordonnées de facturation et livraison, changer activer ou désactiver les PUSH notifications et consulter l'historique des commandes. Ce dernier affiche les éléments suivants:
 
@@ -175,7 +183,7 @@ La clé de stockage est la combinaison du préfixe et de l’identifiant de l'ut
 
 Le mot de passe est stocké sous la forme d'un hash généré à partir de `bcrypt`.
 
-Le lien entre l'identifiant utilisateur et son email est stocké à l'aide de la clé de stockage `user:email`.
+Le lien entre l'identifiant utilisateur et son nom d'utilisateur est stocké à l'aide de la clé de stockage `user:username`.
 
 Les identifiants seront stockés dans un _sorted set_ dont la clé de stockage sera `users` et le score sera le _timestamp_.
 

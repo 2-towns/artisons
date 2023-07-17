@@ -13,6 +13,10 @@ var line = []string{
 
 var header = []string{"sku", "title", "price", "currency", "quantity", "status", "description", "images", "weight", "tags", "links", "options"}
 
+func init() {
+	conf.ImgProxyPath = "../../../" + conf.ImgProxyPath
+}
+
 // TestCsvImportRequiredHeadersMisnumber calls util.CsvImport with csv data
 // without enough headers
 func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {

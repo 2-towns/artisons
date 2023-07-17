@@ -10,6 +10,6 @@ func TestImagePath(t *testing.T) {
 	expected := "../web/images/123/1"
 
 	if p != expected {
-		t.Fatal(`The import should failed because the csv header is not correct`)
+		t.Fatalf(`the image path is not correct %s`, p)
 	}
 }

@@ -10,22 +10,86 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User is the user representation in the application
 type User struct {
-	Email         string
-	ID            int64
+	Email     string `validate:"required,email"`
+	Username  string `validate:"required,alpha,lowercase"`
+	ID        int64
+	Address   Address
+	Hash      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type Address struct {
 	Lastname      string
 	Firstname     string
-	Address       string
 	City          string
 	Complementary string
 	Zipcode       string
 	Phone         string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+}
+
+// Persist an user into redis
+func (u User) Persist(password string) error {
+	if password == "" {
+		return fmt.Errorf("input_validation_fail: password is required")
+	}
+
+	v := validator.New()
+	err := v.Struct(u)
+	if err != nil {
+		return fmt.Errorf("input_validation_fail: error when validation user %s", err.Error())
+	}
+
+	ctx := context.Background()
+
+	existing, err := db.Redis.HGet(ctx, "user", u.Username).Result()
+	if existing != "" && err != nil {
+		return fmt.Errorf("input_validation_fail:username already exists")
+	}
+
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		return fmt.Errorf("sequence_fail: error when generating password hash %s", err.Error())
+	}
+
+	hash := string(bytes)
+	id, err := db.Redis.Incr(ctx, "user_next_id").Result()
+	if err != nil {
+		id = 1
+	}
+
+	now := time.Now()
+	key := fmt.Sprintf("user:%d", id)
+	pipe := db.Redis.Pipeline()
+	pipe.HSet(ctx, key, "id", id)
+	pipe.HSet(ctx, key, "username", u.Username)
+	pipe.HSet(ctx, key, "email", u.Email)
+	/*pipe.HSet(ctx, key, "lastname", u.Address.Lastname)
+	pipe.HSet(ctx, key, "firstname", u.Firstname)
+	pipe.HSet(ctx, key, "address", u.Address)
+	pipe.HSet(ctx, key, "city", u.City)
+	pipe.HSet(ctx, key, "complemnetary", u.Complementary)
+	pipe.HSet(ctx, key, "zipcode", u.Zipcode)
+	pipe.HSet(ctx, key, "phone", u.Phone)*/
+	pipe.HSet(ctx, key, "hash", hash)
+	pipe.HSet(ctx, key, "updated_at", now.Format(time.RFC3339))
+	pipe.HSet(ctx, key, "created_at", now.Format(time.RFC3339))
+	pipe.HSet(ctx, "user", u.Username, id)
+	pipe.ZAdd(ctx, "users", redis.Z{
+		Score:  float64(now.Unix()),
+		Member: id,
+	})
+
+	_, err = pipe.Exec(ctx)
+
+	return err
 }
 
 // List returns the user list in the application
@@ -84,17 +148,18 @@ func List(page int64) ([]User, error) {
 		}
 
 		users = append(users, User{
-			ID:            id,
-			Email:         m["email"],
-			Lastname:      m["lastname"],
-			Firstname:     m["firstname"],
-			Address:       m["address"],
-			Complementary: m["complementary"],
-			Zipcode:       m["zipcode"],
-			City:          m["city"],
-			Phone:         m["phone"],
-			CreatedAt:     createdAt,
-			UpdatedAt:     updatedAt,
+			ID:       id,
+			Email:    m["email"],
+			Username: m["username"],
+			/*	Lastname:      m["lastname"],
+				Firstname:     m["firstname"],
+				Address:       m["address"],
+				Complementary: m["complementary"],
+				Zipcode:       m["zipcode"],
+				City:          m["city"],
+				Phone:         m["phone"],*/
+			CreatedAt: createdAt,
+			UpdatedAt: updatedAt,
 		})
 	}
 

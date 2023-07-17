@@ -73,10 +73,10 @@ func main() {
 
 			t := table.NewWriter()
 			t.SetOutputMirror(os.Stdout)
-			t.AppendHeader(table.Row{"ID", "First Name", "Last Name", "Email", "Phone", "City", "Updated at"})
+			t.AppendHeader(table.Row{"ID", "Username", "Email", "Updated at"})
 
 			for _, user := range u {
-				t.AppendRow([]interface{}{user.ID, user.Firstname, user.Lastname, user.Email, user.Phone, user.City, user.UpdatedAt})
+				t.AppendRow([]interface{}{user.ID, user.Username, user.Email, user.UpdatedAt})
 			}
 
 			t.Render()
