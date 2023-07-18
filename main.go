@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gifthub/conf"
 	"gifthub/locales"
 	"gifthub/pages"
 	"log"
@@ -33,6 +34,8 @@ func main() {
 
 	fs := http.FileServer(http.Dir("web/public"))
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
+
+	log.Println(conf.ImgProxyPath)
 
 	router.Get("/", pages.Home)
 

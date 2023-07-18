@@ -18,7 +18,7 @@ func Middleware(next http.Handler) http.Handler {
 		lang := langs[0]
 
 		if strings.Contains(Languages, lang) {
-			lang = DefaultLanguage
+			lang = Default
 		}
 
 		var tag language.Tag

@@ -29,6 +29,25 @@ func GetPage(lang language.Tag, name string) map[string]string {
 // Deprecated: Should be moved in configuration
 var Languages = "en"
 
-// DefaultLanguage is the default language applied
+// Default is the default language applied
 // Deprecated: Should be moved in configuration
-var DefaultLanguage = "en"
+var Default = "en"
+
+// Console is the default language for console
+var Console language.Tag = language.English
+
+// UntranslatedError contains the translation key
+type UntranslatedError struct {
+	Key string
+}
+
+// Error is here for error type compatibility
+func (e UntranslatedError) Error() string {
+	return e.Key
+}
+
+// TranslateError translates an error to a user friendly message
+// TODO: implements this method
+func TranslateError(e error) string {
+	return e.Error()
+}

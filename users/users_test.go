@@ -18,6 +18,10 @@ func TestUserList(t *testing.T) {
 	if len(users) == 0 {
 		t.Fatal(`The users should not be empty`)
 	}
+
+	if users[0].ID != 1 {
+		t.Fatalf(`The first ID is wrong %d`, users[0].ID)
+	}
 }
 
 // TestUserPersist get the user list from redis
@@ -106,11 +110,14 @@ func TestUserPersistFailedWithEmptyPassword(t *testing.T) {
 
 // TestUserPersistFailedWithExistingUsername fails when the username already exists
 func TestUserPersistFailedWithExistingUsername(t *testing.T) {
+	username := faker.Username()
+
 	u := User{
-		Email:    "toto",
-		Username: strings.ToLower(faker.Username()),
+		Email:    faker.Email(),
+		Username: username,
 	}
 
+	u.Persist("passw0rd")
 	err := u.Persist("passw0rd")
 
 	if err == nil {

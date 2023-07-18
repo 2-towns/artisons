@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/locales"
 	"gifthub/products"
 	"gifthub/string/stringutil"
 	"io"
@@ -22,6 +23,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/text/message"
 )
 
 // lines representes the lines of a csv
@@ -59,6 +61,10 @@ const cellSeparator = ";"
 const optionSeparator = ":"
 const requiredFields = 8
 
+var (
+	printer = message.NewPrinter(locales.Console)
+)
+
 func getUrlExtension(raw string) (string, error) {
 	u, err := url.Parse(raw)
 	if err != nil {
@@ -67,13 +73,15 @@ func getUrlExtension(raw string) (string, error) {
 
 	position := strings.LastIndex(u.Path, ".")
 	if position == -1 {
-		return "", fmt.Errorf("input_validation_fail: the url %s does not contain image extension", raw)
+		log.Printf("input_validation_fail: the url %s does not contain image extension", raw)
+		return "", errors.New(printer.Sprintf("csv_image_extension_missing", raw))
 	}
 
 	extension := strings.ToLower(u.Path[position+1 : len(u.Path)])
 
 	if !strings.Contains(products.ImageExtensions, extension) {
-		return "", fmt.Errorf("input_validation_fail: the extension %s is not supported", extension)
+		log.Printf("input_validation_fail: the extension %s is not supported", extension)
+		return "", errors.New(printer.Sprintf("csv_image_extension_not_supported", extension))
 	}
 
 	return u.Path[position+1 : len(u.Path)], nil
@@ -97,12 +105,14 @@ func downloadFile(url string) (string, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		return "", fmt.Errorf("input_validation_fail: the status code %d is not correct", response.StatusCode)
+		log.Printf("input_validation_fail: the status code %d is not correct", response.StatusCode)
+		return "", errors.New(printer.Sprintf("http_bad_status", response.StatusCode, url))
 	}
 
 	id, err := stringutil.Random()
 	if err != nil {
-		return "", fmt.Errorf("sequence_fail: something went wrong when generating id %s", err.Error())
+		log.Printf("sequence_fail: something went wrong when generating id %s", err.Error())
+		return "", errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
 	extension, err := getUrlExtension(url)
@@ -131,7 +141,8 @@ func downloadFile(url string) (string, error) {
 func copyFile(src string) (string, error) {
 	extension := strings.Replace(filepath.Ext(src), ".", "", 1)
 	if !strings.Contains(products.ImageExtensions, extension) {
-		return "", fmt.Errorf("input_validation_fail: the extension %s is not supported", extension)
+		log.Printf("input_validation_fail: the extension %s is not supported", extension)
+		return "", errors.New(printer.Sprintf("csv_image_extension_not_supported", extension))
 	}
 
 	stat, err := os.Stat(src)
@@ -140,7 +151,8 @@ func copyFile(src string) (string, error) {
 	}
 
 	if !stat.Mode().IsRegular() {
-		return "", fmt.Errorf("input_validation_fail: the file %s is not a regular file", src)
+		log.Printf("input_validation_fail: the file %s is not a regular file", src)
+		return "", errors.New(printer.Sprintf("csv_bad_file", src))
 	}
 
 	s, err := os.Open(src)
@@ -152,7 +164,8 @@ func copyFile(src string) (string, error) {
 
 	id, err := stringutil.Random()
 	if err != nil {
-		return "", fmt.Errorf("sequence_fail: something went wrong when generating id %s", err.Error())
+		log.Printf("sequence_fail: something went wrong when generating id %s", err.Error())
+		return "", errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
 	p := path.Join(os.TempDir(), fmt.Sprintf("%s.%s", id, extension))
@@ -176,66 +189,76 @@ func parseCsvLine(line []string) (csvline, error) {
 	product := csvline{}
 
 	if len(line) < requiredFields {
-		return product, errors.New("input_validation_fail: csv not valid")
+		log.Printf("input_validation_fail: csv not valid")
+		return product, errors.New(printer.Sprintf("csv_not_valid"))
 	}
 
 	sku := line[isku]
 	if sku == "" {
-		return product, errors.New("input_validation_fail: the sku is required")
+		log.Printf("input_validation_fail: the sku is required")
+		return product, errors.New(printer.Sprintf("input_required", "sku"))
 	}
 
 	isValid := regexp.MustCompile(`^[0-9a-z]+$`).MatchString
 	if !isValid(sku) {
-		return product, fmt.Errorf("input_validation_fail: the sku value %s is invalid", sku)
+		log.Printf("input_validation_fail: the sku %s is invalid", sku)
+		return product, errors.New(printer.Sprintf("input_validation", "sku"))
 	}
 
 	product.Sku = sku
 
 	title := line[ititle]
 	if title == "" {
-		return product, errors.New("input_validation_fail: the title is required")
+		log.Printf("input_validation_fail: the title is required")
+		return product, errors.New(printer.Sprintf("input_required", "title"))
 	}
 
 	product.Title = strings.ReplaceAll(title, "\"", "")
 
 	price, priceErr := strconv.ParseFloat(line[iprice], 32)
 	if priceErr != nil {
-		return product, fmt.Errorf("input_validation_fail: the price %s is not valid ", line[iprice])
+		log.Printf("input_validation_fail: the price %s is invalid", line[iprice])
+		return product, errors.New(printer.Sprintf("input_validation", "price"))
 	}
 
 	product.Price = price
 
 	currency := line[icurrency]
 	if !conf.IsCurrencySupported(currency) {
-		return product, fmt.Errorf("input_validation_fail: the currency %s is not valid", currency)
+		log.Printf("input_validation_fail: the currency %s is invalid", currency)
+		return product, errors.New(printer.Sprintf("input_validation", "currency"))
 	}
 
 	product.Currency = currency
 
 	quantity, quantityErr := strconv.ParseInt(line[iquantity], 10, 32)
 	if quantityErr != nil {
-		return product, fmt.Errorf("input_validation_fail: the quantity %s is not valid", line[iquantity])
+		log.Printf("input_validation_fail: the quantity %s is invalid", line[iquantity])
+		return product, errors.New(printer.Sprintf("input_validation", "quantity"))
 	}
 
 	product.Quantity = int(quantity)
 
 	status := line[istatus]
 	if status != "online" && status != "offline" {
-		return product, fmt.Errorf("input_validation_fail: the status %s is not correct", status)
+		log.Printf("input_validation_fail: the status %s is invalid", status)
+		return product, errors.New(printer.Sprintf("input_validation", "status"))
 	}
 
 	product.Status = status
 
 	description := line[idescription]
 	if description == "" {
-		return product, errors.New("input_validation_fail: the description is required")
+		log.Printf("input_validation_fail: the description is required")
+		return product, errors.New(printer.Sprintf("input_required", "description"))
 	}
 
 	product.Description = strings.ReplaceAll(description, "\"", "")
 
 	images := strings.Split(line[iimages], ";")
 	if len(images) == 0 {
-		return product, errors.New("input_validation_fail: the images are required")
+		log.Printf("input_validation_fail: the images are required")
+		return product, errors.New(printer.Sprintf("input_required", "images"))
 	}
 
 	var paths []string
@@ -243,14 +266,16 @@ func parseCsvLine(line []string) (csvline, error) {
 		p, err := getFile(v)
 
 		if err != nil {
-			return product, fmt.Errorf("input_validation_fail: %s", err.Error())
+			log.Printf("input_validation_fail: %s", err.Error())
+			return product, errors.New(printer.Sprintf("input_validation", "images"))
 		}
 
 		paths = append(paths, p)
 	}
 
 	if len(paths) != len(images) {
-		return product, errors.New("input_validation_fail: the images contains error")
+		log.Printf("input_validation_fail: the images contains error")
+		return product, errors.New(printer.Sprintf("input_validation", "images"))
 	}
 
 	product.Images = paths
@@ -262,7 +287,8 @@ func parseCsvLine(line []string) (csvline, error) {
 		w, weightErr := strconv.ParseFloat(line[iweight], 32)
 
 		if weightErr != nil {
-			return product, fmt.Errorf("input_validation_fail: the weight %s is not correct", line[iweight])
+			log.Printf("input_validation_fail: the weight %s is not correct", line[iweight])
+			return product, errors.New(printer.Sprintf("input_validation", "weight"))
 		} else {
 			weight = w
 		}
@@ -286,12 +312,13 @@ func parseCsvLine(line []string) (csvline, error) {
 
 	options := make(map[string]string)
 	if length > ioptions && line[ioptions] != "" {
-		links = strings.Split(line[ioptions], cellSeparator)
+		o := strings.Split(line[ioptions], cellSeparator)
 
-		for j, v := range links {
+		for j, v := range o {
 			parts := strings.Split(v, optionSeparator)
 			if len(parts) != 2 {
-				return product, fmt.Errorf("input_validation_fail: the option %d is not correct %s", j, v)
+				log.Printf("input_validation_fail: the option %d is not correct %s", j, v)
+				return product, errors.New(printer.Sprintf("input_validation", "options"))
 			}
 
 			k := strings.ReplaceAll(parts[0], "\"", "")
@@ -300,8 +327,9 @@ func parseCsvLine(line []string) (csvline, error) {
 			options[k] = v
 		}
 
-		if len(links) != len(options) {
-			return product, errors.New("input_validation_fail: the options contain error")
+		if len(o) != len(options) {
+			log.Printf("input_validation_fail: the options contain error")
+			return product, errors.New(printer.Sprintf("input_validation", "options"))
 		}
 	}
 
@@ -314,14 +342,15 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 	key := "product:" + pid
 
 	v, err := db.Redis.HGet(ctx, key, "images").Result()
-
 	if err != nil {
-		return err
+		log.Printf("sequence_fail: redis error %s", err.Error())
+		return errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
 	img, err := strconv.Atoi(v)
 	if err != nil {
-		return err
+		log.Printf("sequence_fail: redis error %s", err.Error())
+		return errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
 	var i int = 0
@@ -331,7 +360,8 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 		err := os.Rename(v, p)
 
 		if err != nil {
-			return fmt.Errorf("sequence_fail: error when removing %s - %s", p, err.Error())
+			log.Printf("sequence_fail: error when removing %s - %s", p, err.Error())
+			return errors.New(printer.Sprintf("something_went_wrong"))
 		}
 
 	}
@@ -345,14 +375,15 @@ func createImages(pid string, product csvline) error {
 
 		err := os.MkdirAll(folder, os.ModePerm)
 		if err != nil {
-			return fmt.Errorf("sequence_fail: error when moving %s to %s - %s", v, p, err.Error())
-
+			log.Printf("sequence_fail: error when moving %s to %s - %s", v, p, err.Error())
+			return errors.New(printer.Sprintf("something_went_wrong"))
 		}
 
 		err = os.Rename(v, p)
 
 		if err != nil {
-			return fmt.Errorf("sequence_fail: error when moving %s to %s-  %s", v, p, err.Error())
+			log.Printf("sequence_fail: error when moving %s to %s-  %s", v, p, err.Error())
+			return errors.New(printer.Sprintf("something_went_wrong"))
 		}
 	}
 
@@ -417,12 +448,13 @@ func addProductToRedis(ctx context.Context, pid string, product csvline) error {
 func processLine(chans chan<- int, i int, mid string, line []string) {
 	product, err := parseCsvLine(line)
 	if err != nil {
+		log.Printf(printer.Sprintf("csv_line_error", i, err.Error()))
 		chans <- 0
 		return
 	}
 
 	catchError := func(err error) {
-		log.Printf("%s at line %d", err.Error(), i)
+		log.Printf(printer.Sprintf("csv_line_error", i, err.Error()))
 		removeTmpFiles(product)
 		chans <- 0
 	}
@@ -498,11 +530,13 @@ func Import(data [][]string, mid string) (int, error) {
 	for i, line := range data {
 		if i == 0 {
 			if len(line) < requiredFields {
-				return 0, errors.New("input_validation_fail: csv not valid")
+				log.Printf("input_validation_fail: csv not valid")
+				return 0, errors.New(printer.Sprintf("csv_not_valid"))
 			}
 
 			if line[0] != "sku" {
-				return 0, errors.New("input_validation_fail: csv header not valid")
+				log.Printf("input_validation_fail: csv header not valid")
+				return 0, errors.New(printer.Sprintf("csv_not_valid"))
 			}
 
 			continue

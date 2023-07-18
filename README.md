@@ -65,6 +65,14 @@ go run console/console.go import
 
 Par défault, le path est `./web/testdata/data.csv`. Il est possible de préciser un fichier en utilisant le flag `--file` suivi du chemin du fichier.
 
+### Peuplement 
+
+Pour peupler les données, lancer la commande suivante:
+
+```
+go run console/console.go popuple
+```
+
 ## Profiter
 
 Siroter un bon café.

@@ -7,12 +7,18 @@ import (
 	"gifthub/conf"
 	"gifthub/console/parser"
 	"gifthub/console/populate"
+	"gifthub/locales"
 	"gifthub/users"
 	"log"
 	"os"
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"golang.org/x/text/message"
+)
+
+var (
+	printer = message.NewPrinter(locales.Console)
 )
 
 func main() {
@@ -28,8 +34,6 @@ func main() {
 	case "import":
 		{
 			file := flag.String("file", "./web/testdata/data.csv", "The path to the csv file")
-
-			log.Printf("Will try to import %s csv, hop!", *file)
 
 			f, err := os.Open(*file)
 			if err != nil {

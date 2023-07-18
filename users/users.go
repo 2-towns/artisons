@@ -3,6 +3,7 @@ package users
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
@@ -38,25 +39,29 @@ type Address struct {
 // Persist an user into redis
 func (u User) Persist(password string) error {
 	if password == "" {
-		return fmt.Errorf("input_validation_fail: password is required")
+		log.Printf("input_validation_fail: password is required")
+		return errors.New("user_password_required")
 	}
 
 	v := validator.New()
 	err := v.Struct(u)
 	if err != nil {
-		return fmt.Errorf("input_validation_fail: error when validation user %s", err.Error())
+		log.Printf("input_validation_fail: error when validation user %s", err.Error())
+		return err
 	}
 
 	ctx := context.Background()
 
 	existing, err := db.Redis.HGet(ctx, "user", u.Username).Result()
 	if existing != "" && err != nil {
-		return fmt.Errorf("input_validation_fail:username already exists")
+		log.Printf("input_validation_fail:username already exists")
+		return errors.New("user_username_exists")
 	}
 
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
-		return fmt.Errorf("sequence_fail: error when generating password hash %s", err.Error())
+		log.Printf("sequence_fail: error when generating password hash %s", err.Error())
+		return errors.New("something_went_wront")
 	}
 
 	hash := string(bytes)
@@ -89,7 +94,12 @@ func (u User) Persist(password string) error {
 
 	_, err = pipe.Exec(ctx)
 
-	return err
+	if err != nil {
+		log.Printf("sequence_fail: %s", err.Error())
+		return errors.New("something_went_wront")
+	}
+
+	return nil
 }
 
 // List returns the user list in the application
@@ -120,7 +130,8 @@ func List(page int64) ([]User, error) {
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
-		return users, fmt.Errorf("sequence_fail: go error from redis %s", err.Error())
+		log.Printf("sequence_fail: go error from redis %s", err.Error())
+		return users, errors.New("something_went_wrong")
 	}
 
 	for _, cmd := range cmds {
