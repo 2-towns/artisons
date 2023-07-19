@@ -32,19 +32,20 @@ func getProducts(ctx context.Context) ([]products.Product, error) {
 // Home loads the most recent products in order to
 // display them on the home page.
 func Home(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	lang := ctx.Value(locales.ContextKey).(language.Tag)
+
 	tpl, err := template.ParseFiles("web/views/base.html", "web/views/home.html")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
 		return
 	}
 
-	ctx := r.Context()
-	lang := ctx.Value(locales.ContextKey).(language.Tag)
 	t := homeI18n(lang)
 
 	p, err := getProducts(ctx)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
 
 		return
 	}

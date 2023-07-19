@@ -9,6 +9,7 @@ import (
 	"gifthub/db"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -47,13 +48,14 @@ func (u User) Persist(password string) error {
 	err := v.Struct(u)
 	if err != nil {
 		log.Printf("input_validation_fail: error when validation user %s", err.Error())
-		return err
+		e := err.(validator.ValidationErrors)[0]
+		f := strings.ToLower(e.StructField())
+		return fmt.Errorf("user_%s_invalid", f)
 	}
 
 	ctx := context.Background()
-
 	existing, err := db.Redis.HGet(ctx, "user", u.Username).Result()
-	if existing != "" && err != nil {
+	if existing != "" && err == nil {
 		log.Printf("input_validation_fail:username already exists")
 		return errors.New("user_username_exists")
 	}
@@ -91,6 +93,8 @@ func (u User) Persist(password string) error {
 		Score:  float64(now.Unix()),
 		Member: id,
 	})
+
+	log.Println(u.Username)
 
 	_, err = pipe.Exec(ctx)
 

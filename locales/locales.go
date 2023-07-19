@@ -47,7 +47,7 @@ func (e UntranslatedError) Error() string {
 }
 
 // TranslateError translates an error to a user friendly message
-// TODO: implements this method
-func TranslateError(e error) string {
-	return e.Error()
+func TranslateError(e error, tag language.Tag) string {
+	p := message.NewPrinter(tag)
+	return p.Sprint(e.Error())
 }

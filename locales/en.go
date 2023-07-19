@@ -17,6 +17,8 @@ func LoadEn() {
 	message.SetString(language.English, "input_required", "The field %s is required.")
 	message.SetString(language.English, "user_password_required", "The password is required.")
 	message.SetString(language.English, "user_username_exists", "The username already exists.")
+	message.SetString(language.English, "user_email_invalid", "The email is invalid.")
+	message.SetString(language.English, "user_username_invalid", "The username is invalid.")
 	message.SetString(language.English, "http_bad_status", "Received bad status %d from %s.")
 	message.SetString(language.English, "something_went_wrong", "Something went wrong, please try again later.")
 	message.SetString(language.English, "home_description", "Home description")

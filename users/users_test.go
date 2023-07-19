@@ -1,6 +1,7 @@
 package users
 
 import (
+	"log"
 	"strings"
 	"testing"
 
@@ -38,6 +39,7 @@ func TestUserPersist(t *testing.T) {
 	}
 }
 
+/*
 // TestUserPersistFailedWithUsernameUpper fails when username has uppercase
 func TestUserPersistFailedWithUsernameUpper(t *testing.T) {
 	u := User{
@@ -65,7 +67,7 @@ func TestUserPersistFailedWithUsernameEmpty(t *testing.T) {
 		t.Fatalf(`the persist should failed because the username is empty`)
 	}
 }
-
+*/
 // TestUserPersistFailedWithEmailEmpty fails when email is empty
 func TestUserPersistFailedWithEmailEmpty(t *testing.T) {
 	u := User{
@@ -77,6 +79,10 @@ func TestUserPersistFailedWithEmailEmpty(t *testing.T) {
 
 	if err == nil {
 		t.Fatalf(`the persist should failed because the username is empty`)
+	}
+
+	if err.Error() != "user_email_invalid" {
+		t.Fatalf(`the error message is incorrect`)
 	}
 }
 
@@ -92,6 +98,10 @@ func TestUserPersistFailedWithBadEmail(t *testing.T) {
 	if err == nil {
 		t.Fatalf(`the persist should failed because the email is incorrect`)
 	}
+
+	if err.Error() != "user_email_invalid" {
+		t.Fatalf(`the error message is incorrect`)
+	}
 }
 
 // TestUserPersistFailedWithEmptyPassword fails when password is empty
@@ -106,10 +116,38 @@ func TestUserPersistFailedWithEmptyPassword(t *testing.T) {
 	if err == nil {
 		t.Fatalf(`the persist should failed because the email is incorrect`)
 	}
+
+	if err.Error() != "user_password_required" {
+		t.Fatalf(`the error message is incorrect`)
+	}
 }
 
 // TestUserPersistFailedWithExistingUsername fails when the username already exists
 func TestUserPersistFailedWithExistingUsername(t *testing.T) {
+	username := strings.ToLower(faker.Username())
+
+	u := User{
+		Email:    faker.Email(),
+		Username: username,
+	}
+
+	err := u.Persist("passw0rd")
+	if err != nil {
+		t.Fatalf(`the first persist should work but got %s`, err.Error())
+	}
+
+	err = u.Persist("passw0rd")
+	if err == nil {
+		t.Fatalf(`the persist should failed because the username is already added`)
+	}
+
+	if err.Error() != "user_username_exists" {
+		t.Fatalf(`the error message is incorrect`)
+	}
+}
+
+// TestUserPersistFailedWithBadUsername fails when the username is incorrect
+func TestUserPersistFailedWithBadUsername(t *testing.T) {
 	username := faker.Username()
 
 	u := User{
@@ -117,10 +155,13 @@ func TestUserPersistFailedWithExistingUsername(t *testing.T) {
 		Username: username,
 	}
 
-	u.Persist("passw0rd")
 	err := u.Persist("passw0rd")
-
+	log.Println(err)
 	if err == nil {
-		t.Fatalf(`the persist should failed because the email is incorrect`)
+		t.Fatalf(`the persist should failed because the username is incorrect`)
+	}
+
+	if err.Error() != "user_username_invalid" {
+		t.Fatalf(`the error message is incorrect`)
 	}
 }

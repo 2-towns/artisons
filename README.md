@@ -53,6 +53,12 @@ Il est possible d'utiliser le mode verbose:
 go test ./... -v
 ```
 
+Il est possible de lancer sans le cache: 
+
+```
+go test ./... -count=1
+```
+
 ## Terminal
 
 ### Importation de CSV
