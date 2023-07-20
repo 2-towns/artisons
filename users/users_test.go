@@ -1,7 +1,9 @@
 package users
 
 import (
-	"log"
+	"context"
+	"fmt"
+	"gifthub/db"
 	"strings"
 	"testing"
 
@@ -32,8 +34,10 @@ func TestUserPersist(t *testing.T) {
 		Username: strings.ToLower(faker.Username()),
 	}
 
-	err := u.Persist("passw0rd")
-
+	id, err := u.Persist("passw0rd")
+	if id == 0 {
+		t.Fatalf(`the user id should not be 0`)
+	}
 	if err != nil {
 		t.Fatalf(`the persist failed because of %s`, err.Error())
 	}
@@ -50,7 +54,7 @@ func TestUserPersistFailedWithUsernameUpper(t *testing.T) {
 	err := u.Persist("passw0rd")
 
 	if err == nil {
-		t.Fatalf(`the persist should failed because the username has uppercase`)
+		t.Fatalf(`the persist should fail because the username has uppercase`)
 	}
 }
 
@@ -64,7 +68,7 @@ func TestUserPersistFailedWithUsernameEmpty(t *testing.T) {
 	err := u.Persist("passw0rd")
 
 	if err == nil {
-		t.Fatalf(`the persist should failed because the username is empty`)
+		t.Fatalf(`the persist should fail because the username is empty`)
 	}
 }
 */
@@ -75,10 +79,13 @@ func TestUserPersistFailedWithEmailEmpty(t *testing.T) {
 		Username: strings.ToLower(faker.Username()),
 	}
 
-	err := u.Persist("passw0rd")
+	id, err := u.Persist("passw0rd")
+	if id != 0 {
+		t.Fatalf(`the user id should be 0`)
+	}
 
 	if err == nil {
-		t.Fatalf(`the persist should failed because the username is empty`)
+		t.Fatalf(`the persist should fail because the username is empty`)
 	}
 
 	if err.Error() != "user_email_invalid" {
@@ -93,12 +100,13 @@ func TestUserPersistFailedWithBadEmail(t *testing.T) {
 		Username: strings.ToLower(faker.Username()),
 	}
 
-	err := u.Persist("passw0rd")
-
-	if err == nil {
-		t.Fatalf(`the persist should failed because the email is incorrect`)
+	id, err := u.Persist("passw0rd")
+	if id != 0 {
+		t.Fatalf(`the user id should be 0`)
 	}
-
+	if err == nil {
+		t.Fatalf(`the persist should fail because the email is incorrect`)
+	}
 	if err.Error() != "user_email_invalid" {
 		t.Fatalf(`the error message is incorrect`)
 	}
@@ -111,12 +119,13 @@ func TestUserPersistFailedWithEmptyPassword(t *testing.T) {
 		Username: strings.ToLower(faker.Username()),
 	}
 
-	err := u.Persist("")
-
-	if err == nil {
-		t.Fatalf(`the persist should failed because the email is incorrect`)
+	id, err := u.Persist("")
+	if id != 0 {
+		t.Fatalf(`the user id should be 0`)
 	}
-
+	if err == nil {
+		t.Fatalf(`the persist should fail because the email is incorrect`)
+	}
 	if err.Error() != "user_password_required" {
 		t.Fatalf(`the error message is incorrect`)
 	}
@@ -131,16 +140,18 @@ func TestUserPersistFailedWithExistingUsername(t *testing.T) {
 		Username: username,
 	}
 
-	err := u.Persist("passw0rd")
+	_, err := u.Persist("passw0rd")
 	if err != nil {
 		t.Fatalf(`the first persist should work but got %s`, err.Error())
 	}
 
-	err = u.Persist("passw0rd")
-	if err == nil {
-		t.Fatalf(`the persist should failed because the username is already added`)
+	id, err := u.Persist("passw0rd")
+	if id != 0 {
+		t.Fatalf(`the user id should be 0`)
 	}
-
+	if err == nil {
+		t.Fatalf(`the persist should fail because the username is already added`)
+	}
 	if err.Error() != "user_username_exists" {
 		t.Fatalf(`the error message is incorrect`)
 	}
@@ -155,13 +166,67 @@ func TestUserPersistFailedWithBadUsername(t *testing.T) {
 		Username: username,
 	}
 
-	err := u.Persist("passw0rd")
-	log.Println(err)
-	if err == nil {
-		t.Fatalf(`the persist should failed because the username is incorrect`)
+	id, err := u.Persist("passw0rd")
+	if id != 0 {
+		t.Fatalf(`the user id should be 0`)
 	}
-
+	if err == nil {
+		t.Fatalf(`the persist should fail because the username is incorrect`)
+	}
 	if err.Error() != "user_username_invalid" {
 		t.Fatalf(`the error message is incorrect`)
+	}
+}
+
+// TestDeleteUser deletes an existing user
+func TestDeleteUser(t *testing.T) {
+	u := User{
+		Email:    faker.Email(),
+		Username: strings.ToLower(faker.Username()),
+	}
+
+	u.Persist("passw0rd")
+
+	err := u.Delete()
+
+	if err != nil {
+		t.Fatalf(`the delete should not fail`)
+	}
+
+	ctx := context.Background()
+
+	id, err := db.Redis.HGet(ctx, fmt.Sprintf("user:%d", u.ID), "id").Result()
+	if id != "" {
+		t.Fatalf(`the id should be empty`)
+	}
+	if err == nil {
+		t.Fatalf(`the id hget should fail`)
+	}
+
+	id, err = db.Redis.HGet(ctx, "user", u.Username).Result()
+	if id != "" {
+		t.Fatalf(`the id should be empty`)
+	}
+	if err == nil {
+		t.Fatalf(`the username hget should fail`)
+	}
+
+	result, _ := db.Redis.SIsMember(ctx, "users", u.ID).Result()
+	if result == true {
+		t.Fatalf(`the member should not be a part of users`)
+	}
+}
+
+// TestDeleteUserNotExisting does nothing
+func TestDeleteUserNotExisting(t *testing.T) {
+	u := User{
+		Email:    faker.Email(),
+		Username: strings.ToLower(faker.Username()),
+	}
+
+	err := u.Delete()
+
+	if err != nil {
+		t.Fatalf(`the delete should not fail`)
 	}
 }

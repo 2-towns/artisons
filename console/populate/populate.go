@@ -21,7 +21,7 @@ func Run() error {
 		Username: strings.ToLower(faker.Username()),
 	}
 
-	err := u.Persist("test")
+	_, err := u.Persist("test")
 
 	if err != nil {
 		return err
@@ -32,7 +32,7 @@ func Run() error {
 		Username: "toto",
 	}
 
-	err = u.Persist("test")
+	_, err = u.Persist("test")
 
 	return err
 }

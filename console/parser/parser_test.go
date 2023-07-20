@@ -28,7 +28,7 @@ func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {
 	count, err := Import(csv, conf.DefaultMID)
 
 	if err == nil {
-		t.Fatal(`The import should failed because the csv header is not correct`)
+		t.Fatal(`The import should fail because the csv header is not correct`)
 
 	}
 
@@ -50,7 +50,7 @@ func TestCsvImportHeaderFirstCellMisvalue(t *testing.T) {
 	count, err := Import(csv, conf.DefaultMID)
 
 	if err == nil {
-		t.Fatal(`The import should failed because the first csv header value is not sku`)
+		t.Fatal(`The import should fail because the first csv header value is not sku`)
 	}
 
 	if count != 0 {
@@ -72,7 +72,7 @@ func TestCsvImportRequiredLineValuesMisnumber(t *testing.T) {
 	count, err := Import(csv, conf.DefaultMID)
 
 	if err != nil {
-		t.Fatal(`The import should failed because the first line does not contains the required fields`)
+		t.Fatal(`The import should fail because the first line does not contains the required fields`)
 	}
 
 	if count != 0 {
