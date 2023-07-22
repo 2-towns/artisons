@@ -26,6 +26,7 @@ type User struct {
 	Hash      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	SessionID string
 }
 
 type Address struct {

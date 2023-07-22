@@ -1,6 +1,21 @@
 package users
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/go-faker/faker/v4"
+)
+
+var AuthUser = User{
+	Email:    faker.Email(),
+	Username: strings.ToLower(faker.Username()),
+}
+
+func init() {
+	AuthUser.Persist("passw0rd")
+	Login(AuthUser.Username, "passw0rd")
+}
 
 // TestLogin makes sure than the TestUser can login
 func TestLogin(t *testing.T) {
@@ -28,6 +43,12 @@ func TestLoginFailsWithNotExistingUsername(t *testing.T) {
 func TestLoginFailsWithBadPassword(t *testing.T) {
 	if sid, err := Login(TestUser.Username, "bad"); err == nil || err.Error() != "user_login_failed" {
 		t.Fatalf("Login(TestUser.Username, 'bad') = %s, %v, want 'user_login_failed', error", sid, err)
+	}
+}
 
+// TestLogout makes sure than an user is logout
+func TestLogout(t *testing.T) {
+	if err := AuthUser.Logout(); err != nil {
+		t.Fatalf("AuthUser.Logout(), %v, want '', error", err)
 	}
 }
