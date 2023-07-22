@@ -24,3 +24,10 @@ const DatabaseIndex = 0
 
 // Session duration in nanoseconds
 const SessionDuration = time.Hour * 24 * 30
+
+// SessionIDCookie is the session id cookie name
+const SessionIDCookie = "session_id"
+
+// IsMultipleSessionEnabled if true, an user can have
+// multiple sessions across devices.
+const IsMultipleSessionEnabled = false

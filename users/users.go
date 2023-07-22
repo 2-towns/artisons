@@ -163,9 +163,10 @@ func parseUser(m map[string]string) (User, error) {
 	}
 
 	return User{
-		ID:       id,
-		Email:    m["email"],
-		Username: m["username"],
+		ID:        id,
+		Email:     m["email"],
+		Username:  m["username"],
+		SessionID: m["session_id"],
 		/*	Lastname:      m["lastname"],
 			Firstname:     m["firstname"],
 			Address:       m["address"],
