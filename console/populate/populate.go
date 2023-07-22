@@ -22,7 +22,6 @@ func Run() error {
 	}
 
 	_, err := u.Persist("test")
-
 	if err != nil {
 		return err
 	}
@@ -31,7 +30,6 @@ func Run() error {
 		Email:    faker.Email(),
 		Username: "toto",
 	}
-
 	_, err = u.Persist("test")
 
 	return err

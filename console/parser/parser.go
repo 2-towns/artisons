@@ -111,7 +111,7 @@ func downloadFile(url string) (string, error) {
 
 	id, err := stringutil.Random()
 	if err != nil {
-		log.Printf("sequence_fail: something went wrong when generating id %s", err.Error())
+		log.Printf("ERROR: sequence_fail: something went wrong when generating id %s", err.Error())
 		return "", errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
@@ -121,7 +121,6 @@ func downloadFile(url string) (string, error) {
 	}
 
 	p := path.Join(os.TempDir(), fmt.Sprintf("%s.%s", id, extension))
-
 	file, err := os.Create(p)
 	if err != nil {
 		return "", err
@@ -343,13 +342,13 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 
 	v, err := db.Redis.HGet(ctx, key, "images").Result()
 	if err != nil {
-		log.Printf("sequence_fail: redis error %s", err.Error())
+		log.Printf("ERROR: sequence_fail: redis error %s", err.Error())
 		return errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
 	img, err := strconv.Atoi(v)
 	if err != nil {
-		log.Printf("sequence_fail: redis error %s", err.Error())
+		log.Printf("ERROR: sequence_fail: redis error %s", err.Error())
 		return errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
@@ -357,13 +356,10 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 	for i = 0; i < img; i++ {
 		_, p := products.ImagePath(pid, i)
 
-		err := os.Rename(v, p)
-
-		if err != nil {
+		if err := os.Rename(v, p); err != nil {
 			log.Printf("sequence_fail: error when removing %s - %s", p, err.Error())
 			return errors.New(printer.Sprintf("something_went_wrong"))
 		}
-
 	}
 
 	return nil
@@ -373,16 +369,13 @@ func createImages(pid string, product csvline) error {
 	for i, v := range product.Images {
 		folder, p := products.ImagePath(pid, i)
 
-		err := os.MkdirAll(folder, os.ModePerm)
-		if err != nil {
-			log.Printf("sequence_fail: error when moving %s to %s - %s", v, p, err.Error())
+		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
+			log.Printf("ERROR: sequence_fail: error when moving %s to %s - %s", v, p, err.Error())
 			return errors.New(printer.Sprintf("something_went_wrong"))
 		}
 
-		err = os.Rename(v, p)
-
-		if err != nil {
-			log.Printf("sequence_fail: error when moving %s to %s-  %s", v, p, err.Error())
+		if err := os.Rename(v, p); err != nil {
+			log.Printf("ERROR: sequence_fail: error when moving %s to %s-  %s", v, p, err.Error())
 			return errors.New(printer.Sprintf("something_went_wrong"))
 		}
 	}
@@ -393,10 +386,8 @@ func createImages(pid string, product csvline) error {
 func removeTmpFiles(product csvline) {
 	if len(product.Images) > 0 {
 		for _, v := range product.Images {
-			err := os.Remove(v)
-
-			if err != nil {
-				log.Printf("sequence_fail: error when removing %s file %s", v, err.Error())
+			if err := os.Remove(v); err != nil {
+				log.Printf("WARN: sequence_fail: error when removing %s file %s", v, err.Error())
 			}
 		}
 	}
@@ -409,21 +400,21 @@ func addProductToRedis(ctx context.Context, pid string, product csvline) error {
 	okey := "product:options:" + pid
 
 	_, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.Del(ctx, lkey)
-		rdb.Del(ctx, okey)
-		rdb.Del(ctx, tkey)
-		rdb.HSet(ctx, key, "pid", pid)
-		rdb.HSet(ctx, key, "sku", product.Sku)
-		rdb.HSet(ctx, key, "title", product.Title)
-		rdb.HSet(ctx, key, "description", product.Description)
-		rdb.HSet(ctx, key, "images", len(product.Images))
-		rdb.HSet(ctx, key, "currency", product.Currency)
-		rdb.HSet(ctx, key, "price", product.Price)
-		rdb.HSet(ctx, key, "quantity", product.Quantity)
-		rdb.HSet(ctx, key, "status", product.Status)
-		rdb.HSet(ctx, key, "weight", product.Weight)
-		rdb.HSet(ctx, key, "mid", product.Mid)
-		rdb.HSet(ctx, key, "updated_at", time.Now().Format(time.RFC3339))
+		rdb.Del(ctx, lkey, okey, tkey)
+		rdb.HSet(ctx, key,
+			"pid", pid,
+			"sku", product.Sku,
+			"title", product.Title,
+			"description", product.Description,
+			"images", len(product.Images),
+			"currency", product.Currency,
+			"price", product.Price,
+			"quantity", product.Quantity,
+			"status", product.Status,
+			"weight", product.Weight,
+			"mid", product.Mid,
+			"updated_at", time.Now().Format(time.RFC3339),
+		)
 
 		if len(product.Links) > 0 {
 			rdb.SAdd(ctx, lkey, product.Links)
@@ -472,8 +463,7 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 			return
 		}
 
-		_, err := db.Redis.Set(ctx, key, pid, 0).Result()
-		if err != nil {
+		if _, err := db.Redis.Set(ctx, key, pid, 0).Result(); err != nil {
 			catchError(err)
 			return
 		}
@@ -481,14 +471,12 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 		deletePreviousImages(ctx, pid)
 	}
 
-	err = createImages(pid, product)
-	if err != nil {
+	if err = createImages(pid, product); err != nil {
 		catchError(err)
 		return
 	}
 
-	err = addProductToRedis(ctx, pid, product)
-	if err != nil {
+	if err = addProductToRedis(ctx, pid, product); err != nil {
 		catchError(err)
 		return
 	}

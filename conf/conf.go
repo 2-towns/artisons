@@ -1,6 +1,8 @@
 // Package conf manages the application configuration
 package conf
 
+import "time"
+
 // ImgProxyPath is the path to imgproxy folder
 var ImgProxyPath = "../web/images"
 
@@ -19,3 +21,6 @@ const ItemsPerPage = 12
 
 // Database index for redis
 const DatabaseIndex = 0
+
+// Session duration in nanoseconds
+const SessionDuration = time.Hour * 24 * 30

@@ -1,4 +1,4 @@
-// Package products provide everything around users
+// Package users provide everything around users
 package users
 
 import (
@@ -67,30 +67,45 @@ func (u User) Persist(password string) (int64, error) {
 	ctx := context.Background()
 	existing, err := db.Redis.HGet(ctx, "user", u.Username).Result()
 	if existing != "" && err == nil {
-		log.Printf("input_validation_fail:username already exists")
+		log.Printf("input_validation_fail: username already exists")
 		return 0, errors.New("user_username_exists")
 	}
 
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
-		log.Printf("sequence_fail: error when generating password hash %s", err.Error())
+		log.Printf("ERROR: sequence_fail: error when generating password hash %s", err.Error())
 		return 0, errors.New("something_went_wrong")
 	}
 
 	hash := string(bytes)
 	id, err := db.Redis.Incr(ctx, "user_next_id").Result()
 	if err != nil {
-		log.Printf("sequence_fail: %s", err.Error())
+		log.Printf("ERROR: sequence_fail: %s", err.Error())
 		return 0, errors.New("something_went_wrong")
 	}
 
 	now := time.Now()
 	key := fmt.Sprintf("user:%d", id)
 
-	pipe := db.Redis.Pipeline()
-	pipe.HSet(ctx, key, "id", id)
-	pipe.HSet(ctx, key, "username", u.Username)
-	pipe.HSet(ctx, key, "email", u.Email)
+	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.HSet(ctx, key,
+			"id", id, "username",
+			u.Username, "email",
+			u.Email, "hash", hash,
+			"updated_at", now.Format(time.RFC3339),
+			"created_at", now.Format(time.RFC3339),
+		)
+		rdb.HSet(ctx, "user", u.Username, id)
+		rdb.ZAdd(ctx, "users", redis.Z{
+			Score:  float64(now.Unix()),
+			Member: id,
+		})
+		return nil
+	}); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
+		return 0, errors.New("something_went_wrong")
+	}
+
 	/*pipe.HSet(ctx, key, "lastname", u.Address.Lastname)
 	pipe.HSet(ctx, key, "firstname", u.Firstname)
 	pipe.HSet(ctx, key, "address", u.Address)
@@ -98,23 +113,8 @@ func (u User) Persist(password string) (int64, error) {
 	pipe.HSet(ctx, key, "complemnetary", u.Complementary)
 	pipe.HSet(ctx, key, "zipcode", u.Zipcode)
 	pipe.HSet(ctx, key, "phone", u.Phone)*/
-	pipe.HSet(ctx, key, "hash", hash)
-	pipe.HSet(ctx, key, "updated_at", now.Format(time.RFC3339))
-	pipe.HSet(ctx, key, "created_at", now.Format(time.RFC3339))
-	pipe.HSet(ctx, "user", u.Username, id)
-	pipe.ZAdd(ctx, "users", redis.Z{
-		Score:  float64(now.Unix()),
-		Member: id,
-	})
 
-	_, err = pipe.Exec(ctx)
-
-	if err != nil {
-		log.Printf("sequence_fail: %s", err.Error())
-		return 0, errors.New("something_went_wrong")
-	}
-
-	log.Printf("sensitive_create: a new user is created with id %d\n", u.ID)
+	log.Printf("WARN: sensitive_create: a new user is created with id %d\n", u.ID)
 
 	return id, nil
 }
@@ -127,24 +127,57 @@ func (u User) Delete() error {
 	key := fmt.Sprintf("user:%d", u.ID)
 	ctx := context.Background()
 
-	pipe := db.Redis.Pipeline()
-	pipe.Del(ctx, key)
-	pipe.HDel(ctx, "user", u.Username)
-	pipe.ZRem(ctx, "users", u.ID)
-
-	_, err := pipe.Exec(ctx)
-
-	if err != nil {
-		log.Printf("sequence_fail: %s", err.Error())
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.Del(ctx, key)
+		rdb.HDel(ctx, "user", u.Username)
+		rdb.ZRem(ctx, "users", u.ID)
+		return nil
+	}); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
 		return errors.New("something_went_wrong")
 	}
 
-	log.Printf("sensitive_delete: the user %d deleted\n", u.ID)
+	log.Printf("WARN: sensitive_delete: the user %d deleted\n", u.ID)
 
 	return nil
 }
 
-// List returns the user list in the application
+func parseUser(m map[string]string) (User, error) {
+	id, err := strconv.ParseInt(m["id"], 10, 32)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when parsing id %s", m["id"])
+		return User{}, errors.New("something_went_wrong")
+	}
+
+	createdAt, err := time.Parse(time.RFC3339, m["created_at"])
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when parsing created_at %s", m["created_at"])
+		return User{}, errors.New("something_went_wrong")
+	}
+
+	updatedAt, err := time.Parse(time.RFC3339, m["updated_at"])
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when parsing created_at %s", m["updated_at"])
+		return User{}, errors.New("something_went_wrong")
+	}
+
+	return User{
+		ID:       id,
+		Email:    m["email"],
+		Username: m["username"],
+		/*	Lastname:      m["lastname"],
+			Firstname:     m["firstname"],
+			Address:       m["address"],
+			Complementary: m["complementary"],
+			Zipcode:       m["zipcode"],
+			City:          m["city"],
+			Phone:         m["phone"],*/
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
+	}, nil
+}
+
+// List returns the users list in the application
 func List(page int64) ([]User, error) {
 	key := "users"
 	ctx := context.Background()
@@ -162,7 +195,6 @@ func List(page int64) ([]User, error) {
 
 	users := []User{}
 	ids := db.Redis.ZRange(ctx, key, start, end).Val()
-
 	pipe := db.Redis.Pipeline()
 
 	for _, v := range ids {
@@ -172,48 +204,19 @@ func List(page int64) ([]User, error) {
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
-		log.Printf("sequence_fail: go error from redis %s", err.Error())
+		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
 		return users, errors.New("something_went_wrong")
 	}
 
 	for _, cmd := range cmds {
 		m := cmd.(*redis.MapStringStringCmd).Val()
 
-		id, err := strconv.ParseInt(m["id"], 10, 32)
+		user, err := parseUser(m)
 		if err != nil {
-			log.Printf("sequence_fail: error when parsing id %s", m["id"])
-
 			continue
 		}
 
-		createdAt, err := time.Parse(time.RFC3339, m["created_at"])
-		if err != nil {
-			log.Printf("sequence_fail: error when parsing created_at %s", m["created_at"])
-
-			continue
-		}
-
-		updatedAt, err := time.Parse(time.RFC3339, m["updated_at"])
-		if err != nil {
-			log.Printf("sequence_fail: error when parsing created_at %s", m["updated_at"])
-
-			continue
-		}
-
-		users = append(users, User{
-			ID:       id,
-			Email:    m["email"],
-			Username: m["username"],
-			/*	Lastname:      m["lastname"],
-				Firstname:     m["firstname"],
-				Address:       m["address"],
-				Complementary: m["complementary"],
-				Zipcode:       m["zipcode"],
-				City:          m["city"],
-				Phone:         m["phone"],*/
-			CreatedAt: createdAt,
-			UpdatedAt: updatedAt,
-		})
+		users = append(users, user)
 	}
 
 	return users, nil
