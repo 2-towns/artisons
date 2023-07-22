@@ -59,7 +59,7 @@ func Login(username string, password string) (string, error) {
 
 		previousSessionID, err = db.Redis.HGet(ctx, "user:"+id, "session_id").Result()
 		if err != nil {
-			log.Printf("ERROR: sequence_fail: error when generating a new session ID %s", err.Error())
+			log.Printf("WARN: sequence_fail: error when getting previous session ID %s", err.Error())
 		}
 	}
 
