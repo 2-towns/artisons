@@ -52,3 +52,10 @@ func TestLogout(t *testing.T) {
 		t.Fatalf("AuthUser.Logout(), %v, want '', error", err)
 	}
 }
+
+// TestUpdatePassword updates the user password
+func TestUpdatePassword(t *testing.T) {
+	if err := AuthUser.UpdatePassword("passw0rd"); err != nil {
+		t.Fatalf("AuthUser.UpdatePassword('passw0rd'), %v, error", err)
+	}
+}

@@ -129,6 +129,24 @@ func findBySessionID(sessionID string) (User, error) {
 
 }
 
+func (u User) UpdatePassword(p string) error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(p), 14)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when generating password hash %s", err.Error())
+		return errors.New("something_went_wrong")
+	}
+
+	ctx := context.Background()
+	hash := string(bytes)
+	key := fmt.Sprintf("user:%d", u.ID)
+	if _, err := db.Redis.HSet(ctx, key, "hash", hash).Result(); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing hash hash %s", err.Error())
+		return errors.New("something_went_wrong")
+	}
+
+	return nil
+}
+
 // Middleware detects the session ID in the cookies.
 // If the session ID exists, it will load the current
 // user into the context.
