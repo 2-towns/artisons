@@ -76,7 +76,7 @@ Par défault, le path est `./web/testdata/data.csv`. Il est possible de précise
 Pour peupler les données, lancer la commande suivante:
 
 ```
-go run console/console.go popuple
+go run console/console.go populate
 ```
 
 ## Profiter
