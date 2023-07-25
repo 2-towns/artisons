@@ -1,40 +1,137 @@
 package users
 
 import (
-	"strings"
+	"gifthub/string/stringutil"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
 )
-
-var TestUser = User{
-	Email:    faker.Email(),
-	Username: strings.ToLower(faker.Username()),
-}
-
-func init() {
-	TestUser.Persist("passw0rd")
-}
 
 // TestUserList get the user list from redis
 func TestUserList(t *testing.T) {
 	users, err := List(0)
 
 	if err != nil || len(users) == 0 || users[0].ID == 0 {
-		t.Fatalf("List(0) = %v, %v, not want [{ID: 0}], error", users, err.Error())
+		t.Fatalf("List(0) = %v, %v, not want [{ID: 0}], error", users, err)
 	}
 }
 
-// TestUserPersist get the user list from redis
-func TestUserPersist(t *testing.T) {
-	u := User{
-		Email:    faker.Email(),
-		Username: strings.ToLower(faker.Username()),
+// TestMagicCode generate a magic code for an email
+func TestMagicCode(t *testing.T) {
+	magic, err := MagicCode(faker.Email())
+	if magic == "" || err != nil {
+		t.Fatalf("TestMagicCode(faker.Email()) = %s, %v, not want '', error", magic, err)
 	}
+}
 
-	id, err := u.Persist("passw0rd")
-	if id == 0 || err != nil {
-		t.Fatalf("Persist = %d, %v, not want 0, error", id, err.Error())
+// TestMagicCodeTwice generate a magic code for an email
+func TestMagicCodeTwice(t *testing.T) {
+	magic, _ := MagicCode(faker.Email())
+	magic, err := MagicCode(faker.Email())
+	if magic == "" || err != nil {
+		t.Fatalf("TestMagicCode(faker.Email()) = %s, %v, not want '', error", magic, err)
+	}
+}
+
+// TestMagicCodeWithEmailEmpty fails when email is empty
+func TestMagicCodeWithEmailEmpty(t *testing.T) {
+	magic, err := MagicCode("")
+	if magic != "" || err == nil {
+		t.Fatalf("TestMagicCode('') = %s, %v, want '', error", magic, err)
+	}
+}
+
+// TestMagicCodeFailedWithBadEmail fails when email is incorrect
+func TestMagicCodeFailedWithBadEmail(t *testing.T) {
+	magic, err := MagicCode("toto")
+	if magic != "" || err == nil {
+		t.Fatalf("TestMagicCode('toto') = %s, %v, want '', error", magic, err)
+	}
+}
+
+// TestDeleteUser deletes an existing user
+func TestDeleteUser(t *testing.T) {
+	email := faker.Email()
+
+	id, _ := saveUser(email, "toto")
+	sid, _ := saveSID(id)
+	u, _ := findBySessionID(sid)
+
+	err := u.Delete()
+	if err != nil {
+		t.Fatalf("Delete(), %v, want nil, error", err)
+	}
+}
+
+// TestDeleteUserNotExisting does nothing
+func TestDeleteUserNotExisting(t *testing.T) {
+	err := User{}.Delete()
+	if err != nil {
+		t.Fatalf("Delete(), %v, want nil, error", err)
+	}
+}
+
+// Testlogin authenticates an user
+func TestLogin(t *testing.T) {
+	magic, _ := stringutil.Random()
+	saveUser(faker.Email(), magic)
+	sid, err := Login(magic)
+
+	if sid == "" || err != nil {
+		t.Fatalf("TestLogin(magic) = %s, %v, not want '', error", sid, err)
+	}
+}
+
+// TestLoginWithEmptyMagic try to authenticate an user with empty magic
+func TestLoginWithEmptyMagic(t *testing.T) {
+	sid, err := Login("")
+	if sid != "" || err == nil {
+		t.Fatalf("TestLogin('') = %s, %v, want '', error", sid, err)
+	}
+}
+
+// TestLoginWithNotExistingMagic try to authenticate an user with not existing magic
+func TestLoginWithNotExistingMagic(t *testing.T) {
+	sid, err := Login("titi")
+	if sid != "" || err == nil {
+		t.Fatalf("TestLogin('') = %s, %v, want '', error", sid, err)
+	}
+}
+
+// TestLogout logout an user
+func TestLogout(t *testing.T) {
+	email := faker.Email()
+
+	id, _ := saveUser(email, "toto")
+	sid, _ := saveSID(id)
+
+	err := Logout(id, sid)
+	if err != nil {
+		t.Fatalf("Logout(id, sid), %v, want nil, error", err)
+	}
+}
+
+// TestLogoutWithZeroID returns an error
+func TestLogoutWithZeroID(t *testing.T) {
+	err := Logout(0, "123")
+	if err == nil {
+		t.Fatalf("Logout(0, '123'), %v, not want nil, error", err)
+	}
+}
+
+// TestLogoutWithEmptySID returns an error
+func TestLogoutWithEmptySID(t *testing.T) {
+	err := Logout(124, "")
+	if err == nil {
+		t.Fatalf("Logout(124, ''), %v, not want nil, error", err)
+	}
+}
+
+// TestLogoutWithNotExistingData does nothing
+func TestLogoutWithNotExistingData(t *testing.T) {
+	err := Logout(124, "122")
+	if err != nil {
+		t.Fatalf("Logout(124, '122'), %v, not want nil, error", err)
 	}
 }
 
@@ -67,92 +164,3 @@ func TestUserPersistFailedWithUsernameEmpty(t *testing.T) {
 	}
 }
 */
-// TestUserPersistFailedWithEmailEmpty fails when email is empty
-func TestUserPersistFailedWithEmailEmpty(t *testing.T) {
-	u := User{
-		Email:    "",
-		Username: strings.ToLower(faker.Username()),
-	}
-
-	id, err := u.Persist("passw0rd")
-	if id != 0 || err == nil || err.Error() != "user_email_invalid" {
-		t.Fatalf("Persist = %d, %v, want 0, error", id, err.Error())
-	}
-}
-
-// TestUserPersistFailedWithBadEmail fails when email is incorrect
-func TestUserPersistFailedWithBadEmail(t *testing.T) {
-	u := User{
-		Email:    faker.Username(),
-		Username: strings.ToLower(faker.Username()),
-	}
-
-	id, err := u.Persist("passw0rd")
-	if id != 0 || err == nil || err.Error() != "user_email_invalid" {
-		t.Fatalf("Persist = %d, %v, want 0, error", id, err.Error())
-	}
-}
-
-// TestUserPersistFailedWithEmptyPassword fails when password is empty
-func TestUserPersistFailedWithEmptyPassword(t *testing.T) {
-	u := User{
-		Email:    faker.Username(),
-		Username: strings.ToLower(faker.Username()),
-	}
-
-	id, err := u.Persist("")
-	if id != 0 || err == nil || err.Error() != "user_password_required" {
-		t.Fatalf("Persist = %d, %v, want 0, error", id, err.Error())
-	}
-}
-
-// TestUserPersistFailedWithExistingUsername fails when the username already exists
-func TestUserPersistFailedWithExistingUsername(t *testing.T) {
-	id, err := TestUser.Persist("passw0rd")
-	if id != 0 || err == nil || err.Error() != "user_username_exists" {
-		t.Fatalf("Persist = %d, %v, want 0, error", id, err.Error())
-	}
-}
-
-// TestUserPersistFailedWithBadUsername fails when the username is incorrect
-func TestUserPersistFailedWithBadUsername(t *testing.T) {
-	username := faker.Username()
-
-	u := User{
-		Email:    faker.Email(),
-		Username: username,
-	}
-
-	id, err := u.Persist("passw0rd")
-	if id != 0 || err == nil || err.Error() != "user_username_invalid" {
-		t.Fatalf("Persist = %d, %v, want 0, error", id, err.Error())
-	}
-}
-
-// TestDeleteUser deletes an existing user
-func TestDeleteUser(t *testing.T) {
-	u := User{
-		Email:    faker.Email(),
-		Username: strings.ToLower(faker.Username()),
-	}
-
-	u.Persist("passw0rd")
-
-	err := u.Delete()
-	if err != nil {
-		t.Fatalf("Delete(), %v, want nil, error", err.Error())
-	}
-}
-
-// TestDeleteUserNotExisting does nothing
-func TestDeleteUserNotExisting(t *testing.T) {
-	u := User{
-		Email:    faker.Email(),
-		Username: strings.ToLower(faker.Username()),
-	}
-
-	err := u.Delete()
-	if err != nil {
-		t.Fatalf("Delete(), %v, want nil, error", err.Error())
-	}
-}

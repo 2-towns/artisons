@@ -157,15 +157,9 @@ Les commandes stockées dans Redis contiennent les mêmes éléments du panier a
 
 ## 5.6 Compte utilisateur
 
-Un utilisateur est définit pas les champs suivants: 
+Un utilisateur est identifier par son email. Un lien magique lui est envoyé pour valider son email et se connecter la première fois. Un seul lien magique est disponible à la fois et son usage est unique. Son expiration peut être modifier dans la configuration. 
 
-- **username**: Le nom d'utilisateur en minuscule 
-- **email**: L'email de l'utilisateur 
-- **password**: Le mot de passe de l'utilisateur
-- **created_at**: La date de création de l'utilisateur
-- **updated_at**: La date de mise à jour de l'utilisateur
-
-S'il a oublié son mot de passe, il peut cliquer sur un lien pour récupérer son mot de passe. Il recevra alors un email et/ou une PUSH notification contenant un lien magique qui, lors du clic, le redirige sur un formulaire de mise à jour de son mot de passe. Une fois cela réalisé, il est automatiquement connecté.
+Les moyens de connexion sur d'autres appareils sont encore à définir. 
 
 Il peut aussi modifier ses coordonnées de facturation et livraison, changer activer ou désactiver les PUSH notifications et consulter l'historique des commandes. Ce dernier affiche les éléments suivants:
 
@@ -181,13 +175,9 @@ Le préfixe utilisé pour stocker les utilisateur est `user`. Chaque utilisateur
 
 La clé de stockage est la combinaison du préfixe et de l’identifiant de l'utilisateur. _Example: user:123455_.
 
-Le mot de passe est stocké sous la forme d'un hash généré à partir de `bcrypt`.
-
-Le lien entre l'identifiant utilisateur et son nom d'utilisateur est stocké à l'aide de la clé de stockage `user:username`.
-
 Les identifiants seront stockés dans un _sorted set_ dont la clé de stockage sera `users` et le score sera le _timestamp_.
 
-Un identifiant de session est créé, `session_id`, et la relation entre le `session_id` et l'identifiant utilisateur est stocké dans redis. La session expire si aucune requête n'a faite durant un temps _T_, _T_ étant définit dans la configuration.
+Un identifiant de session est créé, `session_id`, et la relation entre le `session_id` et l'email utilisateur est stocké dans Redis. La session expire si aucune requête n'a faite durant un temps _T_, _T_ étant définit dans la configuration.
 
 ## 5.7 Recherche
 
@@ -328,18 +318,19 @@ Les cookies ont le niveau de sécurité maximum.
 
 # 9 Configuration
 
-Les éléments de configuration de la plateforme sont disponible au format json avec les éléments suivants:
+Les éléments de configuration de la plateforme sont disponibles à travers des variables d'environnement:
 
-- **search**: `true` si la recherche est activée. La valeur par défaut est `false`.
-- **items_per_page**: Le nombre d'éléments par page. La valeur par défaut est `12`.
-- **tags**: `true` si la recherche par tags est activée. La valeur par défaut est `false`.
-- **tags_list**: Limite la liste des tags utilisés dans la recherche.
-- **withdraw**: `true` si la livraison par retrait est activée. La valeur par défaut est `false`.
-- **payments**: La liste d'object contenant la configuration pour les moyens de paiement.
-- **push_notification**: `true` si les push notifications sont activées. La valeur par défaut est `false`.
-- **merchant**: L'identifiant du marchant par défaut. La valeur par défaut est `me`.
-- **langs**: Liste de langues supportées par l'application. La valeur par défaut est `["fr"]`.
-- **session_expiration**: La durée de la session utilisateur. La valeur par défaut est 7 \*24 \* 3600.
+- **SEARCH**: `1` si la recherche est activée. La valeur par défaut est `0`.
+- **ITEMS_PER_PAGE**: Le nombre d'éléments par page. La valeur par défaut est `12`.
+- **TAGS**: `1` si la recherche par tags est activée. La valeur par défaut est `0`.
+- **TAG_LIST**: Limite la liste des tags utilisés dans la recherche.
+- **WITHDRAW**: `1` si la livraison par retrait est activée. La valeur par défaut est `false`.
+- **PAYMENTS**: La liste d'object contenant la configuration pour les moyens de paiement.
+- **PUSH_NOTIFICATION**: `true` si les push notifications sont activées. La valeur par défaut est `0`.
+- **MERCHANT**: L'identifiant du marchant par défaut. La valeur par défaut est `me`.
+- **LANGS**: Liste de langues supportées par l'application. La valeur par défaut est `["fr"]`.
+- **SESSION_EXPIRATION**: La durée de la session utilisateur en secondes. La valeur par défaut est 7 \*24 \* 3600.
+- **MAGIC_LINK_EXPIRATION**: La durée du lien magique en secondes. La valeur par défaut est  5 * 60.
 
 # 10 Internationalisation
 

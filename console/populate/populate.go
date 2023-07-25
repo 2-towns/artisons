@@ -5,8 +5,6 @@ import (
 	"context"
 	"gifthub/db"
 	"gifthub/users"
-	"strings"
-
 	"github.com/go-faker/faker/v4"
 )
 
@@ -16,21 +14,15 @@ func Run() error {
 
 	db.Redis.FlushDB(ctx)
 
-	u := users.User{
-		Email:    faker.Email(),
-		Username: strings.ToLower(faker.Username()),
-	}
-
-	_, err := u.Persist("test")
+	magic, err := users.MagicCode(faker.Email())
 	if err != nil {
 		return err
 	}
 
-	u = users.User{
-		Email:    faker.Email(),
-		Username: "toto",
+	_, err = users.Login(magic)
+	if err != nil {
+		return err
 	}
-	_, err = u.Persist("test")
 
-	return err
+	return nil
 }

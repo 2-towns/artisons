@@ -28,6 +28,8 @@ const SessionDuration = time.Hour * 24 * 30
 // SessionIDCookie is the session id cookie name
 const SessionIDCookie = "session_id"
 
-// IsMultipleSessionEnabled if true, an user can have
-// multiple sessions across devices.
-const IsMultipleSessionEnabled = false
+// Magic link duration in nanoseconds
+const MagicCodeDuration = time.Minute * 5
+
+// AppURL is the application root URL
+const AppURL = "http://localhost:8080"

@@ -7,26 +7,28 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/http/httputil"
+	"gifthub/string/stringutil"
 	"log"
+	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/crypto/bcrypt"
 )
+
+// ContextKey is the context key used to store the lang
+const ContextKey httputil.ContextKey = "user"
 
 // User is the user representation in the application
 type User struct {
-	Email     string `validate:"required,email"`
-	Username  string `validate:"required,alpha,lowercase"`
+	Email     string
 	ID        int64
 	Address   Address
-	Hash      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	SessionID string
+	MagicCode string
 }
 
 type Address struct {
@@ -38,73 +40,60 @@ type Address struct {
 	Phone         string
 }
 
-// Persist an user into HSET with the storage key: user:ID.
-// An extra link is create between the username and the ID,
-// with the key user:USERNAME.
+/*	sessionID, err := stringutil.Random()
+	if err != nil {
+		log.Printf("ERROR: sequence_fail when generating session ID : %s", err.Error())
+		return 0, errors.New("something_went_wrong")
+	}*/
+/*
+		content := p.Sprintf("user_magik_link_email", magicLink)
+	if err := mails.Send(email, content); err != nil {
+		log.Printf("ERROR: sequence_fail: error wehn sending email %s", err.Error())
+		return "", err
+	}*/
+
+// MagicLink generates a login code.
+// If the email does not exist, an user is created with an incremented
+// ID.
+//
+// The link between the magic and the user id is stored in Redis.
+// The link between the email and the user id is also stored in Redis.
 // The user is also added in a sorted set with the timestamp as score.
+//
 // All the operations are executed in a single transaction.
 //
-// The email, username and password are required to create an user.
-// If one of those fields is empty, an error occurs.
-//
-// A hash is generated from this password and stored in Redis.
-//
+// The email does not pass the validation, an error occurs.
 // The user ID is an incremented field in Redis and returned.
-func (u User) Persist(password string) (int64, error) {
-	if password == "" {
-		log.Printf("input_validation_fail: password is required")
-		return 0, errors.New("user_password_required")
+func MagicCode(email string) (string, error) {
+	v := validator.New()
+	if err := v.Var(email, "required,email"); err != nil {
+		log.Printf("input_validation_fail: error when validation user %s", err.Error())
+		return "", errors.New("user_email_invalid")
 	}
 
-	v := validator.New()
-	err := v.Struct(u)
+	magic, err := stringutil.Random()
 	if err != nil {
-		log.Printf("input_validation_fail: error when validation user %s", err.Error())
-		e := err.(validator.ValidationErrors)[0]
-		f := strings.ToLower(e.StructField())
-		return 0, fmt.Errorf("user_%s_invalid", f)
+		log.Printf("ERROR: sequence_fail when generating magic link: %s", err.Error())
+		return "", errors.New("something_went_wrong")
 	}
+
+	log.Printf("WARN: sensitive_create: a new magic code is created with email %s\n", email)
 
 	ctx := context.Background()
-	existing, err := db.Redis.HGet(ctx, "user", u.Username).Result()
-	if existing != "" && err == nil {
-		log.Printf("input_validation_fail: username already exists")
-		return 0, errors.New("user_username_exists")
+	uid, err := db.Redis.HGet(ctx, "user:"+email, "id").Result()
+	if uid != "" && err != nil {
+		if _, err := db.Redis.Set(ctx, "magic:"+magic, uid, conf.MagicCodeDuration).Result(); err != nil {
+			log.Printf("ERROR: sequence_fail when storing the magic code : %s", err.Error())
+			return "", errors.New("something_went_wrong")
+		}
+
+		return magic, nil
 	}
 
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	id, err := saveUser(email, magic)
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: error when generating password hash %s", err.Error())
-		return 0, errors.New("something_went_wrong")
-	}
-
-	hash := string(bytes)
-	id, err := db.Redis.Incr(ctx, "user_next_id").Result()
-	if err != nil {
-		log.Printf("ERROR: sequence_fail: %s", err.Error())
-		return 0, errors.New("something_went_wrong")
-	}
-
-	now := time.Now()
-	key := fmt.Sprintf("user:%d", id)
-
-	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key,
-			"id", id, "username",
-			u.Username, "email",
-			u.Email, "hash", hash,
-			"updated_at", now.Format(time.RFC3339),
-			"created_at", now.Format(time.RFC3339),
-		)
-		rdb.HSet(ctx, "user", u.Username, id)
-		rdb.ZAdd(ctx, "users", redis.Z{
-			Score:  float64(now.Unix()),
-			Member: id,
-		})
-		return nil
-	}); err != nil {
 		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
-		return 0, errors.New("something_went_wrong")
+		return "", errors.New("something_went_wrong")
 	}
 
 	/*pipe.HSet(ctx, key, "lastname", u.Address.Lastname)
@@ -115,9 +104,9 @@ func (u User) Persist(password string) (int64, error) {
 	pipe.HSet(ctx, key, "zipcode", u.Zipcode)
 	pipe.HSet(ctx, key, "phone", u.Phone)*/
 
-	log.Printf("WARN: sensitive_create: a new user is created with id %d\n", u.ID)
+	log.Printf("WARN: sensitive_create: a new user is created with id %d\n", id)
 
-	return id, nil
+	return magic, nil
 }
 
 // Delete an user at three levels in a single transation:
@@ -130,7 +119,10 @@ func (u User) Delete() error {
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, key)
-		rdb.HDel(ctx, "user", u.Username)
+		if u.MagicCode != "" {
+			rdb.Del(ctx, "magic:"+u.MagicCode)
+		}
+		rdb.HDel(ctx, "user", u.Email)
 		rdb.ZRem(ctx, "users", u.ID)
 		return nil
 	}); err != nil {
@@ -165,8 +157,7 @@ func parseUser(m map[string]string) (User, error) {
 	return User{
 		ID:        id,
 		Email:     m["email"],
-		Username:  m["username"],
-		SessionID: m["session_id"],
+		MagicCode: m["magic"],
 		/*	Lastname:      m["lastname"],
 			Firstname:     m["firstname"],
 			Address:       m["address"],
@@ -222,4 +213,83 @@ func List(page int64) ([]User, error) {
 	}
 
 	return users, nil
+}
+
+// Login authenicate user with a magic code.
+// If the magic is empty, an error occurs.
+// If the login is successful, a session ID is created.
+// The user ID is stored with the key auth:sessionID with an expiration time.
+// An extra data is stored in order to retrive all the sessions for an user.
+func Login(magic string) (string, error) {
+	if magic == "" {
+		log.Printf("input_validation_fail: the magic code is required")
+		return "", errors.New("user_magic_code_required")
+	}
+
+	ctx := context.Background()
+	uid, err := db.Redis.Get(ctx, "magic:"+magic).Result()
+	if err != nil {
+		log.Printf("authn_login_fail: the magic code %s is not valid", magic)
+		return "", errors.New("user_magic_code_invalid")
+	}
+
+	id, err := strconv.ParseInt(uid, 10, 64)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when parsing id %s", uid)
+		return "", errors.New("something_went_wrong")
+	}
+
+	sessionID, err := saveSID(id)
+
+	log.Printf("authn_login_success: user ID %s did a successful login", uid)
+	log.Printf("authn_token_created: session ID generated %s for user ID %s\n", sessionID, uid)
+
+	return sessionID, nil
+}
+
+// Logout destroys the user session.
+func Logout(id int64, sid string) error {
+	if sid == "" || id == 0 {
+		log.Printf("input_validation_fail: the id and session id are required")
+		return errors.New("user_logout_invalid")
+	}
+
+	ctx := context.Background()
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.Del(ctx, "auth:"+sid)
+		/*rdb.HDel(ctx, fmt.Sprintf("user:%d", id), "session:"+sid)*/
+		return nil
+	}); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
+		return errors.New("something_went_wrong")
+	}
+
+	return nil
+}
+
+/*	p := message.NewPrinter(lang)
+	u := p.Sprint("user_magik_link_url")
+	magicLink := fmt.Sprintf("%s%s?code=%s", conf.AppURL, u, code)*/
+
+// Middleware detects the session ID in the cookies.
+// If the session ID exists, it will load the current
+// user into the context.
+func Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sid, err := r.Cookie(conf.SessionIDCookie)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		user, err := findBySessionID(sid.Value)
+		if err != nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), ContextKey, user)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
