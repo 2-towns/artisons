@@ -13,3 +13,24 @@ var Redis = redis.NewClient(&redis.Options{
 	Password: "",                 // no password set
 	DB:       conf.DatabaseIndex, // use default DB
 })
+
+/*func SubscribeToExpireKeys() {
+	ctx := context.Background()
+	if _, err := Redis.ConfigSet(ctx, "notify-keyspace-events", "KEA").Result(); err != nil {
+		log.Panicln(err)
+	}
+
+	pubsub := Redis.PSubscribe(ctx, "__key*__:auth:*")
+	defer pubsub.Close()
+
+	for {
+		msg, err := pubsub.ReceiveMessage(ctx)
+		if err != nil {
+			log.Printf("sequence_fail: error when receiving pub message:%s", err.Error())
+		}
+		log.Println(msg.Channel)
+		parts := strings.Split(msg.Channel, "auth:")
+		fmt.Println(parts[1])
+	}
+}
+*/

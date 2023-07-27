@@ -10,7 +10,6 @@ import (
 	"gifthub/http/httputil"
 	"gifthub/string/stringutil"
 	"log"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -90,33 +89,49 @@ func MagicCode(email string) (string, error) {
 		return magic, nil
 	}
 
-	id, err := saveUser(email, magic)
+	id, err := db.Redis.Incr(ctx, "user_next_id").Result()
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
+		log.Printf("ERROR: sequence_fail: %s", err.Error())
 		return "", errors.New("something_went_wrong")
 	}
 
-	/*pipe.HSet(ctx, key, "lastname", u.Address.Lastname)
-	pipe.HSet(ctx, key, "firstname", u.Firstname)
-	pipe.HSet(ctx, key, "address", u.Address)
-	pipe.HSet(ctx, key, "city", u.City)
-	pipe.HSet(ctx, key, "complemnetary", u.Complementary)
-	pipe.HSet(ctx, key, "zipcode", u.Zipcode)
-	pipe.HSet(ctx, key, "phone", u.Phone)*/
+	now := time.Now()
+	key := fmt.Sprintf("user:%d", id)
+
+	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.HSet(ctx, key,
+			"id", id,
+			"email", email,
+			"updated_at", now.Format(time.RFC3339),
+			"created_at", now.Format(time.RFC3339),
+		)
+		rdb.Set(ctx, "magic:"+magic, id, conf.MagicCodeDuration)
+		rdb.HSet(ctx, "user", email, id)
+		rdb.ZAdd(ctx, "users", redis.Z{
+			Score:  float64(now.Unix()),
+			Member: id,
+		})
+		return nil
+	}); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
+		return "", errors.New("something_went_wrong")
+	}
 
 	log.Printf("WARN: sensitive_create: a new user is created with id %d\n", id)
 
 	return magic, nil
 }
 
-// Delete an user at three levels in a single transation:
-//   - the hset data
-//   - the ID link
-//   - the member in user list
+// Delete all the user data
 func (u User) Delete() error {
-	key := fmt.Sprintf("user:%d", u.ID)
 	ctx := context.Background()
+	var sessions []string
+	s, err := db.Redis.SMembers(ctx, fmt.Sprintf("sessions:%d", u.ID)).Result()
+	if err == nil {
+		sessions = s
+	}
 
+	key := fmt.Sprintf("user:%d", u.ID)
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, key)
 		if u.MagicCode != "" {
@@ -124,13 +139,19 @@ func (u User) Delete() error {
 		}
 		rdb.HDel(ctx, "user", u.Email)
 		rdb.ZRem(ctx, "users", u.ID)
+		for _, id := range sessions {
+			rdb.Del(ctx, "session:"+id)
+			rdb.Del(ctx, "auth:"+id)
+		}
+		rdb.Del(ctx, fmt.Sprintf("sessions:%d", u.ID))
+
 		return nil
 	}); err != nil {
 		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
 		return errors.New("something_went_wrong")
 	}
 
-	log.Printf("WARN: sensitive_delete: the user %d deleted\n", u.ID)
+	log.Printf("WARN: sensitive_delete: the user %d is deleted\n", u.ID)
 
 	return nil
 }
@@ -219,11 +240,16 @@ func List(page int64) ([]User, error) {
 // If the magic is empty, an error occurs.
 // If the login is successful, a session ID is created.
 // The user ID is stored with the key auth:sessionID with an expiration time.
-// An extra data is stored in order to retrive all the sessions for an user.
-func Login(magic string) (string, error) {
+// An extra data is stored in order to retreive all the sessions for an user.
+func Login(magic string, device string) (string, error) {
 	if magic == "" {
 		log.Printf("input_validation_fail: the magic code is required")
 		return "", errors.New("user_magic_code_required")
+	}
+
+	if device == "" {
+		log.Printf("input_validation_fail: the device is required")
+		return "", errors.New("user_device_required")
 	}
 
 	ctx := context.Background()
@@ -239,9 +265,30 @@ func Login(magic string) (string, error) {
 		return "", errors.New("something_went_wrong")
 	}
 
-	sessionID, err := saveSID(id)
+	sessionID, err := stringutil.Random()
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when generating a new session ID %s", err.Error())
+		return "", errors.New("something_went_wrong")
+	}
 
-	log.Printf("authn_login_success: user ID %s did a successful login", uid)
+	now := time.Now()
+
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.Set(ctx, "auth:"+sessionID, id, conf.SessionDuration)
+		rdb.HSet(ctx, "session:"+sessionID,
+			"id", id,
+			"created_at", now.Format(time.RFC3339),
+			"updated_at", now.Format(time.RFC3339),
+			"device", device,
+		)
+		rdb.SAdd(ctx, fmt.Sprintf("sessions:%d", id), sessionID)
+		return nil
+	}); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
+		return "", errors.New("something_went_wrong")
+	}
+
+	log.Printf("authn_login_success: user ID %s did a successful login on device %s", uid, device)
 	log.Printf("authn_token_created: session ID generated %s for user ID %s\n", sessionID, uid)
 
 	return sessionID, nil
@@ -257,39 +304,24 @@ func Logout(id int64, sid string) error {
 	ctx := context.Background()
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, "auth:"+sid)
-		/*rdb.HDel(ctx, fmt.Sprintf("user:%d", id), "session:"+sid)*/
+		rdb.Del(ctx, "session:"+sid)
+		rdb.SRem(ctx, fmt.Sprintf("sessions:%d", id), sid)
+
 		return nil
 	}); err != nil {
 		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
 		return errors.New("something_went_wrong")
 	}
 
+	log.Printf("authn_token_revoked: user session %s destroyed", sid)
+
 	return nil
 }
 
-/*	p := message.NewPrinter(lang)
-	u := p.Sprint("user_magik_link_url")
-	magicLink := fmt.Sprintf("%s%s?code=%s", conf.AppURL, u, code)*/
-
-// Middleware detects the session ID in the cookies.
-// If the session ID exists, it will load the current
-// user into the context.
-func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sid, err := r.Cookie(conf.SessionIDCookie)
-		if err != nil {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		user, err := findBySessionID(sid.Value)
-		if err != nil {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), ContextKey, user)
-
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
+/*pipe.HSet(ctx, key, "lastname", u.Address.Lastname)
+pipe.HSet(ctx, key, "firstname", u.Firstname)
+pipe.HSet(ctx, key, "address", u.Address)
+pipe.HSet(ctx, key, "city", u.City)
+pipe.HSet(ctx, key, "complemnetary", u.Complementary)
+pipe.HSet(ctx, key, "zipcode", u.Zipcode)
+pipe.HSet(ctx, key, "phone", u.Phone)*/

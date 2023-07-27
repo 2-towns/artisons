@@ -19,6 +19,7 @@ func LoadEn() {
 	message.SetString(language.English, "user_magic_code_required", "The magic code is required.")
 	message.SetString(language.English, "user_email_invalid", "The email is invalid.")
 	message.SetString(language.English, "user_magic_code_invalid", "The magic code is invalid.")
+	message.SetString(language.English, "user_device_required", "The device is required.")
 	message.SetString(language.English, "http_bad_status", "Received bad status %d from %s.")
 	message.SetString(language.English, "something_went_wrong", "Something went wrong, please try again later.")
 	message.SetString(language.English, "home_description", "Home description")

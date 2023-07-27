@@ -4,24 +4,14 @@ import (
 	"gifthub/conf"
 	"gifthub/locales"
 	"gifthub/pages"
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"log"
+	"net/http"
 )
 
 func main() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		log.Panic(err)
-		os.Exit(1)
-	}
-
 	locales.LoadEn()
-
-	log.Println("Will look for views in", pwd+"/web/views/*")
 
 	// p := message.NewPrinter(language.English)
 

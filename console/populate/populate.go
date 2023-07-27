@@ -19,7 +19,7 @@ func Run() error {
 		return err
 	}
 
-	_, err = users.Login(magic)
+	_, err = users.Login(magic, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if err != nil {
 		return err
 	}

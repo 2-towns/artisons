@@ -1,7 +1,11 @@
 package users
 
 import (
+	"context"
+	"fmt"
+	"gifthub/db"
 	"gifthub/string/stringutil"
+	"math/rand"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
@@ -52,9 +56,13 @@ func TestMagicCodeFailedWithBadEmail(t *testing.T) {
 // TestDeleteUser deletes an existing user
 func TestDeleteUser(t *testing.T) {
 	email := faker.Email()
+	sid, _ := stringutil.Random()
+	id := rand.Intn(100)
+	ctx := context.Background()
 
-	id, _ := saveUser(email, "toto")
-	sid, _ := saveSID(id)
+	db.Redis.Set(ctx, "auth:"+sid, id, 0)
+	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", id), "email", email)
+
 	u, _ := findBySessionID(sid)
 
 	err := u.Delete()
@@ -74,17 +82,32 @@ func TestDeleteUserNotExisting(t *testing.T) {
 // Testlogin authenticates an user
 func TestLogin(t *testing.T) {
 	magic, _ := stringutil.Random()
-	saveUser(faker.Email(), magic)
-	sid, err := Login(magic)
+	id := rand.Intn(100)
+	ctx := context.Background()
+	db.Redis.Set(ctx, "magic:"+magic, id, 0)
 
+	sid, err := Login(magic, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid == "" || err != nil {
 		t.Fatalf("TestLogin(magic) = %s, %v, not want '', error", sid, err)
 	}
 }
 
+// TestLoginWithoutDevice fails when device is empty
+func TestLoginWithoutDevice(t *testing.T) {
+	magic, _ := stringutil.Random()
+	id := rand.Intn(100)
+	ctx := context.Background()
+	db.Redis.Set(ctx, "magic:"+magic, id, 0)
+
+	sid, err := Login(magic, "")
+	if sid != "" || err == nil {
+		t.Fatalf("TestLogin(magic) = %s, %v, want '', error", sid, err)
+	}
+}
+
 // TestLoginWithEmptyMagic try to authenticate an user with empty magic
 func TestLoginWithEmptyMagic(t *testing.T) {
-	sid, err := Login("")
+	sid, err := Login("", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil {
 		t.Fatalf("TestLogin('') = %s, %v, want '', error", sid, err)
 	}
@@ -92,7 +115,7 @@ func TestLoginWithEmptyMagic(t *testing.T) {
 
 // TestLoginWithNotExistingMagic try to authenticate an user with not existing magic
 func TestLoginWithNotExistingMagic(t *testing.T) {
-	sid, err := Login("titi")
+	sid, err := Login("titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil {
 		t.Fatalf("TestLogin('') = %s, %v, want '', error", sid, err)
 	}
@@ -100,10 +123,11 @@ func TestLoginWithNotExistingMagic(t *testing.T) {
 
 // TestLogout logout an user
 func TestLogout(t *testing.T) {
-	email := faker.Email()
-
-	id, _ := saveUser(email, "toto")
-	sid, _ := saveSID(id)
+	ctx := context.Background()
+	sid, _ := stringutil.Random()
+	id := rand.Int63n(100)
+	db.Redis.Set(ctx, "auth:"+sid, id, 0)
+	db.Redis.HSet(ctx, "session:"+sid, "id", id)
 
 	err := Logout(id, sid)
 	if err != nil {
