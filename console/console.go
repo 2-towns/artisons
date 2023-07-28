@@ -8,6 +8,8 @@ import (
 	"gifthub/conf"
 	"gifthub/console/parser"
 	"gifthub/console/populate"
+	"gifthub/locales"
+	"gifthub/products"
 	"gifthub/db"
 	"gifthub/logs"
 	"gifthub/notifications/mails"
@@ -221,6 +223,35 @@ func main() {
 
 			log.Printf("%s\n", string(pjson))
 		}
+	case "productList":
+		{
+			page := flag.Int64("page", 0, "The page used in pagination")
+
+			products, err := products.List(*page)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			t := table.NewWriter()
+			t.SetOutputMirror(os.Stdout)
+			t.AppendHeader(table.Row{"ID", "Title", "Description", "Price", "Image", "Slug", "Links", "Meta"})
+
+			for _, product := range products {
+				t.AppendRow([]interface{}{
+					product.ID,
+					product.Title,
+					product.Description,
+					product.Price,
+					product.Image,
+					product.Slug,
+					product.Links,
+					product.Meta,
+				})
+			}
+
+			t.Render()
+		}
+
 	default:
 		{
 			slog.LogAttrs(ctx, slog.LevelError, "the command is not supported", slog.String("command", command))

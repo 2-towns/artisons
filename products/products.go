@@ -17,10 +17,23 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
+	"gifthub/db"
+	"log"
+	"strconv"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // Product is the product representation in the application
 type Product struct {
+	ID          int64            `redis:"id"` // ID is an unique identifier
+	Title       string            `redis:"title"`
+	Image       string            `redis:"image"`
+	Description string            `redis:"description"`
+	Price       float64           `redis:"price"`
+	Slug        string            `redis:"slug"`
+	Links       []string          // Links contains the linked product IDs
+	Meta        map[string]string // Meta contains the product options.
 	ID          string  `redis:"id"` // ID is an unique identifier
 	Title       string  `redis:"title" validate:"required"`
 	Description string  `redis:"description" validate:"required"`
@@ -67,6 +80,79 @@ const ImageExtensions = "jpg jpeg png"
 func ImagePath(pid string, index int) (string, string) {
 	folder := fmt.Sprintf("%s/%s", conf.ImgProxyPath, pid)
 	return folder, fmt.Sprintf("%s/%d", folder, index)
+}
+
+func parseProduct(m map[string]string) (Product, error) {
+	id, err := strconv.ParseInt(m["id"], 10, 64)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when parsing id %s", m["id"])
+		return Product{}, errors.New("something_went_wrong")
+	}
+
+	priceStr := m["price"]
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when parsing price %s", priceStr)
+		return Product{}, errors.New("something_went_wrong")
+	}
+
+	return Product{
+		ID:          id,
+		Title:       m["title"],
+		Image:       m["image"],
+		Description: m["description"],
+		Price:       price,
+		Slug:        m["slug"],
+		Links:       []string{},
+		Meta:        map[string]string{},
+	}, nil
+}
+
+
+
+
+func List(page int64) ([]Product, error) {
+	key := "products"
+	ctx := context.Background()
+
+	var start int64
+	var end int64
+
+	if page == -1 {
+		start = 0
+		end = -1
+	} else {
+		start = page * conf.ItemsPerPage
+		end = page*conf.ItemsPerPage + conf.ItemsPerPage
+	}
+
+	products := []Product{}
+	ids := db.Redis.ZRange(ctx, key, start, end).Val()
+	pipe := db.Redis.Pipeline()
+
+	for _, v := range ids {
+		k := "product:" + v
+		pipe.HGetAll(ctx, k).Val()
+	}
+
+	cmds, err := pipe.Exec(ctx)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
+		return products, errors.New("something_went_wrong")
+	}
+
+	for _, cmd := range cmds {
+		m := cmd.(*redis.MapStringStringCmd).Val()
+
+		product, err := parseProduct(m)
+		if err != nil {
+			continue
+		}
+
+		products = append(products, product)
+	}
+
+	return products, nil
 }
 
 // Available return true if all the product ids are availables
