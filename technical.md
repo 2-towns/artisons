@@ -230,6 +230,7 @@ Les clés de stockage sont:
 - Pour les liens, `product:links:PID` et le format est un set.
 - Pour les tags, `product:tags:PID` et le format est un set.
 - Pour les options, `product:options:PID` et le format est un hash dont la clé est le nom de l'option et la valeur est la valeur de l'option.
+- Pour la liste des produits pour un marchant: `products:MID`
 
 Si un produit existe, les données sont écrasées par la nouvelle importation. Si des options et des liens existaient, ils sont supprimés au profit des nouveaux liens et options.
 

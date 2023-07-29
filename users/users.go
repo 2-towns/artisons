@@ -11,6 +11,7 @@ import (
 	"gifthub/string/stringutil"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -28,6 +29,13 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	MagicCode string
+	Devices   map[string]string
+}
+
+type Session struct {
+	ID     string
+	Device string
+	TTL    time.Duration
 }
 
 type Address struct {
@@ -125,11 +133,6 @@ func MagicCode(email string) (string, error) {
 // Delete all the user data
 func (u User) Delete() error {
 	ctx := context.Background()
-	var sessions []string
-	s, err := db.Redis.SMembers(ctx, fmt.Sprintf("sessions:%d", u.ID)).Result()
-	if err == nil {
-		sessions = s
-	}
 
 	key := fmt.Sprintf("user:%d", u.ID)
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -139,11 +142,9 @@ func (u User) Delete() error {
 		}
 		rdb.HDel(ctx, "user", u.Email)
 		rdb.ZRem(ctx, "users", u.ID)
-		for _, id := range sessions {
-			rdb.Del(ctx, "session:"+id)
-			rdb.Del(ctx, "auth:"+id)
+		for k := range u.Devices {
+			rdb.Del(ctx, k)
 		}
-		rdb.Del(ctx, fmt.Sprintf("sessions:%d", u.ID))
 
 		return nil
 	}); err != nil {
@@ -224,7 +225,6 @@ func List(page int64) ([]User, error) {
 
 	for _, cmd := range cmds {
 		m := cmd.(*redis.MapStringStringCmd).Val()
-
 		user, err := parseUser(m)
 		if err != nil {
 			continue
@@ -234,6 +234,59 @@ func List(page int64) ([]User, error) {
 	}
 
 	return users, nil
+}
+
+// Sessions retrieve the active user sessions.
+// If a session is expired, it will be removed from the user session ids.
+func (u User) Sessions() ([]Session, error) {
+	ctx := context.Background()
+	pipe := db.Redis.Pipeline()
+	var keys []string
+	var devices []string
+	for key, device := range u.Devices {
+		pipe.TTL(ctx, key)
+		keys = append(keys, key)
+		devices = append(devices, device)
+	}
+
+	var sessions []Session
+
+	cmds, err := pipe.Exec(ctx)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when getting sessions details %s", err.Error())
+		return sessions, errors.New("something_went_wrong")
+	}
+
+	for index, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+		if cmd.Err() != nil {
+			log.Printf("ERROR: sequence_fail: error when retrieving session TTL %s %s", key, err.Error())
+			pipe.HDel(ctx, fmt.Sprintf("user:%d", u.ID), key)
+			continue
+		}
+
+		ttl := cmd.(*redis.DurationCmd).Val()
+		if ttl.Nanoseconds() < 0 {
+			log.Printf("session_expired: the session %s is expired %s", key, ttl)
+			pipe.HDel(ctx, fmt.Sprintf("user:%d", u.ID), key)
+			continue
+		}
+
+		id := strings.Replace(key, "auth:", "", 0)
+		device := devices[index]
+		sessions = append(sessions, Session{
+			ID:     id,
+			Device: device,
+			TTL:    ttl,
+		})
+	}
+
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error deleting expired session %s", err.Error())
+	}
+
+	return sessions, nil
 }
 
 // Login authenicate user with a magic code.
@@ -271,17 +324,9 @@ func Login(magic string, device string) (string, error) {
 		return "", errors.New("something_went_wrong")
 	}
 
-	now := time.Now()
-
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Set(ctx, "auth:"+sessionID, id, conf.SessionDuration)
-		rdb.HSet(ctx, "session:"+sessionID,
-			"id", id,
-			"created_at", now.Format(time.RFC3339),
-			"updated_at", now.Format(time.RFC3339),
-			"device", device,
-		)
-		rdb.SAdd(ctx, fmt.Sprintf("sessions:%d", id), sessionID)
+		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "auth:"+sessionID, device)
 		return nil
 	}); err != nil {
 		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())

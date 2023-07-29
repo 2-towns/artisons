@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"fmt"
+	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/string/stringutil"
 	"math/rand"
@@ -57,7 +58,7 @@ func TestMagicCodeFailedWithBadEmail(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	email := faker.Email()
 	sid, _ := stringutil.Random()
-	id := rand.Intn(100)
+	id := rand.Intn(10000)
 	ctx := context.Background()
 
 	db.Redis.Set(ctx, "auth:"+sid, id, 0)
@@ -82,7 +83,7 @@ func TestDeleteUserNotExisting(t *testing.T) {
 // Testlogin authenticates an user
 func TestLogin(t *testing.T) {
 	magic, _ := stringutil.Random()
-	id := rand.Intn(100)
+	id := rand.Intn(10000)
 	ctx := context.Background()
 	db.Redis.Set(ctx, "magic:"+magic, id, 0)
 
@@ -95,7 +96,7 @@ func TestLogin(t *testing.T) {
 // TestLoginWithoutDevice fails when device is empty
 func TestLoginWithoutDevice(t *testing.T) {
 	magic, _ := stringutil.Random()
-	id := rand.Intn(100)
+	id := rand.Intn(10000)
 	ctx := context.Background()
 	db.Redis.Set(ctx, "magic:"+magic, id, 0)
 
@@ -125,7 +126,7 @@ func TestLoginWithNotExistingMagic(t *testing.T) {
 func TestLogout(t *testing.T) {
 	ctx := context.Background()
 	sid, _ := stringutil.Random()
-	id := rand.Int63n(100)
+	id := rand.Int63n(10000)
 	db.Redis.Set(ctx, "auth:"+sid, id, 0)
 	db.Redis.HSet(ctx, "session:"+sid, "id", id)
 
@@ -156,6 +157,63 @@ func TestLogoutWithNotExistingData(t *testing.T) {
 	err := Logout(124, "122")
 	if err != nil {
 		t.Fatalf("Logout(124, '122'), %v, not want nil, error", err)
+	}
+}
+
+// TestSessions returns the user sessions
+func TestSessions(t *testing.T) {
+	sid, _ := stringutil.Random()
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+		Devices: map[string]string{
+			"auth:" + sid: "Mozilla/5.0 Gecko/20100101 Firefox/115.0",
+		},
+	}
+
+	ctx := context.Background()
+	db.Redis.Set(ctx, "auth:"+sid, id, conf.SessionDuration)
+
+	sessions, err := u.Sessions()
+	if len(sessions) == 0 || err != nil {
+		t.Fatalf("u.Session() = %v, %v, not want empty, error", sessions, err)
+	}
+
+	session := sessions[0]
+	if session.ID == "" || session.Device == "" || session.TTL == 0 {
+		t.Fatalf("u.Session() = %v, %v, not want empty, error", session, err)
+	}
+}
+
+// TestSessionsExpired returns an empty session array because
+// the session is expired
+func TestSessionsExpired(t *testing.T) {
+	sid, _ := stringutil.Random()
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+		Devices: map[string]string{
+			"auth:" + sid: "Mozilla/5.0 Gecko/20100101 Firefox/115.0",
+		},
+	}
+
+	sessions, err := u.Sessions()
+	if len(sessions) != 0 || err != nil {
+		t.Fatalf("u.Session() = %v, %v, want empty, error", sessions, err)
+	}
+}
+
+// TestSessionsEmpty returns an empty session
+func TestSessionsEmpty(t *testing.T) {
+	id := rand.Int63n(10000)
+	u := User{
+		ID:      id,
+		Devices: map[string]string{},
+	}
+
+	sessions, err := u.Sessions()
+	if len(sessions) != 0 || err != nil {
+		t.Fatalf("u.Session() = %v, %v, want empty, error", sessions, err)
 	}
 }
 

@@ -30,7 +30,7 @@ import (
 type lines [][]string
 
 type csvline struct {
-	Mid         string
+	MID         string
 	Sku         string
 	Title       string
 	Price       float64
@@ -398,6 +398,7 @@ func addProductToRedis(ctx context.Context, pid string, product csvline) error {
 	lkey := "product:links:" + pid
 	tkey := "product:tags:" + pid
 	okey := "product:options:" + pid
+	now := time.Now()
 
 	_, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, lkey, okey, tkey)
@@ -412,9 +413,13 @@ func addProductToRedis(ctx context.Context, pid string, product csvline) error {
 			"quantity", product.Quantity,
 			"status", product.Status,
 			"weight", product.Weight,
-			"mid", product.Mid,
+			"mid", product.MID,
 			"updated_at", time.Now().Format(time.RFC3339),
 		)
+		rdb.ZAdd(ctx, "products:"+product.MID, redis.Z{
+			Score:  float64(now.Unix()),
+			Member: pid,
+		})
 
 		if len(product.Links) > 0 {
 			rdb.SAdd(ctx, lkey, product.Links)
@@ -450,7 +455,7 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 		chans <- 0
 	}
 
-	product.Mid = mid
+	product.MID = mid
 
 	ctx := context.Background()
 	key := "merchant:" + mid + ":" + product.Sku
