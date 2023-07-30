@@ -39,12 +39,13 @@ type Session struct {
 }
 
 type Address struct {
-	Lastname      string
-	Firstname     string
-	City          string
+	Lastname      string `validate:"required"`
+	Firstname     string `validate:"required"`
+	City          string `validate:"required"`
+	Address       string `validate:"required"`
 	Complementary string
-	Zipcode       string
-	Phone         string
+	Zipcode       string `validate:"required"`
+	Phone         string `validate:"required"`
 }
 
 /*	sessionID, err := stringutil.Random()
@@ -180,13 +181,15 @@ func parseUser(m map[string]string) (User, error) {
 		ID:        id,
 		Email:     m["email"],
 		MagicCode: m["magic"],
-		/*	Lastname:      m["lastname"],
+		Address: Address{
+			Lastname:      m["lastname"],
 			Firstname:     m["firstname"],
-			Address:       m["address"],
+			Address:       m["street"],
 			Complementary: m["complementary"],
 			Zipcode:       m["zipcode"],
 			City:          m["city"],
-			Phone:         m["phone"],*/
+			Phone:         m["phone"],
+		},
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}, nil
@@ -234,6 +237,36 @@ func List(page int64) ([]User, error) {
 	}
 
 	return users, nil
+}
+
+// SaveAddress attachs an address to an user
+func (u User) SaveAddress(a Address) error {
+	v := validator.New()
+	if err := v.Struct(a); err != nil {
+		log.Printf("input_validation_fail: error when validation user %s", err.Error())
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return fmt.Errorf("user_%s_required", low)
+	}
+
+	ctx := context.Background()
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.HSet(ctx, fmt.Sprintf("user:%d", u.ID),
+			"firstname", a.Firstname,
+			"lastname", a.Lastname,
+			"complementary", a.Complementary,
+			"city", a.City,
+			"phone", a.Phone,
+			"zipcode", a.Zipcode,
+			"street", a.Address,
+		)
+		return nil
+	}); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
+		return errors.New("something_went_wrong")
+	}
+
+	return nil
 }
 
 // Sessions retrieve the active user sessions.
@@ -349,8 +382,7 @@ func Logout(id int64, sid string) error {
 	ctx := context.Background()
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, "auth:"+sid)
-		rdb.Del(ctx, "session:"+sid)
-		rdb.SRem(ctx, fmt.Sprintf("sessions:%d", id), sid)
+		rdb.HDel(ctx, fmt.Sprintf("user:%d", id), "auth:"+sid)
 
 		return nil
 	}); err != nil {

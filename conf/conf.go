@@ -33,3 +33,15 @@ const MagicCodeDuration = time.Minute * 5
 
 // AppURL is the application root URL
 const AppURL = "http://localhost:8080"
+
+// EmailUsername is the username for email sending 
+const EmailUsername = "a3a5f2d396a820"
+
+// EmailPassword is the password for email sending 
+const EmailPassword = "12fcfd3c6edb95"
+
+// EmailHost is the email host for email sending 
+const EmailHost = "sandbox.smtp.mailtrap.io"
+
+// EmailPort is the email port for email sending 
+const EmailPort = "587"

@@ -134,8 +134,7 @@ Tous les champs sont requis, à part l’adresse complémentaire et le numéro d
 
 Si l’utilisateur est connecté, ces champs sont pré-remplis.
 
-Si l'utilisateur n'est pas connecté, l'application lui propose de créer un compte en saisissant son mot de passe. Le canal de notification par email sera utilisé par défaut.
-Si l'utilisateur ne crée pas de compte, sa commande sera traitée comme une commande `invitée`.
+Si l'utilisateur n'est pas connecté, il doit d'aborder créer un compte. 
 
 Après validation, si l’application propose le retrait sur place, l’utilisateur peut choisir entre ce mode et la livraison à domicile. Sinon cette dernière sera automatiquement sélectionnée. Si la livraison à domicile est sélectionnée, un écran lui propose d’utiliser les mêmes coordonnées que les données de facturation. S’il refuse, il peut saisir tous les champs mentionnés précédemment pour son adresse de livraison.
 

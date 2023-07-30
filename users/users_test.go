@@ -217,32 +217,158 @@ func TestSessionsEmpty(t *testing.T) {
 	}
 }
 
-/*
-// TestUserPersistFailedWithUsernameUpper fails when username has uppercase
-func TestUserPersistFailedWithUsernameUpper(t *testing.T) {
-	u := User{
-		Email:    faker.Email(),
-		Username: strings.ToUpper(faker.Username()),
+// TestSaveAddress saves a new address into Redis
+func TestSaveAddress(t *testing.T) {
+	ra := faker.GetRealAddress()
+	a := Address{
+		Lastname:      faker.Name(),
+		Firstname:     faker.Name(),
+		Address:       ra.Address,
+		City:          ra.City,
+		Complementary: "",
+		Zipcode:       ra.PostalCode,
+		Phone:         faker.Phonenumber(),
 	}
 
-	err := u.Persist("passw0rd")
-
-	if err == nil {
-		t.Fatalf(`the persist should fail because the username has uppercase`)
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+	}
+	err := u.SaveAddress(a)
+	if err != nil {
+		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
 	}
 }
 
-// TestUserPersistFailedWithUsernameEmpty fails when username is empty
-func TestUserPersistFailedWithUsernameEmpty(t *testing.T) {
-	u := User{
-		Email:    faker.Email(),
-		Username: "",
+// TestSaveAddressWithoutFirstname fails
+func TestSaveAddressWithoutFirstname(t *testing.T) {
+	ra := faker.GetRealAddress()
+	a := Address{
+		Lastname:      faker.Name(),
+		Address:       ra.Address,
+		City:          ra.City,
+		Complementary: "",
+		Zipcode:       ra.PostalCode,
+		Phone:         faker.Phonenumber(),
 	}
 
-	err := u.Persist("passw0rd")
-
-	if err == nil {
-		t.Fatalf(`the persist should fail because the username is empty`)
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+	}
+	err := u.SaveAddress(a)
+	if err == nil || err.Error() != "user_firstname_required" {
+		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
 	}
 }
-*/
+
+// TestSaveAddressWithoutLastname fails
+func TestSaveAddressWithoutLastname(t *testing.T) {
+	ra := faker.GetRealAddress()
+	a := Address{
+		Firstname:     faker.Name(),
+		Address:       ra.Address,
+		City:          ra.City,
+		Complementary: "",
+		Zipcode:       ra.PostalCode,
+		Phone:         faker.Phonenumber(),
+	}
+
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+	}
+	err := u.SaveAddress(a)
+	if err == nil || err.Error() != "user_lastname_required" {
+		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+	}
+}
+
+// TestSaveAddressWithoutAddress fails
+func TestSaveAddressWithoutAddress(t *testing.T) {
+	ra := faker.GetRealAddress()
+	a := Address{
+		Firstname:     faker.Name(),
+		Lastname:      faker.Name(),
+		City:          ra.City,
+		Complementary: "",
+		Zipcode:       ra.PostalCode,
+		Phone:         faker.Phonenumber(),
+	}
+
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+	}
+	err := u.SaveAddress(a)
+	if err == nil || err.Error() != "user_address_required" {
+		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+	}
+}
+
+// TestSaveAddressWithoutCity fails
+func TestSaveAddressWithoutCity(t *testing.T) {
+	ra := faker.GetRealAddress()
+	a := Address{
+		Lastname:      faker.Name(),
+		Firstname:     faker.Name(),
+		Address:       ra.Address,
+		Complementary: "",
+		Zipcode:       ra.PostalCode,
+		Phone:         faker.Phonenumber(),
+	}
+
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+	}
+	err := u.SaveAddress(a)
+	if err == nil || err.Error() != "user_city_required" {
+		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+	}
+}
+
+// TestSaveAddressWithoutZipcode fails
+func TestSaveAddressWithoutZipcode(t *testing.T) {
+	ra := faker.GetRealAddress()
+	a := Address{
+		Lastname:      faker.Name(),
+		Firstname:     faker.Name(),
+		Address:       ra.Address,
+		Complementary: "",
+		City:          ra.City,
+		Phone:         faker.Phonenumber(),
+	}
+
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+	}
+	err := u.SaveAddress(a)
+	if err == nil || err.Error() != "user_zipcode_required" {
+		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+	}
+}
+
+// TestSaveAddressWithoutPhone fails
+func TestSaveAddressWithoutPhone(t *testing.T) {
+	ra := faker.GetRealAddress()
+	a := Address{
+		Lastname:      faker.Name(),
+		Firstname:     faker.Name(),
+		Address:       ra.Address,
+		Complementary: "",
+		City:          ra.City,
+		Zipcode:       ra.PostalCode,
+		Phone:         "",
+	}
+
+	id := rand.Int63n(10000)
+	u := User{
+		ID: id,
+	}
+	err := u.SaveAddress(a)
+	if err == nil || err.Error() != "user_phone_required" {
+		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+	}
+}
