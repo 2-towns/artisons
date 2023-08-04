@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="82b2fa94-1402-4264-a48c-7b6de567a0a7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/utils/utlls.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/console/console.go" beforeDir="false" afterPath="$PROJECT_DIR$/console/console.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/products/products.go" beforeDir="false" afterPath="$PROJECT_DIR$/products/products.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/test_utils.go" beforeDir="false" />
-    </list>
+    <list default="true" id="82b2fa94-1402-4264-a48c-7b6de567a0a7" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -60,7 +58,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1699916572152</updated>
-      <workItem from="1699916574462" duration="480000" />
+      <workItem from="1699916574462" duration="1020000" />
     </task>
     <servers />
   </component>

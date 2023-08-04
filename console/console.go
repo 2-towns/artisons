@@ -8,8 +8,6 @@ import (
 	"gifthub/conf"
 	"gifthub/console/parser"
 	"gifthub/console/populate"
-	"gifthub/locales"
-	"gifthub/products"
 	"gifthub/db"
 	"gifthub/logs"
 	"gifthub/notifications/mails"

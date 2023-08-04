@@ -7,21 +7,17 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/utils"
 	"gifthub/http/contexts"
 	"gifthub/tracking"
 	"gifthub/users"
+	"gifthub/utils"
+	"log"
 	"log/slog"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/redis/go-redis/v9"
-	"gifthub/db"
-	"log"
-	"strconv"
-
 	"github.com/redis/go-redis/v9"
 )
 
@@ -94,7 +90,7 @@ if err != nil {
 }
 
 // Adding the ID to the product structure
-product.PID = productID
+product.ID = productID
 
 
 	// Add product to Redis
@@ -106,9 +102,9 @@ product.PID = productID
 
 	// Store product data
 	pipe.HSet(ctx, fmt.Sprintf("product:%s", productID), map[string]interface{}{
-			"id":          product.PID,
+			"id":          product.ID,
 			"title":       product.Title,
-			"image":       product.Image,
+			"image":       product.Images,
 			"description": product.Description,
 			"price":       strconv.FormatFloat(product.Price, 'f', -1, 64),
 			"slug":        product.Slug,
@@ -146,13 +142,13 @@ func parseProduct(m map[string]string) (Product, error) {
 
 
 	return Product{
-		ID:          id,//strconv.FormatInt(id, 10),
+		ID:          strconv.FormatInt(id, 10),
 		Title:       m["title"],
-		Image:       m["image"],
+		Images:      m["image"],
 		Description: m["description"],
 		Price:       price,
 		Slug:        m["slug"],
-		MerchantID:  merchantID,
+		MID:  merchantID,
 		Links:       []string{},
 		Meta:        map[string]string{},
 	}, nil

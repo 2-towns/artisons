@@ -57,6 +57,24 @@ func TestAvailableReturnsTrueWhenSuccess(t *testing.T) {
 
 	if exists := Available(c, pid); !exists {
 		t.Fatalf(`Available(pid) = %v, want true`, exists)
+
+func FakeProduct() Product {
+	randID, err := utils.RandomString(10)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when generating random ID %s", err.Error())
+		return Product{}
+	}
+	randPrice := rand.Float64() * 100
+	return Product{
+		PID:          randID, // Génère un ID aléatoire entre 1 et 1000.
+		Title:       faker.Sentence(), // Génère une phrase aléatoire pour le titre.
+		Description: faker.Paragraph(), // Génère un paragraphe aléatoire pour la description.
+		Price:       randPrice, // Génère un prix aléatoire.
+		Slug:        faker.Word(), // Génère un mot aléatoire pour le slug.
+		Image:       "https://example.com/image.jpg", // Utilise une URL d'image statique.
+		MID:  faker.UUIDHyphenated(), // Génère une chaîne aléatoire.
+		Links:       []string{faker.URL(), faker.URL()}, // Génère deux URLs aléatoires pour les liens.
+		Meta:        map[string]string{"key": faker.Word(), "value": faker.Sentence()}, // Génère un dictionnaire avec une clé et une valeur aléatoires.
 	}
 }
 
