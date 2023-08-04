@@ -6,7 +6,7 @@ import (
 	"net/smtp"
 )
 
-func Send(email string, message string) error {
+func Send(email, message string) error {
 	from := conf.EmailUsername
 	password := conf.EmailPassword
 

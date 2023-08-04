@@ -26,8 +26,8 @@ func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {
 	csv := lines{h}
 
 	count, err := Import(csv, conf.DefaultMID)
-	if err == nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+	if err == nil || count != 0 || err.Error() != "csv_not_valid" {
+		t.Fatalf(`Import = %d, %v, want 0, 'csv_not_valid'`, count, err)
 	}
 }
 
@@ -42,8 +42,8 @@ func TestCsvImportHeaderFirstCellMisvalue(t *testing.T) {
 	csv := lines{h}
 
 	count, err := Import(csv, conf.DefaultMID)
-	if err == nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+	if err == nil || count != 0 || err.Error() != "csv_not_valid" {
+		t.Fatalf(`Import = %d, %v, want 0, 'csv_not_valid'`, count, err)
 	}
 }
 
@@ -60,7 +60,7 @@ func TestCsvImportRequiredLineValuesMisnumber(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -77,7 +77,7 @@ func TestCsvImportSkuMissing(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestCsvImportSkuMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -111,7 +111,7 @@ func TestCsvImportTitleMissing(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -128,7 +128,7 @@ func TestCsvImportPriceMissing(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -145,7 +145,7 @@ func TestCsvImportPriceMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -162,7 +162,7 @@ func TestCsvImportCurrencyMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -179,7 +179,7 @@ func TestCsvImportQuantityMissing(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -196,7 +196,7 @@ func TestCsvImportQuantiyMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -213,7 +213,7 @@ func TestCsvImportStatusMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -230,7 +230,7 @@ func TestCsvImportDescriptionMissing(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -247,7 +247,7 @@ func TestCsvImportImagesMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -264,7 +264,7 @@ func TestCsvImportImagesMissing(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -283,7 +283,7 @@ func TestCsvImportImagesNotFound(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -302,7 +302,7 @@ func TestCsvImportImagesBadExtension(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -319,7 +319,7 @@ func TestCsvImportLocalImageBadExtension(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -336,7 +336,7 @@ func TestCsvImportLocalImageNotFound(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -353,7 +353,7 @@ func TestCsvImportWeightMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -370,7 +370,7 @@ func TestCsvImportOptionsMisvalue(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
 
@@ -381,7 +381,7 @@ func TestCsvImportOk(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
 	}
 }
 
@@ -396,7 +396,7 @@ func TestCsvImportLocalImageOk(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
 	}
 }
 
@@ -411,7 +411,7 @@ func TestCsvImportWihoutOptionsOk(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
 	}
 }
 
@@ -426,7 +426,7 @@ func TestCsvImportWihoutLinksOk(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
 	}
 }
 
@@ -441,6 +441,6 @@ func TestCsvImportWihoutWeightOk(t *testing.T) {
 
 	count, err := Import(csv, conf.DefaultMID)
 	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, error`, count, err)
+		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
 	}
 }

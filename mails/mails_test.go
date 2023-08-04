@@ -10,6 +10,6 @@ import (
 func TestSend(t *testing.T) {
 	email := faker.Email()
 	if err := Send(email, faker.Sentence()); err != nil {
-		t.Fatalf("Send(email,faker.Sentence()), %v, nil, error", err)
+		t.Fatalf("Send(email,faker.Sentence()) = %v, want nil", err)
 	}
 }

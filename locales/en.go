@@ -31,5 +31,7 @@ func LoadEn() {
 	message.SetString(language.English, "home_description", "Home description")
 	message.SetString(language.English, "product_url", "/product")
 	message.SetString(language.English, "user_magik_link_url", "/magic-link.html")
+	message.SetString(language.English, "cart_not_found", "Your session is expired, please refresh your page.")
+	message.SetString(language.English, "unauthorized", "Your are not authoried to process the request, this will be reported.")
 
 }

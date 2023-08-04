@@ -10,6 +10,6 @@ func TestImagePath(t *testing.T) {
 	expected := "../web/images/123/1"
 
 	if p != expected {
-		t.Fatalf(`TestImagePath("123", 1) = %s, want %s, error`, p, expected)
+		t.Fatalf(`TestImagePath("123", 1) = %s, want %s`, p, expected)
 	}
 }

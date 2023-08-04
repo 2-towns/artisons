@@ -25,6 +25,9 @@ const DatabaseIndex = 0
 // Session duration in nanoseconds
 const SessionDuration = time.Hour * 24 * 30
 
+// Cart duration in nanoseconds
+const CartDuration = time.Hour * 24 * 7 
+
 // SessionIDCookie is the session id cookie name
 const SessionIDCookie = "session_id"
 

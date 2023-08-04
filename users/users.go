@@ -48,17 +48,32 @@ type Address struct {
 	Phone         string `validate:"required"`
 }
 
-/*	sessionID, err := stringutil.Random()
+func updateMagicIfExists(email, magic string) (bool, error) {
+	ctx := context.Background()
+
+	exists, err := db.Redis.Exists(ctx, "user:"+email).Result()
 	if err != nil {
-		log.Printf("ERROR: sequence_fail when generating session ID : %s", err.Error())
-		return 0, errors.New("something_went_wrong")
-	}*/
-/*
-		content := p.Sprintf("user_magik_link_email", magicLink)
-	if err := mails.Send(email, content); err != nil {
-		log.Printf("ERROR: sequence_fail: error wehn sending email %s", err.Error())
-		return "", err
-	}*/
+		log.Printf("ERROR: sequence_fail when checking existings email %s : %s", email, err.Error())
+		return false, errors.New("something_went_wrong")
+	}
+
+	if exists == 0 {
+		return false, nil
+	}
+
+	uid, err := db.Redis.HGet(ctx, "user:"+email, "id").Result()
+	if err != nil {
+		log.Printf("ERROR: sequence_fail when getting the user id %s : %s", email, err.Error())
+		return false, errors.New("something_went_wrong")
+	}
+
+	if _, err := db.Redis.Set(ctx, "magic:"+magic, uid, conf.MagicCodeDuration).Result(); err != nil {
+		log.Printf("ERROR: sequence_fail when storing the magic code : %s", err.Error())
+		return false, errors.New("something_went_wrong")
+	}
+
+	return true, nil
+}
 
 // MagicLink generates a login code.
 // If the email does not exist, an user is created with an incremented
@@ -84,23 +99,16 @@ func MagicCode(email string) (string, error) {
 		log.Printf("ERROR: sequence_fail when generating magic link: %s", err.Error())
 		return "", errors.New("something_went_wrong")
 	}
-
 	log.Printf("WARN: sensitive_create: a new magic code is created with email %s\n", email)
 
 	ctx := context.Background()
-	uid, err := db.Redis.HGet(ctx, "user:"+email, "id").Result()
-	if uid != "" && err != nil {
-		if _, err := db.Redis.Set(ctx, "magic:"+magic, uid, conf.MagicCodeDuration).Result(); err != nil {
-			log.Printf("ERROR: sequence_fail when storing the magic code : %s", err.Error())
-			return "", errors.New("something_went_wrong")
-		}
-
-		return magic, nil
+	if done, err := updateMagicIfExists(email, magic); err != nil || done == true {
+		return magic, err
 	}
 
 	id, err := db.Redis.Incr(ctx, "user_next_id").Result()
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: %s", err.Error())
+		log.Printf("ERROR: sequence_fail when creating a new id: %s", err.Error())
 		return "", errors.New("something_went_wrong")
 	}
 
@@ -177,6 +185,14 @@ func parseUser(m map[string]string) (User, error) {
 		return User{}, errors.New("something_went_wrong")
 	}
 
+	devices := make(map[string]string)
+	for key, device := range m {
+		if strings.HasPrefix("auth:", key) {
+			k := strings.Replace(key, "auth:", "", 1)
+			devices[k] = device
+		}
+	}
+
 	return User{
 		ID:        id,
 		Email:     m["email"],
@@ -192,7 +208,15 @@ func parseUser(m map[string]string) (User, error) {
 		},
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
+		Devices:   devices,
 	}, nil
+}
+
+func pagination(page int64) (int64, int64) {
+	if page == -1 {
+		return 0, -1
+	}
+	return page * conf.ItemsPerPage, page*conf.ItemsPerPage + conf.ItemsPerPage
 }
 
 // List returns the users list in the application
@@ -200,17 +224,7 @@ func List(page int64) ([]User, error) {
 	key := "users"
 	ctx := context.Background()
 
-	var start int64
-	var end int64
-
-	if page == -1 {
-		start = 0
-		end = -1
-	} else {
-		start = page * conf.ItemsPerPage
-		end = page*conf.ItemsPerPage + conf.ItemsPerPage
-	}
-
+	start, end := pagination(page)
 	users := []User{}
 	ids := db.Redis.ZRange(ctx, key, start, end).Val()
 	pipe := db.Redis.Pipeline()
@@ -250,18 +264,15 @@ func (u User) SaveAddress(a Address) error {
 	}
 
 	ctx := context.Background()
-	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, fmt.Sprintf("user:%d", u.ID),
-			"firstname", a.Firstname,
-			"lastname", a.Lastname,
-			"complementary", a.Complementary,
-			"city", a.City,
-			"phone", a.Phone,
-			"zipcode", a.Zipcode,
-			"street", a.Address,
-		)
-		return nil
-	}); err != nil {
+	if _, err := db.Redis.HSet(ctx, fmt.Sprintf("user:%d", u.ID),
+		"firstname", a.Firstname,
+		"lastname", a.Lastname,
+		"complementary", a.Complementary,
+		"city", a.City,
+		"phone", a.Phone,
+		"zipcode", a.Zipcode,
+		"street", a.Address,
+	).Result(); err != nil {
 		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
 		return errors.New("something_went_wrong")
 	}
@@ -270,7 +281,6 @@ func (u User) SaveAddress(a Address) error {
 }
 
 // Sessions retrieve the active user sessions.
-// If a session is expired, it will be removed from the user session ids.
 func (u User) Sessions() ([]Session, error) {
 	ctx := context.Background()
 	pipe := db.Redis.Pipeline()
@@ -294,14 +304,12 @@ func (u User) Sessions() ([]Session, error) {
 		key := fmt.Sprintf("%s", cmd.Args()[1])
 		if cmd.Err() != nil {
 			log.Printf("ERROR: sequence_fail: error when retrieving session TTL %s %s", key, err.Error())
-			pipe.HDel(ctx, fmt.Sprintf("user:%d", u.ID), key)
 			continue
 		}
 
 		ttl := cmd.(*redis.DurationCmd).Val()
 		if ttl.Nanoseconds() < 0 {
 			log.Printf("session_expired: the session %s is expired %s", key, ttl)
-			pipe.HDel(ctx, fmt.Sprintf("user:%d", u.ID), key)
 			continue
 		}
 
@@ -327,7 +335,7 @@ func (u User) Sessions() ([]Session, error) {
 // If the login is successful, a session ID is created.
 // The user ID is stored with the key auth:sessionID with an expiration time.
 // An extra data is stored in order to retreive all the sessions for an user.
-func Login(magic string, device string) (string, error) {
+func Login(magic, device string) (string, error) {
 	if magic == "" {
 		log.Printf("input_validation_fail: the magic code is required")
 		return "", errors.New("user_magic_code_required")
@@ -340,7 +348,7 @@ func Login(magic string, device string) (string, error) {
 
 	ctx := context.Background()
 	uid, err := db.Redis.Get(ctx, "magic:"+magic).Result()
-	if err != nil {
+	if err != nil || uid == "" {
 		log.Printf("authn_login_fail: the magic code %s is not valid", magic)
 		return "", errors.New("user_magic_code_invalid")
 	}
@@ -394,11 +402,3 @@ func Logout(id int64, sid string) error {
 
 	return nil
 }
-
-/*pipe.HSet(ctx, key, "lastname", u.Address.Lastname)
-pipe.HSet(ctx, key, "firstname", u.Firstname)
-pipe.HSet(ctx, key, "address", u.Address)
-pipe.HSet(ctx, key, "city", u.City)
-pipe.HSet(ctx, key, "complemnetary", u.Complementary)
-pipe.HSet(ctx, key, "zipcode", u.Zipcode)
-pipe.HSet(ctx, key, "phone", u.Phone)*/

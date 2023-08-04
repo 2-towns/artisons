@@ -17,7 +17,7 @@ func TestUserList(t *testing.T) {
 	users, err := List(0)
 
 	if err != nil || len(users) == 0 || users[0].ID == 0 {
-		t.Fatalf("List(0) = %v, %v, not want [{ID: 0}], error", users, err)
+		t.Fatalf("List(0) = '%v', %v, want User, nil", users, err)
 	}
 }
 
@@ -25,7 +25,7 @@ func TestUserList(t *testing.T) {
 func TestMagicCode(t *testing.T) {
 	magic, err := MagicCode(faker.Email())
 	if magic == "" || err != nil {
-		t.Fatalf("TestMagicCode(faker.Email()) = %s, %v, not want '', error", magic, err)
+		t.Fatalf("TestMagicCode(faker.Email()) = '%s', %v, want string, nil", magic, err)
 	}
 }
 
@@ -34,23 +34,23 @@ func TestMagicCodeTwice(t *testing.T) {
 	magic, _ := MagicCode(faker.Email())
 	magic, err := MagicCode(faker.Email())
 	if magic == "" || err != nil {
-		t.Fatalf("TestMagicCode(faker.Email()) = %s, %v, not want '', error", magic, err)
+		t.Fatalf("TestMagicCode(faker.Email()) = '%s', %v, want string, nil", magic, err)
 	}
 }
 
 // TestMagicCodeWithEmailEmpty fails when email is empty
 func TestMagicCodeWithEmailEmpty(t *testing.T) {
 	magic, err := MagicCode("")
-	if magic != "" || err == nil {
-		t.Fatalf("TestMagicCode('') = %s, %v, want '', error", magic, err)
+	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
+		t.Fatalf("TestMagicCode('') = '%s', %v, want '', 'user_email_invalid'", magic, err)
 	}
 }
 
 // TestMagicCodeFailedWithBadEmail fails when email is incorrect
 func TestMagicCodeFailedWithBadEmail(t *testing.T) {
 	magic, err := MagicCode("toto")
-	if magic != "" || err == nil {
-		t.Fatalf("TestMagicCode('toto') = %s, %v, want '', error", magic, err)
+	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
+		t.Fatalf("TestMagicCode('toto') = '%s', %v, want '', 'user_email_invalid'", magic, err)
 	}
 }
 
@@ -68,7 +68,7 @@ func TestDeleteUser(t *testing.T) {
 
 	err := u.Delete()
 	if err != nil {
-		t.Fatalf("Delete(), %v, want nil, error", err)
+		t.Fatalf("Delete() = %v, want nil", err)
 	}
 }
 
@@ -76,7 +76,7 @@ func TestDeleteUser(t *testing.T) {
 func TestDeleteUserNotExisting(t *testing.T) {
 	err := User{}.Delete()
 	if err != nil {
-		t.Fatalf("Delete(), %v, want nil, error", err)
+		t.Fatalf("Delete() = %v, want nil", err)
 	}
 }
 
@@ -89,7 +89,7 @@ func TestLogin(t *testing.T) {
 
 	sid, err := Login(magic, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid == "" || err != nil {
-		t.Fatalf("TestLogin(magic) = %s, %v, not want '', error", sid, err)
+		t.Fatalf("TestLogin(magic) = '%s', %v, want string, nil", sid, err)
 	}
 }
 
@@ -101,16 +101,16 @@ func TestLoginWithoutDevice(t *testing.T) {
 	db.Redis.Set(ctx, "magic:"+magic, id, 0)
 
 	sid, err := Login(magic, "")
-	if sid != "" || err == nil {
-		t.Fatalf("TestLogin(magic) = %s, %v, want '', error", sid, err)
+	if sid != "" || err == nil || err.Error() != "user_device_required" {
+		t.Fatalf("TestLogin(magic) = '%s', %v, want '', 'user_device_required'", sid, err)
 	}
 }
 
 // TestLoginWithEmptyMagic try to authenticate an user with empty magic
 func TestLoginWithEmptyMagic(t *testing.T) {
 	sid, err := Login("", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil {
-		t.Fatalf("TestLogin('') = %s, %v, want '', error", sid, err)
+	if sid != "" || err == nil || err.Error() != "user_magic_code_required" {
+		t.Fatalf("TestLogin('') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
 	}
 }
 
@@ -118,7 +118,7 @@ func TestLoginWithEmptyMagic(t *testing.T) {
 func TestLoginWithNotExistingMagic(t *testing.T) {
 	sid, err := Login("titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil {
-		t.Fatalf("TestLogin('') = %s, %v, want '', error", sid, err)
+		t.Fatalf("TestLogin('') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
 	}
 }
 
@@ -132,23 +132,23 @@ func TestLogout(t *testing.T) {
 
 	err := Logout(id, sid)
 	if err != nil {
-		t.Fatalf("Logout(id, sid), %v, want nil, error", err)
+		t.Fatalf("Logout(id, sid) = %v, want nil", err)
 	}
 }
 
 // TestLogoutWithZeroID returns an error
 func TestLogoutWithZeroID(t *testing.T) {
 	err := Logout(0, "123")
-	if err == nil {
-		t.Fatalf("Logout(0, '123'), %v, not want nil, error", err)
+	if err == nil || err.Error() != "user_logout_invalid" {
+		t.Fatalf("Logout(0, '123') = %v, want 'user_logout_invalid'", err)
 	}
 }
 
 // TestLogoutWithEmptySID returns an error
 func TestLogoutWithEmptySID(t *testing.T) {
 	err := Logout(124, "")
-	if err == nil {
-		t.Fatalf("Logout(124, ''), %v, not want nil, error", err)
+	if err == nil || err.Error() != "user_logout_invalid" {
+		t.Fatalf("Logout(124, '') = %v, want 'user_logout_invalid'", err)
 	}
 }
 
@@ -156,7 +156,7 @@ func TestLogoutWithEmptySID(t *testing.T) {
 func TestLogoutWithNotExistingData(t *testing.T) {
 	err := Logout(124, "122")
 	if err != nil {
-		t.Fatalf("Logout(124, '122'), %v, not want nil, error", err)
+		t.Fatalf("Logout(124, '122') = %v, want nil", err)
 	}
 }
 
@@ -176,12 +176,12 @@ func TestSessions(t *testing.T) {
 
 	sessions, err := u.Sessions()
 	if len(sessions) == 0 || err != nil {
-		t.Fatalf("u.Session() = %v, %v, not want empty, error", sessions, err)
+		t.Fatalf("u.Session() = %v, %v, want []Session, nil", sessions, err)
 	}
 
 	session := sessions[0]
 	if session.ID == "" || session.Device == "" || session.TTL == 0 {
-		t.Fatalf("u.Session() = %v, %v, not want empty, error", session, err)
+		t.Fatalf("sessions[0] = %v, want Session", session)
 	}
 }
 
@@ -199,7 +199,7 @@ func TestSessionsExpired(t *testing.T) {
 
 	sessions, err := u.Sessions()
 	if len(sessions) != 0 || err != nil {
-		t.Fatalf("u.Session() = %v, %v, want empty, error", sessions, err)
+		t.Fatalf("u.Session() = %v, %v, want []Session, nil", sessions, err)
 	}
 }
 
@@ -213,7 +213,7 @@ func TestSessionsEmpty(t *testing.T) {
 
 	sessions, err := u.Sessions()
 	if len(sessions) != 0 || err != nil {
-		t.Fatalf("u.Session() = %v, %v, want empty, error", sessions, err)
+		t.Fatalf("u.Session() = %v, %v, want [], nil", sessions, err)
 	}
 }
 
@@ -236,7 +236,7 @@ func TestSaveAddress(t *testing.T) {
 	}
 	err := u.SaveAddress(a)
 	if err != nil {
-		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+		t.Fatalf("SaveAddress(a) = %v, want nil", err)
 	}
 }
 
@@ -258,7 +258,7 @@ func TestSaveAddressWithoutFirstname(t *testing.T) {
 	}
 	err := u.SaveAddress(a)
 	if err == nil || err.Error() != "user_firstname_required" {
-		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+		t.Fatalf("SaveAddress(a) = %v, want 'user_firstname_required'", err)
 	}
 }
 
@@ -280,7 +280,7 @@ func TestSaveAddressWithoutLastname(t *testing.T) {
 	}
 	err := u.SaveAddress(a)
 	if err == nil || err.Error() != "user_lastname_required" {
-		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+		t.Fatalf("SaveAddress(a) = %v, want 'user_lastname_required'", err)
 	}
 }
 
@@ -302,7 +302,7 @@ func TestSaveAddressWithoutAddress(t *testing.T) {
 	}
 	err := u.SaveAddress(a)
 	if err == nil || err.Error() != "user_address_required" {
-		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+		t.Fatalf("SaveAddress(a) = %v, want 'user_address_required'", err)
 	}
 }
 
@@ -324,7 +324,7 @@ func TestSaveAddressWithoutCity(t *testing.T) {
 	}
 	err := u.SaveAddress(a)
 	if err == nil || err.Error() != "user_city_required" {
-		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+		t.Fatalf("SaveAddress(a) = %v, want 'user_city_required'", err)
 	}
 }
 
@@ -346,7 +346,7 @@ func TestSaveAddressWithoutZipcode(t *testing.T) {
 	}
 	err := u.SaveAddress(a)
 	if err == nil || err.Error() != "user_zipcode_required" {
-		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+		t.Fatalf("SaveAddress(a) = %v, want 'user_zipcode_required'", err)
 	}
 }
 
@@ -369,6 +369,6 @@ func TestSaveAddressWithoutPhone(t *testing.T) {
 	}
 	err := u.SaveAddress(a)
 	if err == nil || err.Error() != "user_phone_required" {
-		t.Fatalf("SaveAddress(a), %v, want nil, error", err)
+		t.Fatalf("SaveAddress(a) = %v, want 'user_phone_required'", err)
 	}
 }
