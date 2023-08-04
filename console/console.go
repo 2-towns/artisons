@@ -238,7 +238,7 @@ func main() {
 
 			for _, product := range products {
 				t.AppendRow([]interface{}{
-					product.ID,
+					product.PID,
 					product.Title,
 					product.Description,
 					product.Price,

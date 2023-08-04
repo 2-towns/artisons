@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/utils"
 	"gifthub/http/contexts"
 	"gifthub/tracking"
 	"gifthub/users"
@@ -26,14 +27,6 @@ import (
 
 // Product is the product representation in the application
 type Product struct {
-	ID          int64            `redis:"id"` // ID is an unique identifier
-	Title       string            `redis:"title"`
-	Image       string            `redis:"image"`
-	Description string            `redis:"description"`
-	Price       float64           `redis:"price"`
-	Slug        string            `redis:"slug"`
-	Links       []string          // Links contains the linked product IDs
-	Meta        map[string]string // Meta contains the product options.
 	ID          string  `redis:"id"` // ID is an unique identifier
 	Title       string  `redis:"title" validate:"required"`
 	Description string  `redis:"description" validate:"required"`
@@ -82,6 +75,56 @@ func ImagePath(pid string, index int) (string, string) {
 	return folder, fmt.Sprintf("%s/%d", folder, index)
 }
 
+func Add(product Product) error {
+	v := validator.New()
+
+	// Validate the product
+	if err := v.Struct(product); err != nil {
+			log.Printf("input_validation_fail: error when validating product %s", err.Error())
+			return errors.New("product_invalid")
+	}
+
+	ctx := context.Background()
+
+// Generating a new unique ID for the product
+productID, err := utils.RandomString(10)
+if err != nil {
+    log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
+    return errors.New("something_went_wrong")
+}
+
+// Adding the ID to the product structure
+product.PID = productID
+
+
+	// Add product to Redis
+	pipe := db.Redis.Pipeline()
+	score, err := db.Redis.Incr(ctx, "product:score").Result()
+
+	// Update products list
+	pipe.ZAdd(ctx, "products", redis.Z{Score: float64(score), Member: productID})
+
+	// Store product data
+	pipe.HSet(ctx, fmt.Sprintf("product:%s", productID), map[string]interface{}{
+			"id":          product.PID,
+			"title":       product.Title,
+			"image":       product.Image,
+			"description": product.Description,
+			"price":       strconv.FormatFloat(product.Price, 'f', -1, 64),
+			"slug":        product.Slug,
+	})
+
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+			log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
+			return errors.New("something_went_wrong")
+	}
+
+	log.Printf("WARN: sensitive_create: a new product is created with id %s\n", productID)
+
+	return nil
+}
+
 func parseProduct(m map[string]string) (Product, error) {
 	id, err := strconv.ParseInt(m["id"], 10, 64)
 	if err != nil {
@@ -96,13 +139,20 @@ func parseProduct(m map[string]string) (Product, error) {
 		return Product{}, errors.New("something_went_wrong")
 	}
 
+	var merchantID string
+	if m["merchant_id"] != "" {
+			merchantID = m["merchant_id"]
+	}
+
+
 	return Product{
-		ID:          id,
+		ID:          id,//strconv.FormatInt(id, 10),
 		Title:       m["title"],
 		Image:       m["image"],
 		Description: m["description"],
 		Price:       price,
 		Slug:        m["slug"],
+		MerchantID:  merchantID,
 		Links:       []string{},
 		Meta:        map[string]string{},
 	}, nil
