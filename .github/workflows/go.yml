@@ -16,6 +16,8 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.19.x'
+      - name: Populating data
+        run: go run console/console.go populate
       - name: Install dependencies
         run: go get . 
       - name: Build
