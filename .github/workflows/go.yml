@@ -3,18 +3,23 @@ name: Go package
 on: [push]
 
 jobs:
-  build:
+  runner-job:
+jobs:
+  runs-on: ubuntu-latest
 
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.19.x'
-      - name: Install dependencies
-        run: go get . 
-      - name: Build
-        run: go build -v ./...
-      - name: Test
-        run: go test -v ./... 
+  steps:
+    - uses: actions/checkout@v3
+    - name: Install redis
+      run: sudo apt-get install -y redis-tools redis-server
+    - name: Verify that redis is up
+      run: redis-cli ping
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.19.x'
+    - name: Install dependencies
+      run: go get . 
+    - name: Build
+      run: go build -v ./...
+    - name: Test
+      run: go test -v ./... 
