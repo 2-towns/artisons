@@ -6,6 +6,7 @@ import (
 	"errors"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/orders"
 	"gifthub/products"
 	"gifthub/string/stringutil"
 	"log"
@@ -38,25 +39,14 @@ func cartExists(cid string) bool {
 	return ttl.Nanoseconds() > 0
 }
 
-func productExists(cid, pid string) bool {
-	ctx := context.Background()
-	exists, err := db.Redis.Exists(ctx, "product:"+pid).Result()
-	if err != nil {
-		log.Printf("sequence_fail: error when checking cart:%s exists %s", cid, err.Error())
-		return false
-	}
-
-	return exists > 0
-}
-
 // Add a product into a cart with its quantity
 // Verify that the cart and the product exists.
 func Add(cid, pid string, quantity int64) error {
-	if cartExists(cid) == false {
+	if !cartExists(cid) {
 		return errors.New("cart_not_found")
 	}
 
-	if productExists(cid, pid) == false {
+	if !products.Available(pid) {
 		return errors.New("product_not_found")
 	}
 
@@ -72,7 +62,7 @@ func Add(cid, pid string, quantity int64) error {
 // Get the full session cart.
 // TODO: Get the product detail from the products package
 func Get(cid string) (Cart, error) {
-	if cartExists(cid) == false {
+	if !cartExists(cid) {
 		return Cart{}, errors.New("cart_not_found")
 	}
 
@@ -86,7 +76,7 @@ func Get(cid string) (Cart, error) {
 	products := []products.Product{}
 	//pipe := db.Redis.Pipeline()
 	for key := range values {
-		if strings.HasPrefix(key, "product:") == false {
+		if !strings.HasPrefix(key, "product:") {
 			continue
 		}
 		k := strings.Replace(key, "product:", "", 1)
@@ -105,8 +95,7 @@ func Get(cid string) (Cart, error) {
 
 // UpdateDelivery update the delivery mode in Redis.
 func (c Cart) UpdateDelivery(d string) error {
-	if d != "collect" && d != "home" {
-		log.Printf("WARN: input_validation_fail: the delivery value is wrong %s", d)
+	if !orders.IsValidDelivery(d) {
 		return errors.New("unauthorized")
 	}
 
@@ -121,7 +110,7 @@ func (c Cart) UpdateDelivery(d string) error {
 
 // UpdatePayment update the payment mode in Redis.
 func (c Cart) UpdatePayment(p string) error {
-	if p != "cash" && p != "card" && p != "bitcoin" && p != "wire" {
+	if !orders.IsValidPayment(p) {
 		log.Printf("WARN: input_validation_fail: the payment value is wrong %s", p)
 		return errors.New("unauthorized")
 	}
