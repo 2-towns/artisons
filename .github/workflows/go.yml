@@ -1,14 +1,17 @@
 name: Go package
 
-on: [push]
+on:
+  push:
+     branches:
+      - main 
+  pull_request:
+     branches:
+      - main 
 
 jobs:
   test:
-    # Service containers to run with `runner-job`
     services:
-      # Label used to access the service container
       redis:
-        # Docker Hub image
         image: redis
         # Set health checks to wait until redis has started
         options: >-
@@ -17,16 +20,11 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          # Maps port 6379 on service container to the host
           - 6379:6379
 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      #- name: Install redis
-      #  run: sudo apt-get install -y redis-tools redis-server
-      #- name: Verify that redis is up
-      #  run: redis-cli ping
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
