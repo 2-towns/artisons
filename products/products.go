@@ -23,6 +23,7 @@ import (
 
 // Product is the product representation in the application
 type Product struct {
+
 	ID          string  `redis:"id"` // ID is an unique identifier
 	Title       string  `redis:"title" validate:"required"`
 	Description string  `redis:"description" validate:"required"`
@@ -53,6 +54,16 @@ type Query struct {
 	PriceMax float32
 	Tags     []string
 	Meta     map[string]string
+	ID          string            `redis:"id"`
+	MID         string            `redis:"merchant_id"` // MerchantID is the id of the merchant that sells the product
+	Title       string            `redis:"title"`
+	Image       string            `redis:"image"`
+	Description string            `redis:"description"`
+	Price       float64           `redis:"price"`
+	Slug        string            `redis:"slug"`
+	Links       []string          // Links contains the linked product IDs
+	Meta        map[string]string // Meta contains the product options.
+
 }
 
 const (
@@ -76,22 +87,21 @@ func Add(product Product) error {
 
 	// Validate the product
 	if err := v.Struct(product); err != nil {
-			log.Printf("input_validation_fail: error when validating product %s", err.Error())
-			return errors.New("product_invalid")
+		log.Printf("input_validation_fail: error when validating product %s", err.Error())
+		return errors.New("product_invalid")
 	}
 
 	ctx := context.Background()
 
-// Generating a new unique ID for the product
-productID, err := utils.RandomString(10)
-if err != nil {
-    log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
-    return errors.New("something_went_wrong")
-}
+	// Generating a new unique ID for the product
+	productID, err := utils.RandomString(10)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
+		return errors.New("something_went_wrong")
+	}
 
-// Adding the ID to the product structure
-product.ID = productID
-
+	// Adding the ID to the product structure
+	product.ID = productID
 
 	// Add product to Redis
 	pipe := db.Redis.Pipeline()
@@ -112,8 +122,8 @@ product.ID = productID
 
 	_, err = pipe.Exec(ctx)
 	if err != nil {
-			log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
-			return errors.New("something_went_wrong")
+		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
+		return errors.New("something_went_wrong")
 	}
 
 	log.Printf("WARN: sensitive_create: a new product is created with id %s\n", productID)
@@ -124,7 +134,6 @@ product.ID = productID
 func parseProduct(m map[string]string) (Product, error) {
 	id := m["id"]
 
-
 	priceStr := m["price"]
 	price, err := strconv.ParseFloat(priceStr, 64)
 	if err != nil {
@@ -134,9 +143,8 @@ func parseProduct(m map[string]string) (Product, error) {
 
 	var merchantID string
 	if m["merchant_id"] != "" {
-			merchantID = m["merchant_id"]
+		merchantID = m["merchant_id"]
 	}
-
 
 	return Product{
 		ID:          strconv.FormatInt(id, 10),
@@ -145,7 +153,7 @@ func parseProduct(m map[string]string) (Product, error) {
 		Description: m["description"],
 		Price:       price,
 		Slug:        m["slug"],
-		MID:  merchantID,
+		MID:         merchantID,
 		Links:       []string{},
 		Meta:        map[string]string{},
 	}, nil
@@ -208,6 +216,27 @@ func Availables(c context.Context, pids []string) bool {
 	for _, pid := range pids {
 		pipe.HGet(ctx, "product:"+pid, "status")
 	}
+
+func FakeProduct() Product {
+	randID, err := utils.RandomString(10)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when generating random ID %s", err.Error())
+		return Product{}
+	}
+	randPrice := rand.Float64() * 100
+	return Product{
+		ID:          randID,                                                            // Génère un ID aléatoire entre 1 et 1000.
+		Title:       faker.Sentence(),                                                  // Génère une phrase aléatoire pour le titre.
+		Description: faker.Paragraph(),                                                 // Génère un paragraphe aléatoire pour la description.
+		Price:       randPrice,                                                         // Génère un prix aléatoire.
+		Slug:        faker.Word(),                                                      // Génère un mot aléatoire pour le slug.
+		Image:       "https://example.com/image.jpg",                                   // Utilise une URL d'image statique.
+		MID:         faker.UUIDHyphenated(),                                            // Génère une chaîne aléatoire.
+		Links:       []string{faker.URL(), faker.URL()},                                // Génère deux URLs aléatoires pour les liens.
+		Meta:        map[string]string{"key": faker.Word(), "value": faker.Sentence()}, // Génère un dictionnaire avec une clé et une valeur aléatoires.
+	}
+}
+
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
