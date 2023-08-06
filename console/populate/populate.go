@@ -6,6 +6,11 @@ import (
 	"gifthub/db"
 
 	"github.com/redis/go-redis/v9"
+
+	"gifthub/products"
+	"gifthub/users"
+
+	"github.com/go-faker/faker/v4"
 )
 
 func del(ctx context.Context, pipe redis.Pipeliner, pattern string) {
@@ -88,6 +93,34 @@ func Run() error {
 
 	alive := true
 	user(ctx, pipe, "SES1", alive)
+	alive := true
+	user, err := User(ctx, "test", alive)
+	err = products.Add(products.FakeProduct())
+	if err != nil {
+		return err
+	}
+
+	if _, err = Order(ctx, "test", user.ID, map[string]int64{product.ID: 1}); err != nil {
+		return err
+	}
+
+	if _, err = Cart(ctx, "test", user.ID); err != nil {
+		return err
+	}
+
+	online := true
+	if _, err = Article(ctx, online); err != nil {
+		return err
+	}
+
+	offline := false
+	if _, err = Article(ctx, offline); err != nil {
+		return err
+	}
+
+	if _, err = Article(ctx, offline); err != nil {
+		return err
+	}
 
 	expired := false
 	user(ctx, pipe, "expired", expired)

@@ -122,11 +122,8 @@ product.ID = productID
 }
 
 func parseProduct(m map[string]string) (Product, error) {
-	id, err := strconv.ParseInt(m["id"], 10, 64)
-	if err != nil {
-		log.Printf("ERROR: sequence_fail: error when parsing id %s", m["id"])
-		return Product{}, errors.New("something_went_wrong")
-	}
+	id := m["id"]
+
 
 	priceStr := m["price"]
 	price, err := strconv.ParseFloat(priceStr, 64)
