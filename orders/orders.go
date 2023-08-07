@@ -17,6 +17,8 @@ import (
 )
 
 type Order struct {
+	ID string
+
 	// The user ID
 	UID int64
 
@@ -65,7 +67,14 @@ func IsValidPayment(p string) bool {
 	return true
 }
 
-// Add an order to redis
+// Add create an order into Redis.
+// The default order status is "created".
+// The default payment_status is "payment_progress".
+// The order ID is a random string and returned if it succeed.
+// The products are stored as the cart, the key is the
+// product id and the value is the quantity.
+// An error occurs if the delivery or the payment values are invalid,
+// if the product list is empty, or one of the product is not available.
 func (o Order) Save() (string, error) {
 	if !IsValidDelivery(o.Delivery) {
 		log.Printf("WARN: input_validation_fail: the delivery value %s is wrong", o.Delivery)
