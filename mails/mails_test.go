@@ -6,7 +6,7 @@ import (
 	"github.com/go-faker/faker/v4"
 )
 
-// TestSend send a test email
+// TestSend expects to succeed
 func TestSend(t *testing.T) {
 	email := faker.Email()
 	if err := Send(email, faker.Sentence()); err != nil {

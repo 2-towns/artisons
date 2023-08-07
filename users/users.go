@@ -102,7 +102,7 @@ func MagicCode(email string) (string, error) {
 	log.Printf("WARN: sensitive_create: a new magic code is created with email %s\n", email)
 
 	ctx := context.Background()
-	if done, err := updateMagicIfExists(email, magic); err != nil || done == true {
+	if done, err := updateMagicIfExists(email, magic); err != nil || done {
 		return magic, err
 	}
 
@@ -169,7 +169,7 @@ func (u User) Delete() error {
 func parseUser(m map[string]string) (User, error) {
 	id, err := strconv.ParseInt(m["id"], 10, 32)
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: error when parsing id %s", m["id"])
+		log.Printf("ERROR: sequence_fail: error when parsing id %s %s", m["id"], err.Error())
 		return User{}, errors.New("something_went_wrong")
 	}
 
@@ -261,6 +261,11 @@ func (u User) SaveAddress(a Address) error {
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("user_%s_required", low)
+	}
+
+	if u.ID == 0 {
+		log.Printf("sequence_fail: the user id is empty")
+		return errors.New("something_went_wrong")
 	}
 
 	ctx := context.Background()
@@ -359,15 +364,15 @@ func Login(magic, device string) (string, error) {
 		return "", errors.New("something_went_wrong")
 	}
 
-	sessionID, err := stringutil.Random()
+	sid, err := stringutil.Random()
 	if err != nil {
 		log.Printf("ERROR: sequence_fail: error when generating a new session ID %s", err.Error())
 		return "", errors.New("something_went_wrong")
 	}
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.Set(ctx, "auth:"+sessionID, id, conf.SessionDuration)
-		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "auth:"+sessionID, device)
+		rdb.Set(ctx, "auth:"+sid, id, conf.SessionDuration)
+		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "auth:"+sid, device)
 		return nil
 	}); err != nil {
 		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
@@ -375,22 +380,28 @@ func Login(magic, device string) (string, error) {
 	}
 
 	log.Printf("authn_login_success: user ID %s did a successful login on device %s", uid, device)
-	log.Printf("authn_token_created: session ID generated %s for user ID %s\n", sessionID, uid)
+	log.Printf("authn_token_created: session ID generated %s for user ID %s\n", sid, uid)
 
-	return sessionID, nil
+	return sid, nil
 }
 
 // Logout destroys the user session.
-func Logout(id int64, sid string) error {
-	if sid == "" || id == 0 {
-		log.Printf("input_validation_fail: the id and session id are required")
-		return errors.New("user_logout_invalid")
+func Logout(sid string) error {
+	if sid == "" {
+		log.Printf("input_validation_fail: the session id is required")
+		return errors.New("unauthorized")
 	}
 
 	ctx := context.Background()
+	uid, err := db.Redis.Get(ctx, "auth:"+sid).Result()
+	if err != nil || uid == "" {
+		log.Printf("input_validation_fail: the session id does not exist")
+		return errors.New("unauthorized")
+	}
+
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, "auth:"+sid)
-		rdb.HDel(ctx, fmt.Sprintf("user:%d", id), "auth:"+sid)
+		rdb.HDel(ctx, "user:%s"+uid, "auth:"+sid)
 
 		return nil
 	}); err != nil {

@@ -17,8 +17,7 @@ func init() {
 	conf.ImgProxyPath = "../../../" + conf.ImgProxyPath
 }
 
-// TestCsvImportRequiredHeadersMisnumber calls util.CsvImport with csv data
-// without enough headers
+// TestCsvImportRequiredHeadersMisnumber expects to fail because of missing headers
 func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {
 	h := make([]string, 3)
 	copy(h, header)
@@ -31,8 +30,7 @@ func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {
 	}
 }
 
-// TestCsvImportHeaderFirstCellMisvalue calls util.CsvImport with a bad value
-// for the first csv data header
+// TestCsvImportHeaderFirstCellMisvalue expects to fail because of first cell bad value
 func TestCsvImportHeaderFirstCellMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -47,8 +45,7 @@ func TestCsvImportHeaderFirstCellMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportRequiredLineValueMisnumber calls util.CsvImport with a csv data
-// line that does not contains the required values
+// TestCsvImportRequiredLineValueMisnumber expects to fail because of missing fields
 func TestCsvImportRequiredLineValuesMisnumber(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -64,8 +61,7 @@ func TestCsvImportRequiredLineValuesMisnumber(t *testing.T) {
 	}
 }
 
-// TestCsvImportSkuMissing calls util.CsvImport with a csv data
-// line without sku
+// TestCsvImportSkuMissing expects to fail because of missing sku
 func TestCsvImportSkuMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -81,8 +77,7 @@ func TestCsvImportSkuMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportSkuMisvalue calls util.CsvImport with a csv data
-// line that contains bad sku value
+// TestCsvImportSkuMisvalue  expects to fail because of sku misvalue
 func TestCsvImportSkuMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -98,8 +93,7 @@ func TestCsvImportSkuMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportTitleMissing calls util.CsvImport with a csv data
-// line without title
+// TestCsvImportTitleMissing expects to fail because of missing title
 func TestCsvImportTitleMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -115,8 +109,7 @@ func TestCsvImportTitleMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportPriceMissing calls util.CsvImport with a csv data
-// line without price
+// TestCsvImportPriceMissing expects to fail because of missing price
 func TestCsvImportPriceMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -132,8 +125,7 @@ func TestCsvImportPriceMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportPriceMisvalue calls util.CsvImport with a csv data
-// line that contains a bad price value
+// TestCsvImportPriceMisvalue  expects to fail because of price misvalue
 func TestCsvImportPriceMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -149,8 +141,7 @@ func TestCsvImportPriceMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportCurrencyMisvalue calls util.CsvImport with a csv data
-// line that contains a bad currency value
+// TestCsvImportCurrencyMisvalue  expects to fail because of currency misvalue
 func TestCsvImportCurrencyMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -166,8 +157,7 @@ func TestCsvImportCurrencyMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportQuantityMissing calls util.CsvImport with a csv data
-// line without quantity
+// TestCsvImportQuantityMissing expects to fail because of missing quantity
 func TestCsvImportQuantityMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -183,8 +173,7 @@ func TestCsvImportQuantityMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportQuantiyMisvalue calls util.CsvImport with a csv data
-// line that contains a bad quantity value
+// TestCsvImportQuantiyMisvalue expects to fail because of quantity misvalue
 func TestCsvImportQuantiyMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -200,8 +189,7 @@ func TestCsvImportQuantiyMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportStatusMisvalue calls util.CsvImport with a csv data
-// line that contains a bad status value
+// TestCsvImportStatusMisvalue expects to fail because of status misvalue
 func TestCsvImportStatusMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -217,8 +205,7 @@ func TestCsvImportStatusMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportDescriptionMissing calls util.CsvImport with a csv data
-// line without description
+// TestCsvImportDescriptionMissing expects to fail because of missing description
 func TestCsvImportDescriptionMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -234,8 +221,7 @@ func TestCsvImportDescriptionMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesMisvalue calls util.CsvImport with a csv data
-// line that contains a bad images value
+// TestCsvImportImagesMisvalue expects to fail because of images misvalue
 func TestCsvImportImagesMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -251,8 +237,7 @@ func TestCsvImportImagesMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesMissing calls util.CsvImport with a csv data
-// line that contains a bad images value
+// TestCsvImportImagesMissing expects to fail because of missing images
 func TestCsvImportImagesMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -268,8 +253,7 @@ func TestCsvImportImagesMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesMisvalue calls util.CsvImport with a csv data
-// line that contains a not found image
+// TestCsvImportImagesMisvalue expects to fail because of images not found
 func TestCsvImportImagesNotFound(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -287,8 +271,7 @@ func TestCsvImportImagesNotFound(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesBadExtension calls util.CsvImport with a csv data
-// line that contains a file with a bad extension
+// TestCsvImportImagesBadExtension expects to fail because of extension misvalue
 func TestCsvImportImagesBadExtension(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -306,8 +289,7 @@ func TestCsvImportImagesBadExtension(t *testing.T) {
 	}
 }
 
-// TestCsvImportLocalImageBadExtension calls util.CsvImport with a csv data
-// line that a local file with a bad extension
+// TestCsvImportLocalImageBadExtension expects to fail because of local extension misvalue
 func TestCsvImportLocalImageBadExtension(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -323,8 +305,7 @@ func TestCsvImportLocalImageBadExtension(t *testing.T) {
 	}
 }
 
-// TestCsvImportLocalImageNotFound calls util.CsvImport with a csv data
-// line that a local file not found
+// TestCsvImportLocalImageNotFound expects to fail because of local file not found
 func TestCsvImportLocalImageNotFound(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -340,8 +321,7 @@ func TestCsvImportLocalImageNotFound(t *testing.T) {
 	}
 }
 
-// TestCsvImportWeightMisvalue calls util.CsvImport with a csv data
-// line that contains a bad weight value
+// TestCsvImportWeightMisvalue expects to fail because of weight misvalue
 func TestCsvImportWeightMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -357,8 +337,7 @@ func TestCsvImportWeightMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportOptionsMisvalue calls util.CsvImport with a csv data
-// line that contains a bad options value
+// TestCsvImportOptionsMisvalue expects to fail because of options misvalue
 func TestCsvImportOptionsMisvalue(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
@@ -374,8 +353,7 @@ func TestCsvImportOptionsMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportOk calls util.CsvImport with a csv data
-// line that contains a bad options value
+// TestCsvImportOk expects to succeed
 func TestCsvImportOk(t *testing.T) {
 	csv := lines{header, line}
 
@@ -385,8 +363,7 @@ func TestCsvImportOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportLocalImageOk calls util.CsvImport with a csv data
-// line that contains a local image
+// TestCsvImportOk expects to succeed with a local image
 func TestCsvImportLocalImageOk(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
@@ -400,9 +377,8 @@ func TestCsvImportLocalImageOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportWihoutOptionsOk calls util.CsvImport with a csv data
-// line that does not contains options
-func TestCsvImportWihoutOptionsOk(t *testing.T) {
+// TestCsvImportWithoutOptionsOk expects to succeed without options
+func TestCsvImportWithoutOptionsOk(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
@@ -415,8 +391,7 @@ func TestCsvImportWihoutOptionsOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportWihoutLinksOk calls util.CsvImport with a csv data
-// line that does not contains links
+// TestCsvImportWihoutLinksOk expects to succeed without links
 func TestCsvImportWihoutLinksOk(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
@@ -430,8 +405,7 @@ func TestCsvImportWihoutLinksOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportWihoutWeightOk calls util.CsvImport with a csv data
-// line that does not contains weight
+// TestCsvImportWihoutWeightOk expects to succeed without weight
 func TestCsvImportWihoutWeightOk(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)

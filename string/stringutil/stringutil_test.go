@@ -2,7 +2,7 @@ package stringutil
 
 import "testing"
 
-// TestRandom checks the generation of a random string
+// TestRandom expects to succeed
 func TestRandom(t *testing.T) {
 	r, err := Random()
 
@@ -11,7 +11,7 @@ func TestRandom(t *testing.T) {
 	}
 }
 
-// TestSlugify checks the slug result
+// TestSlugify expects to succeed
 func TestSlugify(t *testing.T) {
 	s := Slugify("VERy nice title 12")
 
