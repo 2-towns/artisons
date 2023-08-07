@@ -2,30 +2,35 @@ package users
 
 import (
 	"context"
+	"errors"
 	"gifthub/conf"
 	"gifthub/db"
 	"log"
 	"net/http"
 )
 
-func findBySessionID(sessionID string) (User, error) {
+func findBySessionID(sid string) (User, error) {
+	if sid == "" {
+		log.Printf("input_validation_fail: the session id is required")
+		return User{}, errors.New("unauthorized")
+	}
+
 	ctx := context.Background()
-	id, err := db.Redis.Get(ctx, "auth:"+sessionID).Result()
+	id, err := db.Redis.Get(ctx, "auth:"+sid).Result()
 	if err != nil {
-		log.Printf("WARN: authz_fail: error when looking for session %s %s", sessionID, err.Error())
-		return User{}, err
+		log.Printf("WARN: authz_fail: error when looking for session %s %s", sid, err.Error())
+		return User{}, errors.New("unauthorized")
 	}
 
 	m, err := db.Redis.HGetAll(ctx, "user:"+id).Result()
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: error when loading redis data for session %s %s", sessionID, err.Error())
-		return User{}, err
+		log.Printf("ERROR: sequence_fail: error when loading redis data for session %s %s", sid, err.Error())
+		return User{}, errors.New("unauthorized")
 	}
 
 	u, err := parseUser(m)
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: error parsing data for user %s %s ", id, err.Error())
-		return User{}, err
+		return User{}, errors.New("unauthorized")
 	}
 
 	return u, err

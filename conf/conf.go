@@ -26,7 +26,7 @@ const DatabaseIndex = 0
 const SessionDuration = time.Hour * 24 * 30
 
 // Cart duration in nanoseconds
-const CartDuration = time.Hour * 24 * 7 
+const CartDuration = time.Hour * 24 * 7
 
 // SessionIDCookie is the session id cookie name
 const SessionIDCookie = "session_id"
@@ -37,14 +37,19 @@ const MagicCodeDuration = time.Minute * 5
 // AppURL is the application root URL
 const AppURL = "http://localhost:8080"
 
-// EmailUsername is the username for email sending 
+// EmailUsername is the username for email sending
 const EmailUsername = "a3a5f2d396a820"
 
-// EmailPassword is the password for email sending 
+// EmailPassword is the password for email sending
 const EmailPassword = "12fcfd3c6edb95"
 
-// EmailHost is the email host for email sending 
+// EmailHost is the email host for email sending
 const EmailHost = "sandbox.smtp.mailtrap.io"
 
-// EmailPort is the email port for email sending 
+// EmailPort is the email port for email sending
 const EmailPort = "587"
+
+// HasHomeDelivery enabled the "home" delivery if true
+const HasHomeDelivery = true
+
+const PaymentMethods = "cash, wire, bitcoin, card"
