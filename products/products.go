@@ -82,6 +82,7 @@ func ImagePath(pid string, index int) (string, string) {
 	return folder, fmt.Sprintf("%s/%d", folder, index)
 }
 
+//Add adds a new product to the database
 func Add(product Product) error {
 	v := validator.New()
 
