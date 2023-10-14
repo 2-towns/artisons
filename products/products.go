@@ -17,11 +17,24 @@ import (
 	"strings"
 	"time"
 
+	"gifthub/db"
+	"log"
+	"math/rand"
+	"strconv"
+	"math"
+	"math/rand"
+	"strings"
+
+	"github.com/go-faker/faker/v4"
 	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/redis/go-redis/v9"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
-// Product is the product representation in the application
+
 type Product struct {
 
 	ID          string  `redis:"id"` // ID is an unique identifier
@@ -66,6 +79,9 @@ type Query struct {
 
 }
 
+// Utilise le type MetaData pour les options.
+
+
 const (
 	Online  = "online"  // Make th product available in the application
 	Offline = "offline" // Hide th product  in the application
@@ -82,7 +98,7 @@ func ImagePath(pid string, index int) (string, string) {
 	return folder, fmt.Sprintf("%s/%d", folder, index)
 }
 
-//Add adds a new product to the database
+//Add new product to the database
 func Add(product Product) error {
 	v := validator.New()
 
@@ -121,8 +137,9 @@ func Add(product Product) error {
 			"slug":        product.Slug,
 	})
 
-	_, err = pipe.Exec(ctx)
-	if err != nil {
+pipe.HSet(ctx, fmt.Sprintf("product:%s", productID), product)
+
+		if _,err = pipe.Exec(ctx); err!=nil {
 		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
 		return errors.New("something_went_wrong")
 	}
@@ -132,14 +149,9 @@ func Add(product Product) error {
 	return nil
 }
 
-func parseProduct(m map[string]string) (Product, error) {
-	id := m["id"]
-
-	priceStr := m["price"]
-	price, err := strconv.ParseFloat(priceStr, 64)
-	if err != nil {
-		log.Printf("ERROR: sequence_fail: error when parsing price %s", priceStr)
-		return Product{}, errors.New("something_went_wrong")
+func parseProduct(product Product) (Product, error) {
+	if product.ID == "" {
+		return Product{}, errors.New("ID is missing")
 	}
 
 	var merchantID string
@@ -152,11 +164,41 @@ func parseProduct(m map[string]string) (Product, error) {
 		Title:       m["title"],
 		Images:      m["image"],
 		Description: m["description"],
+	if product.Price == 0 {
+    log.Printf("ERROR: sequence_fail: Price is missing or zero")
+    return Product{}, errors.New("price_is_missing_or_zero")
+}
+
+price := math.Round(product.Price * 100) / 100
+
+
+	// Valider ou transformer l'ID du marchand
+	if product.MID == "" {
+		return Product{}, errors.New("merchant_id is missing")
+	}
+
+
+	// Mettre en majuscule la première lettre de chaque mot du titre
+	t := cases.Title(language.English)
+	// Mettre en majuscule la première lettre du titre
+	product.Title = t.String(product.Title)
+
+	// Retirer les espaces inutiles dans la description
+	product.Description = strings.TrimSpace(product.Description)
+
+
+	return Product{
+
+
+		ID:          strconv.FormatInt(id, 10),
+		Title:       product.Title,
+		Image:       product.Image,
+		Description: product.Description,
 		Price:       price,
-		Slug:        m["slug"],
-		MID:         merchantID,
-		Links:       []string{},
-		Meta:        map[string]string{},
+		Slug:        product.Slug,
+		MID:         product.MID,
+		Links:       product.Links,
+		Meta:        product.Meta,
 	}, nil
 }
 
@@ -196,8 +238,20 @@ func List(page int64) ([]Product, error) {
 	for _, cmd := range cmds {
 		m := cmd.(*redis.MapStringStringCmd).Val()
 
-		product, err := parseProduct(m)
-		if err != nil {
+		tempProduct := Product{
+			ID:          m["id"],
+			MID:         m["merchant_id"],
+			Title:       m["title"],
+			Image:       m["image"],
+			Description: m["description"],
+			Price:       m["price"].Float64(),
+			Slug:        m["slug"],
+			Links:       m["links"],
+			Meta:        m["meta"],
+	}
+
+	product, err := parseProduct(tempProduct)
+			if err != nil {
 			continue
 		}
 
@@ -217,6 +271,10 @@ func Availables(c context.Context, pids []string) bool {
 	for _, pid := range pids {
 		pipe.HGet(ctx, "product:"+pid, "status")
 	}
+<<<<<<< HEAD
+=======
+}
+>>>>>>> 236ed19 (refacto)
 
 func FakeProduct() Product {
 	randID, err := utils.RandomString(10)
@@ -574,3 +632,7 @@ func UnSerializeMeta(c context.Context, s, sep string) map[string]string {
 
 	return meta
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 236ed19 (refacto)
