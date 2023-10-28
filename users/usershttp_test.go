@@ -5,11 +5,11 @@ import "testing"
 // TestFindBySessionID expects to succeed
 func TestFindBySessionID(t *testing.T) {
 	alive := true
-	_, sid := createUser(alive)
-	u, err := findBySessionID(sid)
+	user := createUser(alive)
+	u, err := findBySessionID(user.SID)
 
-	if err != nil || u.Email == "" {
-		t.Fatalf("findBySessionID(sid) = %v, %v, want User, nil", u, err)
+	if err != nil || u.SID == "" || u.Email == "" {
+		t.Fatalf("findBySessionID(user.SID) = %v, %v, want User, nil", u, err)
 	}
 }
 
@@ -25,10 +25,10 @@ func TestFindBySessionIDWithoutSID(t *testing.T) {
 // TestFindBySessionIDExpired expects to fail because of session expired
 func TestFindBySessionIDExpired(t *testing.T) {
 	alive := false
-	_, sid := createUser(alive)
-	u, err := findBySessionID(sid)
+	user := createUser(alive)
+	u, err := findBySessionID(user.SID)
 
 	if err == nil || err.Error() != "unauthorized" || u.Email != "" {
-		t.Fatalf("findBySessionID(sid) = %v, %v, want User, nil", u, err)
+		t.Fatalf("findBySessionID(user.SID) = %v, %v, want User, nil", u, err)
 	}
 }

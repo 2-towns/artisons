@@ -10,11 +10,17 @@ import (
 	"gifthub/products"
 	"gifthub/string/stringutil"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/exp/slices"
 )
+
+var Status = []string{"created", "processing", "delivering", "delivered", "canceled"}
+
+var Payments = []string{"cash", "wire", "bitcoin", "card"}
 
 type Order struct {
 	ID string
@@ -32,8 +38,10 @@ type Order struct {
 	PaymentStatus string
 
 	// "created", "processing", "delivering", "delivered", "canceled"
-	Statut string
+	Status string
 
+	// The key contains the product id and the value
+	// Is the quantity
 	Products map[string]int64
 }
 
@@ -59,7 +67,7 @@ func IsValidDelivery(d string) bool {
 // is valid. The values can be "card", "cash", "bitcoin" or "wire".
 // The payments can be enablee or disabled in the settings.
 func IsValidPayment(p string) bool {
-	if !strings.Contains(conf.PaymentMethods, p) {
+	if !slices.Contains(Payments, p) {
 		log.Printf("WARN: input_validation_fail: the payment method is not activated %s", p)
 		return false
 	}
@@ -121,7 +129,7 @@ func (o Order) Save() (string, error) {
 		)
 
 		for key, value := range o.Products {
-			rdb.HSet(ctx, "order:", "product:"+key, value)
+			rdb.HSet(ctx, "order:"+oid, "product:"+key, value)
 		}
 
 		rdb.HSet(ctx, fmt.Sprintf("user:%d", o.UID), "order:"+oid, oid)
@@ -133,4 +141,77 @@ func (o Order) Save() (string, error) {
 	}
 
 	return oid, nil
+}
+
+// UpdateStatus updates the order status.
+// An error occurs if the status is not a correct value,
+// or the order is not found.
+// The full order is returned and an notification is expected
+// to be sent to the customer.
+func UpdateStatus(oid, status string) (Order, error) {
+	if !slices.Contains(Status, status) {
+		log.Printf("WARN: input_validation_fail: the status value is wrong %s", status)
+		return Order{}, errors.New("unauthorized")
+	}
+
+	ctx := context.Background()
+	data, err := db.Redis.HGetAll(ctx, "order:"+oid).Result()
+	if err != nil {
+		log.Printf("sequence_fail: error when getting the order %s %s", oid, err.Error())
+		return Order{}, errors.New("something_went_wrong")
+	}
+
+	if data["id"] == "" {
+		log.Printf("input_validation_fail: the order %s does not exist", oid)
+		return Order{}, errors.New("order_not_found")
+	}
+
+	_, err = db.Redis.HSet(ctx, "order:"+oid, "status", status).Result()
+	if err != nil {
+		log.Printf("sequence_fail: error when setting the status order %s %s", oid, err.Error())
+		return Order{}, errors.New("something_went_wrong")
+	}
+
+	o, err := parseOrder(data)
+	if err != nil {
+		log.Printf("sequence_fail: error when parsing the order %s %s", oid, err.Error())
+		return Order{}, errors.New("something_went_wrong")
+	}
+
+	o.Status = status
+
+	return o, nil
+}
+
+func parseOrder(m map[string]string) (Order, error) {
+	id, err := strconv.ParseInt(m["uid"], 10, 32)
+	if err != nil {
+		log.Printf("ERROR: sequence_fail: error when parsing uid %s %s", m["id"], err.Error())
+		return Order{}, errors.New("something_went_wrong")
+	}
+
+	products := make(map[string]int64)
+	for key, value := range m {
+		if strings.HasPrefix("product:", key) {
+			k := strings.Replace(key, "product:", "", 1)
+
+			q, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				log.Printf("ERROR: sequence_fail: error when parsing quantity %s %s", value, err.Error())
+				return Order{}, errors.New("something_went_wrong")
+			}
+
+			products[k] = q
+		}
+	}
+
+	return Order{
+		ID:            m["id"],
+		UID:           id,
+		Delivery:      m["delivery"],
+		PaymentStatus: m["payment_status"],
+		Payment:       m["payment"],
+		Status:        m["status"],
+		Products:      products,
+	}, nil
 }

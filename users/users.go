@@ -8,6 +8,7 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/httputil"
+	"gifthub/locales"
 	"gifthub/string/stringutil"
 	"log"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/text/language"
 )
 
 // ContextKey is the context key used to store the lang
@@ -23,13 +25,24 @@ const ContextKey httputil.ContextKey = "user"
 
 // User is the user representation in the application
 type User struct {
+	// The current session ID
+	SID string
+
 	Email     string
 	ID        int64
 	Address   Address
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	MagicCode string
-	Devices   map[string]string
+
+	// The key is the session id and the value
+	// if the device information, the user agent.
+	Devices map[string]string
+
+	// The web push tokens
+	WPTokens []string
+
+	Lang language.Tag
 }
 
 type Session struct {
@@ -186,17 +199,24 @@ func parseUser(m map[string]string) (User, error) {
 	}
 
 	devices := make(map[string]string)
-	for key, device := range m {
+	wptokens := []string{}
+	for key, value := range m {
 		if strings.HasPrefix("auth:", key) {
 			k := strings.Replace(key, "auth:", "", 1)
-			devices[k] = device
+			devices[k] = value
+		}
+
+		if strings.HasPrefix("wptoken:", key) {
+			wptokens = append(wptokens, value)
 		}
 	}
 
 	return User{
 		ID:        id,
+		SID:       m["sid"],
 		Email:     m["email"],
 		MagicCode: m["magic"],
+		Lang:      language.Make(m["lang"]),
 		Address: Address{
 			Lastname:      m["lastname"],
 			Firstname:     m["firstname"],
@@ -209,14 +229,8 @@ func parseUser(m map[string]string) (User, error) {
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 		Devices:   devices,
+		WPTokens:  wptokens,
 	}, nil
-}
-
-func pagination(page int64) (int64, int64) {
-	if page == -1 {
-		return 0, -1
-	}
-	return page * conf.ItemsPerPage, page*conf.ItemsPerPage + conf.ItemsPerPage
 }
 
 // List returns the users list in the application
@@ -224,7 +238,7 @@ func List(page int64) ([]User, error) {
 	key := "users"
 	ctx := context.Background()
 
-	start, end := pagination(page)
+	start, end := conf.Pagination(page)
 	users := []User{}
 	ids := db.Redis.ZRange(ctx, key, start, end).Val()
 	pipe := db.Redis.Pipeline()
@@ -373,6 +387,7 @@ func Login(magic, device string) (string, error) {
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Set(ctx, "auth:"+sid, id, conf.SessionDuration)
 		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "auth:"+sid, device)
+		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", locales.Default.String())
 		return nil
 	}); err != nil {
 		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
@@ -412,4 +427,26 @@ func Logout(sid string) error {
 	log.Printf("authn_token_revoked: user session %s destroyed", sid)
 
 	return nil
+}
+
+// Get the user information from its id
+func Get(id int64) (User, error) {
+	if id == 0 {
+		log.Printf("input_validation_fail: the user id is required")
+		return User{}, errors.New("user_not_found")
+	}
+
+	ctx := context.Background()
+	data, err := db.Redis.HGetAll(ctx, fmt.Sprintf("user:%d", id)).Result()
+	if err != nil {
+		log.Printf("sequence_fail: error when getting data from redis %s", err.Error())
+		return User{}, errors.New("something_went_wrong")
+	}
+
+	if data["id"] == "" {
+		log.Printf("input_validation_fail: the user is not found")
+		return User{}, errors.New("user_not_found")
+	}
+
+	return parseUser(data)
 }

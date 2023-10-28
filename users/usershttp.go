@@ -28,6 +28,7 @@ func findBySessionID(sid string) (User, error) {
 		return User{}, errors.New("unauthorized")
 	}
 
+	m["sid"] = sid
 	u, err := parseUser(m)
 	if err != nil {
 		return User{}, errors.New("unauthorized")

@@ -8,6 +8,9 @@ import (
 	"gifthub/console/parser"
 	"gifthub/console/populate"
 	"gifthub/locales"
+	"gifthub/notifications/mails"
+	"gifthub/notifications/vapid"
+	"gifthub/orders"
 	"gifthub/users"
 	"log"
 	"os"
@@ -63,6 +66,32 @@ func main() {
 
 			if err != nil {
 				log.Panic(err)
+			}
+		}
+
+	case "orderstatus":
+		{
+			id := flag.String("id", "", "The order id")
+			status := flag.String("status", "", "The new order status")
+
+			flag.Parse()
+
+			order, err := orders.UpdateStatus(*id, *status)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			user, err := users.Get(order.UID)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			p := message.NewPrinter(user.Lang)
+			msg := p.Sprintf("mail_magic_link", id, status)
+			mails.Send(user.Email, msg)
+
+			for _, value := range user.Devices {
+				vapid.Send(value, msg)
 			}
 		}
 

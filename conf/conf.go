@@ -52,4 +52,20 @@ const EmailPort = "587"
 // HasHomeDelivery enabled the "home" delivery if true
 const HasHomeDelivery = true
 
-const PaymentMethods = "cash, wire, bitcoin, card"
+// VapidPublicKey is the public key used for VAPID protocol
+const VapidPublicKey = ""
+
+// VapidPrivateKey is the private key used for VAPID protocol
+const VapidPrivateKey = ""
+
+// VapidEmail is the email used for VAPID protocol
+const VapidEmail = ""
+
+// Pagination returns the start items index and the
+// end items index.
+func Pagination(page int64) (int64, int64) {
+	if page == -1 {
+		return 0, -1
+	}
+	return page * ItemsPerPage, page*ItemsPerPage + ItemsPerPage
+}

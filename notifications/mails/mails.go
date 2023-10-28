@@ -6,6 +6,8 @@ import (
 	"net/smtp"
 )
 
+// Send an email.
+// Only text format is supported for now.
 func Send(email, message string) error {
 	from := conf.EmailUsername
 	password := conf.EmailPassword

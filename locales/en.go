@@ -26,6 +26,9 @@ func LoadEn() {
 	message.SetString(language.English, "user_street_required", "The street is required.")
 	message.SetString(language.English, "user_zipcode_required", "The zipcode is required.")
 	message.SetString(language.English, "user_phone_required", "The phone is required.")
+	message.SetString(language.English, "user_wptoken_required", "The token is required.")
+	message.SetString(language.English, "user_sid_required", "The session id is required.")
+	message.SetString(language.English, "user_not_found", "The user is not found.")
 	message.SetString(language.English, "http_bad_status", "Received bad status %d from %s.")
 	message.SetString(language.English, "something_went_wrong", "Something went wrong, please try again later.")
 	message.SetString(language.English, "home_description", "Home description")
@@ -33,6 +36,8 @@ func LoadEn() {
 	message.SetString(language.English, "user_magik_link_url", "/magic-link.html")
 	message.SetString(language.English, "cart_not_found", "Your session is expired, please refresh your page.")
 	message.SetString(language.English, "cart_empty", "The cart is empty.")
+	message.SetString(language.English, "order_not_found", "The order is not found.")
 	message.SetString(language.English, "unauthorized", "Your are not authoried to process the request, this will be reported.")
+	message.SetString(language.English, "mail_magic_link", "Hi\n, your order %s has been updated to %s.\nContact us if you need more information.\nThe team.")
 
 }
