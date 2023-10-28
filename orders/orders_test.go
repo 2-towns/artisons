@@ -62,8 +62,8 @@ func TestIsValidPaymentMisvalue(t *testing.T) {
 // TestOrderSave expects to succeed
 func TestOrderSave(t *testing.T) {
 	o := createOrder()
-	oid, err := o.Save()
-	if err != nil || oid == "" {
+
+	if oid, err := o.Save(); err != nil || oid == "" {
 		t.Fatalf(`o.Save() = '%s', %v, want string, nil`, oid, err)
 	}
 }
@@ -72,8 +72,8 @@ func TestOrderSave(t *testing.T) {
 func TestOrderSaveDeliveryMisvalue(t *testing.T) {
 	o := createOrder()
 	o.Delivery = "toto"
-	oid, err := o.Save()
-	if oid != "" || err == nil || err.Error() != "unauthorized" {
+
+	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "unauthorized" {
 		t.Fatalf(`o.Save() = '%s', %v, want string, 'unauthorized'`, oid, err)
 	}
 }
@@ -82,8 +82,8 @@ func TestOrderSaveDeliveryMisvalue(t *testing.T) {
 func TestOrderSavePaymentMisvalue(t *testing.T) {
 	o := createOrder()
 	o.Payment = "toto"
-	oid, err := o.Save()
-	if oid != "" || err == nil || err.Error() != "unauthorized" {
+
+	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "unauthorized" {
 		t.Fatalf(`o.Save() = '%s', %v, want string, 'unauthorized'`, oid, err)
 	}
 }
@@ -92,8 +92,8 @@ func TestOrderSavePaymentMisvalue(t *testing.T) {
 func TestOrderSaveProductsEmpty(t *testing.T) {
 	o := createOrder()
 	o.Products = map[string]int64{}
-	oid, err := o.Save()
-	if oid != "" || err == nil || err.Error() != "cart_empty" {
+
+	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "cart_empty" {
 		t.Fatalf(`o.Save() = '%s', %v, want string, 'cart_empty'`, oid, err)
 	}
 }
@@ -102,8 +102,8 @@ func TestOrderSaveProductsEmpty(t *testing.T) {
 func TestOrderSaveProductsUnavailable(t *testing.T) {
 	o := createOrder()
 	o.Products = map[string]int64{"toto12": 1}
-	oid, err := o.Save()
-	if oid != "" || err == nil || err.Error() != "cart_empty" {
+
+	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "cart_empty" {
 		t.Fatalf(`o.Save() = '%s', %v, want "", 'cart_empty'`, oid, err)
 	}
 }
@@ -148,5 +148,30 @@ func TestOrderFindNotExisting(t *testing.T) {
 
 	if oo, err := Find(oid); err == nil || err.Error() != "order_not_found" {
 		t.Fatalf(`Find(oid) = %v, %s, want Order{},'order_not_found'`, oo, err.Error())
+	}
+}
+
+// TestAddNote expects to succeed
+func TestAddNote(t *testing.T) {
+	o := createOrder()
+
+	if err := AddNote(o.ID, "Ta commande, tu peux te la garder !"); err != nil {
+		t.Fatalf(`AddNote(o.ID, "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
+	}
+}
+
+// TestAddNote expects to fail because of note emptyness
+func TestAddNoteWithEmptyString(t *testing.T) {
+	o := createOrder()
+
+	if err := AddNote(o.ID, ""); err == nil || err.Error() != "order_note_required" {
+		t.Fatalf(`orders.AddNote(o.ID, "") = '%s', want 'order_note_required'`, err.Error())
+	}
+}
+
+// TestAddNote expects to fail because of order not found
+func TestAddNoteWithOrderNotExisting(t *testing.T) {
+	if err := AddNote("123", "Useless"); err == nil || err.Error() != "order_not_found" {
+		t.Fatalf(`orders.AddNote(o.ID, "Useless") = '%s', want 'order_not_found'`, err.Error())
 	}
 }

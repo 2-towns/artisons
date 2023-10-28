@@ -37,6 +37,7 @@ func LoadEn() {
 	message.SetString(language.English, "cart_not_found", "Your session is expired, please refresh your page.")
 	message.SetString(language.English, "cart_empty", "The cart is empty.")
 	message.SetString(language.English, "order_not_found", "The order is not found.")
+	message.SetString(language.English, "order_note_required", "The note is required.")
 	message.SetString(language.English, "unauthorized", "Your are not authoried to process the request, this will be reported.")
 	message.SetString(language.English, "mail_magic_link", "Hi\n, your order %s has been updated to %s.\nContact us if you need more information.\nThe team.")
 
