@@ -112,15 +112,15 @@ func TestOrderSaveProductsUnavailable(t *testing.T) {
 func TestOrderUpdateStatus(t *testing.T) {
 	o := createOrder()
 	if err := UpdateStatus(o.ID, "processing"); err != nil {
-		t.Fatalf(`UpdateStatus(o.ID, "processing") = %v, %v, nil`, err)
+		t.Fatalf(`UpdateStatus(o.ID, "processing") = %v, nil`, err)
 	}
 }
 
 // TestOrderUpdateStatusWrong expects to fail because of invalid status
 func TestOrderUpdateStatusWrong(t *testing.T) {
 	o := createOrder()
-	if err := UpdateStatus(o.ID, "toto"); err == nil || err.Error() != "unauthorized" || oo.ID != "" {
-		t.Fatalf(`UpdateStatus(o.ID, "toto") = %v, %s, want 'unauthorized'`, err)
+	if err := UpdateStatus(o.ID, "toto"); err == nil || err.Error() != "order_bad_status" {
+		t.Fatalf(`UpdateStatus(o.ID, "toto") = '%s', want 'order_bad_status'`, err.Error())
 	}
 }
 
@@ -129,7 +129,7 @@ func TestOrderUpdateStatusNotExisting(t *testing.T) {
 	oid, _ := stringutil.Random()
 
 	if err := UpdateStatus(oid, "processing"); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`UpdateStatus(oid, "processing") = %v, %s, want 'order_not_found'`, err)
+		t.Fatalf(`UpdateStatus(oid, "processing") = '%s', want 'order_not_found'`, err.Error())
 	}
 }
 

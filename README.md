@@ -53,7 +53,7 @@ Il est possible d'utiliser le mode verbose:
 go test ./... -v
 ```
 
-Il est possible de lancer sans le cache: 
+Il est possible de lancer sans le cache:
 
 ```
 go test ./... -count=1
@@ -71,12 +71,12 @@ go run console/console.go import
 
 Par défault, le path est `./web/testdata/data.csv`. Il est possible de préciser un fichier en utilisant le flag `--file` suivi du chemin du fichier.
 
-### Peuplement 
+### Peuplement
 
 Pour peupler les données, lancer la commande suivante:
 
 ```
-go run console/console.go popuple
+go run console/console.go populate
 ```
 
 ## Profiter

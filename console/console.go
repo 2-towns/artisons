@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"gifthub/conf"
@@ -28,10 +29,10 @@ func main() {
 	start := time.Now()
 
 	if len(os.Args) == 1 {
-		log.Panicln("The command is required, here are the possibilities: import")
+		log.Fatalln("The command is required, here are the possibilities: import")
 	}
 
-	command := os.Args[1]
+	command := os.Args[len(os.Args)-1]
 
 	switch command {
 	case "import":
@@ -76,14 +77,19 @@ func main() {
 
 			flag.Parse()
 
-			order, err := orders.UpdateStatus(*id, *status)
+			err := orders.UpdateStatus(*id, *status)
 			if err != nil {
-				log.Panic(err)
+				log.Fatalln(err)
+			}
+
+			order, err := orders.Find(*id)
+			if err != nil {
+				log.Fatalln(err)
 			}
 
 			user, err := users.Get(order.UID)
 			if err != nil {
-				log.Panic(err)
+				log.Fatalln(err)
 			}
 
 			p := message.NewPrinter(user.Lang)
@@ -95,6 +101,25 @@ func main() {
 			}
 		}
 
+	case "orderdetail":
+		{
+			id := flag.String("id", "", "The order id")
+
+			flag.Parse()
+
+			o, err := orders.Find(*id)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			empJSON, err := json.MarshalIndent(o, "", "  ")
+			if err != nil {
+				log.Fatalf(err.Error())
+			}
+
+			log.Printf("%s\n", string(empJSON))
+		}
+
 	case "ordernote":
 		{
 			id := flag.String("id", "", "The order id")
@@ -104,7 +129,7 @@ func main() {
 
 			err := orders.AddNote(*id, *note)
 			if err != nil {
-				log.Panic(err)
+				log.Fatalln(err)
 			}
 
 			log.Println("Note added to the order.")
@@ -116,7 +141,7 @@ func main() {
 
 			u, err := users.List(*page)
 			if err != nil {
-				log.Panic(err)
+				log.Fatalln(err)
 			}
 
 			t := table.NewWriter()
@@ -131,7 +156,7 @@ func main() {
 		}
 	default:
 		{
-			log.Panicf("The commands %s is not supported!\n", command)
+			log.Fatalf("The commands %s is not supported!\n", command)
 		}
 	}
 

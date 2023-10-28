@@ -44,10 +44,13 @@ type Order struct {
 	// Is the quantity
 	Products map[string]int64
 
-	Notes []struct {
-		Note      string
-		CreatedAt time.Time
-	}
+	// The order note added by the seller
+	Notes []Note
+}
+
+type Note struct {
+	Note      string
+	CreatedAt time.Time
 }
 
 // IsValidDelivery returns true if the delivery
@@ -154,9 +157,10 @@ func (o Order) Save() (string, error) {
 // The full order is returned and an notification is expected
 // to be sent to the customer.
 func UpdateStatus(oid, status string) error {
+	log.Println(status, Status)
 	if !slices.Contains(Status, status) {
 		log.Printf("WARN: input_validation_fail: the status value is wrong %s", status)
-		return errors.New("unauthorized")
+		return errors.New("order_bad_status")
 	}
 
 	ctx := context.Background()
@@ -178,6 +182,8 @@ func UpdateStatus(oid, status string) error {
 func Find(oid string) (Order, error) {
 	ctx := context.Background()
 
+	// slog.LogAttrs(context.Background(), slog.LevelInfo, "hello, world")
+
 	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
 		log.Printf("input_validation_fail: the order %s does not exist", oid)
 		return Order{}, errors.New("order_not_found")
@@ -195,17 +201,48 @@ func Find(oid string) (Order, error) {
 		return Order{}, errors.New("something_went_wrong")
 	}
 
-	n, err := db.Redis.HGetAll(ctx, "order:"+oid).Result()
+	ids, err := db.Redis.SMembers(ctx, "order:"+oid+":notes").Result()
+
 	if err != nil {
-		log.Printf("sequence_fail: error when getting the order %s %s", oid, err.Error())
+		log.Printf("sequence_fail: error when getting the order note ids %s %s", oid, err.Error())
 		return Order{}, errors.New("something_went_wrong")
 	}
+
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		for _, id := range ids {
+			key := "order:" + oid + ":note:" + id
+			n, err := db.Redis.HGetAll(ctx, key).Result()
+			if err != nil {
+				log.Printf("sequence_fail: error when getting the order note %s %s", id, err.Error())
+				continue
+			}
+
+			createdAt, err := time.Parse(time.RFC3339, n["created_at"])
+			if err != nil {
+				log.Println(n)
+				log.Printf("sequence_fail: error when parsing created_at %s", n["created_at"])
+				continue
+			}
+
+			o.Notes = append(o.Notes, Note{
+				Note:      n["note"],
+				CreatedAt: createdAt,
+			})
+		}
+
+		return nil
+	}); err != nil {
+		log.Printf("sequence_fail: error when getting the order notes %s %s", oid, err.Error())
+		return Order{}, errors.New("something_went_wrong")
+	}
+
+	return o, nil
 }
 
-// AddNote create a new message attached to the order
-func AddNote(oid, message string) error {
-	if message == "" {
-		log.Printf("input_validation_fail: the message is empty")
+// AddNote create a new note attached to the order
+func AddNote(oid, note string) error {
+	if note == "" {
+		log.Printf("input_validation_fail: the note is empty")
 		return errors.New("order_note_required")
 	}
 
@@ -221,10 +258,10 @@ func AddNote(oid, message string) error {
 	timestamp := time.Now().UnixMilli()
 
 	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		key := fmt.Sprintf("ordernote:%s%d", oid, timestamp)
-		rdb.HSet(ctx, key, "message", message)
+		key := fmt.Sprintf("order:%s:note:%d", oid, timestamp)
+		rdb.HSet(ctx, key, "note", note)
 		rdb.HSet(ctx, key, "created_at", now.Format(time.RFC3339))
-		rdb.SAdd(ctx, "ordernote:"+oid, timestamp)
+		rdb.SAdd(ctx, "order:"+oid+":notes", timestamp)
 
 		return nil
 	}); err != nil {
@@ -265,5 +302,6 @@ func parseOrder(m map[string]string) (Order, error) {
 		Payment:       m["payment"],
 		Status:        m["status"],
 		Products:      products,
+		Notes:         []Note{},
 	}, nil
 }

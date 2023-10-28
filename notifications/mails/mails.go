@@ -3,11 +3,13 @@ package mails
 
 import (
 	"gifthub/conf"
+	"log"
 	"net/smtp"
 )
 
 // Send an email.
 // Only text format is supported for now.
+// TODO : set a gorouting
 func Send(email, message string) error {
 	from := conf.EmailUsername
 	password := conf.EmailPassword
@@ -23,5 +25,11 @@ func Send(email, message string) error {
 
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	return smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, m)
+	log.Printf("preparing to send an email")
+
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, m)
+
+	log.Printf("email sent with response %v", err)
+
+	return err
 }
