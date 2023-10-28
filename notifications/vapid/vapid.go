@@ -6,6 +6,7 @@ package vapid
 import (
 	"encoding/json"
 	"gifthub/conf"
+	"log"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
@@ -15,12 +16,16 @@ func Send(device, message string) error {
 	s := &webpush.Subscription{}
 	json.Unmarshal([]byte(device), s)
 
+	log.Printf("preparing to send a push notification")
+
 	resp, err := webpush.SendNotification([]byte(message), s, &webpush.Options{
 		Subscriber:      conf.VapidEmail,
 		VAPIDPublicKey:  conf.VapidPublicKey,
 		VAPIDPrivateKey: conf.VapidPrivateKey,
 		TTL:             30,
 	})
+
+	log.Printf("notification sent with response %v", err)
 
 	defer resp.Body.Close()
 
