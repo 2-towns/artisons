@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -30,11 +31,11 @@ func GetPage(lang language.Tag, name string) map[string]string {
 
 // Languages contains the available languages in the application
 // Deprecated: Should be moved in configuration
-var Languages = "en"
+var Languages = []string{"en"}
 
 // Default is the default language applied
 // Deprecated: Should be moved in configuration
-var Default = "en"
+var Default = language.English
 
 // Console is the default language for console
 var Console language.Tag = language.English
@@ -63,18 +64,12 @@ func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		langs := strings.Split(r.Header.Get("Accept-Language"), "-")
 		lang := langs[0]
-
-		if strings.Contains(Languages, lang) {
-			lang = Default
-		}
-
 		var tag language.Tag
 
-		switch lang {
-		case "en":
-			tag = language.English
-		default:
-			tag = language.English
+		if !slices.Contains(Languages, lang) {
+			tag = Default
+		} else {
+			tag = language.Make(lang)
 		}
 
 		// create new context from `r` request context, and assign key `"user"`
