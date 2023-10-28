@@ -111,16 +111,16 @@ func TestOrderSaveProductsUnavailable(t *testing.T) {
 // TestOrderUpdateStatus expects to succeed
 func TestOrderUpdateStatus(t *testing.T) {
 	o := createOrder()
-	if oo, err := UpdateStatus(o.ID, "processing"); err != nil || oo.ID == "" {
-		t.Fatalf(`UpdateStatus(o.ID, "processing") = %v, %v, nil`, oo, err)
+	if err := UpdateStatus(o.ID, "processing"); err != nil {
+		t.Fatalf(`UpdateStatus(o.ID, "processing") = %v, %v, nil`, err)
 	}
 }
 
 // TestOrderUpdateStatusWrong expects to fail because of invalid status
 func TestOrderUpdateStatusWrong(t *testing.T) {
 	o := createOrder()
-	if oo, err := UpdateStatus(o.ID, "toto"); err == nil || err.Error() != "unauthorized" || oo.ID != "" {
-		t.Fatalf(`UpdateStatus(o.ID, "toto") = %v, %s, want 'unauthorized'`, oo, err)
+	if err := UpdateStatus(o.ID, "toto"); err == nil || err.Error() != "unauthorized" || oo.ID != "" {
+		t.Fatalf(`UpdateStatus(o.ID, "toto") = %v, %s, want 'unauthorized'`, err)
 	}
 }
 
@@ -128,7 +128,25 @@ func TestOrderUpdateStatusWrong(t *testing.T) {
 func TestOrderUpdateStatusNotExisting(t *testing.T) {
 	oid, _ := stringutil.Random()
 
-	if oo, err := UpdateStatus(oid, "processing"); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`UpdateStatus(oid, "processing") = %v, %s, want 'order_not_found'`, oo, err)
+	if err := UpdateStatus(oid, "processing"); err == nil || err.Error() != "order_not_found" {
+		t.Fatalf(`UpdateStatus(oid, "processing") = %v, %s, want 'order_not_found'`, err)
+	}
+}
+
+// TestOrderFind expects to succeed
+func TestOrderFind(t *testing.T) {
+	o := createOrder()
+
+	if oo, err := Find(o.ID); err != nil || oo.ID == "" {
+		t.Fatalf(`Find(o.ID) = %v, %v, nil`, oo, err)
+	}
+}
+
+// TestOrderUpdateStatusNotExisting expects to fail because of not existing order
+func TestOrderFindNotExisting(t *testing.T) {
+	oid, _ := stringutil.Random()
+
+	if oo, err := Find(oid); err == nil || err.Error() != "order_not_found" {
+		t.Fatalf(`Find(oid) = %v, %s, want Order{},'order_not_found'`, oo, err.Error())
 	}
 }

@@ -43,6 +43,11 @@ type Order struct {
 	// The key contains the product id and the value
 	// Is the quantity
 	Products map[string]int64
+
+	Notes []struct {
+		Note      string
+		CreatedAt time.Time
+	}
 }
 
 // IsValidDelivery returns true if the delivery
@@ -148,27 +153,39 @@ func (o Order) Save() (string, error) {
 // or the order is not found.
 // The full order is returned and an notification is expected
 // to be sent to the customer.
-func UpdateStatus(oid, status string) (Order, error) {
+func UpdateStatus(oid, status string) error {
 	if !slices.Contains(Status, status) {
 		log.Printf("WARN: input_validation_fail: the status value is wrong %s", status)
-		return Order{}, errors.New("unauthorized")
+		return errors.New("unauthorized")
 	}
 
 	ctx := context.Background()
-	data, err := db.Redis.HGetAll(ctx, "order:"+oid).Result()
-	if err != nil {
-		log.Printf("sequence_fail: error when getting the order %s %s", oid, err.Error())
-		return Order{}, errors.New("something_went_wrong")
+
+	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
+		log.Printf("input_validation_fail: the order %s does not exist", oid)
+		return errors.New("order_not_found")
 	}
 
-	if data["id"] == "" {
+	_, err := db.Redis.HSet(ctx, "order:"+oid, "status", status).Result()
+	if err != nil {
+		log.Printf("sequence_fail: error when setting the status order %s %s", oid, err.Error())
+		return errors.New("something_went_wrong")
+	}
+
+	return nil
+}
+
+func Find(oid string) (Order, error) {
+	ctx := context.Background()
+
+	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
 		log.Printf("input_validation_fail: the order %s does not exist", oid)
 		return Order{}, errors.New("order_not_found")
 	}
 
-	_, err = db.Redis.HSet(ctx, "order:"+oid, "status", status).Result()
+	data, err := db.Redis.HGetAll(ctx, "order:"+oid).Result()
 	if err != nil {
-		log.Printf("sequence_fail: error when setting the status order %s %s", oid, err.Error())
+		log.Printf("sequence_fail: error when getting the order %s %s", oid, err.Error())
 		return Order{}, errors.New("something_went_wrong")
 	}
 
@@ -178,9 +195,11 @@ func UpdateStatus(oid, status string) (Order, error) {
 		return Order{}, errors.New("something_went_wrong")
 	}
 
-	o.Status = status
-
-	return o, nil
+	n, err := db.Redis.HGetAll(ctx, "order:"+oid).Result()
+	if err != nil {
+		log.Printf("sequence_fail: error when getting the order %s %s", oid, err.Error())
+		return Order{}, errors.New("something_went_wrong")
+	}
 }
 
 func parseOrder(m map[string]string) (Order, error) {
