@@ -95,6 +95,21 @@ func main() {
 			}
 		}
 
+	case "ordernote":
+		{
+			id := flag.String("id", "", "The order id")
+			note := flag.String("note", "", "The note to attach")
+
+			flag.Parse()
+
+			err := orders.AddNote(*id, *note)
+			if err != nil {
+				log.Panic(err)
+			}
+
+			log.Println("Note added to the order.")
+		}
+
 	case "userlist":
 		{
 			page := flag.Int64("page", 0, "The page used in pagination")

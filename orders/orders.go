@@ -183,6 +183,39 @@ func UpdateStatus(oid, status string) (Order, error) {
 	return o, nil
 }
 
+// AddNote create a new message attached to the order
+func AddNote(oid, message string) error {
+	if message == "" {
+		log.Printf("input_validation_fail: the message is empty")
+		return errors.New("order_note_required")
+	}
+
+	ctx := context.Background()
+
+	rep, err := db.Redis.Exists(ctx, "order:"+oid).Result()
+	if rep == 0 || err != nil {
+		log.Printf("input_validation_fail: The order %s is not found", oid)
+		return errors.New("order_not_found")
+	}
+
+	now := time.Now()
+	timestamp := time.Now().UnixMilli()
+
+	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		key := fmt.Sprintf("ordernote:%s%d", oid, timestamp)
+		rdb.HSet(ctx, key, "message", message)
+		rdb.HSet(ctx, key, "created_at", now.Format(time.RFC3339))
+		rdb.SAdd(ctx, "ordernote:"+oid, timestamp)
+
+		return nil
+	}); err != nil {
+		log.Printf("ERROR: sequence_fail: error when storing in redis %s", err.Error())
+		return errors.New("something_went_wrong")
+	}
+
+	return nil
+}
+
 func parseOrder(m map[string]string) (Order, error) {
 	id, err := strconv.ParseInt(m["uid"], 10, 32)
 	if err != nil {
