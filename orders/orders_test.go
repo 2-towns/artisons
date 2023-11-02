@@ -4,6 +4,7 @@ import (
 	"context"
 	"gifthub/db"
 	"gifthub/string/stringutil"
+	"gifthub/tests"
 	"math/rand"
 	"testing"
 )
@@ -33,38 +34,43 @@ func createOrder() Order {
 
 // TestIsValidDelivery expects to succeed
 func TestIsValidDelivery(t *testing.T) {
-	if valid := IsValidDelivery("collect"); !valid {
-		t.Fatalf(`IsValidDelivery("collect") = %v want true`, valid)
+	ctx := tests.Context()
+	if valid := IsValidDelivery(ctx, "collect"); !valid {
+		t.Fatalf(`IsValidDelivery(ctx, "collect") = %v want true`, valid)
 	}
 }
 
 // TestIsValidDeliveryMisvalue expects to fail because of delivery invalid
 func TestIsValidDeliveryMisvalue(t *testing.T) {
-	if valid := IsValidDelivery("toto"); valid {
-		t.Fatalf(`IsValidDelivery("toto") = %v want false`, valid)
+	ctx := tests.Context()
+	if valid := IsValidDelivery(ctx, "toto"); valid {
+		t.Fatalf(`IsValidDelivery(ctx, "toto") = %v want false`, valid)
 	}
 }
 
 // TestIsValidPayment expects to succeed
 func TestIsValidPayment(t *testing.T) {
-	if valid := IsValidPayment("cash"); !valid {
-		t.Fatalf(`IsValidPayment("cash") = %v want true`, valid)
+	ctx := tests.Context()
+	if valid := IsValidPayment(ctx, "cash"); !valid {
+		t.Fatalf(`IsValidPayment(ctx, "cash") = %v want true`, valid)
 	}
 }
 
 // TestIsValidPaymentMisvalue expects to fail because of payment invalid
 func TestIsValidPaymentMisvalue(t *testing.T) {
-	if valid := IsValidPayment("toto"); valid {
-		t.Fatalf(`IsValidDelivery("toto") = %v want false`, valid)
+	ctx := tests.Context()
+	if valid := IsValidPayment(ctx, "toto"); valid {
+		t.Fatalf(`IsValidDelivery(ctx, "toto") = %v want false`, valid)
 	}
 }
 
 // TestOrderSave expects to succeed
 func TestOrderSave(t *testing.T) {
 	o := createOrder()
+	ctx := tests.Context()
 
-	if oid, err := o.Save(); err != nil || oid == "" {
-		t.Fatalf(`o.Save() = '%s', %v, want string, nil`, oid, err)
+	if oid, err := o.Save(ctx); err != nil || oid == "" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, nil`, oid, err)
 	}
 }
 
@@ -72,9 +78,10 @@ func TestOrderSave(t *testing.T) {
 func TestOrderSaveDeliveryMisvalue(t *testing.T) {
 	o := createOrder()
 	o.Delivery = "toto"
+	ctx := tests.Context()
 
-	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "unauthorized" {
-		t.Fatalf(`o.Save() = '%s', %v, want string, 'unauthorized'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "unauthorized" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'unauthorized'`, oid, err)
 	}
 }
 
@@ -82,9 +89,10 @@ func TestOrderSaveDeliveryMisvalue(t *testing.T) {
 func TestOrderSavePaymentMisvalue(t *testing.T) {
 	o := createOrder()
 	o.Payment = "toto"
+	ctx := tests.Context()
 
-	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "unauthorized" {
-		t.Fatalf(`o.Save() = '%s', %v, want string, 'unauthorized'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "unauthorized" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'unauthorized'`, oid, err)
 	}
 }
 
@@ -92,9 +100,10 @@ func TestOrderSavePaymentMisvalue(t *testing.T) {
 func TestOrderSaveProductsEmpty(t *testing.T) {
 	o := createOrder()
 	o.Products = map[string]int64{}
+	ctx := tests.Context()
 
-	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "cart_empty" {
-		t.Fatalf(`o.Save() = '%s', %v, want string, 'cart_empty'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "cart_empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'cart_empty'`, oid, err)
 	}
 }
 
@@ -102,76 +111,86 @@ func TestOrderSaveProductsEmpty(t *testing.T) {
 func TestOrderSaveProductsUnavailable(t *testing.T) {
 	o := createOrder()
 	o.Products = map[string]int64{"toto12": 1}
+	ctx := tests.Context()
 
-	if oid, err := o.Save(); oid != "" || err == nil || err.Error() != "cart_empty" {
-		t.Fatalf(`o.Save() = '%s', %v, want "", 'cart_empty'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "cart_empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want "", 'cart_empty'`, oid, err)
 	}
 }
 
 // TestOrderUpdateStatus expects to succeed
 func TestOrderUpdateStatus(t *testing.T) {
+	ctx := tests.Context()
 	o := createOrder()
-	if err := UpdateStatus(o.ID, "processing"); err != nil {
-		t.Fatalf(`UpdateStatus(o.ID, "processing") = %v, nil`, err)
+	if err := UpdateStatus(ctx, o.ID, "processing"); err != nil {
+		t.Fatalf(`UpdateStatus(ctx, o.ID, "processing") = %v, nil`, err)
 	}
 }
 
 // TestOrderUpdateStatusWrong expects to fail because of invalid status
 func TestOrderUpdateStatusWrong(t *testing.T) {
+	ctx := tests.Context()
 	o := createOrder()
-	if err := UpdateStatus(o.ID, "toto"); err == nil || err.Error() != "order_bad_status" {
-		t.Fatalf(`UpdateStatus(o.ID, "toto") = '%s', want 'order_bad_status'`, err.Error())
+	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "order_bad_status" {
+		t.Fatalf(`UpdateStatus(ctx, o.ID, "toto") = '%s', want 'order_bad_status'`, err.Error())
 	}
 }
 
 // TestOrderUpdateStatusNotExisting expects to fail because of not existing order
 func TestOrderUpdateStatusNotExisting(t *testing.T) {
 	oid, _ := stringutil.Random()
+	ctx := tests.Context()
 
-	if err := UpdateStatus(oid, "processing"); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`UpdateStatus(oid, "processing") = '%s', want 'order_not_found'`, err.Error())
+	if err := UpdateStatus(ctx, oid, "processing"); err == nil || err.Error() != "order_not_found" {
+		t.Fatalf(`UpdateStatus(ctx, oid, "processing") = '%s', want 'order_not_found'`, err.Error())
 	}
 }
 
 // TestOrderFind expects to succeed
 func TestOrderFind(t *testing.T) {
 	o := createOrder()
+	ctx := tests.Context()
 
-	if oo, err := Find(o.ID); err != nil || oo.ID == "" {
-		t.Fatalf(`Find(o.ID) = %v, %v, nil`, oo, err)
+	if oo, err := Find(ctx, o.ID); err != nil || oo.ID == "" {
+		t.Fatalf(`Find(ctx, o.ID) = %v, %v, nil`, oo, err)
 	}
 }
 
 // TestOrderUpdateStatusNotExisting expects to fail because of not existing order
 func TestOrderFindNotExisting(t *testing.T) {
 	oid, _ := stringutil.Random()
+	ctx := tests.Context()
 
-	if oo, err := Find(oid); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`Find(oid) = %v, %s, want Order{},'order_not_found'`, oo, err.Error())
+	if oo, err := Find(ctx, oid); err == nil || err.Error() != "order_not_found" {
+		t.Fatalf(`Find(ctx, oid) = %v, %s, want Order{},'order_not_found'`, oo, err.Error())
 	}
 }
 
 // TestAddNote expects to succeed
 func TestAddNote(t *testing.T) {
 	o := createOrder()
+	ctx := tests.Context()
 
-	if err := AddNote(o.ID, "Ta commande, tu peux te la garder !"); err != nil {
-		t.Fatalf(`AddNote(o.ID, "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
+	if err := AddNote(ctx, o.ID, "Ta commande, tu peux te la garder !"); err != nil {
+		t.Fatalf(`AddNote(ctx,o.ID, "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
 	}
 }
 
 // TestAddNote expects to fail because of note emptyness
 func TestAddNoteWithEmptyString(t *testing.T) {
 	o := createOrder()
+	ctx := tests.Context()
 
-	if err := AddNote(o.ID, ""); err == nil || err.Error() != "order_note_required" {
-		t.Fatalf(`orders.AddNote(o.ID, "") = '%s', want 'order_note_required'`, err.Error())
+	if err := AddNote(ctx, o.ID, ""); err == nil || err.Error() != "order_note_required" {
+		t.Fatalf(`orders.AddNote(ctx,o.ID, "") = '%s', want 'order_note_required'`, err.Error())
 	}
 }
 
 // TestAddNote expects to fail because of order not found
 func TestAddNoteWithOrderNotExisting(t *testing.T) {
-	if err := AddNote("123", "Useless"); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`orders.AddNote(o.ID, "Useless") = '%s', want 'order_not_found'`, err.Error())
+	ctx := tests.Context()
+
+	if err := AddNote(ctx, "123", "Useless"); err == nil || err.Error() != "order_not_found" {
+		t.Fatalf(`orders.AddNote(ctx, o.ID, "Useless") = '%s', want 'order_not_found'`, err.Error())
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/string/stringutil"
+	"gifthub/tests"
 	"math/rand"
 	"testing"
 	"time"
@@ -64,42 +65,47 @@ func createAddress() Address {
 
 // TestUserList expects to succeed
 func TestUserList(t *testing.T) {
-	users, err := List(0)
+	ctx := tests.Context()
+	users, err := List(ctx, 0)
 	if err != nil || len(users) == 0 || users[0].ID == 0 {
-		t.Fatalf("List(0) = '%v', %v, want User, nil", users, err)
+		t.Fatalf("List(ctx, 0) = '%v', %v, want User, nil", users, err)
 	}
 }
 
 // TestMagicCode expects to succeed
 func TestMagicCode(t *testing.T) {
-	magic, err := MagicCode(faker.Email())
+	ctx := tests.Context()
+	magic, err := MagicCode(ctx, faker.Email())
 	if magic == "" || err != nil {
-		t.Fatalf("TestMagicCode(faker.Email()) = '%s', %v, want string, nil", magic, err)
+		t.Fatalf("TestMagicCode(ctx, faker.Email()) = '%s', %v, want string, nil", magic, err)
 	}
 }
 
 // TestMagicCodeTwice expects to succeed even if it's used more than one time
 func TestMagicCodeTwice(t *testing.T) {
-	magic, _ := MagicCode(faker.Email())
-	magic, err := MagicCode(faker.Email())
+	ctx := tests.Context()
+	MagicCode(ctx, faker.Email())
+	magic, err := MagicCode(ctx, faker.Email())
 	if magic == "" || err != nil {
-		t.Fatalf("TestMagicCode(faker.Email()) = '%s', %v, want string, nil", magic, err)
+		t.Fatalf("TestMagicCode(ctx, faker.Email()) = '%s', %v, want string, nil", magic, err)
 	}
 }
 
 // TestMagicCodeWithoutEmail expects to fail because of email emptyness
 func TestMagicCodeWithoutEmail(t *testing.T) {
-	magic, err := MagicCode("")
+	ctx := tests.Context()
+	magic, err := MagicCode(ctx, "")
 	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
-		t.Fatalf("TestMagicCode('') = '%s', %v, want '', 'user_email_invalid'", magic, err)
+		t.Fatalf("TestMagicCode(ctx, '') = '%s', %v, want '', 'user_email_invalid'", magic, err)
 	}
 }
 
 // TestMagicCodeFailedWithBadEmail expects to fail because of email misvalue
 func TestMagicCodeFailedWithBadEmail(t *testing.T) {
-	magic, err := MagicCode("toto")
+	ctx := tests.Context()
+	magic, err := MagicCode(ctx, "toto")
 	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
-		t.Fatalf("TestMagicCode('toto') = '%s', %v, want '', 'user_email_invalid'", magic, err)
+		t.Fatalf("TestMagicCode(ctx, 'toto') = '%s', %v, want '', 'user_email_invalid'", magic, err)
 	}
 }
 
@@ -107,51 +113,57 @@ func TestMagicCodeFailedWithBadEmail(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	alive := true
 	u := createUser(alive)
-	err := u.Delete()
+	ctx := tests.Context()
+	err := u.Delete(ctx)
 	if err != nil {
-		t.Fatalf("Delete() = %v, want nil", err)
+		t.Fatalf("Delete(ctx) = %v, want nil", err)
 	}
 }
 
 // TestDeleteUserNotExisting expects to succeed
 func TestDeleteUserNotExisting(t *testing.T) {
-	err := User{}.Delete()
+	ctx := tests.Context()
+	err := User{}.Delete(ctx)
 	if err != nil {
-		t.Fatalf("Delete() = %v, want nil", err)
+		t.Fatalf("Delete(ctx) = %v, want nil", err)
 	}
 }
 
 // Testlogin expects to succeed
 func TestLogin(t *testing.T) {
 	magic := createLinkedMagic()
-	sid, err := Login(magic, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	ctx := tests.Context()
+	sid, err := Login(ctx, magic, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid == "" || err != nil {
-		t.Fatalf("Login(magic, 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil", sid, err)
+		t.Fatalf("Login(ctx, magic, 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil", sid, err)
 	}
 }
 
 // TestLoginWithoutDevice expects to fail because of device emptyness
 func TestLoginWithoutDevice(t *testing.T) {
 	magic := createLinkedMagic()
-	sid, err := Login(magic, "")
+	ctx := tests.Context()
+	sid, err := Login(ctx, magic, "")
 	if sid != "" || err == nil || err.Error() != "user_device_required" {
-		t.Fatalf("Login(magic,'') = '%s', %v, want '', 'user_device_required'", sid, err)
+		t.Fatalf("Login(ctx, magic,'') = '%s', %v, want '', 'user_device_required'", sid, err)
 	}
 }
 
 // TestLoginWithoutMagic expects to fail because of magic emptyness
 func TestLoginWithoutMagic(t *testing.T) {
-	sid, err := Login("", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	ctx := tests.Context()
+	sid, err := Login(ctx, "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil || err.Error() != "user_magic_code_required" {
-		t.Fatalf("Login('','Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
+		t.Fatalf("Login(ctx, '','Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
 	}
 }
 
 // TestLoginWithNotExistingMagic expects to fail because of magic non existence
 func TestLoginWithNotExistingMagic(t *testing.T) {
-	sid, err := Login("titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	ctx := tests.Context()
+	sid, err := Login(ctx, "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil {
-		t.Fatalf("Login('titi') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
+		t.Fatalf("Login(ctx, 'titi') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
 	}
 }
 
@@ -159,17 +171,19 @@ func TestLoginWithNotExistingMagic(t *testing.T) {
 func TestLogout(t *testing.T) {
 	alive := true
 	u := createUser(alive)
-	err := Logout(u.SID)
+	ctx := tests.Context()
+	err := Logout(ctx, u.SID)
 	if err != nil {
-		t.Fatalf("Logout(u.SID) = %v, want nil", err)
+		t.Fatalf("Logout(ctx, u.SID) = %v, want nil", err)
 	}
 }
 
 // TestLogoutWithoutSID expects to fail because of id emptyness
 func TestLogoutWithoutSID(t *testing.T) {
-	err := Logout("")
+	ctx := tests.Context()
+	err := Logout(ctx, "")
 	if err == nil || err.Error() != "unauthorized" {
-		t.Fatalf("Logout('') = %v, want 'user_logout_invalid'", err)
+		t.Fatalf("Logout(ctx, '') = %v, want 'user_logout_invalid'", err)
 	}
 }
 
@@ -177,17 +191,19 @@ func TestLogoutWithoutSID(t *testing.T) {
 func TestLogoutWithExpiredSession(t *testing.T) {
 	alive := false
 	u := createUser(alive)
-	err := Logout(u.SID)
+	ctx := tests.Context()
+	err := Logout(ctx, u.SID)
 	if err == nil || err.Error() != "unauthorized" {
-		t.Fatalf("Logout(u.SID) = %v, want 'user_logout_invalid'", err)
+		t.Fatalf("Logout(ctx, u.SID) = %v, want 'user_logout_invalid'", err)
 	}
 }
 
 // TestLogoutWithNotExistingData expects to fails because of session misvalue
 func TestLogoutWithNotExistingData(t *testing.T) {
-	err := Logout("122")
+	ctx := tests.Context()
+	err := Logout(ctx, "122")
 	if err == nil || err.Error() != "unauthorized" {
-		t.Fatalf("Logout(124, '122') = %v, want nil", err)
+		t.Fatalf("Logout(ctx, 124, '122') = %v, want nil", err)
 	}
 }
 
@@ -196,9 +212,10 @@ func TestSessions(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	sessions, err := u.Sessions()
+	ctx := tests.Context()
+	sessions, err := u.Sessions(ctx)
 	if len(sessions) == 0 || err != nil {
-		t.Fatalf("u.Session() = %v, %v, want []Session, nil", sessions, err)
+		t.Fatalf("u.Session(ctx) = %v, %v, want []Session, nil", sessions, err)
 	}
 
 	session := sessions[0]
@@ -212,9 +229,10 @@ func TestSessionsExpired(t *testing.T) {
 	alive := false
 	u := createUser(alive)
 
-	sessions, err := u.Sessions()
+	ctx := tests.Context()
+	sessions, err := u.Sessions(ctx)
 	if len(sessions) != 0 || err != nil {
-		t.Fatalf("u.Session() = %v, %v, want []Session, nil", sessions, err)
+		t.Fatalf("u.Session(ctx) = %v, %v, want []Session, nil", sessions, err)
 	}
 }
 
@@ -224,9 +242,10 @@ func TestSessionsEmpty(t *testing.T) {
 	u := createUser(alive)
 	u.Devices = map[string]string{}
 
-	sessions, err := u.Sessions()
+	ctx := tests.Context()
+	sessions, err := u.Sessions(ctx)
 	if len(sessions) != 0 || err != nil {
-		t.Fatalf("u.Session() = %v, %v, want [], nil", sessions, err)
+		t.Fatalf("u.Session(ctx) = %v, %v, want [], nil", sessions, err)
 	}
 }
 
@@ -236,9 +255,10 @@ func TestSaveAddress(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err != nil {
-		t.Fatalf("SaveAddress(a) = %v, want nil", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want nil", err)
 	}
 }
 
@@ -249,9 +269,10 @@ func TestSaveAddressWithoutComplementary(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err != nil {
-		t.Fatalf("SaveAddress(a) = %v, want nil", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want nil", err)
 	}
 }
 
@@ -262,9 +283,10 @@ func TestSaveAddressUIDEmpty(t *testing.T) {
 	u := createUser(alive)
 	u.ID = 0
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err == nil || err.Error() != "something_went_wrong" {
-		t.Fatalf("SaveAddress(a) = %v, want 'something_went_wrong'", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want 'something_went_wrong'", err)
 	}
 }
 
@@ -275,9 +297,10 @@ func TestSaveAddressWithoutFirstname(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err == nil || err.Error() != "user_firstname_required" {
-		t.Fatalf("SaveAddress(a) = %v, want 'user_firstname_required'", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want 'user_firstname_required'", err)
 	}
 }
 
@@ -288,9 +311,10 @@ func TestSaveAddressWithoutLastname(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err == nil || err.Error() != "user_lastname_required" {
-		t.Fatalf("SaveAddress(a) = %v, want 'user_lastname_required'", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want 'user_lastname_required'", err)
 	}
 }
 
@@ -301,9 +325,10 @@ func TestSaveAddressWithoutAddress(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err == nil || err.Error() != "user_address_required" {
-		t.Fatalf("SaveAddress(a) = %v, want 'user_address_required'", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want 'user_address_required'", err)
 	}
 }
 
@@ -314,9 +339,10 @@ func TestSaveAddressWithoutCity(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err == nil || err.Error() != "user_city_required" {
-		t.Fatalf("SaveAddress(a) = %v, want 'user_city_required'", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want 'user_city_required'", err)
 	}
 }
 
@@ -327,9 +353,10 @@ func TestSaveAddressWithoutZipcode(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err == nil || err.Error() != "user_zipcode_required" {
-		t.Fatalf("SaveAddress(a) = %v, want 'user_zipcode_required'", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want 'user_zipcode_required'", err)
 	}
 }
 
@@ -340,9 +367,10 @@ func TestSaveAddressWithoutPhone(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	err := u.SaveAddress(a)
+	ctx := tests.Context()
+	err := u.SaveAddress(ctx, a)
 	if err == nil || err.Error() != "user_phone_required" {
-		t.Fatalf("SaveAddress(a) = %v, want 'user_phone_required'", err)
+		t.Fatalf("SaveAddress(ctx, a) = %v, want 'user_phone_required'", err)
 	}
 }
 
@@ -351,24 +379,27 @@ func TestGetUser(t *testing.T) {
 	alive := true
 	u := createUser(alive)
 
-	user, err := Get(u.ID)
+	ctx := tests.Context()
+	user, err := Get(ctx, u.ID)
 	if err != nil || user.ID == 0 {
-		t.Fatalf("users.Get(u.ID) = %v, %v, want User, nil", user, err)
+		t.Fatalf("users.Get(ctx, u.ID) = %v, %v, want User, nil", user, err)
 	}
 }
 
 // TestGetUserEmpty expects to fail because of id emptyness
 func TestGetUserEmpty(t *testing.T) {
-	user, err := Get(0)
+	ctx := tests.Context()
+	user, err := Get(ctx, 0)
 	if err == nil || err.Error() != "user_not_found" || user.ID != 0 {
-		t.Fatalf("users.Get(0) = %v, %v, want User{}, 'user_not_found'", user, err)
+		t.Fatalf("users.Get(ctx, 0) = %v, %v, wan t User{}, 'user_not_found'", user, err)
 	}
 }
 
 // TestGetUserNotExisting expects to fail because of user non existence
 func TestGetUserNotExisting(t *testing.T) {
-	user, err := Get(123)
+	ctx := tests.Context()
+	user, err := Get(ctx, 123)
 	if err == nil || err.Error() != "user_not_found" || user.ID != 0 {
-		t.Fatalf("users.Get(0) = %v, %v, want User{}, 'user_not_found'", user, err)
+		t.Fatalf("users.Get(ctx, 0) = %v, %v, want User{}, 'user_not_found'", user, err)
 	}
 }

@@ -1,19 +1,20 @@
 package main
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"gifthub/conf"
 	"gifthub/console/parser"
 	"gifthub/console/populate"
-	"gifthub/locales"
+	"gifthub/logs"
 	"gifthub/notifications/mails"
 	"gifthub/notifications/vapid"
 	"gifthub/orders"
 	"gifthub/users"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -21,11 +22,13 @@ import (
 	"golang.org/x/text/message"
 )
 
-var (
-	printer = message.NewPrinter(locales.Console)
-)
+// var (
+// 	printer = message.NewPrinter(locales.Console)
+// )
 
 func main() {
+	logs.Init()
+
 	start := time.Now()
 
 	if len(os.Args) == 1 {
@@ -33,6 +36,7 @@ func main() {
 	}
 
 	command := os.Args[len(os.Args)-1]
+	ctx := context.Background()
 
 	switch command {
 	case "import":
@@ -49,15 +53,17 @@ func main() {
 			reader := csv.NewReader(f)
 			data, err := reader.ReadAll()
 			if err != nil {
-				log.Fatal(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the csv", slog.String("error", err.Error()))
+				log.Fatal()
 			}
 
 			lines, err := parser.Import(data, conf.DefaultMID)
 			if err != nil {
-				log.Panicln(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot import the csv", slog.String("error", err.Error()))
+				log.Fatal()
 			}
 
-			fmt.Printf("Import successful, %d line(s) imported.\n", lines)
+			slog.LogAttrs(ctx, slog.LevelInfo, "import successful", slog.Int("lines", lines))
 
 		}
 
@@ -66,7 +72,8 @@ func main() {
 			err := populate.Run()
 
 			if err != nil {
-				log.Panic(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot populate", slog.String("error", err.Error()))
+				log.Fatal()
 			}
 		}
 
@@ -77,27 +84,30 @@ func main() {
 
 			flag.Parse()
 
-			err := orders.UpdateStatus(*id, *status)
+			err := orders.UpdateStatus(ctx, *id, *status)
 			if err != nil {
-				log.Fatalln(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot update the order", slog.String("oid", *id), slog.String("error", err.Error()))
+				log.Fatal()
 			}
 
-			order, err := orders.Find(*id)
+			order, err := orders.Find(ctx, *id)
 			if err != nil {
-				log.Fatalln(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot find the order", slog.String("oid", *id), slog.String("error", err.Error()))
+				log.Fatal()
 			}
 
-			user, err := users.Get(order.UID)
+			user, err := users.Get(ctx, order.UID)
 			if err != nil {
-				log.Fatalln(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot get the user", slog.String("oid", *id), slog.String("error", err.Error()))
+				log.Fatal()
 			}
 
 			p := message.NewPrinter(user.Lang)
 			msg := p.Sprintf("mail_magic_link", id, status)
-			mails.Send(user.Email, msg)
+			mails.Send(ctx, user.Email, msg)
 
 			for _, value := range user.Devices {
-				vapid.Send(value, msg)
+				vapid.Send(ctx, value, msg)
 			}
 		}
 
@@ -107,14 +117,16 @@ func main() {
 
 			flag.Parse()
 
-			o, err := orders.Find(*id)
+			o, err := orders.Find(ctx, *id)
 			if err != nil {
-				log.Fatalln(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot find the order", slog.String("id", *id), slog.String("error", err.Error()))
+				log.Fatal()
 			}
 
 			empJSON, err := json.MarshalIndent(o, "", "  ")
 			if err != nil {
-				log.Fatalf(err.Error())
+				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the object", slog.String("id", *id), slog.String("error", err.Error()))
+				log.Fatal()
 			}
 
 			log.Printf("%s\n", string(empJSON))
@@ -127,21 +139,23 @@ func main() {
 
 			flag.Parse()
 
-			err := orders.AddNote(*id, *note)
+			err := orders.AddNote(ctx, *id, *note)
 			if err != nil {
-				log.Fatalln(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot add a note", slog.String("id", *id), slog.String("error", err.Error()))
+				log.Fatalln()
 			}
 
-			log.Println("Note added to the order.")
+			slog.LogAttrs(ctx, slog.LevelInfo, "note added to the order")
 		}
 
 	case "userlist":
 		{
 			page := flag.Int64("page", 0, "The page used in pagination")
 
-			u, err := users.List(*page)
+			u, err := users.List(ctx, *page)
 			if err != nil {
-				log.Fatalln(err)
+				slog.LogAttrs(ctx, slog.LevelError, "cannot list the users", slog.Int64("page", *page), slog.String("error", err.Error()))
+				log.Fatalln()
 			}
 
 			t := table.NewWriter()
@@ -156,12 +170,12 @@ func main() {
 		}
 	default:
 		{
-			log.Fatalf("The commands %s is not supported!\n", command)
+			slog.LogAttrs(ctx, slog.LevelError, "the command is not supported", slog.String("command", command))
 		}
 	}
 
 	// Code to measure
 	duration := time.Since(start)
 
-	fmt.Printf("Command done in %s.\n", duration)
+	slog.LogAttrs(ctx, slog.LevelInfo, "command done", slog.Duration("duration", duration))
 }

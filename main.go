@@ -3,16 +3,18 @@ package main
 import (
 	"gifthub/conf"
 	"gifthub/locales"
+	"gifthub/logs"
 	"gifthub/pages"
+	"log/slog"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"log"
-	"net/http"
 )
 
 func main() {
 	locales.LoadEn()
-
+	logs.Init()
 	// p := message.NewPrinter(language.English)
 
 	router := chi.NewRouter()
@@ -25,7 +27,7 @@ func main() {
 	fs := http.FileServer(http.Dir("web/public"))
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
 
-	log.Println(conf.ImgProxyPath)
+	slog.Info(conf.ImgProxyPath)
 
 	router.Get("/", pages.Home)
 

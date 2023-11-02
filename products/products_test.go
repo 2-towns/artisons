@@ -4,6 +4,7 @@ import (
 	"context"
 	"gifthub/db"
 	"gifthub/string/stringutil"
+	"gifthub/tests"
 	"testing"
 )
 
@@ -24,16 +25,19 @@ func TestProductAvailable(t *testing.T) {
 	ctx := context.Background()
 	pid, _ := stringutil.Random()
 	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
+	c := tests.Context()
 
-	if exists := Available(pid); !exists {
+	if exists := Available(c, pid); !exists {
 		t.Fatalf(`Available(pid) = %v, want true`, exists)
 	}
 }
 
 // TestProductAvailableNotFound expects to fail because of product non existence
 func TestProductAvailableNotFound(t *testing.T) {
-	if exists := Available("toto"); exists {
-		t.Fatalf(`Available(pid) = %v, want false`, exists)
+	c := tests.Context()
+
+	if exists := Available(c, "toto"); exists {
+		t.Fatalf(`Available(c, pid) = %v, want false`, exists)
 	}
 }
 
@@ -42,15 +46,18 @@ func TestProductsAvailables(t *testing.T) {
 	ctx := context.Background()
 	pid, _ := stringutil.Random()
 	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
+	c := tests.Context()
 
-	if exists := Availables([]string{pid}); !exists {
-		t.Fatalf(`Availables(pid) = %v, want true`, exists)
+	if exists := Availables(c, []string{pid}); !exists {
+		t.Fatalf(`Availables(c, pid) = %v, want true`, exists)
 	}
 }
 
 // TestProductsAvailablesNotFound expects to fail because of products non existence
 func TestProductsAvailablesNotFound(t *testing.T) {
-	if exists := Availables([]string{"toto"}); exists {
-		t.Fatalf(`Availables(pid) = %v, want false`, exists)
+	c := tests.Context()
+
+	if exists := Availables(c, []string{"toto"}); exists {
+		t.Fatalf(`Availables(c, pid) = %v, want false`, exists)
 	}
 }

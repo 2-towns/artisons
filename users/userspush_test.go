@@ -1,12 +1,16 @@
 package users
 
-import "testing"
+import (
+	"gifthub/tests"
+	"testing"
+)
 
 // TestAddWPToken expects to succeed
 func TestAddWPToken(t *testing.T) {
 	alive := true
+	ctx := tests.Context()
 	u := createUser(alive)
-	if err := u.AddWPToken("{}"); err != nil {
+	if err := u.AddWPToken(ctx, "{}"); err != nil {
 		t.Fatalf("u.AddWPToken('{}') = %v, want nil", err)
 	}
 }
@@ -14,8 +18,9 @@ func TestAddWPToken(t *testing.T) {
 // TestAddWPTokenEmpty expects to fail because of token emptyness
 func TestAddWPTokenEmpty(t *testing.T) {
 	alive := true
+	ctx := tests.Context()
 	u := createUser(alive)
-	if err := u.AddWPToken(""); err == nil || err.Error() != "user_wptoken_required" {
+	if err := u.AddWPToken(ctx, ""); err == nil || err.Error() != "user_wptoken_required" {
 		t.Fatalf("u.AddWPToken('') = %v, want user_wptoken_required", err)
 	}
 }
@@ -24,7 +29,8 @@ func TestAddWPTokenEmpty(t *testing.T) {
 func TestDeleteWPToken(t *testing.T) {
 	alive := true
 	u := createUser(alive)
-	if err := u.DeleteWPToken(u.SID); err != nil {
+	ctx := tests.Context()
+	if err := u.DeleteWPToken(ctx, u.SID); err != nil {
 		t.Fatalf("u.TestDeleteWPToken(u.SID) = %v, want nil", err)
 	}
 }
@@ -33,7 +39,8 @@ func TestDeleteWPToken(t *testing.T) {
 func TestDeleteWPTokenEmpty(t *testing.T) {
 	alive := true
 	u := createUser(alive)
-	if err := u.DeleteWPToken(""); err == nil || err.Error() != "unauthorized" {
+	ctx := tests.Context()
+	if err := u.DeleteWPToken(ctx, ""); err == nil || err.Error() != "unauthorized" {
 		t.Fatalf("u.DeleteWPToken('') = %v, want unauthorized", err)
 	}
 }

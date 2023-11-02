@@ -4,19 +4,23 @@
 package vapid
 
 import (
+	"context"
 	"encoding/json"
 	"gifthub/conf"
-	"log"
+	"log/slog"
 
 	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
 // Send a push notification on a device.
-func Send(device, message string) error {
+func Send(c context.Context, device, message string) error {
+	l := slog.With(slog.String("message", message))
+	l.LogAttrs(c, slog.LevelInfo, "sending a new notification")
+
 	s := &webpush.Subscription{}
 	json.Unmarshal([]byte(device), s)
 
-	log.Printf("preparing to send a push notification")
+	l.LogAttrs(c, slog.LevelInfo, "preparing to send a push notification")
 
 	resp, err := webpush.SendNotification([]byte(message), s, &webpush.Options{
 		Subscriber:      conf.VapidEmail,
@@ -25,7 +29,11 @@ func Send(device, message string) error {
 		TTL:             30,
 	})
 
-	log.Printf("notification sent with response %v", err)
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot send the notification", slog.String("err", err.Error()), slog.Int("status", resp.StatusCode))
+	} else {
+		l.LogAttrs(c, slog.LevelInfo, "notification sent", slog.Int("status", resp.StatusCode))
+	}
 
 	defer resp.Body.Close()
 

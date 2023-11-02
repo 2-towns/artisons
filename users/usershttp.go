@@ -5,34 +5,40 @@ import (
 	"errors"
 	"gifthub/conf"
 	"gifthub/db"
-	"log"
 	"net/http"
+
+	"golang.org/x/exp/slog"
 )
 
-func findBySessionID(sid string) (User, error) {
+func findBySessionID(c context.Context, sid string) (User, error) {
+	l := slog.With(slog.String("sid", sid))
+	l.LogAttrs(c, slog.LevelInfo, "finding the user")
+
 	if sid == "" {
-		log.Printf("input_validation_fail: the session id is required")
+		l.LogAttrs(c, slog.LevelInfo, "cannot validate the session id")
 		return User{}, errors.New("unauthorized")
 	}
 
 	ctx := context.Background()
 	id, err := db.Redis.Get(ctx, "auth:"+sid).Result()
 	if err != nil {
-		log.Printf("WARN: authz_fail: error when looking for session %s %s", sid, err.Error())
+		l.LogAttrs(c, slog.LevelError, "cannot get the auth if from redis", slog.String("error", err.Error()))
 		return User{}, errors.New("unauthorized")
 	}
 
 	m, err := db.Redis.HGetAll(ctx, "user:"+id).Result()
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: error when loading redis data for session %s %s", sid, err.Error())
+		l.LogAttrs(c, slog.LevelError, "cannot get the session from redis", slog.String("error", err.Error()))
 		return User{}, errors.New("unauthorized")
 	}
 
 	m["sid"] = sid
-	u, err := parseUser(m)
+	u, err := parseUser(c, m)
 	if err != nil {
 		return User{}, errors.New("unauthorized")
 	}
+
+	l.LogAttrs(c, slog.LevelInfo, "user found", slog.Int64("user_id", u.ID))
 
 	return u, err
 }
@@ -48,12 +54,13 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := findBySessionID(sid.Value)
+		user, err := findBySessionID(r.Context(), sid.Value)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
 
+		// TODO display session id in lgos
 		ctx := context.WithValue(r.Context(), ContextKey, user)
 
 		next.ServeHTTP(w, r.WithContext(ctx))

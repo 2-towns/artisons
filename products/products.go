@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"log"
+	"log/slog"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -40,7 +40,10 @@ func ImagePath(pid string, index int) (string, string) {
 }
 
 // Available return true if all the product ids are availables
-func Availables(pids []string) bool {
+func Availables(c context.Context, pids []string) bool {
+	l := slog.With(slog.Any("pids", pids))
+	l.LogAttrs(c, slog.LevelInfo, "checking the pids availability")
+
 	ctx := context.Background()
 	pipe := db.Redis.Pipeline()
 	for _, pid := range pids {
@@ -49,29 +52,36 @@ func Availables(pids []string) bool {
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
-		log.Printf("sequence_fail: error when getting product ids %v, %v", pids, err.Error())
+		l.LogAttrs(c, slog.LevelError, "cannot get the product ids", slog.String("error", err.Error()))
 		return false
 	}
 
 	for _, cmd := range cmds {
 		status := cmd.(*redis.StringCmd).Val()
 		if status != "online" {
-			log.Printf("input_validation_fail: error the product %s is not available, %v", cmd.Args()[1], err.Error())
+			l.LogAttrs(c, slog.LevelInfo, "cannot get the product while it is not available", slog.String("id", cmd.Args()[1].(string)))
 			return false
 		}
 	}
+
+	l.LogAttrs(c, slog.LevelInfo, "the pids are available")
 
 	return true
 }
 
 // Available return true if the product is available
-func Available(pid string) bool {
+func Available(c context.Context, pid string) bool {
+	l := slog.With(slog.String("pid", pid))
+	l.LogAttrs(c, slog.LevelInfo, "checking the pid availability")
+
 	ctx := context.Background()
 	status, err := db.Redis.HGet(ctx, "product:"+pid, "status").Result()
 	if err != nil {
-		log.Printf("input_validation_fail: error when checking product:%s exists %s", pid, err.Error())
+		l.LogAttrs(c, slog.LevelError, "the product does not exist", slog.String("error", err.Error()))
 		return false
 	}
+
+	l.LogAttrs(c, slog.LevelInfo, "got the product status", slog.String("availability", "status"))
 
 	return status == "online"
 }

@@ -26,9 +26,7 @@ var Redis = redis.NewClient(&redis.Options{
 	for {
 		msg, err := pubsub.ReceiveMessage(ctx)
 		if err != nil {
-			log.Printf("sequence_fail: error when receiving pub message:%s", err.Error())
 		}
-		log.Println(msg.Channel)
 		parts := strings.Split(msg.Channel, "auth:")
 		fmt.Println(parts[1])
 	}

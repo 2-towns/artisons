@@ -5,6 +5,7 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/string/stringutil"
+	"gifthub/tests"
 	"testing"
 )
 
@@ -21,7 +22,8 @@ func createCart() Cart {
 }
 
 func createProduct() string {
-	ctx := context.Background()
+	ctx := tests.Context()
+
 	pid, _ := stringutil.Random()
 
 	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
@@ -37,12 +39,13 @@ func addProductToCart(cid, pid string) {
 
 // TestCartAdd expects to succeed
 func TestCartAdd(t *testing.T) {
+	ctx := tests.Context()
 	c := createCart()
 	pid := createProduct()
 	var quantity int64 = 1
 
-	if err := Add(c.ID, pid, quantity); err != nil {
-		t.Fatalf("Add(uid,pid,quantity), %v, want nil, error", err)
+	if err := Add(ctx, c.ID, pid, quantity); err != nil {
+		t.Fatalf("Add(ctx,u id, pid, quantity), %v, want nil, error", err)
 	}
 }
 
@@ -50,10 +53,11 @@ func TestCartAdd(t *testing.T) {
 func TestCartAddWithCIDMisvalue(t *testing.T) {
 	cid, _ := stringutil.Random()
 	pid := createProduct()
+	ctx := tests.Context()
 	var quantity int64 = 1
 
-	if err := Add(cid, pid, quantity); err == nil {
-		t.Fatalf("Add(uid,pid,quantity), %v, not want nil, error", err)
+	if err := Add(ctx, cid, pid, quantity); err == nil {
+		t.Fatalf("Add(ctx, uid, pid, quantity), %v, not want nil, error", err)
 	}
 }
 
@@ -61,27 +65,30 @@ func TestCartAddWithCIDMisvalue(t *testing.T) {
 func TestCartAddWithPIDMisvalue(t *testing.T) {
 	c := createCart()
 	pid, _ := stringutil.Random()
+	ctx := tests.Context()
 	var quantity int64 = 1
 
-	if err := Add(c.ID, pid, quantity); err == nil {
-		t.Fatalf("Add(uid,pid,quantity), %v, not want nil, error", err)
+	if err := Add(ctx, c.ID, pid, quantity); err == nil {
+		t.Fatalf("Add(ctx, uid, pid, quantity), %v, not want nil, error", err)
 	}
 }
 
 // TestUdpateCID expects to succeed
 func TestRefreshCID(t *testing.T) {
-	cid, err := RefreshCID("")
+	ctx := tests.Context()
+	cid, err := RefreshCID(ctx, "")
 	if cid == "" || err != nil {
-		t.Fatalf("UpdateCID('') = %s, %v, not want ', error", cid, err)
+		t.Fatalf("UpdateCID(ctx, '') = %s, %v, not want ', error", cid, err)
 	}
 }
 
 // TestRefreshCIDExisting expects to succeed with existing cartID
 func TestRefreshCIDExisting(t *testing.T) {
+	ctx := tests.Context()
 	s, _ := stringutil.Random()
-	cid, err := RefreshCID(s)
+	cid, err := RefreshCID(ctx, s)
 	if cid == "" || err != nil {
-		t.Fatalf("UpdateCID(s) = %s, %v, want string, error", cid, err)
+		t.Fatalf("UpdateCID(ctx, s) = %s, %v, want string, error", cid, err)
 	}
 }
 
@@ -90,50 +97,56 @@ func TestGetCart(t *testing.T) {
 	c := createCart()
 	pid := createProduct()
 	addProductToCart(c.ID, pid)
+	ctx := tests.Context()
 
-	c, err := Get(c.ID)
+	c, err := Get(ctx, c.ID)
 	// TODO: Add the test len(c.Products) == 0
 	if c.ID == "" || err != nil {
-		t.Fatalf("Get(cid) = %v, %v, want Cart, nil", c, err)
+		t.Fatalf("Get(ctx, cid) = %v, %v, want Cart, nil", c, err)
 	}
 }
 
 // TestGetCartWithCIDNotExisting expects to fail because of cid non existence
 func TestGetCartWithCIDNotExisting(t *testing.T) {
-	c, err := Get("toto")
+	ctx := tests.Context()
+	c, err := Get(ctx, "toto")
 	if c.ID != "" || len(c.Products) != 0 || err == nil || err.Error() != "cart_not_found" {
-		t.Fatalf("Get(cid) = %v, %v, want Cart{}, 'cart_not_found'", c, err)
+		t.Fatalf("Get(ctx, cid) = %v, %v, want Cart{}, 'cart_not_found'", c, err)
 	}
 }
 
 // TestCartUpdateDelivery expects to succeed
 func TestCartUpdateDelivery(t *testing.T) {
+	ctx := tests.Context()
 	c := createCart()
-	if err := c.UpdateDelivery("collect"); err != nil {
-		t.Fatalf("c.UpdateDelivery('collect') = %v, want nil", err)
+	if err := c.UpdateDelivery(ctx, "collect"); err != nil {
+		t.Fatalf("c.UpdateDelivery(ctx,'collect') = %v, want nil", err)
 	}
 }
 
 // TestCartUpdateDeliveryWithMisvalue expects to fail because of delivery misvalue
 func TestCartUpdateDeliveryWithMisvalue(t *testing.T) {
+	ctx := tests.Context()
 	c := createCart()
-	if err := c.UpdateDelivery("toto"); err == nil || err.Error() != "unauthorized" {
-		t.Fatalf("c.UpdateDelivery('toto') = %v, want unauthorized", err)
+	if err := c.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "unauthorized" {
+		t.Fatalf("c.UpdateDelivery(ctx,'toto') = %v, want unauthorized", err)
 	}
 }
 
 // TestCartUpdatePayment expects to succeed
 func TestCartUpdatePayment(t *testing.T) {
+	ctx := tests.Context()
 	c := createCart()
-	if err := c.UpdatePayment("card"); err != nil {
-		t.Fatalf("c.UpdatePayment('card') = %v, want nil", err)
+	if err := c.UpdatePayment(ctx, "card"); err != nil {
+		t.Fatalf("c.UpdatePayment(ctx, 'card') = %v, want nil", err)
 	}
 }
 
 // TestCartUpdatePaymentWithMisvalue  expects to fail because of payment misvalue
 func TestCartUpdatePaymentWithMisvalue(t *testing.T) {
+	ctx := tests.Context()
 	c := createCart()
-	if err := c.UpdatePayment("toto"); err == nil || err.Error() != "unauthorized" {
-		t.Fatalf("c.UpdatePayment('toto') = %v, want 'unauthorized'", err)
+	if err := c.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "unauthorized" {
+		t.Fatalf("c.UpdatePayment(ctx, 'toto') = %v, want 'unauthorized'", err)
 	}
 }
