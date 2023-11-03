@@ -82,3 +82,29 @@ go run console/console.go populate
 ## Profiter
 
 Siroter un bon café.
+
+## Wiki
+
+### Utiliser les logs
+
+Les logs doivent être renseignés avec le package `slog`. Un contexte doit être passé pour connaître l'identifiant de la requête. Example:
+
+```go
+func Add(c context.Context, cid, pid string, quantity int64) error {
+    // ...
+    l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
+    // ...
+}
+```
+
+Il est possible de créer un log qui contiendra une valeur utilisée pour chaque log. Example:
+
+```
+l := slog.With(slog.String("cid", cid))
+```
+
+Des logs doivent être insérés en début et fin de fonction. Pour chaque erreur, il faut logger le message d'erreur. Si l'erreur est d'un type `error`, le niveau de log est `ERROR`, sinon le niveau `INFO` est utilisé.
+
+Les logs doivent être affichés immédiatement dans le code afin d'avoir un contexte précis de l'erreur.
+
+Pour éviter les doubles logs, il ne faut pas faire un log d'une erreur déjà traitée par une de nos fonctions.
