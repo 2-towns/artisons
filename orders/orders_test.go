@@ -1,35 +1,19 @@
 package orders
 
 import (
-	"context"
-	"gifthub/db"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
-	"math/rand"
 	"testing"
 )
 
-func createOrder() Order {
-	ctx := context.Background()
-	uid := rand.Int63n(10000)
-	pid, _ := stringutil.Random()
-	oid, _ := stringutil.Random()
-	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
-	db.Redis.HSet(ctx, "order:"+oid, "uid", uid)
-	db.Redis.HSet(ctx, "order:"+oid, "id", oid)
-	products := map[string]int64{
-		pid: 1,
-	}
-
-	o := Order{
-		ID:       oid,
-		UID:      uid,
-		Delivery: "collect",
-		Payment:  "cash",
-		Products: products,
-	}
-
-	return o
+var order Order = Order{
+	ID:       "test",
+	UID:      1,
+	Delivery: "collect",
+	Payment:  "cash",
+	Products: map[string]int64{
+		"test": 1,
+	},
 }
 
 // TestIsValidDelivery expects to succeed
@@ -66,7 +50,7 @@ func TestIsValidPaymentMisvalue(t *testing.T) {
 
 // TestOrderSave expects to succeed
 func TestOrderSave(t *testing.T) {
-	o := createOrder()
+	o := order
 	ctx := tests.Context()
 
 	if oid, err := o.Save(ctx); err != nil || oid == "" {
@@ -76,7 +60,7 @@ func TestOrderSave(t *testing.T) {
 
 // TestOrderSaveDeliveryMisvalue expects to fail because of wrong delivery value
 func TestOrderSaveDeliveryMisvalue(t *testing.T) {
-	o := createOrder()
+	o := order
 	o.Delivery = "toto"
 	ctx := tests.Context()
 
@@ -87,7 +71,7 @@ func TestOrderSaveDeliveryMisvalue(t *testing.T) {
 
 // TestOrderSavePaymentMisvalue expects to fail because of wrong payment value
 func TestOrderSavePaymentMisvalue(t *testing.T) {
-	o := createOrder()
+	o := order
 	o.Payment = "toto"
 	ctx := tests.Context()
 
@@ -98,7 +82,7 @@ func TestOrderSavePaymentMisvalue(t *testing.T) {
 
 // TestOrderSaveProductsEmpty expects to fail because of products emptyness
 func TestOrderSaveProductsEmpty(t *testing.T) {
-	o := createOrder()
+	o := order
 	o.Products = map[string]int64{}
 	ctx := tests.Context()
 
@@ -109,7 +93,7 @@ func TestOrderSaveProductsEmpty(t *testing.T) {
 
 // TestOrderSaveProductsUnavailable expects to fail because of products availability
 func TestOrderSaveProductsUnavailable(t *testing.T) {
-	o := createOrder()
+	o := order
 	o.Products = map[string]int64{"toto12": 1}
 	ctx := tests.Context()
 
@@ -121,7 +105,7 @@ func TestOrderSaveProductsUnavailable(t *testing.T) {
 // TestOrderUpdateStatus expects to succeed
 func TestOrderUpdateStatus(t *testing.T) {
 	ctx := tests.Context()
-	o := createOrder()
+	o := order
 	if err := UpdateStatus(ctx, o.ID, "processing"); err != nil {
 		t.Fatalf(`UpdateStatus(ctx, o.ID, "processing") = %v, nil`, err)
 	}
@@ -130,7 +114,7 @@ func TestOrderUpdateStatus(t *testing.T) {
 // TestOrderUpdateStatusWrong expects to fail because of invalid status
 func TestOrderUpdateStatusWrong(t *testing.T) {
 	ctx := tests.Context()
-	o := createOrder()
+	o := order
 	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "order_bad_status" {
 		t.Fatalf(`UpdateStatus(ctx, o.ID, "toto") = '%s', want 'order_bad_status'`, err.Error())
 	}
@@ -148,7 +132,7 @@ func TestOrderUpdateStatusNotExisting(t *testing.T) {
 
 // TestOrderFind expects to succeed
 func TestOrderFind(t *testing.T) {
-	o := createOrder()
+	o := order
 	ctx := tests.Context()
 
 	if oo, err := Find(ctx, o.ID); err != nil || oo.ID == "" {
@@ -168,21 +152,19 @@ func TestOrderFindNotExisting(t *testing.T) {
 
 // TestAddNote expects to succeed
 func TestAddNote(t *testing.T) {
-	o := createOrder()
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, o.ID, "Ta commande, tu peux te la garder !"); err != nil {
-		t.Fatalf(`AddNote(ctx,o.ID, "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
+	if err := AddNote(ctx, "test", "Ta commande, tu peux te la garder !"); err != nil {
+		t.Fatalf(`AddNote(ctx, "test", "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
 	}
 }
 
 // TestAddNote expects to fail because of note emptyness
 func TestAddNoteWithEmptyString(t *testing.T) {
-	o := createOrder()
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, o.ID, ""); err == nil || err.Error() != "order_note_required" {
-		t.Fatalf(`orders.AddNote(ctx,o.ID, "") = '%s', want 'order_note_required'`, err.Error())
+	if err := AddNote(ctx, "test", ""); err == nil || err.Error() != "order_note_required" {
+		t.Fatalf(`orders.AddNote(ctx, "test", "") = '%s', want 'order_note_required'`, err.Error())
 	}
 }
 
@@ -191,6 +173,6 @@ func TestAddNoteWithOrderNotExisting(t *testing.T) {
 	ctx := tests.Context()
 
 	if err := AddNote(ctx, "123", "Useless"); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`orders.AddNote(ctx, o.ID, "Useless") = '%s', want 'order_not_found'`, err.Error())
+		t.Fatalf(`orders.AddNote(ctx, "123", "Useless") = '%s', want 'order_not_found'`, err.Error())
 	}
 }

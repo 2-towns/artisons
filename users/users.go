@@ -10,6 +10,7 @@ import (
 	"gifthub/http/httputil"
 	"gifthub/locales"
 	"gifthub/string/stringutil"
+	"log"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -197,7 +198,7 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 	l := slog.With(slog.String("user_id", m["id"]))
 	l.LogAttrs(c, slog.LevelInfo, "parsing the user data")
 
-	id, err := strconv.ParseInt(m["id"], 10, 32)
+	id, err := strconv.ParseInt(m["id"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the id", slog.String("error", err.Error()))
 		return User{}, errors.New("something_went_wrong")
@@ -253,8 +254,8 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 }
 
 // List returns the users list in the application
-func List(c context.Context, page int64) ([]User, error) {
-	l := slog.With(slog.Int64("page", page))
+func List(c context.Context, page int) ([]User, error) {
+	l := slog.With(slog.Int("page", page))
 	l.LogAttrs(c, slog.LevelInfo, "listing the users")
 
 	key := "users"
@@ -262,7 +263,7 @@ func List(c context.Context, page int64) ([]User, error) {
 
 	start, end := conf.Pagination(page)
 	users := []User{}
-	ids := db.Redis.ZRange(ctx, key, start, end).Val()
+	ids := db.Redis.ZRange(ctx, key, int64(start), int64(end)).Val()
 	pipe := db.Redis.Pipeline()
 
 	for _, v := range ids {
@@ -333,11 +334,9 @@ func (u User) Sessions(c context.Context) ([]Session, error) {
 
 	ctx := context.Background()
 	pipe := db.Redis.Pipeline()
-	// var keys []string
 	var devices []string
 	for key, device := range u.Devices {
 		pipe.TTL(ctx, key)
-		// keys = append(keys, key)
 		devices = append(devices, device)
 	}
 
@@ -357,8 +356,10 @@ func (u User) Sessions(c context.Context) ([]Session, error) {
 		}
 
 		ttl := cmd.(*redis.DurationCmd).Val()
+		log.Println(ttl.Nanoseconds())
+
 		if ttl.Nanoseconds() < 0 {
-			slog.LogAttrs(c, slog.LevelWarn, "the session is expired", slog.Duration("ttl", ttl))
+			slog.LogAttrs(c, slog.LevelInfo, "the session is expired", slog.Duration("ttl", ttl))
 			continue
 		}
 
@@ -421,6 +422,8 @@ func Login(c context.Context, magic, device string) (string, error) {
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Set(ctx, "auth:"+sid, id, conf.SessionDuration)
+
+		// todo is it the better way to set auth device
 		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "auth:"+sid, device)
 		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", locales.Default.String())
 		return nil

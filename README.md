@@ -59,6 +59,8 @@ Il est possible de lancer sans le cache:
 go test ./... -count=1
 ```
 
+Lors de l'écriture de tests, les commandes `redis` doivent être évitées au maximum. Il faut privilégier les données ajoutées au script de peuplement.
+
 ## Terminal
 
 ### Importation de CSV
@@ -78,6 +80,14 @@ Pour peupler les données, lancer la commande suivante:
 ```
 go run console/console.go populate
 ```
+
+Les données disponibles sont:
+
+- a sample product with `test` as pid
+- a sample user with `test` as sid and `1` as id
+- a sample order with `test` as id
+- a sample cart with `test` as id
+- a sample expired user with `expired` as sid and `2` as id
 
 ## Profiter
 
@@ -103,7 +113,7 @@ Il est possible de créer un log qui contiendra une valeur utilisée pour chaque
 l := slog.With(slog.String("cid", cid))
 ```
 
-Des logs doivent être insérés en début et fin de fonction. Pour chaque erreur, il faut logger le message d'erreur. Si l'erreur est d'un type `error`, le niveau de log est `ERROR`, sinon le niveau `INFO` est utilisé.
+Des logs doivent être insérés en début et fin de fonction. Pour chaque erreur, il faut logger le message d'erreur. Si l'erreur est d'un type `error`, le niveau de log est `ERROR`, sinon le niveau `INFO` est utilisé. Tous les logs d'erreur doivent commencer par `cannot`.
 
 Les logs doivent être affichés immédiatement dans le code afin d'avoir un contexte précis de l'erreur.
 

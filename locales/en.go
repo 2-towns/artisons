@@ -33,6 +33,7 @@ func LoadEn() {
 	message.SetString(language.English, "something_went_wrong", "Something went wrong, please try again later.")
 	message.SetString(language.English, "home_description", "Home description")
 	message.SetString(language.English, "product_url", "/product")
+	message.SetString(language.English, "product_pid_required", "The product pid is required.")
 	message.SetString(language.English, "user_magik_link_url", "/magic-link.html")
 	message.SetString(language.English, "cart_not_found", "Your session is expired, please refresh your page.")
 	message.SetString(language.English, "cart_empty", "The cart is empty.")

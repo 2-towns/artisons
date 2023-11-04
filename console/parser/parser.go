@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/locales"
 	"gifthub/products"
@@ -17,33 +16,15 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/redis/go-redis/v9"
+	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
 // lines representes the lines of a csv
 type lines [][]string
-
-type csvline struct {
-	MID         string
-	Sku         string
-	Title       string
-	Price       float64
-	Currency    string
-	Quantity    int
-	Status      string
-	Description string
-	Images      []string
-	Weight      float64
-	Tags        []string
-	Links       []string
-	Options     map[string]string
-}
 
 const isku int = 0
 const ititle = 1
@@ -202,82 +183,30 @@ func copyFile(src string) (string, error) {
 	return p, nil
 }
 
-func parseCsvLine(line []string) (csvline, error) {
+func parseCsvLine(line []string) (products.Product, error) {
 	slog.Info("parsing the line", slog.String("src", strings.Join(line, ",")))
-
-	product := csvline{}
 
 	if len(line) < requiredFields {
 		slog.Info("cannot parse the csv", slog.Int("length", len(line)), slog.Int("required", requiredFields))
-		return product, errors.New(printer.Sprintf("csv_not_valid"))
+		return products.Product{}, errors.New(printer.Sprintf("csv_not_valid"))
 	}
-
-	sku := line[isku]
-	if sku == "" {
-		slog.Info("cannot parse the empty sku")
-		return product, errors.New(printer.Sprintf("input_required", "sku"))
-	}
-
-	isValid := regexp.MustCompile(`^[0-9a-z]+$`).MatchString
-	if !isValid(sku) {
-		slog.Info("cannot parse the empty sku", slog.String("sku", sku))
-		return product, errors.New(printer.Sprintf("input_validation", "sku"))
-	}
-
-	product.Sku = sku
-
-	title := line[ititle]
-	if title == "" {
-		slog.Info("cannot parse the empty title")
-		return product, errors.New(printer.Sprintf("input_required", "title"))
-	}
-
-	product.Title = strings.ReplaceAll(title, "\"", "")
 
 	price, priceErr := strconv.ParseFloat(line[iprice], 32)
 	if priceErr != nil {
 		slog.Error("cannot parse the price", slog.Float64("price", price), slog.String("error", priceErr.Error()))
-		return product, errors.New(printer.Sprintf("input_validation", "price"))
+		return products.Product{}, errors.New(printer.Sprintf("input_validation", "price"))
 	}
 
-	product.Price = price
-
-	currency := line[icurrency]
-	if !conf.IsCurrencySupported(currency) {
-		slog.Info("cannot use an unsupported currency", slog.String("currency", currency))
-		return product, errors.New(printer.Sprintf("input_validation", "currency"))
-	}
-
-	product.Currency = currency
-
-	quantity, quantityErr := strconv.ParseInt(line[iquantity], 10, 32)
+	quantity, quantityErr := strconv.ParseInt(line[iquantity], 10, 8)
 	if quantityErr != nil {
 		slog.Error("cannot parse the quantity", slog.Int64("quantity", quantity), slog.String("error", quantityErr.Error()))
-		return product, errors.New(printer.Sprintf("input_validation", "quantity"))
+		return products.Product{}, errors.New(printer.Sprintf("input_validation", "quantity"))
 	}
-
-	product.Quantity = int(quantity)
-
-	status := line[istatus]
-	if status != "online" && status != "offline" {
-		slog.Error("cannot use an unsupported status", slog.String("status", status))
-		return product, errors.New(printer.Sprintf("input_validation", "status"))
-	}
-
-	product.Status = status
-
-	description := line[idescription]
-	if description == "" {
-		slog.Info("cannot parse the empty description")
-		return product, errors.New(printer.Sprintf("input_required", "description"))
-	}
-
-	product.Description = strings.ReplaceAll(description, "\"", "")
 
 	images := strings.Split(line[iimages], ";")
 	if len(images) == 0 {
 		slog.Info("cannot parse the empty images")
-		return product, errors.New(printer.Sprintf("input_required", "images"))
+		return products.Product{}, errors.New(printer.Sprintf("input_required", "images"))
 	}
 
 	var paths []string
@@ -285,7 +214,7 @@ func parseCsvLine(line []string) (csvline, error) {
 		p, err := getFile(v)
 
 		if err != nil {
-			return product, errors.New(printer.Sprintf("input_validation", "images"))
+			return products.Product{}, errors.New(printer.Sprintf("input_validation", "images"))
 		}
 
 		paths = append(paths, p)
@@ -293,40 +222,32 @@ func parseCsvLine(line []string) (csvline, error) {
 
 	if len(paths) != len(images) {
 		slog.Info("cannot parse the images", slog.Int("length", len(paths)), slog.Int("images", len(images)))
-		return product, errors.New(printer.Sprintf("input_validation", "images"))
+		return products.Product{}, errors.New(printer.Sprintf("input_validation", "images"))
 	}
-
-	product.Images = paths
 
 	length := len(line)
 
-	var weight float64
+	var weight float32
 	if length > iweight && line[iweight] != "" {
 		w, weightErr := strconv.ParseFloat(line[iweight], 32)
 
 		if weightErr != nil {
 			slog.Error("cannot parse the weight", slog.String("weight", line[iweight]), slog.String("error", weightErr.Error()))
-			return product, errors.New(printer.Sprintf("input_validation", "weight"))
+			return products.Product{}, errors.New(printer.Sprintf("input_validation", "weight"))
 		} else {
-			weight = w
+			weight = float32(w)
 		}
 	}
-
-	product.Weight = weight
 
 	var tags []string
 	if length > itags && line[itags] != "" {
 		tags = strings.Split(line[itags], cellSeparator)
 	}
 
-	product.Tags = tags
-
 	var links []string
 	if length > ilinks && line[ilinks] != "" {
 		links = strings.Split(line[ilinks], cellSeparator)
 	}
-
-	product.Links = links
 
 	options := make(map[string]string)
 	if length > ioptions && line[ioptions] != "" {
@@ -336,7 +257,7 @@ func parseCsvLine(line []string) (csvline, error) {
 			parts := strings.Split(v, optionSeparator)
 			if len(parts) != 2 {
 				slog.Info("cannot parse the option", slog.Int("index", j), slog.String("option", v))
-				return product, errors.New(printer.Sprintf("input_validation", "options"))
+				return products.Product{}, errors.New(printer.Sprintf("input_validation", "options"))
 			}
 
 			k := strings.ReplaceAll(parts[0], "\"", "")
@@ -347,11 +268,30 @@ func parseCsvLine(line []string) (csvline, error) {
 
 		if len(o) != len(options) {
 			slog.Info("cannot parse the options", slog.Int("length", len(o)), slog.Int("options", len(options)))
-			return product, errors.New(printer.Sprintf("input_validation", "options"))
+			return products.Product{}, errors.New(printer.Sprintf("input_validation", "options"))
 		}
 	}
 
-	product.Options = options
+	product := products.Product{
+		Sku:         line[isku],
+		Title:       strings.ReplaceAll(line[ititle], "\"", ""),
+		Description: strings.ReplaceAll(line[idescription], "\"", ""),
+		Price:       float32(price),
+		Currency:    line[icurrency],
+		Quantity:    int(quantity),
+		Status:      line[istatus],
+		Weight:      weight,
+		Length:      len(paths),
+		Tags:        tags,
+		Links:       links,
+		Meta:        options,
+		Images:      paths,
+	}
+
+	ctx := context.WithValue(context.Background(), locales.ContextKey, language.English)
+	if err := product.Validate(ctx); err != nil {
+		return products.Product{}, err
+	}
 
 	slog.Info("line parsed successfully")
 
@@ -376,8 +316,7 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 		return errors.New(printer.Sprintf("something_went_wrong"))
 	}
 
-	var i int = 0
-	for i = 0; i < img; i++ {
+	for i := 0; i < img; i++ {
 		_, p := products.ImagePath(pid, i)
 
 		if err := os.Rename(v, p); err != nil {
@@ -391,12 +330,12 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 	return nil
 }
 
-func createImages(pid string, product csvline) error {
-	l := slog.With(slog.String("pid", pid))
+func createImages(product products.Product) error {
+	l := slog.With(slog.String("pid", product.PID))
 	l.Info("creating previous images")
 
 	for i, v := range product.Images {
-		folder, p := products.ImagePath(pid, i)
+		folder, p := products.ImagePath(product.PID, i)
 
 		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
 			l.Error("cannot create the folder", slog.String("folder", folder), slog.String("error", err.Error()))
@@ -414,10 +353,10 @@ func createImages(pid string, product csvline) error {
 	return nil
 }
 
-func removeTmpFiles(product csvline) {
+func removeTmpFiles(product products.Product) {
 	slog.Info("remove temporary images")
 
-	if len(product.Images) > 0 {
+	if len(product.Images) >= 0 {
 		for _, v := range product.Images {
 			if err := os.Remove(v); err != nil {
 				slog.Error("cannot remove the file", slog.String("file", v), slog.String("error", err.Error()))
@@ -426,63 +365,6 @@ func removeTmpFiles(product csvline) {
 	}
 
 	slog.Info("temporary images deleted")
-}
-
-func addProductToRedis(ctx context.Context, pid string, product csvline) error {
-	l := slog.With(slog.String("pid", pid))
-	l.Info("storing the product")
-
-	key := "product:" + pid
-	lkey := "product:links:" + pid
-	tkey := "product:tags:" + pid
-	okey := "product:options:" + pid
-	now := time.Now()
-
-	_, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.Del(ctx, lkey, okey, tkey)
-		rdb.HSet(ctx, key,
-			"pid", pid,
-			"sku", product.Sku,
-			"title", product.Title,
-			"description", product.Description,
-			"images", len(product.Images),
-			"currency", product.Currency,
-			"price", product.Price,
-			"quantity", product.Quantity,
-			"status", product.Status,
-			"weight", product.Weight,
-			"mid", product.MID,
-			"updated_at", time.Now().Format(time.RFC3339),
-		)
-		rdb.ZAdd(ctx, "products:"+product.MID, redis.Z{
-			Score:  float64(now.Unix()),
-			Member: pid,
-		})
-
-		if len(product.Links) > 0 {
-			rdb.SAdd(ctx, lkey, product.Links)
-		}
-
-		if len(product.Tags) > 0 {
-			rdb.SAdd(ctx, tkey, product.Tags)
-		}
-
-		if len(product.Options) > 0 {
-			for k, v := range product.Options {
-				rdb.HSet(ctx, okey, k, v)
-			}
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		slog.Error("cannot store the product", slog.String("error", err.Error()))
-	} else {
-		l.Info("product stored successfully")
-	}
-
-	return err
 }
 
 func processLine(chans chan<- int, i int, mid string, line []string) {
@@ -497,38 +379,56 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 	}
 
 	catchError := func(err error) {
-		l.Error("cannot parse the csv line", slog.String("error", err.Error()))
+		l.Error("cannot parse the csv", slog.String("error", err.Error()))
 		removeTmpFiles(product)
 		chans <- 0
 	}
 
 	product.MID = mid
 
-	ctx := context.Background()
+	ctx := context.WithValue(context.Background(), locales.ContextKey, language.English)
 	key := "merchant:" + mid + ":" + product.Sku
 
-	pid, err := db.Redis.Get(ctx, key).Result()
-	if pid == "" || err != nil {
+	exists, err := db.Redis.Exists(ctx, key).Result()
+	if err != nil {
+		catchError(err)
+		return
+	}
+
+	var pid string
+
+	if exists == 0 {
 		pid, err = stringutil.Random()
 		if err != nil {
 			catchError(err)
 			return
 		}
-
-		if _, err := db.Redis.Set(ctx, key, pid, 0).Result(); err != nil {
+	} else {
+		pid, err = db.Redis.Get(ctx, key).Result()
+		if err != nil {
 			catchError(err)
 			return
 		}
-	} else {
-		deletePreviousImages(ctx, pid)
 	}
 
-	if err = createImages(pid, product); err != nil {
+	if pid != "" {
+		deletePreviousImages(ctx, pid)
+	} else {
+		pid, err = stringutil.Random()
+		if err != nil {
+			catchError(err)
+			return
+		}
+	}
+
+	product.PID = pid
+
+	if err = createImages(product); err != nil {
 		catchError(err)
 		return
 	}
 
-	if err = addProductToRedis(ctx, pid, product); err != nil {
+	if err = product.Save(ctx); err != nil {
 		catchError(err)
 		return
 	}
