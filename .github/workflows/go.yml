@@ -31,7 +31,7 @@ jobs:
           go-version: "1.21.x"
       - name: Install dependencies
         run: go get .
-      - name Create folder 
+      - name: Create folder
         run: mkdir -p ../web/images/articles
       - name: Populating data
         run: go run console/console.go populate
