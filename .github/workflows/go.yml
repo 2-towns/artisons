@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: go get .
       - name: Create folder
-        run: mkdir -p ../web/images/articles
+        run: mkdir -p ./web/images/articles
       - name: Populating data
         run: go run console/console.go populate
       - name: Build
