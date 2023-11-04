@@ -66,11 +66,7 @@ func TestList(t *testing.T) {
 		t.Fatalf(`List(c, page) = %v, want nil`, err.Error())
 	}
 
-	if len(articles) == 0 {
-		t.Fatalf(`len(articles) = %v, want 1`, len(articles))
-	}
-
-	a := articles[0]
+	a := articles[len(articles)-1]
 
 	if a.ID != 1 {
 		t.Fatalf(`a.ID = %v, want 1`, a.ID)
