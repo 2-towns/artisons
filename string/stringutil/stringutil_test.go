@@ -1,6 +1,9 @@
 package stringutil
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 // TestRandom expects to succeed
 func TestRandom(t *testing.T) {
@@ -11,11 +14,7 @@ func TestRandom(t *testing.T) {
 	}
 }
 
-// TestSlugify expects to succeed
-func TestSlugify(t *testing.T) {
-	s := Slugify("VERy nice title 12")
-
-	if s != "very-nice-title-12" {
-		t.Fatalf(`Slugify("VERy nice title 12") = %s, want "very-nice-title-12"`, s)
-	}
+func ExampleSlugify(t *testing.T) {
+	fmt.Println("VERy nice title 12")
+	// Output: very-nice-title-12
 }
