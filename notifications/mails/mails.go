@@ -10,7 +10,6 @@ import (
 
 // Send an email.
 // Only text format is supported for now.
-// TODO : set a gorouting
 func Send(c context.Context, email, message string) error {
 	l := slog.With(slog.String("email", email))
 	l.LogAttrs(c, slog.LevelInfo, "sending a new email")
