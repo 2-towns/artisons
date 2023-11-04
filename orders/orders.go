@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/locales"
+	"gifthub/notifications/mails"
 	"gifthub/products"
 	"gifthub/string/stringutil"
 	"log/slog"
@@ -16,6 +18,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/slices"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 var Status = []string{"created", "processing", "delivering", "delivered", "canceled"}
@@ -158,6 +162,17 @@ func (o Order) Save(c context.Context) (string, error) {
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot save the order in redis", slog.String("error", err.Error()))
 		return "", errors.New("something_went_wrong")
+	}
+
+	email, err := db.Redis.HGet(ctx, fmt.Sprintf("user:%d", o.UID), "email").Result()
+	if err != nil {
+		l.LogAttrs(c, slog.LevelWarn, "cannot send an email ", slog.Int64("uid", o.UID))
+	} else {
+		lang := c.Value(locales.ContextKey).(language.Tag)
+		p := message.NewPrinter(lang)
+		// todo add more detail about the order
+		msg := p.Sprintf("order_created_email", o.ID)
+		go mails.Send(ctx, email, msg)
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the new order is created", slog.String("oid", oid))

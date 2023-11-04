@@ -33,6 +33,23 @@ func Run() error {
 		return err
 	}
 
+	online := true
+	_, err = Article(ctx, online)
+	if err != nil {
+		return err
+	}
+
+	offline := false
+	_, err = Article(ctx, offline)
+	if err != nil {
+		return err
+	}
+
+	_, err = Article(ctx, offline)
+	if err != nil {
+		return err
+	}
+
 	expired := false
 	user, err = User(ctx, "expired", expired)
 	if err != nil {

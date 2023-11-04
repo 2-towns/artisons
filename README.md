@@ -88,6 +88,8 @@ Les données disponibles sont:
 - a sample order with `test` as id
 - a sample cart with `test` as id
 - a sample expired user with `expired` as sid and `2` as id
+- a sample blog article with `1` as id
+- a sample blog article with `2` as id
 
 ## Profiter
 
@@ -118,3 +120,11 @@ Des logs doivent être insérés en début et fin de fonction. Pour chaque erreu
 Les logs doivent être affichés immédiatement dans le code afin d'avoir un contexte précis de l'erreur.
 
 Pour éviter les doubles logs, il ne faut pas faire un log d'une erreur déjà traitée par une de nos fonctions.
+
+### Contexte
+
+Le contexte doit être utilisé dans la majorité des cas (sauf les très petites fonctions), afin d'afficher l'identifiant de la requête et potentiellement d'autres éléments. Les données disponibles dans le contexte sont :
+
+- la langue
+- l'utilisateur
+- l'identifiant de la requête

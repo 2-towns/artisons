@@ -8,6 +8,9 @@ import (
 
 func LoadEn() {
 	message.SetString(language.English, "home_title", "Homepage")
+	message.SetString(language.English, "article_title_required", "The title is required")
+	message.SetString(language.English, "article_description_required", "The title is required")
+	message.SetString(language.English, "article_image_required", "The title is required")
 	message.SetString(language.English, "csv_image_extension_missing", "The image extension is missing in %s.")
 	message.SetString(language.English, "csv_image_extension_not_supported", "The image extension %s is not supported.")
 	message.SetString(language.English, "csv_bad_file", "The file %s is not correct.")
@@ -40,6 +43,7 @@ func LoadEn() {
 	message.SetString(language.English, "order_not_found", "The order is not found.")
 	message.SetString(language.English, "order_note_required", "The note is required.")
 	message.SetString(language.English, "order_bad_status", "The status is not valid.")
+	message.SetString(language.English, "order_created_email", "Hi Tralala,\nThank you for your order %s. Bla bla bla")
 	message.SetString(language.English, "unauthorized", "Your are not authoried to process the request, this will be reported.")
 	message.SetString(language.English, "mail_magic_link", "Hi\n, your order %s has been updated to %s.\nContact us if you need more information.\nThe team.")
 
