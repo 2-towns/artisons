@@ -12,6 +12,7 @@ import (
 	"gifthub/notifications/mails"
 	"gifthub/notifications/vapid"
 	"gifthub/orders"
+	"gifthub/products"
 	"gifthub/users"
 	"log"
 	"log/slog"
@@ -150,11 +151,13 @@ func main() {
 
 	case "userlist":
 		{
-			page := flag.Int64("page", 0, "The page used in pagination")
+			page := flag.Int("page", 0, "The page used in pagination")
+
+			flag.Parse()
 
 			u, err := users.List(ctx, *page)
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot list the users", slog.Int64("page", *page), slog.String("error", err.Error()))
+				slog.LogAttrs(ctx, slog.LevelError, "cannot list the users", slog.Int("page", *page), slog.String("error", err.Error()))
 				log.Fatalln()
 			}
 
@@ -167,6 +170,27 @@ func main() {
 			}
 
 			t.Render()
+		}
+
+	case "productdetail":
+		{
+			pid := flag.String("pid", "", "The product id")
+
+			flag.Parse()
+
+			p, err := products.Find(ctx, *pid)
+			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelError, "cannot get the product detail", slog.String("pid", *pid), slog.String("error", err.Error()))
+				log.Fatalln()
+			}
+
+			pjson, err := json.MarshalIndent(p, "", "  ")
+			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the object", slog.String("pid", *pid), slog.String("error", err.Error()))
+				log.Fatal()
+			}
+
+			log.Printf("%s\n", string(pjson))
 		}
 	default:
 		{

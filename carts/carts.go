@@ -47,8 +47,8 @@ func cartExists(c context.Context, cid string) bool {
 
 // Add a product into a cart with its quantity
 // Verify that the cart and the product exists.
-func Add(c context.Context, cid, pid string, quantity int64) error {
-	l := slog.With(slog.String("cid", cid), slog.String("pid", pid), slog.Int64("quantity", quantity))
+func Add(c context.Context, cid, pid string, quantity int) error {
+	l := slog.With(slog.String("cid", cid), slog.String("pid", pid), slog.Int("quantity", quantity))
 	l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
 
 	if !cartExists(c, cid) {
@@ -60,7 +60,7 @@ func Add(c context.Context, cid, pid string, quantity int64) error {
 	}
 
 	ctx := context.Background()
-	if _, err := db.Redis.HIncrBy(ctx, "cart:"+cid, "product:"+pid, quantity).Result(); err != nil {
+	if _, err := db.Redis.HIncrBy(ctx, "cart:"+cid, "product:"+pid, int64(quantity)).Result(); err != nil {
 		l.LogAttrs(c, slog.LevelError, " cannot store the product", slog.String("error", err.Error()))
 		return errors.New("something_went_wrong")
 	}

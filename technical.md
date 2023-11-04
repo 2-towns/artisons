@@ -134,7 +134,7 @@ Tous les champs sont requis, à part l’adresse complémentaire et le numéro d
 
 Si l’utilisateur est connecté, ces champs sont pré-remplis.
 
-Si l'utilisateur n'est pas connecté, il doit d'aborder créer un compte. 
+Si l'utilisateur n'est pas connecté, il doit d'aborder créer un compte.
 
 Après validation, si l’application propose le retrait sur place, l’utilisateur peut choisir entre ce mode et la livraison à domicile. Sinon cette dernière sera automatiquement sélectionnée. Si la livraison à domicile est sélectionnée, un écran lui propose d’utiliser les mêmes coordonnées que les données de facturation. S’il refuse, il peut saisir tous les champs mentionnés précédemment pour son adresse de livraison.
 
@@ -156,9 +156,9 @@ Les commandes stockées dans Redis contiennent les mêmes éléments du panier a
 
 ## 5.6 Compte utilisateur
 
-Un utilisateur est identifier par son email. Un lien magique lui est envoyé pour valider son email et se connecter la première fois. Un seul lien magique est disponible à la fois et son usage est unique. Son expiration peut être modifier dans la configuration. 
+Un utilisateur est identifier par son email. Un lien magique lui est envoyé pour valider son email et se connecter la première fois. Un seul lien magique est disponible à la fois et son usage est unique. Son expiration peut être modifier dans la configuration.
 
-Les moyens de connexion sur d'autres appareils sont encore à définir. 
+Les moyens de connexion sur d'autres appareils sont encore à définir.
 
 Il peut aussi modifier ses coordonnées de facturation et livraison, changer activer ou désactiver les PUSH notifications et consulter l'historique des commandes. Ce dernier affiche les éléments suivants:
 
@@ -330,7 +330,7 @@ Les éléments de configuration de la plateforme sont disponibles à travers des
 - **MERCHANT**: L'identifiant du marchant par défaut. La valeur par défaut est `me`.
 - **LANGS**: Liste de langues supportées par l'application. La valeur par défaut est `["fr"]`.
 - **SESSION_EXPIRATION**: La durée de la session utilisateur en secondes. La valeur par défaut est 7 \*24 \* 3600.
-- **MAGIC_LINK_EXPIRATION**: La durée du lien magique en secondes. La valeur par défaut est  5 * 60.
+- **MAGIC_LINK_EXPIRATION**: La durée du lien magique en secondes. La valeur par défaut est 5 \* 60.
 
 # 10 Internationalisation
 

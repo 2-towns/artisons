@@ -204,7 +204,7 @@ func Find(c context.Context, oid string) (Order, error) {
 	ctx := context.Background()
 
 	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "the order does not exist")
+		l.LogAttrs(c, slog.LevelInfo, "cannot find the order")
 		return Order{}, errors.New("order_not_found")
 	}
 
@@ -300,7 +300,7 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 	l := slog.With(slog.String("user_id", m["uid"]))
 	l.LogAttrs(c, slog.LevelInfo, "parsing the order")
 
-	uid, err := strconv.ParseInt(m["uid"], 10, 32)
+	uid, err := strconv.ParseInt(m["uid"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot parse the uid", slog.String("error", err.Error()))
 		return Order{}, errors.New("something_went_wrong")

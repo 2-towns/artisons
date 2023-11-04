@@ -63,7 +63,7 @@ const VapidEmail = ""
 
 // Pagination returns the start items index and the
 // end items index.
-func Pagination(page int64) (int64, int64) {
+func Pagination(page int) (int, int) {
 	if page == -1 {
 		return 0, -1
 	}
