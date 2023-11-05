@@ -23,7 +23,7 @@ func Run() error {
 		return err
 	}
 
-	_, err = Order(ctx, "test", user.ID, map[string]int64{product.PID: 1})
+	_, err = Order(ctx, "test", user.ID, map[string]int64{product.ID: 1})
 	if err != nil {
 		return err
 	}

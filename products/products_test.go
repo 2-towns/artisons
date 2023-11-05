@@ -11,7 +11,7 @@ import (
 )
 
 var product = Product{
-	PID:         "123",
+	ID:          "123",
 	Title:       "Title",
 	Description: "Description",
 	Price:       32.5,
@@ -209,7 +209,7 @@ func TestSave(t *testing.T) {
 
 func TestSaveWithoutPID(t *testing.T) {
 	c := tests.Context()
-	p := Product{PID: ""}
+	p := Product{ID: ""}
 	if err := p.Save(c); err == nil {
 		t.Fatalf(`p.Save(c) = %v, want "product_pid_required"`, err.Error())
 	}
@@ -252,8 +252,8 @@ func TestFind(t *testing.T) {
 		t.Fatalf(`p.MID = %v, want string`, p.MID)
 	}
 
-	if p.PID != "test" {
-		t.Fatalf(`p.PID = %v, want "test"`, p.PID)
+	if p.ID != "test" {
+		t.Fatalf(`p.PID = %v, want "test"`, p.ID)
 	}
 
 	if p.Slug == "" {

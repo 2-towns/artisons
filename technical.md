@@ -256,7 +256,7 @@ Le nom de la commande dest `productdetail`.
 
 Les paramètres sont:
 
-- --pid: Le `PID` du produit
+- --id: Le `ID` du produit
 
 Le détail récupère tous les éléments stocké dans Redis.
 

@@ -174,19 +174,19 @@ func main() {
 
 	case "productdetail":
 		{
-			pid := flag.String("pid", "", "The product id")
+			pid := flag.String("id", "", "The product id")
 
 			flag.Parse()
 
 			p, err := products.Find(ctx, *pid)
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot get the product detail", slog.String("pid", *pid), slog.String("error", err.Error()))
+				slog.LogAttrs(ctx, slog.LevelError, "cannot get the product detail", slog.String("id", *pid), slog.String("error", err.Error()))
 				log.Fatalln()
 			}
 
 			pjson, err := json.MarshalIndent(p, "", "  ")
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the object", slog.String("pid", *pid), slog.String("error", err.Error()))
+				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the object", slog.String("id", *pid), slog.String("error", err.Error()))
 				log.Fatal()
 			}
 

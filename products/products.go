@@ -21,7 +21,7 @@ import (
 
 // Product is the product representation in the application
 type Product struct {
-	PID         string  `redis:"pid"` // ID is an unique identifier
+	ID          string  `redis:"id"` // ID is an unique identifier
 	Title       string  `redis:"title"`
 	Description string  `redis:"description"`
 	Price       float32 `redis:"price"`
@@ -59,7 +59,7 @@ func ImagePath(pid string, index int) (string, string) {
 
 // Available return true if all the product ids are availables
 func Availables(c context.Context, pids []string) bool {
-	l := slog.With(slog.Any("pids", pids))
+	l := slog.With(slog.Any("ids", pids))
 	l.LogAttrs(c, slog.LevelInfo, "checking the pids availability")
 
 	ctx := context.Background()
@@ -89,7 +89,7 @@ func Availables(c context.Context, pids []string) bool {
 
 // Available return true if the product is available
 func Available(c context.Context, pid string) bool {
-	l := slog.With(slog.String("pid", pid))
+	l := slog.With(slog.String("id", pid))
 	l.LogAttrs(c, slog.LevelInfo, "checking the pid availability")
 
 	ctx := context.Background()
@@ -153,7 +153,7 @@ func parse(c context.Context, data, options map[string]string, tags, links []str
 	slog.LogAttrs(c, slog.LevelInfo, "product parsed successfully")
 
 	return Product{
-		PID:         data["pid"],
+		ID:          data["id"],
 		Title:       data["title"],
 		Description: data["description"],
 		Price:       float32(price),
@@ -218,15 +218,15 @@ func (p Product) Validate(c context.Context) error {
 }
 
 func (p Product) Save(ctx context.Context) error {
-	if p.PID == "" {
+	if p.ID == "" {
 		slog.Error("cannot continue with empty pid")
 		return errors.New("product_pid_required")
 	}
 
-	l := slog.With(slog.String("pid", p.PID))
+	l := slog.With(slog.String("id", p.ID))
 	l.Info("storing the product")
 
-	key := "product:" + p.PID
+	key := "product:" + p.ID
 	lkey := key + ":links"
 	tkey := key + ":tags"
 	okey := key + ":options"
@@ -235,7 +235,7 @@ func (p Product) Save(ctx context.Context) error {
 	_, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Del(ctx, lkey, okey, tkey)
 		rdb.HSet(ctx, key,
-			"pid", p.PID,
+			"id", p.ID,
 			"sku", p.Sku,
 			"title", p.Title,
 			"description", p.Description,
@@ -250,7 +250,7 @@ func (p Product) Save(ctx context.Context) error {
 		)
 		rdb.ZAdd(ctx, "products:"+p.MID, redis.Z{
 			Score:  float64(now.Unix()),
-			Member: p.PID,
+			Member: p.ID,
 		})
 
 		if len(p.Links) > 0 {
@@ -281,7 +281,7 @@ func (p Product) Save(ctx context.Context) error {
 
 // Find looks for a product by its product id
 func Find(c context.Context, pid string) (Product, error) {
-	l := slog.With(slog.String("pid", pid))
+	l := slog.With(slog.String("id", pid))
 	l.LogAttrs(c, slog.LevelInfo, "looking for product")
 
 	ctx := context.Background()

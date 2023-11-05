@@ -299,7 +299,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 }
 
 func deletePreviousImages(ctx context.Context, pid string) error {
-	l := slog.With(slog.String("pid", pid))
+	l := slog.With(slog.String("id", pid))
 	l.Info("deleting previous images")
 
 	key := "product:" + pid
@@ -331,11 +331,11 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 }
 
 func createImages(product products.Product) error {
-	l := slog.With(slog.String("pid", product.PID))
+	l := slog.With(slog.String("id", product.ID))
 	l.Info("creating previous images")
 
 	for i, v := range product.Images {
-		folder, p := products.ImagePath(product.PID, i)
+		folder, p := products.ImagePath(product.ID, i)
 
 		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
 			l.Error("cannot create the folder", slog.String("folder", folder), slog.String("error", err.Error()))
@@ -421,7 +421,7 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 		}
 	}
 
-	product.PID = pid
+	product.ID = pid
 
 	if err = createImages(product); err != nil {
 		catchError(err)

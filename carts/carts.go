@@ -48,7 +48,7 @@ func cartExists(c context.Context, cid string) bool {
 // Add a product into a cart with its quantity
 // Verify that the cart and the product exists.
 func Add(c context.Context, cid, pid string, quantity int) error {
-	l := slog.With(slog.String("cid", cid), slog.String("pid", pid), slog.Int("quantity", quantity))
+	l := slog.With(slog.String("cid", cid), slog.String("product_id", pid), slog.Int("quantity", quantity))
 	l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
 
 	if !cartExists(c, cid) {

@@ -32,7 +32,7 @@ func Product(ctx context.Context, pid string) (products.Product, error) {
 	key := "product:" + pid
 
 	_, err = db.Redis.HSet(ctx, key,
-		"pid", pid,
+		"id", pid,
 		"sku", sku,
 		"title", title,
 		"description", description,
@@ -63,6 +63,6 @@ func Product(ctx context.Context, pid string) (products.Product, error) {
 	_, err = db.Redis.HSet(ctx, key+":options", meta).Result()
 
 	return products.Product{
-		PID: pid,
+		ID: pid,
 	}, err
 }
