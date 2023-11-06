@@ -3,6 +3,7 @@ package products
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"gifthub/conf"
@@ -23,6 +24,7 @@ import (
 	"strconv"
 	"math"
 	"math/rand"
+	"strconv"
 	"strings"
 
 	"github.com/go-faker/faker/v4"
@@ -237,17 +239,29 @@ func List(page int64) ([]Product, error) {
 
 	for _, cmd := range cmds {
 		m := cmd.(*redis.MapStringStringCmd).Val()
+		price, err := strconv.ParseFloat(m["price"], 64)
 
+		if err != nil {
+			log.Printf("ERROR: sequence_fail: could not parse price to float64 %s", err.Error())
+			continue
+		}
+
+		meta := make(map[string]string)
+	if err := json.Unmarshal([]byte(m["meta"]), &meta); err != nil {
+		log.Printf("ERROR: cannot unmarshal meta: %s", err)
+	}
+
+		links := strings.Split(m["links"], " ")
 		tempProduct := Product{
 			ID:          m["id"],
 			MID:         m["merchant_id"],
 			Title:       m["title"],
 			Image:       m["image"],
 			Description: m["description"],
-			Price:       m["price"].Float64(),
+			Price:       price,
 			Slug:        m["slug"],
-			Links:       m["links"],
-			Meta:        m["meta"],
+			Links:       links,
+			Meta:        meta,
 	}
 
 	product, err := parseProduct(tempProduct)
@@ -271,10 +285,6 @@ func Availables(c context.Context, pids []string) bool {
 	for _, pid := range pids {
 		pipe.HGet(ctx, "product:"+pid, "status")
 	}
-<<<<<<< HEAD
-=======
-}
->>>>>>> 236ed19 (refacto)
 
 func FakeProduct() Product {
 	randID, err := utils.RandomString(10)

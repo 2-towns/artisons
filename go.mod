@@ -5,10 +5,10 @@ go 1.21
 require (
 	github.com/SherClockHolmes/webpush-go v1.3.0
 	github.com/go-chi/chi/v5 v5.0.10
-	github.com/go-playground/validator/v10 v10.15.5
-	github.com/jedib0t/go-pretty/v6 v6.4.9
-	github.com/redis/go-redis/v9 v9.3.0
-	golang.org/x/text v0.13.0
+	github.com/go-playground/validator/v10 v10.14.1
+	github.com/jedib0t/go-pretty/v6 v6.4.6
+	github.com/redis/go-redis/v9 v9.0.4
+	golang.org/x/text v0.11.0
 )
 
 require (
@@ -16,8 +16,11 @@ require (
 	github.com/go-chi/httplog/v2 v2.0.7 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+<<<<<<< HEAD
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
+=======
+>>>>>>> 7747128 (correction des erreurs de type pour l'affichage de la List)
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
@@ -34,6 +37,5 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-faker/faker/v4 v4.2.0
-	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
+	golang.org/x/crypto v0.11.0 // indirect
 )
