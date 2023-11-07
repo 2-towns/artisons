@@ -175,7 +175,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		Quantity:    int(quantity),
 		Weight:      float32(weight),
 		Status:      data["status"],
-		Tags:        strings.Split(data["status"], ";"),
+		Tags:        strings.Split(data["tags"], ";"),
 		Links:       strings.Split(data["links"], ";"),
 		Meta:        UnSerializeMeta(c, data["meta"], ";"),
 		Length:      length,
@@ -303,14 +303,6 @@ func Find(c context.Context, pid string) (Product, error) {
 	return p, err
 }
 
-func or(qs string, s string) string {
-	if qs == "" {
-		return s
-	}
-
-	return qs + " OR " + s
-}
-
 func convertMap(m map[interface{}]interface{}) map[string]string {
 	v := map[string]string{}
 
@@ -335,17 +327,21 @@ func Search(c context.Context, q Query) ([]Product, error) {
 
 	var priceMin interface{} = "-inf"
 	var priceMax interface{} = "+inf"
+	priceMinRep := "%v"
+	priceMaxRep := "%v"
 
 	if q.PriceMin > 0 {
+		priceMinRep = "%f"
 		priceMin = q.PriceMin
 	}
 
 	if q.PriceMax > 0 {
+		priceMaxRep = "%f"
 		priceMax = q.PriceMax
 	}
 
 	if priceMin != "-inf" || priceMax != "+inf" {
-		qs += fmt.Sprintf("@price:[%v %v]", priceMin, priceMax)
+		qs += fmt.Sprintf("@price:["+priceMinRep+" "+priceMaxRep+"]", priceMin, priceMax)
 	}
 
 	if len(q.Tags) > 0 {

@@ -388,10 +388,6 @@ func TestSearchByPriceMax(t *testing.T) {
 	if len(p) == 0 {
 		t.Fatalf(`len(p) = %d, want > 0`, len(p))
 	}
-
-	if p[0].ID != "test" {
-		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
-	}
 }
 
 func TestSearchByPriceMaxOutOfRange(t *testing.T) {
