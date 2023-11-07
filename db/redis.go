@@ -14,6 +14,8 @@ var Redis = redis.NewClient(&redis.Options{
 	DB:       conf.DatabaseIndex, // use default DB
 })
 
+var SearchIdx = "product-idx"
+
 /*func SubscribeToExpireKeys() {
 	ctx := context.Background()
 	if _, err := Redis.ConfigSet(ctx, "notify-keyspace-events", "KEA").Result(); err != nil {

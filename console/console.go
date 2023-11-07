@@ -8,6 +8,7 @@ import (
 	"gifthub/conf"
 	"gifthub/console/parser"
 	"gifthub/console/populate"
+	"gifthub/db"
 	"gifthub/logs"
 	"gifthub/notifications/mails"
 	"gifthub/notifications/vapid"
@@ -40,13 +41,51 @@ func main() {
 	ctx := context.Background()
 
 	switch command {
+
+	case "migration":
+		{
+			ctx := context.Background()
+
+			_, err := db.Redis.Do(
+				ctx,
+				"FT.DROPINDEX",
+				db.SearchIdx,
+			).Result()
+			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelInfo, "cannot make remove the previous index", slog.String("error", err.Error()))
+			}
+
+			_, err = db.Redis.Do(
+				ctx,
+				"FT.CREATE", db.SearchIdx,
+				"ON", "HASH",
+				"PREFIX", "1", "product:",
+				"SCHEMA",
+				"title", "TEXT",
+				"sku", "TAG",
+				"description", "TEXT",
+				"price", "NUMERIC", "SORTABLE",
+				"tags", "TAG", "SEPARATOR", ";",
+				"status", "TAG",
+				"meta", "TAG", "SEPARATOR", ";",
+			).Result()
+			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelError, "cannot make migration", slog.String("error", err.Error()))
+				log.Fatal()
+			}
+
+			slog.LogAttrs(ctx, slog.LevelInfo, "migration successful")
+		}
+
 	case "import":
 		{
 			file := flag.String("file", "./web/testdata/data.csv", "The path to the csv file")
 
 			f, err := os.Open(*file)
 			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelError, "cannot open the file", slog.String("error", err.Error()))
 				log.Fatal(err)
+
 			}
 
 			defer f.Close()
@@ -65,7 +104,6 @@ func main() {
 			}
 
 			slog.LogAttrs(ctx, slog.LevelInfo, "import successful", slog.Int("lines", lines))
-
 		}
 
 	case "populate":

@@ -1,7 +1,6 @@
 package stringutil
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -12,9 +11,4 @@ func TestRandom(t *testing.T) {
 	if err != nil || r == "" {
 		t.Fatalf(`Random() = %s, %v, want string, nil`, r, err)
 	}
-}
-
-func ExampleSlugify(t *testing.T) {
-	fmt.Println("VERy nice title 12")
-	// Output: very-nice-title-12
 }

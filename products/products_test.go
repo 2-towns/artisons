@@ -289,3 +289,175 @@ func TestFind(t *testing.T) {
 	}
 
 }
+
+func TestSearchByTitle(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Keywords: "pull"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID != "test" {
+		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	}
+}
+
+func TestSearchByDescription(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Keywords: "Lorem"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID != "test" {
+		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	}
+}
+
+func TestSearchBySku(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Keywords: "skutest"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID != "test" {
+		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	}
+}
+
+func TestSearchByCrazyKeyword(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Keywords: "crazy"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) > 0 {
+		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	}
+}
+
+func TestSearchByPriceMin(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{PriceMin: 50})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID != "test" {
+		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	}
+}
+
+func TestSearchByPriceMinOutOfRange(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{PriceMin: 1500000000})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) != 0 {
+		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	}
+}
+
+func TestSearchByPriceMax(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{PriceMax: 150})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID != "test" {
+		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	}
+}
+
+func TestSearchByPriceMaxOutOfRange(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{PriceMax: 0.5})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) != 0 {
+		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	}
+}
+
+func TestSearchByTags(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Tags: []string{"gift"}})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID != "test" {
+		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	}
+}
+
+func TestSearchByCrazyTags(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Tags: []string{"crazy"}})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) != 0 {
+		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	}
+}
+
+func TestSearchByMeta(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Meta: map[string]string{"color": "blue"}})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID != "test" {
+		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	}
+}
+
+func TestSearchByCrazyMeta(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Meta: map[string]string{"color": "crazy"}})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+	}
+
+	if len(p) != 0 {
+		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	}
+}

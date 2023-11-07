@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -39,6 +40,16 @@ type Product struct {
 	Tags   []string
 	Links  []string          // Links contains the linked product IDs
 	Meta   map[string]string // Meta contains the product options.
+}
+
+type Meta = map[string]string
+
+type Query struct {
+	Keywords string
+	PriceMin float32
+	PriceMax float32
+	Tags     []string
+	Meta     map[string]string
 }
 
 const (
@@ -110,7 +121,7 @@ func Available(c context.Context, pid string) bool {
 	return status == "online"
 }
 
-func parse(c context.Context, data, options map[string]string, tags, links []string) (Product, error) {
+func parse(c context.Context, data map[string]string) (Product, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "parsing the product data")
 
 	l, err := strconv.ParseInt(data["length"], 10, 8)
@@ -164,9 +175,9 @@ func parse(c context.Context, data, options map[string]string, tags, links []str
 		Quantity:    int(quantity),
 		Weight:      float32(weight),
 		Status:      data["status"],
-		Links:       links,
-		Tags:        tags,
-		Meta:        options,
+		Tags:        strings.Split(data["status"], ";"),
+		Links:       strings.Split(data["links"], ";"),
+		Meta:        UnSerializeMeta(c, data["meta"], ";"),
 		Length:      length,
 		Images:      images,
 	}, nil
@@ -227,13 +238,9 @@ func (p Product) Save(ctx context.Context) error {
 	l.Info("storing the product")
 
 	key := "product:" + p.ID
-	lkey := key + ":links"
-	tkey := key + ":tags"
-	okey := key + ":options"
 	now := time.Now()
 
 	_, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.Del(ctx, lkey, okey, tkey)
 		rdb.HSet(ctx, key,
 			"id", p.ID,
 			"sku", p.Sku,
@@ -246,26 +253,16 @@ func (p Product) Save(ctx context.Context) error {
 			"status", p.Status,
 			"weight", p.Weight,
 			"mid", p.MID,
+			"tags", strings.Join(p.Tags, ";"),
+			"links", strings.Join(p.Links, ";"),
+			"meta", SerializeMeta(ctx, p.Meta, ";"),
+			"created_at", time.Now().Format(time.RFC3339),
 			"updated_at", time.Now().Format(time.RFC3339),
 		)
 		rdb.ZAdd(ctx, "products:"+p.MID, redis.Z{
 			Score:  float64(now.Unix()),
 			Member: p.ID,
 		})
-
-		if len(p.Links) > 0 {
-			rdb.SAdd(ctx, lkey, p.Links)
-		}
-
-		if len(p.Tags) > 0 {
-			rdb.SAdd(ctx, tkey, p.Tags)
-		}
-
-		if len(p.Meta) > 0 {
-			for k, v := range p.Meta {
-				rdb.HSet(ctx, okey, k, v)
-			}
-		}
 
 		return nil
 	})
@@ -297,29 +294,146 @@ func Find(c context.Context, pid string) (Product, error) {
 		return Product{}, err
 	}
 
-	tags, err := db.Redis.SMembers(ctx, "product:"+pid+":tags").Result()
-	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot find the product tags", slog.String("error", err.Error()))
-		return Product{}, err
-	}
-
-	links, err := db.Redis.SMembers(ctx, "product:"+pid+":links").Result()
-	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot find the product links", slog.String("error", err.Error()))
-		return Product{}, err
-	}
-
-	options, err := db.Redis.HGetAll(ctx, "product:"+pid+":options").Result()
-	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot find the product options", slog.String("error", err.Error()))
-		return Product{}, err
-	}
-
-	p, err := parse(c, data, options, tags, links)
+	p, err := parse(c, data)
 
 	if err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "the product is found", slog.String("sku", p.Sku))
 	}
 
 	return p, err
+}
+
+func or(qs string, s string) string {
+	if qs == "" {
+		return s
+	}
+
+	return qs + " OR " + s
+}
+
+func convertMap(m map[interface{}]interface{}) map[string]string {
+	v := map[string]string{}
+
+	for key, value := range m {
+		strKey := fmt.Sprintf("%v", key)
+		strValue := fmt.Sprintf("%v", value)
+
+		v[strKey] = strValue
+	}
+
+	return v
+}
+
+func Search(c context.Context, q Query) ([]Product, error) {
+	slog.LogAttrs(c, slog.LevelInfo, "searching products")
+
+	qs := "@status:{online} "
+
+	if q.Keywords != "" {
+		qs += fmt.Sprintf("(@title:*%s*)|(@description:*%s*)|(@sku:{%s})", q.Keywords, q.Keywords, q.Keywords)
+	}
+
+	var priceMin interface{} = "-inf"
+	var priceMax interface{} = "+inf"
+
+	if q.PriceMin > 0 {
+		priceMin = q.PriceMin
+	}
+
+	if q.PriceMax > 0 {
+		priceMax = q.PriceMax
+	}
+
+	if priceMin != "-inf" || priceMax != "+inf" {
+		qs += fmt.Sprintf("@price:[%v %v]", priceMin, priceMax)
+	}
+
+	if len(q.Tags) > 0 {
+		qs += fmt.Sprintf("@tags:{%s}", strings.Join(q.Tags, " | "))
+	}
+
+	if len(q.Meta) > 0 {
+		s := SerializeMeta(c, q.Meta, " | ")
+		qs += fmt.Sprintf("@meta:{%s}", s)
+	}
+
+	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
+
+	ctx := context.Background()
+	cmds, err := db.Redis.Do(
+		ctx,
+		"FT.SEARCH",
+		db.SearchIdx,
+		qs,
+	).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("query", qs), slog.String("error", err.Error()))
+		log.Fatal()
+	}
+
+	res := cmds.(map[interface{}]interface{})
+	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", res["total_results"].(int64)))
+
+	results := res["results"].([]interface{})
+	products := []Product{}
+
+	for _, value := range results {
+		m := value.(map[interface{}]interface{})
+		attributes := m["extra_attributes"].(map[interface{}]interface{})
+		data := convertMap(attributes)
+
+		product, err := parse(c, data)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product", slog.Any("product", data), slog.String("error", err.Error()))
+			continue
+		}
+
+		products = append(products, product)
+	}
+
+	return products, nil
+}
+
+// SerializeMeta transforms a meta map to a string representation.
+// The values are separated by ";".
+// Example: map["color"]"blue" => color_blue
+func SerializeMeta(c context.Context, m map[string]string, sep string) string {
+	slog.LogAttrs(c, slog.LevelInfo, "serializing the product meta", slog.Any("meta", m))
+
+	s := ""
+	for key, value := range m {
+		if s != "" {
+			s += sep
+		}
+
+		s += fmt.Sprintf("%s_%s", key, value)
+	}
+
+	slog.LogAttrs(c, slog.LevelInfo, "serialize done successfully", slog.String("serialized", s))
+
+	return s
+}
+
+// UnSerializeMeta transform the meta serialized to a map.
+// The values are separated by ";".
+// Example: color_blue => map["color"]"blue"
+func UnSerializeMeta(c context.Context, s, sep string) map[string]string {
+	slog.LogAttrs(c, slog.LevelInfo, "unserializing the product meta", slog.String("serialized", s))
+	values := strings.Split(s, sep)
+	meta := map[string]string{}
+
+	for _, value := range values {
+		parts := strings.Split(value, "_")
+
+		if len(parts) != 2 {
+			slog.LogAttrs(c, slog.LevelError, "cannot unserialize the product meta", slog.String("serialized", s))
+			continue
+		}
+
+		meta[parts[0]] = parts[1]
+	}
+
+	slog.LogAttrs(c, slog.LevelInfo, "unserialize done successfully")
+
+	return meta
 }
