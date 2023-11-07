@@ -12,7 +12,10 @@ func Run() error {
 
 	db.Redis.FlushDB(ctx)
 
-	product, err := Product(ctx, "test")
+	pid := "test"
+	sku := "skutest"
+	price := float32(100.5)
+	product, err := Product(ctx, pid, sku, price)
 	if err != nil {
 		return err
 	}

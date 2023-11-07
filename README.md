@@ -6,11 +6,6 @@ Installer la version Go 1.19 (suivre la documentation officielle).
 
 ## Redis
 
-Deux choix sont possibles:
-
-1- Installer [Redis](https://redis.io/docs/getting-started/installation/install-redis-on-linux)  
-2- Utiliser Docker:
-
 ```
 docker run -p 6379:6379 -v data:/data redis/redis-stack:latest
 ```
@@ -83,13 +78,19 @@ go run console/console.go populate
 
 Les données disponibles sont:
 
-- a sample product with `test` as pid
+- a sample product with `test` as id, `skutest` as sku et `100.5` as price
 - a sample user with `test` as sid and `1` as id
 - a sample order with `test` as id
 - a sample cart with `test` as id
 - a sample expired user with `expired` as sid and `2` as id
 - a sample blog article with `1` as id
 - a sample blog article with `2` as id
+
+Afin de pouvoir utiliser la recherche, il faut lancer le script de migration après chaque peuplement:
+
+```
+go run console/console.go migration
+```
 
 ## Profiter
 
@@ -102,7 +103,7 @@ Siroter un bon café.
 Les logs doivent être renseignés avec le package `slog`. Un contexte doit être passé pour connaître l'identifiant de la requête. Example:
 
 ```go
-func Add(c context.Context, cid, pid string, quantity int64) error {
+func Add(c context.Context, cid, id string, quantity int64) error {
     // ...
     l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
     // ...
