@@ -4,8 +4,7 @@ import (
 	"testing"
 )
 
-// TestRandom expects to succeed
-func TestRandom(t *testing.T) {
+func TestRandomReturnsNumberWhenSuccess(t *testing.T) {
 	r, err := Random()
 
 	if err != nil || r == "" {

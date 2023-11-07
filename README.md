@@ -56,6 +56,14 @@ go test ./... -count=1
 
 Lors de l'écriture de tests, les commandes `redis` doivent être évitées au maximum. Il faut privilégier les données ajoutées au script de peuplement.
 
+La convention de nommage des tests est la suivante:
+
+TestXXXReturnsYYYWhenZZZ
+
+XXX étant le nom de la function testée.
+YYY étant la donnée renvoyé par la function lors du test.
+ZZZ étant la cause du renvoi de cette donnée par le test.
+
 ## Terminal
 
 ### Importation de CSV

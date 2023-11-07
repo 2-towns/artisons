@@ -28,8 +28,7 @@ var address Address = Address{
 	Phone:         faker.Phonenumber(),
 }
 
-// TestUserList expects to succeed
-func TestUserList(t *testing.T) {
+func TestListReturnsUsersWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	users, err := List(ctx, 0)
 	if err != nil || len(users) == 0 || users[0].ID == 0 {
@@ -37,8 +36,7 @@ func TestUserList(t *testing.T) {
 	}
 }
 
-// TestMagicCode expects to succeed
-func TestMagicCode(t *testing.T) {
+func TestMagicCodeReturnsCodeWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	magic, err := MagicCode(ctx, faker.Email())
 	if magic == "" || err != nil {
@@ -46,8 +44,7 @@ func TestMagicCode(t *testing.T) {
 	}
 }
 
-// TestMagicCodeTwice expects to succeed even if it's used more than one time
-func TestMagicCodeTwice(t *testing.T) {
+func TestMagicCodeReturnsCodeWhenUsedTwice(t *testing.T) {
 	ctx := tests.Context()
 	MagicCode(ctx, faker.Email())
 	magic, err := MagicCode(ctx, faker.Email())
@@ -56,8 +53,7 @@ func TestMagicCodeTwice(t *testing.T) {
 	}
 }
 
-// TestMagicCodeWithoutEmail expects to fail because of email emptyness
-func TestMagicCodeWithoutEmail(t *testing.T) {
+func TestMagicCodeReturnsErrorWhenEmailIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	magic, err := MagicCode(ctx, "")
 	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
@@ -65,8 +61,7 @@ func TestMagicCodeWithoutEmail(t *testing.T) {
 	}
 }
 
-// TestMagicCodeFailedWithBadEmail expects to fail because of email misvalue
-func TestMagicCodeFailedWithBadEmail(t *testing.T) {
+func TestMagicCodeReturnsErrorWhenEmailIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	magic, err := MagicCode(ctx, "toto")
 	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
@@ -74,8 +69,7 @@ func TestMagicCodeFailedWithBadEmail(t *testing.T) {
 	}
 }
 
-// TestDeleteUser expects to succeed
-func TestDeleteUser(t *testing.T) {
+func TestDeleteReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	err := User{ID: 2}.Delete(ctx)
 	if err != nil {
@@ -83,8 +77,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 }
 
-// TestDeleteUserNotExisting expects to succeed
-func TestDeleteUserNotExisting(t *testing.T) {
+func TestDeleteReturnsErrorWhenUserDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 	err := User{}.Delete(ctx)
 	if err != nil {
@@ -92,8 +85,7 @@ func TestDeleteUserNotExisting(t *testing.T) {
 	}
 }
 
-// Testlogin expects to succeed
-func TestLogin(t *testing.T) {
+func TestLoginReturnsSidWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
 	db.Redis.Set(ctx, "magic:"+"hello-world", "1", conf.SessionDuration)
@@ -104,8 +96,7 @@ func TestLogin(t *testing.T) {
 	}
 }
 
-// TestLoginWithoutDevice expects to fail because of device emptyness
-func TestLoginWithoutDevice(t *testing.T) {
+func TestLoginReturnsErrorWhenDeviceIsMissing(t *testing.T) {
 	ctx := tests.Context()
 	sid, err := Login(ctx, "magic", "")
 	if sid != "" || err == nil || err.Error() != "user_device_required" {
@@ -113,8 +104,7 @@ func TestLoginWithoutDevice(t *testing.T) {
 	}
 }
 
-// TestLoginWithoutMagic expects to fail because of magic emptyness
-func TestLoginWithoutMagic(t *testing.T) {
+func TestLoginReturnsErrorWhenMagicIsMissing(t *testing.T) {
 	ctx := tests.Context()
 	sid, err := Login(ctx, "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil || err.Error() != "user_magic_code_required" {
@@ -122,8 +112,7 @@ func TestLoginWithoutMagic(t *testing.T) {
 	}
 }
 
-// TestLoginWithNotExistingMagic expects to fail because of magic non existence
-func TestLoginWithNotExistingMagic(t *testing.T) {
+func TestLoginReturnsErrorWhenMagicDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 	sid, err := Login(ctx, "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil {
@@ -131,8 +120,7 @@ func TestLoginWithNotExistingMagic(t *testing.T) {
 	}
 }
 
-// TestLogout expects to succeed
-func TestLogout(t *testing.T) {
+func TestLogoutRetunsEmptyWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
 	db.Redis.Set(ctx, "auth:"+"will-logout", "1", conf.SessionDuration)
@@ -143,8 +131,7 @@ func TestLogout(t *testing.T) {
 	}
 }
 
-// TestLogoutWithoutSID expects to fail because of id emptyness
-func TestLogoutWithoutSID(t *testing.T) {
+func TestLogoutRetunsErrorWhenSidIsMissing(t *testing.T) {
 	ctx := tests.Context()
 	err := Logout(ctx, "")
 	if err == nil || err.Error() != "unauthorized" {
@@ -152,8 +139,7 @@ func TestLogoutWithoutSID(t *testing.T) {
 	}
 }
 
-// TestLogoutWithExpiredSession expects to fail because of session expiration
-func TestLogoutWithExpiredSession(t *testing.T) {
+func TestLogoutRetunsErrorWhenSessionIsExpired(t *testing.T) {
 	ctx := tests.Context()
 	err := Logout(ctx, "expired")
 	if err == nil || err.Error() != "unauthorized" {
@@ -161,8 +147,7 @@ func TestLogoutWithExpiredSession(t *testing.T) {
 	}
 }
 
-// TestLogoutWithNotExistingData expects to fails because of session misvalue
-func TestLogoutWithNotExistingData(t *testing.T) {
+func TestLogoutRetunsErrorWhenSessionIsNotFound(t *testing.T) {
 	ctx := tests.Context()
 	err := Logout(ctx, "122")
 	if err == nil || err.Error() != "unauthorized" {
@@ -170,8 +155,7 @@ func TestLogoutWithNotExistingData(t *testing.T) {
 	}
 }
 
-// TestSessions expects to succeed
-func TestSessions(t *testing.T) {
+func TestSessionsReturnsSessionsWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	sessions, err := user.Sessions(ctx)
 	if len(sessions) == 0 || err != nil {
@@ -184,8 +168,7 @@ func TestSessions(t *testing.T) {
 	}
 }
 
-// TestSessionsExpired expects to succeed with empty array when sessions are expired
-func TestSessionsExpired(t *testing.T) {
+func TestSessionsReturnsEmptySliceWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	sessions, err := User{ID: 2}.Sessions(ctx)
 	if len(sessions) != 0 || err != nil {
@@ -193,8 +176,7 @@ func TestSessionsExpired(t *testing.T) {
 	}
 }
 
-// TestSessionsEmpty expects to succeed with empty array when sessions are empty
-func TestSessionsEmpty(t *testing.T) {
+func TestSessionsReturnsEmptySliceWhenDevicesIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 
 	u := user
@@ -206,8 +188,7 @@ func TestSessionsEmpty(t *testing.T) {
 	}
 }
 
-// TestSaveAddress expects to succeed
-func TestSaveAddress(t *testing.T) {
+func TestSaveAddressReturnNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, address)
 	if err != nil {
@@ -215,8 +196,7 @@ func TestSaveAddress(t *testing.T) {
 	}
 }
 
-// TestSaveAddressWithoutComplementary expects to succeed with empty complementary
-func TestSaveAddressWithoutComplementary(t *testing.T) {
+func TestSaveAddressReturnNilWhenNoComplementary(t *testing.T) {
 	a := address
 	a.Complementary = ""
 
@@ -227,8 +207,7 @@ func TestSaveAddressWithoutComplementary(t *testing.T) {
 	}
 }
 
-// TestSaveAddressUIDEmpty expects to fail because of id emptyness
-func TestSaveAddressUIDEmpty(t *testing.T) {
+func TestSaveAddressReturnErrorWhenUidIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	err := User{ID: 0}.SaveAddress(ctx, address)
 	if err == nil || err.Error() != "something_went_wrong" {
@@ -236,8 +215,7 @@ func TestSaveAddressUIDEmpty(t *testing.T) {
 	}
 }
 
-// TestSaveAddressWithoutFirstname expects to fail because of firstname emptyness
-func TestSaveAddressWithoutFirstname(t *testing.T) {
+func TestSaveAddressReturnErrorWhenFirstnameIsEmpty(t *testing.T) {
 	a := address
 	a.Firstname = ""
 
@@ -248,8 +226,7 @@ func TestSaveAddressWithoutFirstname(t *testing.T) {
 	}
 }
 
-// TestSaveAddressWithoutLastname expects to fail because of lastname emptyness
-func TestSaveAddressWithoutLastname(t *testing.T) {
+func TestSaveAddressReturnErrorWhenLastnameIsEmpty(t *testing.T) {
 	a := address
 	a.Lastname = ""
 
@@ -260,8 +237,7 @@ func TestSaveAddressWithoutLastname(t *testing.T) {
 	}
 }
 
-// TestSaveAddressWithoutAddress expects to fail because of address emptyness
-func TestSaveAddressWithoutAddress(t *testing.T) {
+func TestSaveAddressReturnErrorWhenAddressIsEmpty(t *testing.T) {
 	a := address
 	a.Address = ""
 
@@ -272,8 +248,7 @@ func TestSaveAddressWithoutAddress(t *testing.T) {
 	}
 }
 
-// TestSaveAddressWithoutCity expects to fail because of city emptyness
-func TestSaveAddressWithoutCity(t *testing.T) {
+func TestSaveAddressReturnErrorWhenCityIsEmpty(t *testing.T) {
 	a := address
 	a.City = ""
 
@@ -284,8 +259,7 @@ func TestSaveAddressWithoutCity(t *testing.T) {
 	}
 }
 
-// TestSaveAddressWithoutZipcode expects to fail because of zipcode emptyness
-func TestSaveAddressWithoutZipcode(t *testing.T) {
+func TestSaveAddressReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
 	a := address
 	a.Zipcode = ""
 
@@ -296,8 +270,7 @@ func TestSaveAddressWithoutZipcode(t *testing.T) {
 	}
 }
 
-// TestSaveAddressWithoutPhone expects to fail because of phone emptyness
-func TestSaveAddressWithoutPhone(t *testing.T) {
+func TestSaveAddressReturnErrorWhenPhoneIsEmpty(t *testing.T) {
 	a := address
 	a.Phone = ""
 
@@ -308,8 +281,7 @@ func TestSaveAddressWithoutPhone(t *testing.T) {
 	}
 }
 
-// TestGetUser expects to succeed
-func TestGetUser(t *testing.T) {
+func TestGetReturnsUserWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	user, err := Get(ctx, 1)
 	if err != nil || user.ID == 0 {
@@ -317,8 +289,7 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
-// TestGetUserEmpty expects to fail because of id emptyness
-func TestGetUserEmpty(t *testing.T) {
+func TestGetReturnsErrorWhenIdIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	user, err := Get(ctx, 0)
 	if err == nil || err.Error() != "user_not_found" || user.ID != 0 {
@@ -326,8 +297,7 @@ func TestGetUserEmpty(t *testing.T) {
 	}
 }
 
-// TestGetUserNotExisting expects to fail because of user non existence
-func TestGetUserNotExisting(t *testing.T) {
+func TestGetReturnsErrorWhenUserDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 	user, err := Get(ctx, 123)
 	if err == nil || err.Error() != "user_not_found" || user.ID != 0 {

@@ -38,8 +38,7 @@ func TestMain(m *testing.M) {
 	os.Exit(exitVal)
 }
 
-// TestImagePath expects to succeed
-func TestImagePath(t *testing.T) {
+func TestImagePathReturnsCorrectPathWhenSuccess(t *testing.T) {
 	pid := "123"
 	index := 1
 	_, p := ImagePath(pid, index)
@@ -50,8 +49,7 @@ func TestImagePath(t *testing.T) {
 	}
 }
 
-// TestProductAvailable expects to succeed when the product exists
-func TestProductAvailable(t *testing.T) {
+func TestAvailableReturnsTrueWhenSuccess(t *testing.T) {
 	ctx := context.Background()
 	pid, _ := stringutil.Random()
 	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
@@ -62,8 +60,7 @@ func TestProductAvailable(t *testing.T) {
 	}
 }
 
-// TestProductAvailableNotFound expects to fail because of product non existence
-func TestProductAvailableNotFound(t *testing.T) {
+func TestAvailableReturnsFalseWhenProductIsNotFound(t *testing.T) {
 	c := tests.Context()
 
 	if exists := Available(c, "toto"); exists {
@@ -71,8 +68,7 @@ func TestProductAvailableNotFound(t *testing.T) {
 	}
 }
 
-// TestProductsAvailables expects to succeed
-func TestProductsAvailables(t *testing.T) {
+func TestAvailablesReturnsTrueWhenSuccess(t *testing.T) {
 	ctx := context.Background()
 	pid, _ := stringutil.Random()
 	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
@@ -83,8 +79,7 @@ func TestProductsAvailables(t *testing.T) {
 	}
 }
 
-// TestProductsAvailablesNotFound expects to fail because of products non existence
-func TestProductsAvailablesNotFound(t *testing.T) {
+func TestAvailablesReturnsFalseWhenProductsAreNotFound(t *testing.T) {
 	c := tests.Context()
 
 	if exists := Availables(c, []string{"toto"}); exists {
@@ -92,7 +87,7 @@ func TestProductsAvailablesNotFound(t *testing.T) {
 	}
 }
 
-func TestValidateSkuEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenSkuIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -103,7 +98,7 @@ func TestValidateSkuEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateSkuMalFormated(t *testing.T) {
+func TestValidateReturnsErrorWhenSkuIsInvalid(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -114,7 +109,7 @@ func TestValidateSkuMalFormated(t *testing.T) {
 	}
 }
 
-func TestValidateTitleEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -125,7 +120,7 @@ func TestValidateTitleEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateDescriptionEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -136,7 +131,7 @@ func TestValidateDescriptionEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateCurrencyEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenCurrencyIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -147,7 +142,7 @@ func TestValidateCurrencyEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateCurrencyNotSupported(t *testing.T) {
+func TestValidateReturnsErrorWhenCurrencyIsNotSupported(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -158,7 +153,7 @@ func TestValidateCurrencyNotSupported(t *testing.T) {
 	}
 }
 
-func TestValidateStatusEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenStatusIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -169,7 +164,7 @@ func TestValidateStatusEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateStatusNotSupported(t *testing.T) {
+func TestValidateReturnsErrorWhenStatusIsNotSupported(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -180,7 +175,7 @@ func TestValidateStatusNotSupported(t *testing.T) {
 	}
 }
 
-func TestValidateLengthEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenLengthIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	p := product
@@ -191,7 +186,7 @@ func TestValidateLengthEmpty(t *testing.T) {
 	}
 }
 
-func TestValidate(t *testing.T) {
+func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	if err := product.Validate(c); err != nil {
@@ -199,7 +194,7 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-func TestSave(t *testing.T) {
+func TestSaveReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	if err := product.Save(c); err != nil {
@@ -207,7 +202,7 @@ func TestSave(t *testing.T) {
 	}
 }
 
-func TestSaveWithoutPID(t *testing.T) {
+func TestSaveReturnsErrorWhenPidIsEmpty(t *testing.T) {
 	c := tests.Context()
 	p := Product{ID: ""}
 	if err := p.Save(c); err == nil {
@@ -215,21 +210,21 @@ func TestSaveWithoutPID(t *testing.T) {
 	}
 }
 
-func TestFindWithoutPID(t *testing.T) {
+func TestFindReturnsErrorWhenPidIsMissing(t *testing.T) {
 	c := tests.Context()
 	if _, err := Find(c, ""); err == nil || err.Error() != "product_not_found" {
 		t.Fatalf(`Find(c,"") = %v, want "product_not_found"`, err.Error())
 	}
 }
 
-func TestFindWithPIDNotExisting(t *testing.T) {
+func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	c := tests.Context()
 	if _, err := Find(c, ""); err == nil || err.Error() != "product_not_found" {
 		t.Fatalf(`Find(c,"hello") = %v, want "product_not_found"`, err.Error())
 	}
 }
 
-func TestFind(t *testing.T) {
+func TestFindReturnsProductWhenSuccess(t *testing.T) {
 	c := tests.Context()
 	p, err := Find(c, "test")
 	if err != nil {
@@ -290,7 +285,7 @@ func TestFind(t *testing.T) {
 
 }
 
-func TestSearchByTitle(t *testing.T) {
+func TestSearchReturnsProductsWhenTitleIsFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Keywords: "pull"})
 	if err != nil {
@@ -306,7 +301,7 @@ func TestSearchByTitle(t *testing.T) {
 	}
 }
 
-func TestSearchByDescription(t *testing.T) {
+func TestSearchReturnsProductsWhenDescriptionIsFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Keywords: "Lorem"})
 	if err != nil {
@@ -322,7 +317,7 @@ func TestSearchByDescription(t *testing.T) {
 	}
 }
 
-func TestSearchBySku(t *testing.T) {
+func TestSearchReturnsProductsWhenSkuIsFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Keywords: "skutest"})
 	if err != nil {
@@ -338,7 +333,7 @@ func TestSearchBySku(t *testing.T) {
 	}
 }
 
-func TestSearchByCrazyKeyword(t *testing.T) {
+func TestSearchReturnsEmptySliceWhenKeywordIsNotFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Keywords: "crazy"})
 	if err != nil {
@@ -350,7 +345,7 @@ func TestSearchByCrazyKeyword(t *testing.T) {
 	}
 }
 
-func TestSearchByPriceMin(t *testing.T) {
+func TestSearchReturnsProductsWhenPriceIsMoreThanPriceMin(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMin: 50})
 	if err != nil {
@@ -366,7 +361,7 @@ func TestSearchByPriceMin(t *testing.T) {
 	}
 }
 
-func TestSearchByPriceMinOutOfRange(t *testing.T) {
+func TestSearchReturnsEmptySliceWhenPriceMinIsOutOfRange(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMin: 1500000000})
 	if err != nil {
@@ -378,7 +373,7 @@ func TestSearchByPriceMinOutOfRange(t *testing.T) {
 	}
 }
 
-func TestSearchByPriceMax(t *testing.T) {
+func TestSearchReturnsProductsWhenPriceIsLessThanPriceMax(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMax: 150})
 	if err != nil {
@@ -390,7 +385,7 @@ func TestSearchByPriceMax(t *testing.T) {
 	}
 }
 
-func TestSearchByPriceMaxOutOfRange(t *testing.T) {
+func TestSearchReturnsEmptySliceWhenPriceMaxIsOutOfRange(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMax: 0.5})
 	if err != nil {
@@ -402,7 +397,7 @@ func TestSearchByPriceMaxOutOfRange(t *testing.T) {
 	}
 }
 
-func TestSearchByTags(t *testing.T) {
+func TestSearchReturnsProductsWhenTagsAreFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Tags: []string{"gift"}})
 	if err != nil {
@@ -418,7 +413,7 @@ func TestSearchByTags(t *testing.T) {
 	}
 }
 
-func TestSearchByCrazyTags(t *testing.T) {
+func TestSearchReturnsEmptySliceWhenTagsAreNotFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Tags: []string{"crazy"}})
 	if err != nil {
@@ -430,7 +425,7 @@ func TestSearchByCrazyTags(t *testing.T) {
 	}
 }
 
-func TestSearchByMeta(t *testing.T) {
+func TestSearchReturnsProductsWhenMetaAreFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Meta: map[string]string{"color": "blue"}})
 	if err != nil {
@@ -446,7 +441,7 @@ func TestSearchByMeta(t *testing.T) {
 	}
 }
 
-func TestSearchByCrazyMeta(t *testing.T) {
+func TestSearchReturnsEmptySliceWhenMetaAreNotFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Meta: map[string]string{"color": "crazy"}})
 	if err != nil {

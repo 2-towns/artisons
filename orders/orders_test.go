@@ -16,40 +16,35 @@ var order Order = Order{
 	},
 }
 
-// TestIsValidDelivery expects to succeed
-func TestIsValidDelivery(t *testing.T) {
+func TestIsValidDeliveryTrueWhenValid(t *testing.T) {
 	ctx := tests.Context()
 	if valid := IsValidDelivery(ctx, "collect"); !valid {
 		t.Fatalf(`IsValidDelivery(ctx, "collect") = %v want true`, valid)
 	}
 }
 
-// TestIsValidDeliveryMisvalue expects to fail because of delivery invalid
-func TestIsValidDeliveryMisvalue(t *testing.T) {
+func TestIsValidDeliveryFalseWhenInvalid(t *testing.T) {
 	ctx := tests.Context()
 	if valid := IsValidDelivery(ctx, "toto"); valid {
 		t.Fatalf(`IsValidDelivery(ctx, "toto") = %v want false`, valid)
 	}
 }
 
-// TestIsValidPayment expects to succeed
-func TestIsValidPayment(t *testing.T) {
+func TestIsValidPaymentTrueWhenValid(t *testing.T) {
 	ctx := tests.Context()
 	if valid := IsValidPayment(ctx, "cash"); !valid {
 		t.Fatalf(`IsValidPayment(ctx, "cash") = %v want true`, valid)
 	}
 }
 
-// TestIsValidPaymentMisvalue expects to fail because of payment invalid
-func TestIsValidPaymentMisvalue(t *testing.T) {
+func TestIsValidPaymentFalseWhenInvalid(t *testing.T) {
 	ctx := tests.Context()
 	if valid := IsValidPayment(ctx, "toto"); valid {
 		t.Fatalf(`IsValidDelivery(ctx, "toto") = %v want false`, valid)
 	}
 }
 
-// TestOrderSave expects to succeed
-func TestOrderSave(t *testing.T) {
+func TestSaveReturnsNilWhenSuccess(t *testing.T) {
 	o := order
 	ctx := tests.Context()
 
@@ -58,8 +53,7 @@ func TestOrderSave(t *testing.T) {
 	}
 }
 
-// TestOrderSaveDeliveryMisvalue expects to fail because of wrong delivery value
-func TestOrderSaveDeliveryMisvalue(t *testing.T) {
+func TestSaveReturnsErrorWhenDeliveryIsInvalid(t *testing.T) {
 	o := order
 	o.Delivery = "toto"
 	ctx := tests.Context()
@@ -69,8 +63,7 @@ func TestOrderSaveDeliveryMisvalue(t *testing.T) {
 	}
 }
 
-// TestOrderSavePaymentMisvalue expects to fail because of wrong payment value
-func TestOrderSavePaymentMisvalue(t *testing.T) {
+func TestSaveReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	o := order
 	o.Payment = "toto"
 	ctx := tests.Context()
@@ -80,8 +73,7 @@ func TestOrderSavePaymentMisvalue(t *testing.T) {
 	}
 }
 
-// TestOrderSaveProductsEmpty expects to fail because of products emptyness
-func TestOrderSaveProductsEmpty(t *testing.T) {
+func TestSaveReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 	o := order
 	o.Products = map[string]int64{}
 	ctx := tests.Context()
@@ -91,8 +83,7 @@ func TestOrderSaveProductsEmpty(t *testing.T) {
 	}
 }
 
-// TestOrderSaveProductsUnavailable expects to fail because of products availability
-func TestOrderSaveProductsUnavailable(t *testing.T) {
+func TestSaveReturnsErrorWhenProductsAreUnavailable(t *testing.T) {
 	o := order
 	o.Products = map[string]int64{"toto12": 1}
 	ctx := tests.Context()
@@ -102,8 +93,7 @@ func TestOrderSaveProductsUnavailable(t *testing.T) {
 	}
 }
 
-// TestOrderUpdateStatus expects to succeed
-func TestOrderUpdateStatus(t *testing.T) {
+func TestUpdateStatusReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	o := order
 	if err := UpdateStatus(ctx, o.ID, "processing"); err != nil {
@@ -111,8 +101,7 @@ func TestOrderUpdateStatus(t *testing.T) {
 	}
 }
 
-// TestOrderUpdateStatusWrong expects to fail because of invalid status
-func TestOrderUpdateStatusWrong(t *testing.T) {
+func TestUpdateStatusReturnsErrorWhenStatusIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	o := order
 	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "order_bad_status" {
@@ -120,8 +109,7 @@ func TestOrderUpdateStatusWrong(t *testing.T) {
 	}
 }
 
-// TestOrderUpdateStatusNotExisting expects to fail because of not existing order
-func TestOrderUpdateStatusNotExisting(t *testing.T) {
+func TestUpdateStatusReturnsErrorWhenOrderDoesNotExist(t *testing.T) {
 	oid, _ := stringutil.Random()
 	ctx := tests.Context()
 
@@ -130,8 +118,7 @@ func TestOrderUpdateStatusNotExisting(t *testing.T) {
 	}
 }
 
-// TestOrderFind expects to succeed
-func TestOrderFind(t *testing.T) {
+func TestFindReturnsOrderWhenSuccess(t *testing.T) {
 	o := order
 	ctx := tests.Context()
 
@@ -140,8 +127,7 @@ func TestOrderFind(t *testing.T) {
 	}
 }
 
-// TestOrderUpdateStatusNotExisting expects to fail because of not existing order
-func TestOrderFindNotExisting(t *testing.T) {
+func TestFindReturnsErrorWhenOrderIsNotFound(t *testing.T) {
 	oid, _ := stringutil.Random()
 	ctx := tests.Context()
 
@@ -150,8 +136,7 @@ func TestOrderFindNotExisting(t *testing.T) {
 	}
 }
 
-// TestAddNote expects to succeed
-func TestAddNote(t *testing.T) {
+func TestAddNoteReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
 	if err := AddNote(ctx, "test", "Ta commande, tu peux te la garder !"); err != nil {
@@ -159,8 +144,7 @@ func TestAddNote(t *testing.T) {
 	}
 }
 
-// TestAddNote expects to fail because of note emptyness
-func TestAddNoteWithEmptyString(t *testing.T) {
+func TestAddNoteReturnsErrorWhenNoteIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 
 	if err := AddNote(ctx, "test", ""); err == nil || err.Error() != "order_note_required" {
@@ -168,8 +152,7 @@ func TestAddNoteWithEmptyString(t *testing.T) {
 	}
 }
 
-// TestAddNote expects to fail because of order not found
-func TestAddNoteWithOrderNotExisting(t *testing.T) {
+func TestAddNoteReturnsErrorWhenOrderDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 
 	if err := AddNote(ctx, "123", "Useless"); err == nil || err.Error() != "order_not_found" {

@@ -14,7 +14,7 @@ var article Article = Article{
 	Image:       "/tmp/hello",
 }
 
-func TestSaveWithoutTitle(t *testing.T) {
+func TestSaveReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	a := article
@@ -25,7 +25,7 @@ func TestSaveWithoutTitle(t *testing.T) {
 	}
 }
 
-func TestSaveWithoutDescription(t *testing.T) {
+func TestSaveReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	a := article
@@ -36,7 +36,7 @@ func TestSaveWithoutDescription(t *testing.T) {
 	}
 }
 
-func TestSaveWithoutImage(t *testing.T) {
+func TestSaveReturnsErrorWhenImageIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	a := article
@@ -47,7 +47,7 @@ func TestSaveWithoutImage(t *testing.T) {
 	}
 }
 
-func TestSave(t *testing.T) {
+func TestSaveReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	os.Create("/tmp/hello")
@@ -57,7 +57,7 @@ func TestSave(t *testing.T) {
 	}
 }
 
-func TestList(t *testing.T) {
+func TestListReturnsArticlesWhenSuccess(t *testing.T) {
 	c := tests.Context()
 	page := 0
 
@@ -89,7 +89,7 @@ func TestList(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestDeleteReturnNilSuccess(t *testing.T) {
 	c := tests.Context()
 
 	image := fmt.Sprintf("%s/articles/%d", conf.ImgProxyPath, 3)

@@ -5,8 +5,7 @@ import (
 	"testing"
 )
 
-// TestFindBySessionID expects to succeed
-func TestFindBySessionID(t *testing.T) {
+func TestFindBySessionIDReturnsSessionWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	u, err := findBySessionID(ctx, "test")
 
@@ -15,8 +14,7 @@ func TestFindBySessionID(t *testing.T) {
 	}
 }
 
-// TestFindBySessionIDWithoutSID expects to fail because of sid emptyness
-func TestFindBySessionIDWithoutSID(t *testing.T) {
+func TestFindBySessionIDReturnsErrorWhenSidIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	u, err := findBySessionID(ctx, "")
 
@@ -25,8 +23,7 @@ func TestFindBySessionIDWithoutSID(t *testing.T) {
 	}
 }
 
-// TestFindBySessionIDExpired expects to fail because of session expired
-func TestFindBySessionIDExpired(t *testing.T) {
+func TestFindBySessionIDReturnsErrorWhenSessionIsExpired(t *testing.T) {
 	ctx := tests.Context()
 	u, err := findBySessionID(ctx, "expired")
 

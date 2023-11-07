@@ -17,8 +17,7 @@ func init() {
 	conf.ImgProxyPath = "../../../" + conf.ImgProxyPath
 }
 
-// TestCsvImportRequiredHeadersMisnumber expects to fail because of missing headers
-func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {
+func TestImportReturnsErrorWhenHeadersAreMissing(t *testing.T) {
 	h := make([]string, 3)
 	copy(h, header)
 
@@ -30,8 +29,7 @@ func TestCsvImportRequiredHeadersMisnumber(t *testing.T) {
 	}
 }
 
-// TestCsvImportHeaderFirstCellMisvalue expects to fail because of first cell bad value
-func TestCsvImportHeaderFirstCellMisvalue(t *testing.T) {
+func TestImportReturnsErrorWhenFirstCellIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -45,8 +43,7 @@ func TestCsvImportHeaderFirstCellMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportRequiredLineValueMisnumber expects to fail because of missing fields
-func TestCsvImportRequiredLineValuesMisnumber(t *testing.T) {
+func TestImportReturnsCountZeroWhenFieldsAreMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -61,8 +58,7 @@ func TestCsvImportRequiredLineValuesMisnumber(t *testing.T) {
 	}
 }
 
-// TestCsvImportSkuMissing expects to fail because of missing sku
-func TestCsvImportSkuMissing(t *testing.T) {
+func TestImportReturnsCountZeroWhenSkuIsMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -77,8 +73,7 @@ func TestCsvImportSkuMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportSkuMisvalue  expects to fail because of sku misvalue
-func TestCsvImportSkuMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroWhenSkuIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -93,8 +88,7 @@ func TestCsvImportSkuMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportTitleMissing expects to fail because of missing title
-func TestCsvImportTitleMissing(t *testing.T) {
+func TestImportReturnsCountZeroWhenTitleIsMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -109,8 +103,7 @@ func TestCsvImportTitleMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportPriceMissing expects to fail because of missing price
-func TestCsvImportPriceMissing(t *testing.T) {
+func TestImportReturnsCountZeroWhenPriceIsMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -125,8 +118,7 @@ func TestCsvImportPriceMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportPriceMisvalue  expects to fail because of price misvalue
-func TestCsvImportPriceMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroWhenPriceIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -141,8 +133,7 @@ func TestCsvImportPriceMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportCurrencyMisvalue  expects to fail because of currency misvalue
-func TestCsvImportCurrencyMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroWhenCurrencyIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -156,9 +147,7 @@ func TestCsvImportCurrencyMisvalue(t *testing.T) {
 		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
 	}
 }
-
-// TestCsvImportQuantityMissing expects to fail because of missing quantity
-func TestCsvImportQuantityMissing(t *testing.T) {
+func TestImportReturnsCountZeroWhenQuantityIsMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -173,8 +162,7 @@ func TestCsvImportQuantityMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportQuantiyMisvalue expects to fail because of quantity misvalue
-func TestCsvImportQuantiyMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroWhenQuantityIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -189,8 +177,7 @@ func TestCsvImportQuantiyMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportStatusMisvalue expects to fail because of status misvalue
-func TestCsvImportStatusMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroWhenStatusIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -205,8 +192,7 @@ func TestCsvImportStatusMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportDescriptionMissing expects to fail because of missing description
-func TestCsvImportDescriptionMissing(t *testing.T) {
+func TestImportReturnsCountZeroWhenDescriptionIsMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -221,8 +207,7 @@ func TestCsvImportDescriptionMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesMisvalue expects to fail because of images misvalue
-func TestCsvImportImagesMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroImagesAreInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -237,8 +222,7 @@ func TestCsvImportImagesMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesMissing expects to fail because of missing images
-func TestCsvImportImagesMissing(t *testing.T) {
+func TestImportReturnsCountZeroWhenSkuImagesAreMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -253,8 +237,7 @@ func TestCsvImportImagesMissing(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesMisvalue expects to fail because of images not found
-func TestCsvImportImagesNotFound(t *testing.T) {
+func TestImportReturnsCountZeroWhenImagesAreNotFound(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -271,8 +254,7 @@ func TestCsvImportImagesNotFound(t *testing.T) {
 	}
 }
 
-// TestCsvImportImagesBadExtension expects to fail because of extension misvalue
-func TestCsvImportImagesBadExtension(t *testing.T) {
+func TestImportReturnsCountZeroWhenImageHaveBadExtension(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -289,8 +271,7 @@ func TestCsvImportImagesBadExtension(t *testing.T) {
 	}
 }
 
-// TestCsvImportLocalImageBadExtension expects to fail because of local extension misvalue
-func TestCsvImportLocalImageBadExtension(t *testing.T) {
+func TestImportReturnsCountZeroWhenLocalImageHaveBadExtension(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -305,8 +286,7 @@ func TestCsvImportLocalImageBadExtension(t *testing.T) {
 	}
 }
 
-// TestCsvImportLocalImageNotFound expects to fail because of local file not found
-func TestCsvImportLocalImageNotFound(t *testing.T) {
+func TestImportReturnsCountZeroWhenLocalImageIsNotFound(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -321,8 +301,7 @@ func TestCsvImportLocalImageNotFound(t *testing.T) {
 	}
 }
 
-// TestCsvImportWeightMisvalue expects to fail because of weight misvalue
-func TestCsvImportWeightMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroWhenWeightIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -337,8 +316,7 @@ func TestCsvImportWeightMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportOptionsMisvalue expects to fail because of options misvalue
-func TestCsvImportOptionsMisvalue(t *testing.T) {
+func TestImportReturnsCountZeroWhenOptionsAreInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -353,8 +331,7 @@ func TestCsvImportOptionsMisvalue(t *testing.T) {
 	}
 }
 
-// TestCsvImportOk expects to succeed
-func TestCsvImportOk(t *testing.T) {
+func TestImportReturnsOneCountWhenSuccess(t *testing.T) {
 	csv := lines{header, line}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -363,8 +340,7 @@ func TestCsvImportOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportOk expects to succeed with a local image
-func TestCsvImportLocalImageOk(t *testing.T) {
+func TestImportReturnsOneCountWhenLocalImageAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
@@ -377,8 +353,7 @@ func TestCsvImportLocalImageOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportWithoutOptionsOk expects to succeed without options
-func TestCsvImportWithoutOptionsOk(t *testing.T) {
+func TestImportReturnsOneCountWhenNoOptionsAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
@@ -391,8 +366,7 @@ func TestCsvImportWithoutOptionsOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportWihoutLinksOk expects to succeed without links
-func TestCsvImportWihoutLinksOk(t *testing.T) {
+func TestImportReturnsOneCountWhenNoLinksAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
@@ -405,8 +379,7 @@ func TestCsvImportWihoutLinksOk(t *testing.T) {
 	}
 }
 
-// TestCsvImportWihoutWeightOk expects to succeed without weight
-func TestCsvImportWihoutWeightOk(t *testing.T) {
+func TestImportReturnsOneCountWhenNoWeightAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
