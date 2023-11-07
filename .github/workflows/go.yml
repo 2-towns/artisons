@@ -12,7 +12,7 @@ jobs:
   test:
     services:
       redis:
-        image: redis
+        image: redis/redis-stack-server
         # Set health checks to wait until redis has started
         options: >-
           --health-cmd "redis-cli ping"
@@ -35,6 +35,8 @@ jobs:
         run: mkdir -p ./web/images/articles
       - name: Populating data
         run: go run console/console.go populate
+      - name: Run migration
+        run: go run console/console.go migration
       - name: Build
         run: go build -v ./...
       - name: Test
