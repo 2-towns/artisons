@@ -165,8 +165,8 @@ func TestAddNoteReturnsNilWhenSuccess(t *testing.T) {
 func TestAddNoteReturnsErrorWhenNoteIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, "test", ""); err == nil || err.Error() != "order_note_required" {
-		t.Fatalf(`orders.AddNote(ctx, "test", "") = '%s', want 'order_note_required'`, err.Error())
+	if err := AddNote(ctx, "test", ""); err == nil || err.Error() != "input_note_required" {
+		t.Fatalf(`orders.AddNote(ctx, "test", "") = '%s', want 'input_note_required'`, err.Error())
 	}
 }
 

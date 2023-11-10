@@ -53,16 +53,16 @@ func TestMagicCodeReturnsCodeWhenUsedTwice(t *testing.T) {
 func TestMagicCodeReturnsErrorWhenEmailIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	magic, err := MagicCode(ctx, "")
-	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
-		t.Fatalf("TestMagicCode(ctx, '') = '%s', %v, want '', 'user_email_invalid'", magic, err)
+	if magic != "" || err == nil || err.Error() != "input_email_invalid" {
+		t.Fatalf("TestMagicCode(ctx, '') = '%s', %v, want '', 'input_email_invalid'", magic, err)
 	}
 }
 
 func TestMagicCodeReturnsErrorWhenEmailIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	magic, err := MagicCode(ctx, "toto")
-	if magic != "" || err == nil || err.Error() != "user_email_invalid" {
-		t.Fatalf("TestMagicCode(ctx, 'toto') = '%s', %v, want '', 'user_email_invalid'", magic, err)
+	if magic != "" || err == nil || err.Error() != "input_email_invalid" {
+		t.Fatalf("TestMagicCode(ctx, 'toto') = '%s', '%v', want '', 'input_email_invalid'", magic, err)
 	}
 }
 
@@ -96,16 +96,16 @@ func TestLoginReturnsSidWhenSuccess(t *testing.T) {
 func TestLoginReturnsErrorWhenDeviceIsMissing(t *testing.T) {
 	ctx := tests.Context()
 	sid, err := Login(ctx, "magic", "")
-	if sid != "" || err == nil || err.Error() != "user_device_required" {
-		t.Fatalf(`Login(ctx, "magic",'') = '%s', %v, want '', 'user_device_required'`, sid, err)
+	if sid != "" || err == nil || err.Error() != "input_device_required" {
+		t.Fatalf(`Login(ctx, "magic",'') = '%s', %v, want '', 'input_device_required'`, sid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenMagicIsMissing(t *testing.T) {
 	ctx := tests.Context()
 	sid, err := Login(ctx, "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "user_magic_code_required" {
-		t.Fatalf("Login(ctx, '','Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
+	if sid != "" || err == nil || err.Error() != "input_magic_code_required" {
+		t.Fatalf("Login(ctx, '','Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want '', 'input_magic_code_required'", sid, err)
 	}
 }
 
@@ -113,7 +113,7 @@ func TestLoginReturnsErrorWhenMagicDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 	sid, err := Login(ctx, "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil {
-		t.Fatalf("Login(ctx, 'titi') = '%s', %v, want '', 'user_magic_code_required'", sid, err)
+		t.Fatalf("Login(ctx, 'titi') = '%s', %v, want '', 'input_magic_code_required'", sid, err)
 	}
 }
 
@@ -206,8 +206,8 @@ func TestSaveAddressReturnErrorWhenFirstnameIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, a)
-	if err == nil || err.Error() != "user_firstname_required" {
-		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_firstname_required'", err)
+	if err == nil || err.Error() != "input_firstname_required" {
+		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input_firstname_required'", err)
 	}
 }
 
@@ -217,19 +217,19 @@ func TestSaveAddressReturnErrorWhenLastnameIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, a)
-	if err == nil || err.Error() != "user_lastname_required" {
-		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_lastname_required'", err)
+	if err == nil || err.Error() != "input_lastname_required" {
+		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input_lastname_required'", err)
 	}
 }
 
-func TestSaveAddressReturnErrorWhenAddressIsEmpty(t *testing.T) {
+func TestSaveAddressReturnErrorWhenStreeIsEmpty(t *testing.T) {
 	a := address
 	a.Street = ""
 
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, a)
-	if err == nil || err.Error() != "user_street_required" {
-		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_street_required'", err)
+	if err == nil || err.Error() != "input_street_required" {
+		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input_street_required'", err)
 	}
 }
 
@@ -239,8 +239,8 @@ func TestSaveAddressReturnErrorWhenCityIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, a)
-	if err == nil || err.Error() != "user_city_required" {
-		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_city_required'", err)
+	if err == nil || err.Error() != "input_city_required" {
+		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input_city_required'", err)
 	}
 }
 
@@ -250,8 +250,8 @@ func TestSaveAddressReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, a)
-	if err == nil || err.Error() != "user_zipcode_required" {
-		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_zipcode_required'", err)
+	if err == nil || err.Error() != "input_zipcode_required" {
+		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input_zipcode_required'", err)
 	}
 }
 
@@ -261,8 +261,8 @@ func TestSaveAddressReturnErrorWhenPhoneIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, a)
-	if err == nil || err.Error() != "user_phone_required" {
-		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_phone_required'", err)
+	if err == nil || err.Error() != "input_phone_required" {
+		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input_phone_required'", err)
 	}
 }
 

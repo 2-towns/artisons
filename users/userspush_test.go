@@ -14,8 +14,8 @@ func TestAddWPTokenReturnsNilWhenSuccess(t *testing.T) {
 
 func TestAddWPTokenReturnsErrorWhenTokenIsEmpty(t *testing.T) {
 	ctx := tests.Context()
-	if err := user.AddWPToken(ctx, ""); err == nil || err.Error() != "user_wptoken_required" {
-		t.Fatalf("user.AddWPToken('') = %v, want user_wptoken_required", err)
+	if err := user.AddWPToken(ctx, ""); err == nil || err.Error() != "input_wptoken_required" {
+		t.Fatalf("user.AddWPToken('') = %v, want input_wptoken_required", err)
 	}
 }
 

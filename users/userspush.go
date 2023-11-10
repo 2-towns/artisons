@@ -20,7 +20,7 @@ func (u User) AddWPToken(c context.Context, token string) error {
 
 	if token == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the token")
-		return errors.New("user_wptoken_required")
+		return errors.New("input_wptoken_required")
 	}
 
 	ctx := context.Background()

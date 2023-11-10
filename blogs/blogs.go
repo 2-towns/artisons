@@ -39,7 +39,7 @@ func (a Article) Save(c context.Context) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("article_%s_required", low)
+		return fmt.Errorf("input_%s_required", low)
 	}
 
 	ctx := context.Background()

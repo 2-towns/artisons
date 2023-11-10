@@ -59,5 +59,10 @@ func Run() error {
 		return err
 	}
 
+	_, err = Shop(ctx)
+	if err != nil {
+		return err
+	}
+
 	return err
 }
