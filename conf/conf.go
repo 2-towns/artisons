@@ -61,6 +61,8 @@ const VapidPrivateKey = ""
 // VapidEmail is the email used for VAPID protocol
 const VapidEmail = ""
 
+const WebsiteURL = "http://localhost"
+
 // Pagination returns the start items index and the
 // end items index.
 func Pagination(page int) (int, int) {

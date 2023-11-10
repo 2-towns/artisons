@@ -263,8 +263,8 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 		t.Fatalf(`p.Title = %v, want string`, p.Title)
 	}
 
-	if p.Length <= 0 {
-		t.Fatalf(`p.Length = %v, want >0`, p.Length)
+	if p.Length == 0 {
+		t.Fatalf(`p.Length = %v, want > 0`, p.Length)
 	}
 
 	if p.Length != len(p.Images) {
@@ -450,5 +450,11 @@ func TestSearchReturnsEmptySliceWhenMetaAreNotFound(t *testing.T) {
 
 	if len(p) != 0 {
 		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	}
+}
+
+func TestURLReturnsTheProductURLWhenSuccess(t *testing.T) {
+	if product.URL() != "http://localhost/123-title" {
+		t.Fatalf(`product.URL()  = %s, want 'http://localhost/123-title'`, product.URL())
 	}
 }

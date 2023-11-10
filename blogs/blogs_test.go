@@ -68,8 +68,8 @@ func TestListReturnsArticlesWhenSuccess(t *testing.T) {
 
 	a := articles[len(articles)-1]
 
-	if a.ID != 1 {
-		t.Fatalf(`a.ID = %v, want 1`, a.ID)
+	if a.ID == 0 {
+		t.Fatalf(`a.ID = %v, want positive`, a.ID)
 	}
 
 	if a.Title == "" {

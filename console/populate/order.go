@@ -6,6 +6,8 @@ import (
 	"gifthub/db"
 	"gifthub/orders"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func Order(ctx context.Context, oid string, uid int64, ids map[string]int64) (orders.Order, error) {
@@ -27,13 +29,16 @@ func Order(ctx context.Context, oid string, uid int64, ids map[string]int64) (or
 	}
 
 	for key, value := range ids {
-		_, err := db.Redis.HSet(ctx, "order:"+oid, "product:"+key, value).Result()
+		_, err := db.Redis.HSet(ctx, "order:"+oid+":products", key, value).Result()
 		if err != nil {
 			return orders.Order{}, err
 		}
 	}
 
-	_, err = db.Redis.HSet(ctx, fmt.Sprintf("user:%d", uid), "order:"+oid, oid).Result()
+	_, err = db.Redis.ZAdd(ctx, fmt.Sprintf("user:%s:orders", oid), redis.Z{
+		Score:  float64(now.Unix()),
+		Member: oid,
+	}).Result()
 
 	return orders.Order{}, err
 }

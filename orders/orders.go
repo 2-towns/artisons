@@ -2,6 +2,7 @@
 package orders
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -11,11 +12,12 @@ import (
 	"gifthub/notifications/mails"
 	"gifthub/products"
 	"gifthub/string/stringutil"
+	"gifthub/users"
 	"log/slog"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"
@@ -35,6 +37,8 @@ type Order struct {
 	// "collect" or "home"
 	Delivery string
 
+	DeliveryCost float32
+
 	// "cash", "card", "bitcoin" or "wire"
 	Payment string
 
@@ -44,12 +48,19 @@ type Order struct {
 	// "created", "processing", "delivering", "delivered", "canceled"
 	Status string
 
-	// The key contains the product id and the value
-	// Is the quantity
-	Products map[string]int64
+	// The key contains the product id and the value is the quantity.
+	// Quantities are only filled for the input data.
+	// To retrieve the order products, use .Products method
+	Quantities map[string]int
 
 	// The order note added by the seller
 	Notes []Note
+
+	Address users.Address
+
+	CreatedAt time.Time
+
+	UpdateAt time.Time
 }
 
 type Note struct {
@@ -101,8 +112,10 @@ func IsValidPayment(c context.Context, p string) bool {
 // The default order status is "created".
 // The default payment_status is "payment_progress".
 // The order ID is a random string and returned if it succeed.
-// The products are stored as the cart, the key is the
-// product id and the value is the quantity.
+// The data are stored like this:
+// - order:ID => the order data
+// - order:ID product:ID => the product quantity
+// - user:ID:orders => the order id added in the set
 // An error occurs if the delivery or the payment values are invalid,
 // if the product list is empty, or one of the product is not available.
 func (o Order) Save(c context.Context) (string, error) {
@@ -117,13 +130,13 @@ func (o Order) Save(c context.Context) (string, error) {
 		return "", errors.New("unauthorized")
 	}
 
-	if len(o.Products) == 0 {
+	if len(o.Quantities) == 0 {
 		l.LogAttrs(c, slog.LevelInfo, "the product list is empty")
 		return "", errors.New("cart_empty")
 	}
 
 	pids := []string{}
-	for key := range o.Products {
+	for key := range o.Quantities {
 		pids = append(pids, key)
 	}
 
@@ -148,15 +161,25 @@ func (o Order) Save(c context.Context) (string, error) {
 			"payment", o.Payment,
 			"payment_status", "payment_progress",
 			"status", "created",
+			"address_lastname", o.Address.Lastname,
+			"address_firstname", o.Address.Firstname,
+			"address_street", o.Address.Street,
+			"address_city", o.Address.City,
+			"address_complementary", o.Address.Complementary,
+			"address_zipcode", o.Address.Zipcode,
+			"address_phone", o.Address.Phone,
 			"updated_at", now.Format(time.RFC3339),
 			"created_at", now.Format(time.RFC3339),
 		)
 
-		for key, value := range o.Products {
-			rdb.HSet(ctx, "order:"+oid, "product:"+key, value)
+		for key, value := range o.Quantities {
+			rdb.HSet(ctx, "order:"+oid+":products", key, value)
 		}
 
-		rdb.HSet(ctx, fmt.Sprintf("user:%d", o.UID), "order:"+oid, oid)
+		rdb.ZAdd(ctx, fmt.Sprintf("user:%d:orders", o.UID), redis.Z{
+			Score:  float64(now.Unix()),
+			Member: oid,
+		})
 
 		return nil
 	}); err != nil {
@@ -164,20 +187,71 @@ func (o Order) Save(c context.Context) (string, error) {
 		return "", errors.New("something_went_wrong")
 	}
 
-	email, err := db.Redis.HGet(ctx, fmt.Sprintf("user:%d", o.UID), "email").Result()
-	if err != nil {
-		l.LogAttrs(c, slog.LevelWarn, "cannot send an email ", slog.Int64("uid", o.UID))
-	} else {
-		lang := c.Value(locales.ContextKey).(language.Tag)
-		p := message.NewPrinter(lang)
-		// todo add more detail about the order
-		msg := p.Sprintf("order_created_email", o.ID)
-		go mails.Send(ctx, email, msg)
-	}
+	go o.SendConfirmationEmail(c)
 
 	l.LogAttrs(c, slog.LevelInfo, "the new order is created", slog.String("oid", oid))
 
 	return oid, nil
+}
+
+func (o Order) Total(p []products.Product) float32 {
+	total := o.DeliveryCost
+	for _, value := range p {
+		total += float32(value.Quantity) * value.Price
+	}
+
+	return total
+
+}
+
+func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
+	l := slog.With(slog.String("oid", o.ID))
+	l.LogAttrs(c, slog.LevelInfo, "sending confirmation email")
+
+	user, err := db.Redis.HGetAll(c, fmt.Sprintf("user:%d", o.UID)).Result()
+	if err != nil {
+		l.LogAttrs(c, slog.LevelWarn, "cannot get the email", slog.Int64("uid", o.UID), slog.String("error", err.Error()))
+		return "", err
+	}
+
+	lang := c.Value(locales.ContextKey).(language.Tag)
+	p := message.NewPrinter(lang)
+
+	msg := p.Sprintf("order_created_email", user["firstname"])
+	msg += p.Sprintf("order_id_email", o.ID)
+	msg += p.Sprintf("order_date_email", o.CreatedAt.Format("Monday, January 1"))
+
+	pds, err := o.Products(c)
+	if err != nil {
+		l.LogAttrs(c, slog.LevelWarn, "cannot get the products", slog.Int64("uid", o.UID))
+		return "", err
+	}
+
+	total := o.Total(pds)
+	msg += p.Sprintf("order_total_email", total)
+
+	t := table.NewWriter()
+	buf := new(bytes.Buffer)
+	t.SetOutputMirror(buf)
+	t.AppendHeader(table.Row{p.Sprintf("order_title"), p.Sprintf("order_quantity"), p.Sprintf("order_price"), p.Sprintf("order_total"), p.Sprintf("order_link")})
+
+	for _, value := range pds {
+		t.AppendRow([]interface{}{value.Title, value.Quantity, value.Price, float32(value.Quantity) * value.Price, value.URL()})
+	}
+
+	t.Render()
+
+	msg += buf.String()
+
+	msg += p.Sprintf("order_footer_email")
+
+	err = mails.Send(c, user["email"], msg)
+	if err != nil {
+		l.LogAttrs(c, slog.LevelWarn, "cannot send the email", slog.String("error", err.Error()))
+		return "", err
+	}
+
+	return msg, nil
 }
 
 // UpdateStatus updates the order status.
@@ -185,6 +259,8 @@ func (o Order) Save(c context.Context) (string, error) {
 // or the order is not found.
 // The full order is returned and an notification is expected
 // to be sent to the customer.
+// The keys are :
+// - order:oid => the order data
 func UpdateStatus(c context.Context, oid, status string) error {
 	l := slog.With(slog.String("oid", oid), slog.String("status", status))
 	l.LogAttrs(c, slog.LevelInfo, "updating the order")
@@ -203,13 +279,47 @@ func UpdateStatus(c context.Context, oid, status string) error {
 
 	_, err := db.Redis.HSet(ctx, "order:"+oid, "status", status).Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, " error when setting the status order", slog.String("error", err.Error()))
+		l.LogAttrs(c, slog.LevelError, " cannot update the status order", slog.String("error", err.Error()))
 		return errors.New("something_went_wrong")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the status is updated")
 
 	return nil
+}
+
+func (o Order) Products(c context.Context) ([]products.Product, error) {
+	l := slog.With(slog.String("oid", o.ID))
+
+	ctx := context.Background()
+
+	m, err := db.Redis.HGetAll(ctx, "order:"+o.ID+":products").Result()
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot retrieve the order products", slog.String("error", err.Error()))
+		return []products.Product{}, errors.New("something_went_wrong")
+	}
+
+	op := []products.Product{}
+
+	for key, value := range m {
+		product, err := products.Find(c, key)
+		if err != nil {
+			l.LogAttrs(c, slog.LevelError, "cannot retrieve the product", slog.String("pid", key), slog.String("error", err.Error()))
+			return []products.Product{}, errors.New("something_went_wrong")
+		}
+
+		q, err := strconv.ParseInt(value, 10, 8)
+		if err != nil {
+			l.LogAttrs(c, slog.LevelError, "cannot parse the quantity", slog.String("quantity", value), slog.String("error", err.Error()))
+			return []products.Product{}, errors.New("something_went_wrong")
+		}
+
+		product.Quantity = int(q)
+
+		op = append(op, product)
+	}
+
+	return op, nil
 }
 
 func Find(c context.Context, oid string) (Order, error) {
@@ -241,7 +351,7 @@ func Find(c context.Context, oid string) (Order, error) {
 		return Order{}, errors.New("something_went_wrong")
 	}
 
-	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+	if _, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		for _, id := range ids {
 			key := "order:" + oid + ":note:" + id
 			n, err := db.Redis.HGetAll(ctx, key).Result()
@@ -274,6 +384,9 @@ func Find(c context.Context, oid string) (Order, error) {
 }
 
 // AddNote create a new note attached to the order
+// The keys are:
+// - order:oid:note:nid => the note data
+// - order:oid:notes => the note id list
 func AddNote(c context.Context, oid, note string) error {
 	l := slog.With(slog.String("oid", oid))
 	l.LogAttrs(c, slog.LevelInfo, "adding a note")
@@ -321,19 +434,16 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 		return Order{}, errors.New("something_went_wrong")
 	}
 
-	products := make(map[string]int64)
-	for key, value := range m {
-		if strings.HasPrefix("product:", key) {
-			k := strings.Replace(key, "product:", "", 1)
+	createdAt, err := time.Parse(time.RFC3339, m["created_at"])
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot parse the created_at", slog.String("created_at", m["created_at"]), slog.String("error", err.Error()))
+		return Order{}, errors.New("something_went_wrong")
+	}
 
-			q, err := strconv.ParseInt(value, 10, 32)
-			if err != nil {
-				l.LogAttrs(c, slog.LevelError, "cannot parse the quantity", slog.String("quantity", value), slog.String("error", err.Error()))
-				return Order{}, errors.New("something_went_wrong")
-			}
-
-			products[k] = q
-		}
+	updatedAt, err := time.Parse(time.RFC3339, m["updated_at"])
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot parse the updated_at", slog.String("updated_at", m["updated_at"]), slog.String("error", err.Error()))
+		return Order{}, errors.New("something_went_wrong")
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "order parsed", slog.String("id", m["id"]))
@@ -345,7 +455,18 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 		PaymentStatus: m["payment_status"],
 		Payment:       m["payment"],
 		Status:        m["status"],
-		Products:      products,
-		Notes:         []Note{},
+		Address: users.Address{
+			Lastname:      m["address_lastname"],
+			Firstname:     m["address_firstname"],
+			City:          m["address_city"],
+			Street:        m["address_street"],
+			Complementary: m["address_complementary"],
+			Zipcode:       m["address_zipcode"],
+			Phone:         m["address_phone"],
+		},
+		Quantities: map[string]int{},
+		Notes:      []Note{},
+		CreatedAt:  createdAt,
+		UpdateAt:   updatedAt,
 	}, nil
 }

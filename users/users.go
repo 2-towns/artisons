@@ -10,7 +10,6 @@ import (
 	"gifthub/http/httputil"
 	"gifthub/locales"
 	"gifthub/string/stringutil"
-	"log"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -35,28 +34,21 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	MagicCode string
-
-	// The key is the session id and the value
-	// if the device information, the user agent.
-	Devices map[string]string
-
-	// The web push tokens
-	WPTokens []string
-
-	Lang language.Tag
+	Lang      language.Tag
 }
 
 type Session struct {
-	ID     string
-	Device string
-	TTL    time.Duration
+	ID      string
+	Device  string
+	WPToken string
+	TTL     time.Duration
 }
 
 type Address struct {
 	Lastname      string `validate:"required"`
 	Firstname     string `validate:"required"`
 	City          string `validate:"required"`
-	Address       string `validate:"required"`
+	Street        string `validate:"required"`
 	Complementary string
 	Zipcode       string `validate:"required"`
 	Phone         string `validate:"required"`
@@ -104,7 +96,11 @@ func updateMagicIfExists(c context.Context, email, magic string) (bool, error) {
 // The user is also added in a sorted set with the timestamp as score.
 //
 // All the operations are executed in a single transaction.
-//
+// The keys are:
+// - user:id => the user date
+// - magic:code => the magic code
+// - user email => the email email link with the id
+// - users => the user id list
 // The email does not pass the validation, an error occurs.
 // The user ID is an incremented field in Redis and returned.
 func MagicCode(c context.Context, email string) (string, error) {
@@ -161,12 +157,24 @@ func MagicCode(c context.Context, email string) (string, error) {
 	return magic, nil
 }
 
-// Delete all the user data
+// Delete all the user data.
+// The keys to delete:
+// - user:id => the user data
+// - magic:code => the magic code if it exits
+// - user email => the email link with the magic code
+// - auth:sid:session => the session data
+// - user:id:sessions => the session ids list
 func (u User) Delete(c context.Context) error {
 	l := slog.With(slog.String("sid", u.SID))
 	l.LogAttrs(c, slog.LevelInfo, "deleting the user")
 
 	ctx := context.Background()
+
+	ids, err := db.Redis.SMembers(ctx, fmt.Sprintf("user:%d:sessions", u.ID)).Result()
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot retrieve the session id list", slog.String("error", err.Error()))
+		return errors.New("something_went_wrong")
+	}
 
 	key := fmt.Sprintf("user:%d", u.ID)
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -179,9 +187,11 @@ func (u User) Delete(c context.Context) error {
 		rdb.HDel(ctx, "user", u.Email)
 		rdb.ZRem(ctx, "users", u.ID)
 
-		for k := range u.Devices {
-			rdb.Del(ctx, k)
+		for _, sid := range ids {
+			rdb.Del(ctx, "auth:"+sid+":session")
 		}
+
+		rdb.Del(ctx, fmt.Sprintf("user:%d:sessions", u.ID))
 
 		return nil
 	}); err != nil {
@@ -216,19 +226,6 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 		return User{}, errors.New("something_went_wrong")
 	}
 
-	devices := make(map[string]string)
-	wptokens := []string{}
-	for key, value := range m {
-		if strings.HasPrefix("auth:", key) {
-			k := strings.Replace(key, "auth:", "", 1)
-			devices[k] = value
-		}
-
-		if strings.HasPrefix("wptoken:", key) {
-			wptokens = append(wptokens, value)
-		}
-	}
-
 	l.LogAttrs(c, slog.LevelInfo, "the user is parse", slog.String("sid", m["sid"]))
 
 	return User{
@@ -240,7 +237,7 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 		Address: Address{
 			Lastname:      m["lastname"],
 			Firstname:     m["firstname"],
-			Address:       m["street"],
+			Street:        m["street"],
 			Complementary: m["complementary"],
 			Zipcode:       m["zipcode"],
 			City:          m["city"],
@@ -248,8 +245,6 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 		},
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
-		Devices:   devices,
-		WPTokens:  wptokens,
 	}, nil
 }
 
@@ -292,7 +287,9 @@ func List(c context.Context, page int) ([]User, error) {
 	return users, nil
 }
 
-// SaveAddress attachs an address to an user
+// SaveAddress attachs an address to an user.
+// The data are stored with:
+// - user:id => the address
 func (u User) SaveAddress(c context.Context, a Address) error {
 	slog.LogAttrs(c, slog.LevelInfo, "saving the address")
 
@@ -317,7 +314,7 @@ func (u User) SaveAddress(c context.Context, a Address) error {
 		"city", a.City,
 		"phone", a.Phone,
 		"zipcode", a.Zipcode,
-		"street", a.Address,
+		"street", a.Street,
 	).Result(); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot store the user", slog.String("error", err.Error()))
 		return errors.New("something_went_wrong")
@@ -333,42 +330,64 @@ func (u User) Sessions(c context.Context) ([]Session, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "listing the sessions")
 
 	ctx := context.Background()
-	pipe := db.Redis.Pipeline()
-	var devices []string
-	for key, device := range u.Devices {
-		pipe.TTL(ctx, key)
-		devices = append(devices, device)
-	}
-
 	var sessions []Session
 
-	cmds, err := pipe.Exec(ctx)
+	ids, err := db.Redis.SMembers(ctx, fmt.Sprintf("user:%d:sessions", u.ID)).Result()
+	if err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot get the session ids", slog.String("error", err.Error()))
+		return sessions, errors.New("something_went_wrong")
+	}
+
+	pipe := db.Redis.Pipeline()
+
+	for _, id := range ids {
+		pipe.TTL(ctx, "auth:"+id)
+	}
+
+	ttls, err := pipe.Exec(ctx)
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the session details", slog.String("error", err.Error()))
 		return sessions, errors.New("something_went_wrong")
 	}
 
-	for index, cmd := range cmds {
+	for _, id := range ids {
+		pipe.HGetAll(ctx, "auth:"+id+":session")
+	}
+
+	scmds, err := pipe.Exec(ctx)
+	if err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot get the sessions", slog.String("error", err.Error()))
+		return sessions, errors.New("something_went_wrong")
+	}
+
+	for index, cmd := range ttls {
 		key := fmt.Sprintf("%s", cmd.Args()[1])
+
 		if cmd.Err() != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot get the session ttl key", slog.String("key", key), slog.String("error", err.Error()))
+			slog.LogAttrs(c, slog.LevelError, "cannot get the session ttl", slog.String("key", key), slog.String("error", err.Error()))
 			continue
 		}
 
 		ttl := cmd.(*redis.DurationCmd).Val()
-		log.Println(ttl.Nanoseconds())
-
 		if ttl.Nanoseconds() < 0 {
-			slog.LogAttrs(c, slog.LevelInfo, "the session is expired", slog.Duration("ttl", ttl))
+			slog.LogAttrs(c, slog.LevelInfo, "the session is expired", slog.String("key", key), slog.Duration("ttl", ttl))
 			continue
 		}
 
+		scmd := scmds[index]
+		if scmd.Err() != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot get the session data", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
+		data := scmd.(*redis.MapStringStringCmd).Val()
+
 		id := strings.Replace(key, "auth:", "", 1)
-		device := devices[index]
 		sessions = append(sessions, Session{
-			ID:     id,
-			Device: device,
-			TTL:    ttl,
+			ID:      id,
+			Device:  data["device"],
+			WPToken: data["wptoken"],
+			TTL:     ttl,
 		})
 	}
 
@@ -385,7 +404,10 @@ func (u User) Sessions(c context.Context) ([]Session, error) {
 // Login authenicate user with a magic code.
 // If the magic is empty, an error occurs.
 // If the login is successful, a session ID is created.
-// The user ID is stored with the key auth:sessionID with an expiration time.
+// The data are stored with:
+// - auth:sid => the user id with an expiration key
+// - auth:sid:session device => the device related to the session
+// - user:id:sessions => the session id set (list)
 // An extra data is stored in order to retreive all the sessions for an user.
 func Login(c context.Context, magic, device string) (string, error) {
 	l := slog.With(slog.String("magic", magic))
@@ -422,10 +444,10 @@ func Login(c context.Context, magic, device string) (string, error) {
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Set(ctx, "auth:"+sid, id, conf.SessionDuration)
-
-		// todo is it the better way to set auth device
-		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "auth:"+sid, device)
+		rdb.HSet(ctx, fmt.Sprintf("auth:%s:session", sid), "device", device)
 		rdb.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", locales.Default.String())
+		rdb.SAdd(ctx, fmt.Sprintf("user:%d:sessions", id), sid)
+
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("sid", sid), slog.String("user_id", uid), slog.String("error", err.Error()))

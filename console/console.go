@@ -145,8 +145,16 @@ func main() {
 			msg := p.Sprintf("mail_magic_link", id, status)
 			mails.Send(ctx, user.Email, msg)
 
-			for _, value := range user.Devices {
-				vapid.Send(ctx, value, msg)
+			sessions, err := user.Sessions(ctx)
+			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelError, "cannot get the session", slog.Int64("uid", user.ID), slog.String("error", err.Error()))
+				log.Fatal()
+			}
+
+			for _, session := range sessions {
+				if session.WPToken != "" {
+					vapid.Send(ctx, session.WPToken, msg)
+				}
 			}
 		}
 

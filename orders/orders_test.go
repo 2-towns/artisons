@@ -1,9 +1,16 @@
 package orders
 
 import (
+	"gifthub/products"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
+	"gifthub/users"
+	"log"
 	"testing"
+	"time"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 var order Order = Order{
@@ -11,9 +18,20 @@ var order Order = Order{
 	UID:      1,
 	Delivery: "collect",
 	Payment:  "cash",
-	Products: map[string]int64{
+	Quantities: map[string]int{
 		"test": 1,
 	},
+	DeliveryCost: 5,
+	Address: users.Address{
+		Firstname:     "Arnaud",
+		Lastname:      "Arnaud",
+		City:          "Oran",
+		Street:        "Hay Yasmine",
+		Complementary: "Hay Salam",
+		Zipcode:       "31244",
+		Phone:         "0559682532",
+	},
+	CreatedAt: time.Now(),
 }
 
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {
@@ -75,7 +93,7 @@ func TestSaveReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 
 func TestSaveReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 	o := order
-	o.Products = map[string]int64{}
+	o.Quantities = map[string]int{}
 	ctx := tests.Context()
 
 	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "cart_empty" {
@@ -85,7 +103,7 @@ func TestSaveReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 
 func TestSaveReturnsErrorWhenProductsAreUnavailable(t *testing.T) {
 	o := order
-	o.Products = map[string]int64{"toto12": 1}
+	o.Quantities = map[string]int{"toto12": 1}
 	ctx := tests.Context()
 
 	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "cart_empty" {
@@ -157,5 +175,77 @@ func TestAddNoteReturnsErrorWhenOrderDoesNotExist(t *testing.T) {
 
 	if err := AddNote(ctx, "123", "Useless"); err == nil || err.Error() != "order_not_found" {
 		t.Fatalf(`orders.AddNote(ctx, "123", "Useless") = '%s', want 'order_not_found'`, err.Error())
+	}
+}
+
+func TestProductsReturnsProductsWhenSuccess(t *testing.T) {
+	ctx := tests.Context()
+
+	p, err := order.Products(ctx)
+	if err != nil {
+		t.Fatalf(`order.Products(ctx) = %v, %s, want []Products{}, nil`, p, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	op := p[0]
+
+	if op.Quantity == 0 {
+		t.Fatalf(`op.Quantity = %d, want > 0`, op.Quantity)
+	}
+
+	if op.Slug == "" {
+		t.Fatalf(`op.Slug = %s, want not empty`, op.Slug)
+	}
+}
+
+func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
+	ctx := tests.Context()
+
+	message.SetString(language.English, "order_created_email", "Hi %s,\nWoo hoo! Your order is on its way. Your order details can be found below.\n\n")
+	message.SetString(language.English, "order_id_email", "Order ID: %s\n")
+	message.SetString(language.English, "order_date_email", "Order date: %s\n")
+	message.SetString(language.English, "order_total_email", "Order total: %.2f\n\n")
+	message.SetString(language.English, "order_title", "Title")
+	message.SetString(language.English, "order_quantity", "Quantity")
+	message.SetString(language.English, "order_price", "Price")
+	message.SetString(language.English, "order_total", "Total")
+	message.SetString(language.English, "order_link", "Link")
+	message.SetString(language.English, "order_footer_email", "\nSee you around,\nThe Customer Experience Team at gifthub shop")
+
+	tpl, err := order.SendConfirmationEmail(ctx)
+	if err != nil {
+		t.Fatalf(`order.SendConfirmationEmail(ctx) = '%s', %v, want not empty, nil`, tpl, err)
+	}
+
+	expected := `Hi Prince Benton Bins,
+Woo hoo! Your order is on its way. Your order details can be found below.
+
+Order ID: test
+Order date: Friday, November 11
+Order total: 105.50
+
++-----------------------------------+----------+-------+-------+---------------------------------------------------------+
+| TITLE                             | QUANTITY | PRICE | TOTAL | LINK                                                    |
++-----------------------------------+----------+-------+-------+---------------------------------------------------------+
+| Un joli pull tricoté par ma maman |        1 | 100.5 | 100.5 | http://localhost/test-un-joli-pull-tricoté-par-ma-maman |
++-----------------------------------+----------+-------+-------+---------------------------------------------------------+
+
+See you around,
+The Customer Experience Team at gifthub shop`
+	log.Println(tpl)
+	log.Println(expected)
+	if tpl != expected {
+		t.Fatalf(`tpl != expected`)
+	}
+}
+
+func TestTotalReturnsTheOrderTotalWhenSuccess(t *testing.T) {
+	p := []products.Product{{Quantity: 1, Price: 11}, {Quantity: 2, Price: 24.5}}
+	total := order.Total(p)
+	if total != 65 {
+		t.Fatalf(`order.Total(p)  = %f, want 65`, total)
 	}
 }

@@ -34,7 +34,7 @@ func Product(ctx context.Context, pid, sku string, price float32) (products.Prod
 		"title", title,
 		"description", description,
 		"slug", stringutil.Slugify(title),
-		"length", rand.Intn(4),
+		"length", rand.Intn(4)+1,
 		"currency", "EUR",
 		"price", price,
 		"quantity", rand.Intn(10),

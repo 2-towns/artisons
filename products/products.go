@@ -228,6 +228,9 @@ func (p Product) Validate(c context.Context) error {
 	return nil
 }
 
+// Save a product into redis.
+// The keys are :
+// product:pid => the product data
 func (p Product) Save(ctx context.Context) error {
 	if p.ID == "" {
 		slog.Error("cannot continue with empty pid")
@@ -238,34 +241,26 @@ func (p Product) Save(ctx context.Context) error {
 	l.Info("storing the product")
 
 	key := "product:" + p.ID
-	now := time.Now()
+	// now := time.Now()
 
-	_, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key,
-			"id", p.ID,
-			"sku", p.Sku,
-			"title", p.Title,
-			"description", p.Description,
-			"length", p.Length,
-			"currency", p.Currency,
-			"price", p.Price,
-			"quantity", p.Quantity,
-			"status", p.Status,
-			"weight", p.Weight,
-			"mid", p.MID,
-			"tags", strings.Join(p.Tags, ";"),
-			"links", strings.Join(p.Links, ";"),
-			"meta", SerializeMeta(ctx, p.Meta, ";"),
-			"created_at", time.Now().Format(time.RFC3339),
-			"updated_at", time.Now().Format(time.RFC3339),
-		)
-		rdb.ZAdd(ctx, "products:"+p.MID, redis.Z{
-			Score:  float64(now.Unix()),
-			Member: p.ID,
-		})
-
-		return nil
-	})
+	_, err := db.Redis.HSet(ctx, key,
+		"id", p.ID,
+		"sku", p.Sku,
+		"title", p.Title,
+		"description", p.Description,
+		"length", p.Length,
+		"currency", p.Currency,
+		"price", p.Price,
+		"quantity", p.Quantity,
+		"status", p.Status,
+		"weight", p.Weight,
+		"mid", p.MID,
+		"tags", strings.Join(p.Tags, ";"),
+		"links", strings.Join(p.Links, ";"),
+		"meta", SerializeMeta(ctx, p.Meta, ";"),
+		"created_at", time.Now().Format(time.RFC3339),
+		"updated_at", time.Now().Format(time.RFC3339),
+	).Result()
 
 	if err != nil {
 		slog.Error("cannot store the product", slog.String("error", err.Error()))
@@ -388,6 +383,10 @@ func Search(c context.Context, q Query) ([]Product, error) {
 	}
 
 	return products, nil
+}
+
+func (p Product) URL() string {
+	return conf.WebsiteURL + "/" + p.ID + "-" + p.Slug
 }
 
 // SerializeMeta transforms a meta map to a string representation.

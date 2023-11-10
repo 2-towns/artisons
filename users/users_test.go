@@ -12,16 +12,13 @@ import (
 var user User = User{
 	ID:  1,
 	SID: "test",
-	Devices: map[string]string{
-		"auth:test": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0",
-	},
 }
 
 var ra faker.RealAddress = faker.GetRealAddress()
 var address Address = Address{
 	Lastname:      faker.Name(),
 	Firstname:     faker.Name(),
-	Address:       ra.Address,
+	Street:        ra.Address,
 	City:          ra.City,
 	Complementary: ra.Address,
 	Zipcode:       ra.PostalCode,
@@ -155,7 +152,7 @@ func TestLogoutRetunsErrorWhenSessionIsNotFound(t *testing.T) {
 	}
 }
 
-func TestSessionsReturnsSessionsWhenSuccess(t *testing.T) {
+func TestSessionsReturnsSessionsWhenUserHasSession(t *testing.T) {
 	ctx := tests.Context()
 	sessions, err := user.Sessions(ctx)
 	if len(sessions) == 0 || err != nil {
@@ -168,23 +165,11 @@ func TestSessionsReturnsSessionsWhenSuccess(t *testing.T) {
 	}
 }
 
-func TestSessionsReturnsEmptySliceWhenSuccess(t *testing.T) {
+func TestSessionsReturnsEmptySliceWhenUserDoesNotHaveSession(t *testing.T) {
 	ctx := tests.Context()
 	sessions, err := User{ID: 2}.Sessions(ctx)
 	if len(sessions) != 0 || err != nil {
 		t.Fatalf("User{ID: 2}.Session(ctx) = %v, %v, want []Session, nil", sessions, err)
-	}
-}
-
-func TestSessionsReturnsEmptySliceWhenDevicesIsEmpty(t *testing.T) {
-	ctx := tests.Context()
-
-	u := user
-	u.Devices = map[string]string{}
-
-	sessions, err := u.Sessions(ctx)
-	if len(sessions) != 0 || err != nil {
-		t.Fatalf("u.Session(ctx) = %v, %v, want [], nil", sessions, err)
 	}
 }
 
@@ -239,12 +224,12 @@ func TestSaveAddressReturnErrorWhenLastnameIsEmpty(t *testing.T) {
 
 func TestSaveAddressReturnErrorWhenAddressIsEmpty(t *testing.T) {
 	a := address
-	a.Address = ""
+	a.Street = ""
 
 	ctx := tests.Context()
 	err := user.SaveAddress(ctx, a)
-	if err == nil || err.Error() != "user_address_required" {
-		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_address_required'", err)
+	if err == nil || err.Error() != "user_street_required" {
+		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'user_street_required'", err)
 	}
 }
 
