@@ -93,8 +93,8 @@ func TestValidateReturnsErrorWhenSkuIsEmpty(t *testing.T) {
 	p := product
 	p.Sku = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field sku is required." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field sku is required."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_sku_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_sku_invalid"`, err.Error())
 	}
 }
 
@@ -104,8 +104,8 @@ func TestValidateReturnsErrorWhenSkuIsInvalid(t *testing.T) {
 	p := product
 	p.Sku = "!!!"
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field sku is not correct." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field sku is not correct."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_sku_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_sku_invalid"`, err.Error())
 	}
 }
 
@@ -115,8 +115,8 @@ func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	p := product
 	p.Title = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field title is required." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field title is required."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_title_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_title_invalid"`, err.Error())
 	}
 }
 
@@ -126,8 +126,8 @@ func TestValidateReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	p := product
 	p.Description = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field description is required." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field description is required."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_description_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_description_invalid"`, err.Error())
 	}
 }
 
@@ -137,8 +137,8 @@ func TestValidateReturnsErrorWhenCurrencyIsEmpty(t *testing.T) {
 	p := product
 	p.Currency = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field currency is not correct." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field currency is not correct."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_currency_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_currency_invalid"`, err.Error())
 	}
 }
 
@@ -148,8 +148,8 @@ func TestValidateReturnsErrorWhenCurrencyIsNotSupported(t *testing.T) {
 	p := product
 	p.Currency = "ABC"
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field currency is not correct." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field currency is not correct."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_currency_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_currency_invalid"`, err.Error())
 	}
 }
 
@@ -159,8 +159,8 @@ func TestValidateReturnsErrorWhenStatusIsEmpty(t *testing.T) {
 	p := product
 	p.Status = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field status is not correct." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field status is not correct."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_status_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_status_invalid"`, err.Error())
 	}
 }
 
@@ -170,8 +170,8 @@ func TestValidateReturnsErrorWhenStatusIsNotSupported(t *testing.T) {
 	p := product
 	p.Status = "ABC"
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field status is not correct." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field status is not correct."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_status_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_status_invalid"`, err.Error())
 	}
 }
 
@@ -181,8 +181,8 @@ func TestValidateReturnsErrorWhenLengthIsEmpty(t *testing.T) {
 	p := product
 	p.Length = 0
 
-	if err := p.Validate(c); err == nil || err.Error() != "The field length is required." {
-		t.Fatalf(`p.Validate(c) = %v, want not "The field length required."`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "product_length_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "product_length_invalid`, err.Error())
 	}
 }
 
@@ -212,15 +212,15 @@ func TestSaveReturnsErrorWhenPidIsEmpty(t *testing.T) {
 
 func TestFindReturnsErrorWhenPidIsMissing(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, ""); err == nil || err.Error() != "product_not_found" {
-		t.Fatalf(`Find(c,"") = %v, want "product_not_found"`, err.Error())
+	if _, err := Find(c, ""); err == nil || err.Error() != "product_id_required" {
+		t.Fatalf(`Find(c,"") = %v, want "product_id_required"`, err.Error())
 	}
 }
 
 func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, ""); err == nil || err.Error() != "product_not_found" {
-		t.Fatalf(`Find(c,"hello") = %v, want "product_not_found"`, err.Error())
+	if _, err := Find(c, ""); err == nil || err.Error() != "product_id_required" {
+		t.Fatalf(`Find(c,"hello") = %v, want "product_id_required"`, err.Error())
 	}
 }
 

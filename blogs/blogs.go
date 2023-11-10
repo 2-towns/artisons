@@ -12,19 +12,21 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
 )
 
 type Article struct {
 	ID          int64
-	Title       string
+	Title       string `validate:"required"`
 	Slug        string
-	Description string
+	Description string `validate:"required"`
 
 	// The image path
-	Image     string
+	Image     string `validate:"required"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -32,19 +34,12 @@ type Article struct {
 func (a Article) Save(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "creating a blog article")
 
-	if a.Title == "" {
-		slog.Info("cannot validate an empty title")
-		return errors.New("article_title_required")
-	}
-
-	if a.Description == "" {
-		slog.Info("cannot validate an empty message")
-		return errors.New("article_description_required")
-	}
-
-	if a.Image == "" {
-		slog.Info("cannot validate an empty image")
-		return errors.New("article_image_required")
+	v := validator.New()
+	if err := v.Struct(a); err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return fmt.Errorf("article_%s_required", low)
 	}
 
 	ctx := context.Background()

@@ -10,30 +10,28 @@ import (
 	"gifthub/locales"
 	"log"
 	"log/slog"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 // Product is the product representation in the application
 type Product struct {
 	ID          string  `redis:"id"` // ID is an unique identifier
-	Title       string  `redis:"title"`
-	Description string  `redis:"description"`
+	Title       string  `redis:"title" validate:"required"`
+	Description string  `redis:"description"  validate:"required"`
 	Price       float32 `redis:"price"`
 	Slug        string  `redis:"slug"`
 	MID         string  `redis:"mid"`
-	Sku         string  `redis:"sku"`
+	Sku         string  `redis:"sku" validate:"required,alphanum"`
 	Currency    string  `redis:"currency"`
 	Quantity    int     `redis:"quantity"`
 	// Images length
-	Length int     `redis:"length"`
-	Status string  `redis:"status"`
+	Length int     `redis:"length" validate:"required"`
+	Status string  `redis:"status" validate:"oneof=online offline"`
 	Weight float32 `redis:"weight"`
 
 	Images []string
@@ -186,43 +184,18 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 func (p Product) Validate(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "validating a product")
 	log.Println(c.Value(locales.ContextKey))
-	var printer = message.NewPrinter(c.Value(locales.ContextKey).(language.Tag))
 
-	if p.Sku == "" {
-		slog.Info("cannot parse the empty sku")
-		log.Println(printer.Sprintf("input_required", "sku"))
-		return errors.New(printer.Sprintf("input_required", "sku"))
-	}
-
-	isValid := regexp.MustCompile(`^[0-9a-z]+$`).MatchString
-	if !isValid(p.Sku) {
-		slog.Info("cannot parse the empty sku", slog.String("sku", p.Sku))
-		return errors.New(printer.Sprintf("input_validation", "sku"))
-	}
-
-	if p.Title == "" {
-		slog.Info("cannot parse the empty title")
-		return errors.New(printer.Sprintf("input_required", "title"))
+	v := validator.New()
+	if err := v.Struct(p); err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return fmt.Errorf("product_%s_invalid", low)
 	}
 
 	if !conf.IsCurrencySupported(p.Currency) {
 		slog.Info("cannot use an unsupported currency", slog.String("currency", p.Currency))
-		return errors.New(printer.Sprintf("input_validation", "currency"))
-	}
-
-	if p.Status != "online" && p.Status != "offline" {
-		slog.Error("cannot use an unsupported status", slog.String("status", p.Status))
-		return errors.New(printer.Sprintf("input_validation", "status"))
-	}
-
-	if p.Description == "" {
-		slog.Info("cannot parse the empty description")
-		return errors.New(printer.Sprintf("input_required", "description"))
-	}
-
-	if p.Length <= 0 {
-		slog.Info("cannot parse the empty length")
-		return errors.New(printer.Sprintf("input_required", "length"))
+		return errors.New("product_currency_invalid")
 	}
 
 	return nil
@@ -275,6 +248,11 @@ func (p Product) Save(ctx context.Context) error {
 func Find(c context.Context, pid string) (Product, error) {
 	l := slog.With(slog.String("id", pid))
 	l.LogAttrs(c, slog.LevelInfo, "looking for product")
+
+	if pid == "" {
+		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty product id")
+		return Product{}, errors.New("product_id_required")
+	}
 
 	ctx := context.Background()
 

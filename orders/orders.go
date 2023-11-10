@@ -15,8 +15,10 @@ import (
 	"gifthub/users"
 	"log/slog"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/slices"
@@ -76,8 +78,9 @@ func IsValidDelivery(c context.Context, d string) bool {
 	l := slog.With(slog.String("delivery", d))
 	l.LogAttrs(c, slog.LevelInfo, "checking delivery validity")
 
-	if d != "collect" && d != "home" {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate the delivery")
+	v := validator.New()
+	if err := v.Var(d, "oneof=collect home"); err != nil {
+		l.LogAttrs(c, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
 		return false
 	}
 
@@ -97,6 +100,12 @@ func IsValidDelivery(c context.Context, d string) bool {
 func IsValidPayment(c context.Context, p string) bool {
 	l := slog.With(slog.String("payment", p))
 	l.LogAttrs(c, slog.LevelInfo, "checking payment validity")
+
+	v := validator.New()
+	if err := v.Var(c, "oneof=cash wire bitcoin card"); err != nil {
+		l.LogAttrs(c, slog.LevelInfo, "cannot validate  te payment", slog.String("error", err.Error()))
+		return false
+	}
 
 	if !slices.Contains(Payments, p) {
 		l.LogAttrs(c, slog.LevelInfo, "cannot continue while the payment method is not activated")
@@ -133,6 +142,14 @@ func (o Order) Save(c context.Context) (string, error) {
 	if len(o.Quantities) == 0 {
 		l.LogAttrs(c, slog.LevelInfo, "the product list is empty")
 		return "", errors.New("cart_empty")
+	}
+
+	v := validator.New()
+	if err := v.Struct(o.Address); err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return "", fmt.Errorf("order_%s_required", low)
 	}
 
 	pids := []string{}
@@ -201,14 +218,13 @@ func (o Order) Total(p []products.Product) float32 {
 	}
 
 	return total
-
 }
 
 func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 	l := slog.With(slog.String("oid", o.ID))
 	l.LogAttrs(c, slog.LevelInfo, "sending confirmation email")
 
-	user, err := db.Redis.HGetAll(c, fmt.Sprintf("user:%d", o.UID)).Result()
+	email, err := db.Redis.HGet(c, fmt.Sprintf("user:%d", o.UID), "email").Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelWarn, "cannot get the email", slog.Int64("uid", o.UID), slog.String("error", err.Error()))
 		return "", err
@@ -245,7 +261,7 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 
 	msg += p.Sprintf("order_footer_email")
 
-	err = mails.Send(c, user["email"], msg)
+	err = mails.Send(c, email, msg)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelWarn, "cannot send the email", slog.String("error", err.Error()))
 		return "", err
@@ -264,6 +280,12 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 func UpdateStatus(c context.Context, oid, status string) error {
 	l := slog.With(slog.String("oid", oid), slog.String("status", status))
 	l.LogAttrs(c, slog.LevelInfo, "updating the order")
+
+	v := validator.New()
+	if err := v.Var(c, "oneof=created processing delivering delivered canceled"); err != nil {
+		l.LogAttrs(c, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
+		return errors.New("order_bad_status")
+	}
 
 	if !slices.Contains(Status, status) {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the status")
@@ -325,6 +347,11 @@ func (o Order) Products(c context.Context) ([]products.Product, error) {
 func Find(c context.Context, oid string) (Order, error) {
 	l := slog.With(slog.String("oid", oid))
 	l.LogAttrs(c, slog.LevelInfo, "finding the order")
+
+	if oid == "" {
+		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty id")
+		return Order{}, errors.New("order_id_required")
+	}
 
 	ctx := context.Background()
 
