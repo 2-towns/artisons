@@ -9,9 +9,8 @@ import (
 	"gifthub/orders"
 	"gifthub/products"
 	"gifthub/string/stringutil"
-	"log"
 	"log/slog"
-	"strings"
+	"strconv"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -34,7 +33,7 @@ func cartExists(c context.Context, cid string) bool {
 	l.LogAttrs(c, slog.LevelInfo, "checking if the car exists")
 
 	ctx := context.Background()
-	ttl, err := db.Redis.TTL(ctx, "cart:"+cid).Result()
+	ttl, err := db.Redis.TTL(ctx, "cart:"+cid+":user").Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "error when retrieving ttl for cart", slog.String("error", err.Error()))
 		return false
@@ -60,7 +59,7 @@ func Add(c context.Context, cid, pid string, quantity int) error {
 	}
 
 	ctx := context.Background()
-	if _, err := db.Redis.HIncrBy(ctx, "cart:"+cid, "product:"+pid, int64(quantity)).Result(); err != nil {
+	if _, err := db.Redis.HIncrBy(ctx, "cart:"+cid, pid, int64(quantity)).Result(); err != nil {
 		l.LogAttrs(c, slog.LevelError, " cannot store the product", slog.String("error", err.Error()))
 		return errors.New("something_went_wrong")
 	}
@@ -71,7 +70,6 @@ func Add(c context.Context, cid, pid string, quantity int) error {
 }
 
 // Get the full session cart.
-// TODO: Get the product detail from the products package
 func Get(c context.Context, cid string) (Cart, error) {
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(c, slog.LevelInfo, "get the cart")
@@ -87,25 +85,33 @@ func Get(c context.Context, cid string) (Cart, error) {
 		return Cart{}, errors.New("something_went_wrong")
 	}
 
-	products := []products.Product{}
-	//pipe := db.Redis.Pipeline()
-	for key := range values {
-		if !strings.HasPrefix(key, "product:") {
+	pds := []products.Product{}
+	for key, value := range values {
+		product, err := products.Find(ctx, key)
+
+		if err != nil {
+			l.LogAttrs(c, slog.LevelError, "cannot get the product", slog.String("id", key), slog.String("error", err.Error()))
 			continue
 		}
-		k := strings.Replace(key, "product:", "", 1)
 
-		// TODO: Get the product detail from the products package
-		log.Println(k)
+		q, err := strconv.ParseInt(value, 10, 8)
+		if err != nil {
+			l.LogAttrs(c, slog.LevelError, "cannot parse the quantity", slog.String("error", err.Error()))
+			continue
+		}
+
+		product.Quantity = int(q)
+
+		pds = append(pds, product)
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "got the cart with products", slog.Int("products", len(products)))
+	l.LogAttrs(c, slog.LevelInfo, "got the cart with products", slog.Int("products", len(pds)))
 
 	return Cart{
 		ID:       cid,
 		Delivery: values["delivery"],
 		Payment:  values["payment"],
-		Products: products,
+		Products: pds,
 	}, nil
 }
 
@@ -152,7 +158,7 @@ func (c Cart) UpdatePayment(co context.Context, p string) error {
 // RefreshCID refreshes a cart ID (CID).
 // If the CID does not exist, it will be created,
 // with an expiration time.
-func RefreshCID(c context.Context, s string) (string, error) {
+func RefreshCID(c context.Context, s string, uid int64) (string, error) {
 	cid := s
 
 	if cid == "" {
@@ -164,12 +170,12 @@ func RefreshCID(c context.Context, s string) (string, error) {
 		cid = id
 	}
 
-	l := slog.With(slog.String("cid", s))
+	l := slog.With(slog.String("cid", s), slog.Int64("uid", uid))
+	l.LogAttrs(c, slog.LevelInfo, "refreshing cart")
 
 	ctx := context.Background()
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, "cart:"+cid, "cid", cid)
-		rdb.Expire(ctx, "cart:"+cid, conf.CartDuration)
+		rdb.Set(ctx, "cart:"+cid+":user", uid, conf.CartDuration)
 
 		return nil
 	}); err != nil {

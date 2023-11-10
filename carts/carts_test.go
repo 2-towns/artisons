@@ -3,6 +3,7 @@ package carts
 import (
 	"gifthub/string/stringutil"
 	"gifthub/tests"
+	"log"
 	"testing"
 )
 
@@ -38,7 +39,7 @@ func TestAddReturnsErrorWhenPidIsInvalid(t *testing.T) {
 
 func TestRefreshCIDReturnsCidWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	cid, err := RefreshCID(ctx, "")
+	cid, err := RefreshCID(ctx, "", 1)
 	if cid == "" || err != nil {
 		t.Fatalf("UpdateCID(ctx, '') = %s, %v, not want ', error", cid, err)
 	}
@@ -47,7 +48,7 @@ func TestRefreshCIDReturnsCidWhenSuccess(t *testing.T) {
 func TestRefreshCIDReturnsCidWhenCidExisting(t *testing.T) {
 	ctx := tests.Context()
 	s, _ := stringutil.Random()
-	cid, err := RefreshCID(ctx, s)
+	cid, err := RefreshCID(ctx, s, 1)
 	if cid == "" || err != nil {
 		t.Fatalf("UpdateCID(ctx, s) = %s, %v, want string, error", cid, err)
 	}
@@ -60,6 +61,8 @@ func TestGetReturnsCartWhenSuccess(t *testing.T) {
 	if c.ID == "" || err != nil {
 		t.Fatalf(`Get(ctx, "test") = %v, %v, want Cart, nil`, c, err)
 	}
+
+	log.Println(c)
 }
 
 func TestGetReturnsErrorWhenCidIsNotExisting(t *testing.T) {

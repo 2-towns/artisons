@@ -31,7 +31,7 @@ func Run() error {
 		return err
 	}
 
-	_, err = Cart(ctx, "test")
+	_, err = Cart(ctx, "test", user.ID)
 	if err != nil {
 		return err
 	}
