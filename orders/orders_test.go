@@ -220,7 +220,7 @@ func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 		t.Fatalf(`order.SendConfirmationEmail(ctx) = '%s', %v, want not empty, nil`, tpl, err)
 	}
 
-	expected := `Hi Prince Benton Bins,
+	expected := `Hi Arnaud,
 Woo hoo! Your order is on its way. Your order details can be found below.
 
 Order ID: test

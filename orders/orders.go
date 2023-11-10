@@ -217,7 +217,7 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 	lang := c.Value(locales.ContextKey).(language.Tag)
 	p := message.NewPrinter(lang)
 
-	msg := p.Sprintf("order_created_email", user["firstname"])
+	msg := p.Sprintf("order_created_email", o.Address.Firstname)
 	msg += p.Sprintf("order_id_email", o.ID)
 	msg += p.Sprintf("order_date_email", o.CreatedAt.Format("Monday, January 1"))
 
