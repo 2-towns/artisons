@@ -16,5 +16,4 @@ func Cart(ctx context.Context, cid string, uid int64) (carts.Cart, error) {
 	_, err = db.Redis.Set(ctx, "cart:"+cid+":user", uid, conf.CartDuration).Result()
 
 	return carts.Cart{ID: cid}, err
-
 }

@@ -35,6 +35,7 @@ type User struct {
 	UpdatedAt time.Time
 	MagicCode string
 	Lang      language.Tag
+	Role      string
 }
 
 type Session struct {
@@ -110,7 +111,7 @@ func MagicCode(c context.Context, email string) (string, error) {
 	v := validator.New()
 	if err := v.Var(email, "required,email"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the email", slog.String("error", err.Error()))
-		return "", errors.New("user_email_invalid")
+		return "", errors.New("input_email_invalid")
 	}
 
 	magic, err := stringutil.Random()
@@ -245,6 +246,7 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 		},
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
+		Role:      m["role"],
 	}, nil
 }
 
@@ -298,7 +300,7 @@ func (u User) SaveAddress(c context.Context, a Address) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("user_%s_required", low)
+		return fmt.Errorf("input_%s_required", low)
 	}
 
 	if u.ID == 0 {
@@ -415,12 +417,12 @@ func Login(c context.Context, magic, device string) (string, error) {
 
 	if magic == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the magic code")
-		return "", errors.New("user_magic_code_required")
+		return "", errors.New("input_magic_code_required")
 	}
 
 	if device == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the device")
-		return "", errors.New("user_device_required")
+		return "", errors.New("input_device_required")
 	}
 
 	ctx := context.Background()

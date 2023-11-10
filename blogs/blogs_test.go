@@ -20,8 +20,8 @@ func TestSaveReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	a := article
 	a.Title = ""
 
-	if err := a.Save(c); err == nil || err.Error() != "article_title_required" {
-		t.Fatalf(`a.Save(c) = %v, want "article_title_required"`, err.Error())
+	if err := a.Save(c); err == nil || err.Error() != "input_title_required" {
+		t.Fatalf(`a.Save(c) = %v, want "input_title_required"`, err.Error())
 	}
 }
 
@@ -31,8 +31,8 @@ func TestSaveReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	a := article
 	a.Description = ""
 
-	if err := a.Save(c); err == nil || err.Error() != "article_description_required" {
-		t.Fatalf(`a.Save(c) = %v, want "article_description_required"`, err.Error())
+	if err := a.Save(c); err == nil || err.Error() != "input_description_required" {
+		t.Fatalf(`a.Save(c) = %v, want "input_description_required"`, err.Error())
 	}
 }
 
@@ -42,8 +42,8 @@ func TestSaveReturnsErrorWhenImageIsEmpty(t *testing.T) {
 	a := article
 	a.Image = ""
 
-	if err := a.Save(c); err == nil || err.Error() != "article_image_required" {
-		t.Fatalf(`a.Save(c) = %v, want "article_image_required"`, err.Error())
+	if err := a.Save(c); err == nil || err.Error() != "input_image_required" {
+		t.Fatalf(`a.Save(c) = %v, want "input_image_required"`, err.Error())
 	}
 }
 

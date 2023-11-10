@@ -149,7 +149,7 @@ func (o Order) Save(c context.Context) (string, error) {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return "", fmt.Errorf("order_%s_required", low)
+		return "", fmt.Errorf("address_%s_required", low)
 	}
 
 	pids := []string{}
@@ -422,7 +422,7 @@ func AddNote(c context.Context, oid, note string) error {
 
 	if note == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the note")
-		return errors.New("order_note_required")
+		return errors.New("input_note_required")
 	}
 
 	rep, err := db.Redis.Exists(ctx, "order:"+oid).Result()
