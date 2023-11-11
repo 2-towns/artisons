@@ -13,6 +13,9 @@ import (
 func Order(ctx context.Context, oid string, uid int64, ids map[string]int64) (orders.Order, error) {
 	now := time.Now()
 
+	createdAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
+	updatedAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
+
 	_, err := db.Redis.HSet(ctx, "order:"+oid,
 		"id", oid,
 		"uid", uid,
@@ -20,8 +23,8 @@ func Order(ctx context.Context, oid string, uid int64, ids map[string]int64) (or
 		"payment", "card",
 		"payment_status", "payment_progress",
 		"status", "created",
-		"updated_at", now.Format(time.RFC3339),
-		"created_at", now.Format(time.RFC3339),
+		"updated_at", updatedAt.Unix(),
+		"created_at", createdAt.Unix(),
 	).Result()
 
 	if err != nil {

@@ -26,9 +26,10 @@ type Article struct {
 	Description string `validate:"required"`
 
 	// The image path
-	Image     string `validate:"required"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Image string `validate:"required"`
+
+	CreatedAt int64
+	UpdatedAt int64
 }
 
 func (a Article) Save(c context.Context) error {
@@ -67,8 +68,8 @@ func (a Article) Save(c context.Context) error {
 			"description", a.Description,
 			"image", a.Image,
 			"slug", slug,
-			"created_at", time.Now().Format(time.RFC3339),
-			"updated_at", time.Now().Format(time.RFC3339),
+			"created_at", time.Now().Unix(),
+			"updated_at", time.Now().Unix(),
 		)
 		rdb.ZAdd(ctx, "articles", redis.Z{
 			Score:  float64(now.Unix()),
@@ -124,13 +125,13 @@ func List(c context.Context, page int) ([]Article, error) {
 			continue
 		}
 
-		createdAt, err := time.Parse(time.RFC3339, data["created_at"])
+		createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("created_at", data["created_at"]))
 			continue
 		}
 
-		updatedAt, err := time.Parse(time.RFC3339, data["updated_at"])
+		updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("updated_at", data["updated_at"]))
 			continue

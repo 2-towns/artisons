@@ -44,8 +44,8 @@ func Product(ctx context.Context, pid, sku string, price float32) (products.Prod
 		"tags", strings.Join(tags, ";"),
 		"links", strings.Join(links, ";"),
 		"meta", products.SerializeMeta(ctx, meta, ";"),
-		"created_at", time.Now().Format(time.RFC3339),
-		"updated_at", time.Now().Format(time.RFC3339),
+		"created_at", time.Now().Unix(),
+		"updated_at", time.Now().Unix(),
 	).Result()
 	if err != nil {
 		return products.Product{}, err

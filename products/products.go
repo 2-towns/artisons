@@ -231,8 +231,8 @@ func (p Product) Save(ctx context.Context) error {
 		"tags", strings.Join(p.Tags, ";"),
 		"links", strings.Join(p.Links, ";"),
 		"meta", SerializeMeta(ctx, p.Meta, ";"),
-		"created_at", time.Now().Format(time.RFC3339),
-		"updated_at", time.Now().Format(time.RFC3339),
+		"created_at", time.Now().Unix(),
+		"updated_at", time.Now().Unix(),
 	).Result()
 
 	if err != nil {

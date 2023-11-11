@@ -31,8 +31,8 @@ type User struct {
 	Email     string
 	ID        int64
 	Address   Address
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt int64
+	UpdatedAt int64
 	MagicCode string
 	Lang      language.Tag
 	Role      string
@@ -138,8 +138,8 @@ func MagicCode(c context.Context, email string) (string, error) {
 		rdb.HSet(ctx, key,
 			"id", id,
 			"email", email,
-			"updated_at", now.Format(time.RFC3339),
-			"created_at", now.Format(time.RFC3339),
+			"updated_at", now.Unix(),
+			"created_at", now.Unix(),
 		)
 		rdb.Set(ctx, "magic:"+magic, id, conf.MagicCodeDuration)
 		rdb.HSet(ctx, "user", email, id)
@@ -215,13 +215,13 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 		return User{}, errors.New("something_went_wrong")
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, m["created_at"])
+	createdAt, err := strconv.ParseInt(m["created_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the created_at", slog.String("created_at", m["created_at"]), slog.String("error", err.Error()))
 		return User{}, errors.New("something_went_wrong")
 	}
 
-	updatedAt, err := time.Parse(time.RFC3339, m["updated_at"])
+	updatedAt, err := strconv.ParseInt(m["updated_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the updated_at", slog.String("updated_at", m["updated_at"]), slog.String("error", err.Error()))
 		return User{}, errors.New("something_went_wrong")

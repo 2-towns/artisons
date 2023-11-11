@@ -26,8 +26,8 @@ func User(ctx context.Context, sid string, alive bool) (users.User, error) {
 	_, err = db.Redis.HSet(ctx, key,
 		"id", id,
 		"email", faker.Email(),
-		"updated_at", now.Format(time.RFC3339),
-		"created_at", now.Format(time.RFC3339),
+		"updated_at", now.Unix(),
+		"created_at", now.Unix(),
 	).Result()
 	if err != nil {
 		return users.User{}, err

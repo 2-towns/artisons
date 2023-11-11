@@ -5,9 +5,7 @@ import (
 	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"gifthub/users"
-	"log"
 	"testing"
-	"time"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -31,7 +29,7 @@ var order Order = Order{
 		Zipcode:       "31244",
 		Phone:         "0559682532",
 	},
-	CreatedAt: time.Now(),
+	CreatedAt: 1699628645,
 }
 
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {
@@ -235,8 +233,7 @@ Order total: 105.50
 
 See you around,
 The Customer Experience Team at gifthub shop`
-	log.Println(tpl)
-	log.Println(expected)
+
 	if tpl != expected {
 		t.Fatalf(`tpl != expected`)
 	}

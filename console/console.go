@@ -65,6 +65,8 @@ func main() {
 				"sku", "TAG",
 				"description", "TEXT",
 				"price", "NUMERIC", "SORTABLE",
+				"created_at", "NUMERIC", "SORTABLE",
+				"updated_at", "NUMERIC", "SORTABLE",
 				"tags", "TAG", "SEPARATOR", ";",
 				"status", "TAG",
 				"meta", "TAG", "SEPARATOR", ";",

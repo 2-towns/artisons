@@ -25,8 +25,8 @@ func Article(ctx context.Context, online bool) (blogs.Article, error) {
 		"description", "C'est un antiseptique.",
 		"image", "/tmp/hello",
 		"online", fmt.Sprintf("%t", online),
-		"updated_at", now.Format(time.RFC3339),
-		"created_at", now.Format(time.RFC3339),
+		"updated_at", now.Unix(),
+		"created_at", now.Unix(),
 	).Result()
 
 	if err != nil {

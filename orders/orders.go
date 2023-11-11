@@ -60,14 +60,13 @@ type Order struct {
 
 	Address users.Address
 
-	CreatedAt time.Time
-
-	UpdateAt time.Time
+	CreatedAt int64
+	UpdateAt  int64
 }
 
 type Note struct {
 	Note      string
-	CreatedAt time.Time
+	CreatedAt int64
 }
 
 // IsValidDelivery returns true if the delivery
@@ -185,8 +184,8 @@ func (o Order) Save(c context.Context) (string, error) {
 			"address_complementary", o.Address.Complementary,
 			"address_zipcode", o.Address.Zipcode,
 			"address_phone", o.Address.Phone,
-			"updated_at", now.Format(time.RFC3339),
-			"created_at", now.Format(time.RFC3339),
+			"updated_at", now.Unix(),
+			"created_at", now.Unix(),
 		)
 
 		for key, value := range o.Quantities {
@@ -235,7 +234,7 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 
 	msg := p.Sprintf("order_created_email", o.Address.Firstname)
 	msg += p.Sprintf("order_id_email", o.ID)
-	msg += p.Sprintf("order_date_email", o.CreatedAt.Format("Monday, January 1"))
+	msg += p.Sprintf("order_date_email", time.Unix(o.CreatedAt, 0).Format("Monday, January 1"))
 
 	pds, err := o.Products(c)
 	if err != nil {
@@ -387,7 +386,7 @@ func Find(c context.Context, oid string) (Order, error) {
 				continue
 			}
 
-			createdAt, err := time.Parse(time.RFC3339, n["created_at"])
+			createdAt, err := strconv.ParseInt(n["created_at"], 10, 64)
 			if err != nil {
 				l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.String("id", id), slog.String("created_at", n["created_at"]))
 				continue
@@ -437,7 +436,7 @@ func AddNote(c context.Context, oid, note string) error {
 	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		key := fmt.Sprintf("order:%s:note:%d", oid, timestamp)
 		rdb.HSet(ctx, key, "note", note)
-		rdb.HSet(ctx, key, "created_at", now.Format(time.RFC3339))
+		rdb.HSet(ctx, key, "created_at", now.Unix())
 		rdb.SAdd(ctx, "order:"+oid+":notes", timestamp)
 
 		return nil
@@ -461,13 +460,13 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 		return Order{}, errors.New("something_went_wrong")
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, m["created_at"])
+	createdAt, err := strconv.ParseInt(m["created_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the created_at", slog.String("created_at", m["created_at"]), slog.String("error", err.Error()))
 		return Order{}, errors.New("something_went_wrong")
 	}
 
-	updatedAt, err := time.Parse(time.RFC3339, m["updated_at"])
+	updatedAt, err := strconv.ParseInt(m["updated_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the updated_at", slog.String("updated_at", m["updated_at"]), slog.String("error", err.Error()))
 		return Order{}, errors.New("something_went_wrong")

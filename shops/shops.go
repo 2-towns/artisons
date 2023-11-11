@@ -69,8 +69,8 @@ func (s Shop) Save(c context.Context) error {
 		"address_complementary", s.Address.Complementary,
 		"address_zipcode", s.Address.Zipcode,
 		"address_phone", s.Address.Phone,
-		"updated_at", now.Format(time.RFC3339),
-		"created_at", now.Format(time.RFC3339),
+		"updated_at", now.Unix(),
+		"created_at", now.Unix(),
 	).Result()
 
 	if err != nil {

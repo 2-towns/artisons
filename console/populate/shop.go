@@ -20,7 +20,7 @@ func Shop(ctx context.Context) (shops.Shop, error) {
 		"address_complementary", "Hay Salam",
 		"address_zipcode", "31244",
 		"address_phone", "0559682532",
-		"updated_at", now.Format(time.RFC3339),
+		"updated_at", now.Unix(),
 	).Result()
 
 	if err != nil {
