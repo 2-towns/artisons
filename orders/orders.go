@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/locales"
+	"gifthub/http/contexts"
 	"gifthub/notifications/mails"
 	"gifthub/products"
+	"gifthub/stats"
 	"gifthub/string/stringutil"
 	"gifthub/users"
 	"log/slog"
@@ -203,6 +204,12 @@ func (o Order) Save(c context.Context) (string, error) {
 		return "", errors.New("something_went_wrong")
 	}
 
+	go stats.Order(c, oid)
+
+	for pid, quantity := range o.Quantities {
+		go stats.SoldProduct(c, oid, pid, quantity)
+	}
+
 	go o.SendConfirmationEmail(c)
 
 	l.LogAttrs(c, slog.LevelInfo, "the new order is created", slog.String("oid", oid))
@@ -229,7 +236,7 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 		return "", err
 	}
 
-	lang := c.Value(locales.ContextKey).(language.Tag)
+	lang := c.Value(contexts.Locale).(language.Tag)
 	p := message.NewPrinter(lang)
 
 	msg := p.Sprintf("order_created_email", o.Address.Firstname)

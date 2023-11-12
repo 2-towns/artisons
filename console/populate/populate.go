@@ -64,5 +64,10 @@ func Run() error {
 		return err
 	}
 
+	err = Stats(ctx)
+	if err != nil {
+		return err
+	}
+
 	return err
 }

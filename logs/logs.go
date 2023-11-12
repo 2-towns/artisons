@@ -3,6 +3,7 @@ package logs
 
 import (
 	"context"
+	"gifthub/http/contexts"
 	"gifthub/users"
 	"log"
 	"log/slog"
@@ -20,7 +21,7 @@ func (h RequestIDHandler) Handle(ctx context.Context, r slog.Record) error {
 		r.Add("request_id", slog.StringValue(rid))
 	}
 
-	if u, ok := ctx.Value(users.ContextKey).(users.User); ok {
+	if u, ok := ctx.Value(contexts.User).(users.User); ok {
 		r.Add("user_id", slog.Int64Value(u.ID))
 	}
 

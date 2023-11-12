@@ -4,6 +4,7 @@ package pages
 import (
 	"context"
 	"gifthub/conf"
+	"gifthub/http/contexts"
 	"gifthub/locales"
 	"gifthub/products"
 	"html/template"
@@ -33,7 +34,7 @@ func getProducts(ctx context.Context) ([]products.Product, error) {
 // display them on the home page.
 func Home(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	lang := ctx.Value(locales.ContextKey).(language.Tag)
+	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	tpl, err := template.ParseFiles("web/views/base.html", "web/views/home.html")
 	if err != nil {

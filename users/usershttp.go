@@ -5,6 +5,7 @@ import (
 	"errors"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/http/contexts"
 	"net/http"
 
 	"golang.org/x/exp/slog"
@@ -60,8 +61,9 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// TODO display session id in lgos
-		ctx := context.WithValue(r.Context(), ContextKey, user)
+		ctx := context.WithValue(r.Context(), contexts.User, user)
+
+		// TODO extract the card id from the cookie
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

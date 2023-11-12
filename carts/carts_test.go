@@ -1,6 +1,8 @@
 package carts
 
 import (
+	"context"
+	"gifthub/http/contexts"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"log"
@@ -11,10 +13,11 @@ var cart Cart = Cart{ID: "test"}
 
 func TestAddReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, "test")
 	quantity := 1
 
-	if err := Add(ctx, "test", "test", quantity); err != nil {
-		t.Fatalf(`Add(ctx, "test", "test", quantity), %v, want nil, error`, err)
+	if err := Add(ctx, "test", quantity); err != nil {
+		t.Fatalf(`Add(ctx, "test", quantity), %v, want nil, error`, err)
 	}
 }
 
@@ -22,8 +25,8 @@ func TestAddReturnsErrorWhenCidIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	quantity := 1
 
-	if err := Add(ctx, "world", "test", quantity); err == nil {
-		t.Fatalf(`Add(ctx, "test", "test", quantity), %v, not want nil, error`, err)
+	if err := Add(ctx, "world", quantity); err == nil {
+		t.Fatalf(`Add(ctx, "world", quantity), %v, not want nil, error`, err)
 	}
 }
 
@@ -32,8 +35,8 @@ func TestAddReturnsErrorWhenPidIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	quantity := 1
 
-	if err := Add(ctx, "test", pid, quantity); err == nil {
-		t.Fatalf(`Add(ctx, "test", pid, quantity), %v, not want nil, error`, err)
+	if err := Add(ctx, pid, quantity); err == nil {
+		t.Fatalf(`Add(ctx, pid, quantity), %v, not want nil, error`, err)
 	}
 }
 
@@ -56,10 +59,11 @@ func TestRefreshCIDReturnsCidWhenCidExisting(t *testing.T) {
 
 func TestGetReturnsCartWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, "test")
 
-	c, err := Get(ctx, "test")
+	c, err := Get(ctx)
 	if c.ID == "" || err != nil {
-		t.Fatalf(`Get(ctx, "test") = %v, %v, want Cart, nil`, c, err)
+		t.Fatalf(`Get(ctx) = %v, %v, want Cart, nil`, c, err)
 	}
 
 	log.Println(c)
@@ -67,9 +71,11 @@ func TestGetReturnsCartWhenSuccess(t *testing.T) {
 
 func TestGetReturnsErrorWhenCidIsNotExisting(t *testing.T) {
 	ctx := tests.Context()
-	c, err := Get(ctx, "toto")
+	ctx = context.WithValue(ctx, contexts.Cart, "text")
+
+	c, err := Get(ctx)
 	if c.ID != "" || len(c.Products) != 0 || err == nil || err.Error() != "cart_not_found" {
-		t.Fatalf(`Get(ctx, "toto") = %v, %v, want Cart{}, 'cart_not_found'`, c, err)
+		t.Fatalf(`Get(ctx) = %v, %v, want Cart{}, 'cart_not_found'`, c, err)
 	}
 }
 

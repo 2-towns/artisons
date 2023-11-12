@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/locales"
+	"gifthub/http/contexts"
 	"log"
 	"log/slog"
 	"strconv"
@@ -183,7 +183,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 
 func (p Product) Validate(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "validating a product")
-	log.Println(c.Value(locales.ContextKey))
+	log.Println(c.Value(contexts.Locale))
 
 	v := validator.New()
 	if err := v.Struct(p); err != nil {
