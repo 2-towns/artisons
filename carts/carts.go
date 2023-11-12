@@ -6,9 +6,9 @@ import (
 	"errors"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/http/contexts"
 	"gifthub/orders"
 	"gifthub/products"
-	"gifthub/string/stringutil"
 	"log/slog"
 	"strconv"
 
@@ -28,7 +28,8 @@ type Cart struct {
 	Products []products.Product
 }
 
-func cartExists(c context.Context, cid string) bool {
+func cartExists(c context.Context) bool {
+	cid := c.Value(contexts.Cart).(string)
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(c, slog.LevelInfo, "checking if the car exists")
 
@@ -46,11 +47,12 @@ func cartExists(c context.Context, cid string) bool {
 
 // Add a product into a cart with its quantity
 // Verify that the cart and the product exists.
-func Add(c context.Context, cid, pid string, quantity int) error {
+func Add(c context.Context, pid string, quantity int) error {
+	cid := c.Value(contexts.Cart).(string)
 	l := slog.With(slog.String("cid", cid), slog.String("product_id", pid), slog.Int("quantity", quantity))
 	l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
 
-	if !cartExists(c, cid) {
+	if !cartExists(c) {
 		return errors.New("cart_not_found")
 	}
 
@@ -70,11 +72,12 @@ func Add(c context.Context, cid, pid string, quantity int) error {
 }
 
 // Get the full session cart.
-func Get(c context.Context, cid string) (Cart, error) {
+func Get(c context.Context) (Cart, error) {
+	cid := c.Value(contexts.Cart).(string)
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(c, slog.LevelInfo, "get the cart")
 
-	if !cartExists(c, cid) {
+	if !cartExists(c) {
 		return Cart{}, errors.New("cart_not_found")
 	}
 
@@ -159,17 +162,7 @@ func (c Cart) UpdatePayment(co context.Context, p string) error {
 // If the CID does not exist, it will be created,
 // with an expiration time.
 func RefreshCID(c context.Context, s string, uid int64) (string, error) {
-	cid := s
-
-	if cid == "" {
-		id, err := stringutil.Random()
-		if err != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot generate a new id", slog.String("error", err.Error()))
-			return "", errors.New("something_went_wrong")
-		}
-		cid = id
-	}
-
+	cid := c.Value(contexts.Cart).(string)
 	l := slog.With(slog.String("cid", s), slog.Int64("uid", uid))
 	l.LogAttrs(c, slog.LevelInfo, "refreshing cart")
 
