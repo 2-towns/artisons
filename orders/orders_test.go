@@ -246,3 +246,63 @@ func TestTotalReturnsTheOrderTotalWhenSuccess(t *testing.T) {
 		t.Fatalf(`order.Total(p)  = %f, want 65`, total)
 	}
 }
+
+func TestSearchReturnsOrdersWhenStatusIsFound(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Status: "created"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID == "" {
+		t.Fatalf(`p[0].ID = %s, want not empty`, p[0].ID)
+	}
+}
+
+func TestSearchReturnsOrdersWhenPaymentIsFound(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Payment: "card"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID == "" {
+		t.Fatalf(`p[0].ID = %s, want not empty`, p[0].ID)
+	}
+}
+
+func TestSearchReturnsOrdersWhenDeliveryIsFound(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Delivery: "home"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+
+	if p[0].ID == "" {
+		t.Fatalf(`p[0].ID = %s, want not empty`, p[0].ID)
+	}
+}
+
+func TestSearchReturnsNoOrdersWhenDeliveryIsCrazy(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Delivery: "crazy"})
+	if err != nil {
+		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+	}
+
+	if len(p) != 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	}
+}
