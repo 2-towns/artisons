@@ -70,6 +70,12 @@ type Note struct {
 	CreatedAt int64
 }
 
+type Query struct {
+	Status   string
+	Delivery string
+	Payment  string
+}
+
 // IsValidDelivery returns true if the delivery
 // is valid. The values can be "collect" or "home".
 // The "collect" value can be used only if it's allowed
@@ -502,4 +508,57 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 		CreatedAt:  createdAt,
 		UpdateAt:   updatedAt,
 	}, nil
+}
+
+func Search(c context.Context, q Query) ([]Order, error) {
+	slog.LogAttrs(c, slog.LevelInfo, "searching orders")
+
+	qs := ""
+	if q.Status != "" {
+		qs += fmt.Sprintf("@status:{%s}", q.Status)
+	}
+
+	if q.Delivery != "" {
+		qs += fmt.Sprintf("@delivery:{%s}", q.Delivery)
+	}
+
+	if q.Payment != "" {
+		qs += fmt.Sprintf("@payment:{%s}", q.Payment)
+	}
+
+	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
+
+	ctx := context.Background()
+	cmds, err := db.Redis.Do(
+		ctx,
+		"FT.SEARCH",
+		db.OrderIdx,
+		qs,
+	).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("query", qs), slog.String("error", err.Error()))
+		return []Order{}, err
+	}
+
+	res := cmds.(map[interface{}]interface{})
+	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", res["total_results"].(int64)))
+
+	results := res["results"].([]interface{})
+	orders := []Order{}
+
+	for _, value := range results {
+		m := value.(map[interface{}]interface{})
+		attributes := m["extra_attributes"].(map[interface{}]interface{})
+		data := db.ConvertMap(attributes)
+
+		order, err := parseOrder(c, data)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot order the product", slog.Any("order", data), slog.String("error", err.Error()))
+			continue
+		}
+
+		orders = append(orders, order)
+	}
+
+	return orders, nil
 }
