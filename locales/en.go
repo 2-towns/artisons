@@ -65,6 +65,7 @@ func LoadEn() {
 	message.SetString(language.English, "tag_exists_in_parent", "The tag cannot be added because it already exist in the target tag links.")
 	message.SetString(language.English, "tag_name_required", "The tag is required.")
 	message.SetString(language.English, "tag_score_required", "The score is required.")
+	message.SetString(language.English, "tag_name_reserved", "This keyword is reserved.")
 	message.SetString(language.English, "unauthorized", "Your are not authoried to process the request, this will be reported.")
 	message.SetString(language.English, "mail_magic_link", "Hi\n, your order %s has been updated to %s.\nContact us if you need more information.\nThe team.")
 

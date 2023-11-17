@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/http/contexts"
 	"log"
 	"log/slog"
+	"slices"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/text/language"
 )
 
 type Tag struct {
@@ -35,6 +38,11 @@ func (t Tag) Save(c context.Context) error {
 	if err := v.Var(t.Label, "required"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate label", slog.String("label", t.Label), slog.String("error", err.Error()))
 		return errors.New("input_tag_label_invalid")
+	}
+
+	if slices.Contains(conf.Languages, t.Name) {
+		l.LogAttrs(c, slog.LevelInfo, "cannot use a reserved word")
+		return errors.New("tag_name_reserved")
 	}
 
 	ctx := context.Background()
@@ -251,8 +259,9 @@ func Root(c context.Context, limit int) ([]Tag, error) {
 	}
 
 	tags := []Tag{}
+	lang := c.Value(contexts.Locale).(language.Tag)
 
-	for _, value := range links["root"] {
+	for _, value := range links[lang.String()] {
 		tags = append(tags, tree(value, labels, links, treeDepth{
 			Depth: 0,
 			Limit: limit,

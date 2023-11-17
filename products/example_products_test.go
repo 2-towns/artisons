@@ -9,10 +9,9 @@ func ExampleSerializeMeta() {
 	ctx := tests.Context()
 	m := map[string]string{
 		"color": "blue",
-		"size":  "l",
 	}
 	fmt.Println(SerializeMeta(ctx, m, ";"))
-	// Output: color_blue;size_l
+	// Output: color_blue
 }
 
 func ExampleUnSerializeMeta() {

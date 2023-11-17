@@ -45,6 +45,17 @@ func TestSaveReturnsErrorWhenEmptyLabel(t *testing.T) {
 	}
 }
 
+func TestSaveReturnsErrorWhenKeywordIsUsed(t *testing.T) {
+	c := tests.Context()
+
+	ta := tag
+	ta.Name = "en"
+
+	if err := ta.Save(c); err == nil || err.Error() != "tag_name_reserved" {
+		t.Fatalf(`ta.Save(c) = %v, want 'tag_name_reserved'`, err)
+	}
+}
+
 func TestSaveReturnsNilWhenEmptyWhenSuccess(t *testing.T) {
 	c := tests.Context()
 

@@ -3,6 +3,7 @@ package locales
 
 import (
 	"context"
+	"gifthub/conf"
 	"gifthub/http/contexts"
 	"net/http"
 	"strings"
@@ -25,10 +26,6 @@ func GetPage(lang language.Tag, name string) map[string]string {
 		"contact_us":           p.Sprintf("contact_us"),
 	}
 }
-
-// Languages contains the available languages in the application
-// Deprecated: Should be moved in configuration
-var Languages = []string{"en"}
 
 // Default is the default language applied
 // Deprecated: Should be moved in configuration
@@ -63,7 +60,7 @@ func Middleware(next http.Handler) http.Handler {
 		lang := langs[0]
 		var tag language.Tag
 
-		if !slices.Contains(Languages, lang) {
+		if !slices.Contains(conf.Languages, lang) {
 			tag = Default
 		} else {
 			tag = language.Make(lang)

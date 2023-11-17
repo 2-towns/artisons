@@ -17,7 +17,7 @@ func Tag(ctx context.Context) error {
 		"socks", "Chaussettes",
 		"arabic", "Arabe",
 		"books", "Livres",
-		"root", "Root",
+		"en", "Root",
 		"games", "Jeux",
 	).Result(); err != nil {
 		return err
@@ -65,14 +65,14 @@ func Tag(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := db.Redis.ZAdd(ctx, "tag:root", redis.Z{
+	if _, err := db.Redis.ZAdd(ctx, "tag:en", redis.Z{
 		Score:  1,
 		Member: "mens",
 	}).Result(); err != nil {
 		return err
 	}
 
-	if _, err := db.Redis.ZAdd(ctx, "tag:root", redis.Z{
+	if _, err := db.Redis.ZAdd(ctx, "tag:en", redis.Z{
 		Score:  2,
 		Member: "womens",
 	}).Result(); err != nil {
