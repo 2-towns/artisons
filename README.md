@@ -93,6 +93,12 @@ Les données disponibles sont:
 - a sample expired user with `expired` as sid and `2` as id
 - a sample blog article with `1` as id
 - a sample blog article with `2` as id
+- multiple tags:
+  - mens => tshirts, books, clothes
+  - womens => tshirts, clothes
+  - books => arabic
+  - en => womens, men
+  - games => kids
 
 Afin de pouvoir utiliser la recherche, il faut lancer le script de migration après chaque peuplement:
 
