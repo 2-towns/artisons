@@ -117,6 +117,13 @@ func List(c context.Context, page int) ([]Article, error) {
 	articles := []Article{}
 
 	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot get the article", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
 		data := cmd.(*redis.MapStringStringCmd).Val()
 
 		id, err := strconv.ParseInt(data["id"], 10, 64)

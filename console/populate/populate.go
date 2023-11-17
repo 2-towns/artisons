@@ -26,30 +26,25 @@ func Run() error {
 		return err
 	}
 
-	_, err = Order(ctx, "test", user.ID, map[string]int64{product.ID: 1})
-	if err != nil {
+	if _, err = Order(ctx, "test", user.ID, map[string]int64{product.ID: 1}); err != nil {
 		return err
 	}
 
-	_, err = Cart(ctx, "test", user.ID)
-	if err != nil {
+	if _, err = Cart(ctx, "test", user.ID); err != nil {
 		return err
 	}
 
 	online := true
-	_, err = Article(ctx, online)
-	if err != nil {
+	if _, err = Article(ctx, online); err != nil {
 		return err
 	}
 
 	offline := false
-	_, err = Article(ctx, offline)
-	if err != nil {
+	if _, err = Article(ctx, offline); err != nil {
 		return err
 	}
 
-	_, err = Article(ctx, offline)
-	if err != nil {
+	if _, err = Article(ctx, offline); err != nil {
 		return err
 	}
 
@@ -59,8 +54,11 @@ func Run() error {
 		return err
 	}
 
-	_, err = Shop(ctx)
-	if err != nil {
+	if _, err = Shop(ctx); err != nil {
+		return err
+	}
+
+	if err = Tag(ctx); err != nil {
 		return err
 	}
 

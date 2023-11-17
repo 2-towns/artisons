@@ -10,7 +10,7 @@ import (
 func Shop(ctx context.Context) (shops.Shop, error) {
 	now := time.Now()
 
-	_, err := db.Redis.HSet(ctx, "shop",
+	if _, err := db.Redis.HSet(ctx, "shop",
 		"logo", "../web/images/logo",
 		"slug", "manger-de-l-ail-c-est-bon-pour-la-santé",
 		"address_firstname", "Arnaud",
@@ -21,11 +21,9 @@ func Shop(ctx context.Context) (shops.Shop, error) {
 		"address_zipcode", "31244",
 		"address_phone", "0559682532",
 		"updated_at", now.Unix(),
-	).Result()
-
-	if err != nil {
+	).Result(); err != nil {
 		return shops.Shop{}, err
 	}
 
-	return shops.Shop{}, err
+	return shops.Shop{}, nil
 }

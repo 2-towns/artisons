@@ -22,13 +22,15 @@ import (
 type Product struct {
 	ID          string  `redis:"id"` // ID is an unique identifier
 	Title       string  `redis:"title" validate:"required"`
-	Description string  `redis:"description"  validate:"required"`
+	Description string  `redis:"description" validate:"required"`
 	Price       float32 `redis:"price"`
-	Slug        string  `redis:"slug"`
-	MID         string  `redis:"mid"`
-	Sku         string  `redis:"sku" validate:"required,alphanum"`
-	Currency    string  `redis:"currency"`
-	Quantity    int     `redis:"quantity"`
+	// The percent discount
+	Discount float32 `redis:"discount"`
+	Slug     string  `redis:"slug"`
+	MID      string  `redis:"mid"`
+	Sku      string  `redis:"sku" validate:"required,alphanum"`
+	Currency string  `redis:"currency"`
+	Quantity int     `redis:"quantity"`
 	// Images length
 	Length int     `redis:"length" validate:"required"`
 	Status string  `redis:"status" validate:"oneof=online offline"`
@@ -84,6 +86,13 @@ func Availables(c context.Context, pids []string) bool {
 	}
 
 	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot get the status", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
 		status := cmd.(*redis.StringCmd).Val()
 		if status != "online" {
 			l.LogAttrs(c, slog.LevelInfo, "cannot get the product while it is not available", slog.String("id", cmd.Args()[1].(string)))

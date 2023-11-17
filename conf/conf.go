@@ -15,6 +15,9 @@ func IsCurrencySupported(c string) bool {
 // DefaultMerchantId is the default merchant id
 var DefaultMID = "1234"
 
+// Languages contains the available languages in the application
+var Languages = []string{"en"}
+
 // ItemsPerPage is the number of items displayed per page or pagination
 // Deprecated: Should be moved into the configuration
 const ItemsPerPage = 12
@@ -69,6 +72,12 @@ const VapidPrivateKey = ""
 const VapidEmail = ""
 
 const WebsiteURL = "http://localhost"
+
+// TagMaxDepth is the depth maximum used when looking for
+// tags and links.
+// Be careful, this setting is very dangerous and could impact badly
+// the performance.
+const TagMaxDepth = 3
 
 // Pagination returns the start items index and the
 // end items index.
