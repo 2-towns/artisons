@@ -63,6 +63,12 @@ const VapidEmail = ""
 
 const WebsiteURL = "http://localhost"
 
+// TagMaxDepth is the depth maximum used when looking for
+// tags and links.
+// Be careful, this setting is very dangerous and could impact badly
+// the performance.
+const TagMaxDepth = 3
+
 // Pagination returns the start items index and the
 // end items index.
 func Pagination(page int) (int, int) {

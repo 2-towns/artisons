@@ -435,8 +435,7 @@ func AddNote(c context.Context, oid, note string) error {
 
 	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		key := fmt.Sprintf("order:%s:note:%d", oid, timestamp)
-		rdb.HSet(ctx, key, "note", note)
-		rdb.HSet(ctx, key, "created_at", now.Unix())
+		rdb.HSet(ctx, key, "created_at", now.Unix(), "note", note)
 		rdb.SAdd(ctx, "order:"+oid+":notes", timestamp)
 
 		return nil

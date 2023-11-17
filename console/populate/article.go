@@ -18,7 +18,7 @@ func Article(ctx context.Context, online bool) (blogs.Article, error) {
 
 	now := time.Now()
 
-	_, err = db.Redis.HSet(ctx, fmt.Sprintf("article:%d", id),
+	if _, err = db.Redis.HSet(ctx, fmt.Sprintf("article:%d", id),
 		"id", id,
 		"title", "Manger de l'ail c'est bon pour la santé",
 		"slug", "manger-de-l-ail-c-est-bon-pour-la-santé",
@@ -27,18 +27,14 @@ func Article(ctx context.Context, online bool) (blogs.Article, error) {
 		"online", fmt.Sprintf("%t", online),
 		"updated_at", now.Unix(),
 		"created_at", now.Unix(),
-	).Result()
-
-	if err != nil {
+	).Result(); err != nil {
 		return blogs.Article{}, err
 	}
 
-	_, err = db.Redis.ZAdd(ctx, "articles", redis.Z{
+	if _, err = db.Redis.ZAdd(ctx, "articles", redis.Z{
 		Score:  float64(now.Unix()),
 		Member: id,
-	}).Result()
-
-	if err != nil {
+	}).Result(); err != nil {
 		return blogs.Article{}, err
 	}
 

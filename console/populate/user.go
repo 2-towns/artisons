@@ -38,42 +38,36 @@ func User(ctx context.Context, sid string, alive bool) (users.User, error) {
 		return users.User{}, err
 	}
 
-	_, err = db.Redis.Set(ctx, "magic:"+magic, id, conf.MagicCodeDuration).Result()
-	if err != nil {
+	if _, err = db.Redis.Set(ctx, "magic:"+magic, id, conf.MagicCodeDuration).Result(); err != nil {
 		return users.User{}, err
 	}
 
-	_, err = db.Redis.HSet(ctx, "user", faker.Email(), id).Result()
-	if err != nil {
+	if _, err = db.Redis.HSet(ctx, "user", faker.Email(), id).Result(); err != nil {
 		return users.User{}, err
 	}
-	_, err = db.Redis.ZAdd(ctx, "users", redis.Z{
+
+	if _, err = db.Redis.ZAdd(ctx, "users", redis.Z{
 		Score:  float64(now.Unix()),
 		Member: id,
-	}).Result()
-	if err != nil {
+	}).Result(); err != nil {
 		return users.User{}, err
 	}
 
 	if alive {
-		_, err = db.Redis.Set(ctx, "auth:"+sid, id, conf.SessionDuration).Result()
-		if err != nil {
+		if _, err = db.Redis.Set(ctx, "auth:"+sid, id, conf.SessionDuration).Result(); err != nil {
 			return users.User{}, err
 		}
 
-		_, err = db.Redis.HSet(ctx, fmt.Sprintf("auth:%s:session", sid), "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0").Result()
-		if err != nil {
+		if _, err = db.Redis.HSet(ctx, fmt.Sprintf("auth:%s:session", sid), "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0").Result(); err != nil {
 			return users.User{}, err
 		}
 
-		_, err = db.Redis.SAdd(ctx, fmt.Sprintf("user:%d:sessions", id), sid).Result()
-		if err != nil {
+		if _, err = db.Redis.SAdd(ctx, fmt.Sprintf("user:%d:sessions", id), sid).Result(); err != nil {
 			return users.User{}, err
 		}
 	}
 
-	_, err = db.Redis.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", locales.Default.String()).Result()
-	if err != nil {
+	if _, err = db.Redis.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", locales.Default.String()).Result(); err != nil {
 		return users.User{}, err
 	}
 

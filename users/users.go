@@ -275,6 +275,13 @@ func List(c context.Context, page int) ([]User, error) {
 	}
 
 	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot get the user", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
 		m := cmd.(*redis.MapStringStringCmd).Val()
 		user, err := parseUser(c, m)
 		if err != nil {

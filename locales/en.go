@@ -23,7 +23,10 @@ func LoadEn() {
 	message.SetString(language.English, "input_wptoken_required", "The token is required.")
 	message.SetString(language.English, "input_note_required", "The note is required.")
 	message.SetString(language.English, "input_email_invalid", "The email is invalid.")
-
+	message.SetString(language.English, "input_tag_name_invalid", "The tag is invalid, must be lowercase alpha characters only.")
+	message.SetString(language.English, "input_tag_label_invalid", "The tag is invalid, must be lowercase alpha characters only.")
+	message.SetString(language.English, "input_tag_parent_invalid", "The parent is invalid, must be lowercase alpha characters only.")
+	message.SetString(language.English, "input_tag_order_invalid", "The order position is not valid.")
 	message.SetString(language.English, "csv_image_extension_missing", "The image extension is missing in %s.")
 	message.SetString(language.English, "csv_image_extension_not_supported", "The image extension %s is not supported.")
 	message.SetString(language.English, "csv_bad_file", "The file %s is not correct.")
@@ -58,7 +61,10 @@ func LoadEn() {
 	message.SetString(language.English, "order_price", "Price")
 	message.SetString(language.English, "order_total", "Total")
 	message.SetString(language.English, "order_link", "Link")
-
+	message.SetString(language.English, "tag_not_found", "The tag is not found.")
+	message.SetString(language.English, "tag_exists_in_parent", "The tag cannot be added because it already exist in the target tag links.")
+	message.SetString(language.English, "tag_name_required", "The tag is required.")
+	message.SetString(language.English, "tag_score_required", "The score is required.")
 	message.SetString(language.English, "unauthorized", "Your are not authoried to process the request, this will be reported.")
 	message.SetString(language.English, "mail_magic_link", "Hi\n, your order %s has been updated to %s.\nContact us if you need more information.\nThe team.")
 
