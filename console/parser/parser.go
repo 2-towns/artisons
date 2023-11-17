@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"gifthub/db"
+	"gifthub/http/contexts"
 	"gifthub/locales"
 	"gifthub/products"
 	"gifthub/string/stringutil"
@@ -288,7 +289,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 		Images:      paths,
 	}
 
-	ctx := context.WithValue(context.Background(), locales.ContextKey, language.English)
+	ctx := context.WithValue(context.Background(), contexts.Locale, language.English)
 	if err := product.Validate(ctx); err != nil {
 		return products.Product{}, err
 	}
@@ -386,7 +387,7 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 
 	product.MID = mid
 
-	ctx := context.WithValue(context.Background(), locales.ContextKey, language.English)
+	ctx := context.WithValue(context.Background(), contexts.Locale, language.English)
 	key := "merchant:" + mid + ":" + product.Sku
 
 	exists, err := db.Redis.Exists(ctx, key).Result()

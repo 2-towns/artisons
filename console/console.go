@@ -46,34 +46,14 @@ func main() {
 		{
 			ctx := context.Background()
 
-			_, err := db.Redis.Do(
-				ctx,
-				"FT.DROPINDEX",
-				db.SearchIdx,
-			).Result()
+			err := db.ProductIndex(ctx)
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelInfo, "cannot make remove the previous index", slog.String("error", err.Error()))
+				log.Fatalln()
 			}
 
-			_, err = db.Redis.Do(
-				ctx,
-				"FT.CREATE", db.SearchIdx,
-				"ON", "HASH",
-				"PREFIX", "1", "product:",
-				"SCHEMA",
-				"title", "TEXT",
-				"sku", "TAG",
-				"description", "TEXT",
-				"price", "NUMERIC", "SORTABLE",
-				"created_at", "NUMERIC", "SORTABLE",
-				"updated_at", "NUMERIC", "SORTABLE",
-				"tags", "TAG", "SEPARATOR", ";",
-				"status", "TAG",
-				"meta", "TAG", "SEPARATOR", ";",
-			).Result()
+			err = db.OrderIndex(ctx)
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot make migration", slog.String("error", err.Error()))
-				log.Fatal()
+				log.Fatalln()
 			}
 
 			slog.LogAttrs(ctx, slog.LevelInfo, "migration successful")

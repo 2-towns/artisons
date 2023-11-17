@@ -4,7 +4,7 @@ package tests
 import (
 	"context"
 	"fmt"
-	"gifthub/locales"
+	"gifthub/http/contexts"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -13,6 +13,8 @@ import (
 
 func Context() context.Context {
 	var ctx context.Context = context.WithValue(context.Background(), middleware.RequestIDKey, fmt.Sprintf("%d", time.Now().UnixMilli()))
-	return context.WithValue(ctx, locales.ContextKey, language.English)
+	ctx = context.WithValue(ctx, contexts.Locale, language.English)
+
+	return context.WithValue(ctx, contexts.Cart, fmt.Sprintf("%d", time.Now().UnixMilli()))
 
 }

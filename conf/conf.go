@@ -25,6 +25,13 @@ const DatabaseIndex = 0
 // Session duration in nanoseconds
 const SessionDuration = time.Hour * 24 * 30
 
+// Statistics duration in nanoseconds
+// The statistics cannot be kept too long in order to avoid
+// the database to be very big.
+// A backup should be done and kept for the history.
+// Also it could be a could idea to keep some tracking logs.
+const StatisticsDuration = time.Hour * 24 * 30 * 3
+
 // Cart duration in nanoseconds
 const CartDuration = time.Hour * 24 * 7
 

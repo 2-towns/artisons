@@ -3,7 +3,7 @@ package locales
 
 import (
 	"context"
-	"gifthub/http/httputil"
+	"gifthub/http/contexts"
 	"net/http"
 	"strings"
 
@@ -11,9 +11,6 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
-
-// ContextKey is the context key used to store the lang
-const ContextKey httputil.ContextKey = "lang"
 
 // GetPage returns the common translations for a page
 func GetPage(lang language.Tag, name string) map[string]string {
@@ -74,7 +71,7 @@ func Middleware(next http.Handler) http.Handler {
 
 		// create new context from `r` request context, and assign key `"user"`
 		// to value of `"123"`
-		ctx := context.WithValue(r.Context(), ContextKey, tag)
+		ctx := context.WithValue(r.Context(), contexts.Locale, tag)
 
 		// call the next handler in the chain, passing the response writer and
 		// the updated request object with the new context value.

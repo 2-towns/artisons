@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/locales"
+	"gifthub/http/contexts"
 	"log"
 	"log/slog"
 	"strconv"
@@ -192,7 +192,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 
 func (p Product) Validate(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "validating a product")
-	log.Println(c.Value(locales.ContextKey))
+	log.Println(c.Value(contexts.Locale))
 
 	v := validator.New()
 	if err := v.Struct(p); err != nil {
@@ -285,19 +285,6 @@ func Find(c context.Context, pid string) (Product, error) {
 	return p, err
 }
 
-func convertMap(m map[interface{}]interface{}) map[string]string {
-	v := map[string]string{}
-
-	for key, value := range m {
-		strKey := fmt.Sprintf("%v", key)
-		strValue := fmt.Sprintf("%v", value)
-
-		v[strKey] = strValue
-	}
-
-	return v
-}
-
 func Search(c context.Context, q Query) ([]Product, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "searching products")
 
@@ -341,12 +328,12 @@ func Search(c context.Context, q Query) ([]Product, error) {
 	cmds, err := db.Redis.Do(
 		ctx,
 		"FT.SEARCH",
-		db.SearchIdx,
+		db.ProductIdx,
 		qs,
 	).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("query", qs), slog.String("error", err.Error()))
-		log.Fatal()
+		return []Product{}, err
 	}
 
 	res := cmds.(map[interface{}]interface{})
@@ -358,7 +345,7 @@ func Search(c context.Context, q Query) ([]Product, error) {
 	for _, value := range results {
 		m := value.(map[interface{}]interface{})
 		attributes := m["extra_attributes"].(map[interface{}]interface{})
-		data := convertMap(attributes)
+		data := db.ConvertMap(attributes)
 
 		product, err := parse(c, data)
 		if err != nil {

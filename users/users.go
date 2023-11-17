@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/http/httputil"
 	"gifthub/locales"
+	"gifthub/stats"
 	"gifthub/string/stringutil"
 	"log/slog"
 	"strconv"
@@ -19,9 +19,6 @@ import (
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 )
-
-// ContextKey is the context key used to store the lang
-const ContextKey httputil.ContextKey = "user"
 
 // User is the user representation in the application
 type User struct {
@@ -143,10 +140,6 @@ func MagicCode(c context.Context, email string) (string, error) {
 		)
 		rdb.Set(ctx, "magic:"+magic, id, conf.MagicCodeDuration)
 		rdb.HSet(ctx, "user", email, id)
-		rdb.ZAdd(ctx, "users", redis.Z{
-			Score:  float64(now.Unix()),
-			Member: id,
-		})
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
@@ -451,6 +444,16 @@ func Login(c context.Context, magic, device string) (string, error) {
 		return "", errors.New("something_went_wrong")
 	}
 
+	// Get the lang to detect if it is a new user .
+	// If the lang is not set, the user is new.
+	lang, err := db.Redis.HGet(ctx, fmt.Sprintf("user:%d", id), "lang").Result()
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot get the lang", slog.String("sid", sid), slog.String("user_id", uid), slog.String("error", err.Error()))
+		return "", errors.New("something_went_wrong")
+	}
+
+	isNew := lang != ""
+
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.Set(ctx, "auth:"+sid, id, conf.SessionDuration)
 		rdb.HSet(ctx, fmt.Sprintf("auth:%s:session", sid), "device", device)
@@ -461,6 +464,10 @@ func Login(c context.Context, magic, device string) (string, error) {
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("sid", sid), slog.String("user_id", uid), slog.String("error", err.Error()))
 		return "", errors.New("something_went_wrong")
+	}
+
+	if isNew {
+		go stats.NewUser(c, id)
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the login is successful", slog.String("device", device), slog.String("sid", sid), slog.String("user_id", uid))
