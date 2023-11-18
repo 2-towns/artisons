@@ -11,8 +11,8 @@ import (
 func order(ctx context.Context, pipe redis.Pipeliner, oid string, uid int64, ids map[string]int64) {
 	now := time.Now()
 
-	createdAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
-	updatedAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
+	createdAt, _ := time.Parse(time.RFC3339, "2023-11-10T15:04:05Z")
+	updatedAt, _ := time.Parse(time.RFC3339, "2023-11-10T15:04:05Z")
 
 	pipe.HSet(ctx, "order:"+oid,
 		"id", oid,

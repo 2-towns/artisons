@@ -1,15 +1,12 @@
 package products
 
 import (
-<<<<<<< HEAD
 	"context"
 	"gifthub/db"
 	"gifthub/locales"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"os"
-=======
->>>>>>> f327203 (feat(liste des produits): retours MR)
 	"testing"
 )
 
@@ -60,7 +57,8 @@ func TestAvailableReturnsTrueWhenSuccess(t *testing.T) {
 
 	if exists := Available(c, pid); !exists {
 		t.Fatalf(`Available(pid) = %v, want true`, exists)
-
+	}
+}
 
 func TestAvailableReturnsFalseWhenProductIsNotFound(t *testing.T) {
 	c := tests.Context()

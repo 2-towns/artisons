@@ -4,6 +4,7 @@ package populate
 import (
 	"context"
 	"gifthub/db"
+<<<<<<< HEAD
 
 	"github.com/redis/go-redis/v9"
 
@@ -11,6 +12,8 @@ import (
 	"gifthub/users"
 
 	"github.com/go-faker/faker/v4"
+=======
+>>>>>>> 9b1f061 (rebase et refacto)
 )
 
 func del(ctx context.Context, pipe redis.Pipeliner, pattern string) {
@@ -44,6 +47,7 @@ func Run() error {
 		return err
 	}
 
+<<<<<<< HEAD
 	pipe = db.Redis.Pipeline()
 
 	product(
@@ -96,6 +100,10 @@ func Run() error {
 	alive := true
 	user, err := User(ctx, "test", alive)
 	err = products.Add(products.FakeProduct())
+=======
+	alive := true
+	user, err := User(ctx, "test", alive)
+>>>>>>> 9b1f061 (rebase et refacto)
 	if err != nil {
 		return err
 	}

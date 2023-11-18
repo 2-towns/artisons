@@ -232,7 +232,7 @@ func main() {
 
 			t := table.NewWriter()
 			t.SetOutputMirror(os.Stdout)
-			t.AppendHeader(table.Row{"ID", "Title", "Description", "Price", "Image", "Slug", "Links", "Meta"})
+			t.AppendHeader(table.Row{"ID", "Title", "Description", "Price", "Images", "Slug", "Links", "Meta"})
 
 			for _, product := range products {
 				t.AppendRow([]interface{}{
@@ -240,7 +240,7 @@ func main() {
 					product.Title,
 					product.Description,
 					product.Price,
-					product.Image,
+					product.Images,
 					product.Slug,
 					product.Links,
 					product.Meta,

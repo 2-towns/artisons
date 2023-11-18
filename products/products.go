@@ -3,37 +3,26 @@ package products
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"gifthub/conf"
-	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/tracking"
 	"gifthub/users"
 	"gifthub/utils"
-	"log"
 	"log/slog"
-	"strconv"
-	"strings"
+	"math/rand"
 	"time"
 
 	"gifthub/db"
 	"log"
-	"math/rand"
-	"strconv"
-	"math"
-	"math/rand"
 	"strconv"
 	"strings"
 
 	"github.com/go-faker/faker/v4"
 	"github.com/go-playground/validator/v10"
-	"github.com/redis/go-redis/v9"
 
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 
@@ -215,11 +204,11 @@ func List(page int64) ([]Product, error) {
 	var end int64
 
 	if page == -1 {
-		start = 0
-		end = -1
+			start = 0
+			end = -1
 	} else {
-		start = page * conf.ItemsPerPage
-		end = page*conf.ItemsPerPage + conf.ItemsPerPage
+			start = page * conf.ItemsPerPage
+			end = start + conf.ItemsPerPage - 1
 	}
 
 	products := []Product{}
@@ -227,29 +216,50 @@ func List(page int64) ([]Product, error) {
 	pipe := db.Redis.Pipeline()
 
 	for _, v := range ids {
-		k := "product:" + v
-		pipe.HGetAll(ctx, k).Val()
+			k := "product:" + v
+			pipe.HGetAll(ctx, k)
 	}
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
-		return products, errors.New("something_went_wrong")
+			log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
+			return nil, err
 	}
-
 	for _, cmd := range cmds {
-		m := cmd.(*redis.MapStringStringCmd).Val()
-		price, err := strconv.ParseFloat(m["price"], 64)
+    cmdResult := cmd.(*redis.Cmd)
+    m, err := cmdResult.Result()
+    if err != nil {
+        log.Println("Error getting command result:", err)
+        continue
+    }
 
 		if err != nil {
 			log.Printf("ERROR: sequence_fail: could not parse price to float64 %s", err.Error())
 			continue
 		}
+    productMap, ok := m.(map[string]interface{}) // Assurez-vous de la conversion ici
+    if !ok {
+        log.Println("Type assertion to map[string]interface{} failed")
+        continue
+    }
 
-		meta := make(map[string]string)
-	if err := json.Unmarshal([]byte(m["meta"]), &meta); err != nil {
-		log.Printf("ERROR: cannot unmarshal meta: %s", err)
-	}
+    // Conversion en map[string]string si nécessaire
+    stringMap := make(map[string]string)
+    for k, v := range productMap {
+        strVal, ok := v.(string)
+        if ok {
+            stringMap[k] = strVal
+        }
+    }
+
+    product, err := parse(ctx, stringMap)
+    if err != nil {
+        log.Printf("ERROR: failed to parse product: %s", err)
+        continue
+    }
+
+    products = append(products, product)
+}
 
 		links := strings.Split(m["links"], " ")
 		tempProduct := Product{
@@ -269,8 +279,6 @@ func List(page int64) ([]Product, error) {
 			continue
 		}
 
-		products = append(products, product)
-	}
 
 	return products, nil
 }
@@ -297,15 +305,25 @@ func FakeProduct() Product {
 		ID:          randID,                                                            // Génère un ID aléatoire entre 1 et 1000.
 		Title:       faker.Sentence(),                                                  // Génère une phrase aléatoire pour le titre.
 		Description: faker.Paragraph(),                                                 // Génère un paragraphe aléatoire pour la description.
-		Price:       randPrice,                                                         // Génère un prix aléatoire.
+		Price:       float32(randPrice),                                                         // Génère un prix aléatoire.
 		Slug:        faker.Word(),                                                      // Génère un mot aléatoire pour le slug.
-		Image:       "https://example.com/image.jpg",                                   // Utilise une URL d'image statique.
+		Images:       []string{"https://example.com/image.jpg","https://example.com/image.jpg"},                             // Utilise une URL d'image statique.
 		MID:         faker.UUIDHyphenated(),                                            // Génère une chaîne aléatoire.
 		Links:       []string{faker.URL(), faker.URL()},                                // Génère deux URLs aléatoires pour les liens.
 		Meta:        map[string]string{"key": faker.Word(), "value": faker.Sentence()}, // Génère un dictionnaire avec une clé et une valeur aléatoires.
 	}
 }
 
+// Available return true if all the product ids are availables
+func Availables(c context.Context, pids []string) bool {
+	l := slog.With(slog.Any("ids", pids))
+	l.LogAttrs(c, slog.LevelInfo, "checking the pids availability")
+
+	ctx := context.Background()
+	pipe := db.Redis.Pipeline()
+	for _, pid := range pids {
+		pipe.HGet(ctx, "product:"+pid, "status")
+	}
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
