@@ -143,3 +143,11 @@ Le contexte doit être utilisé dans la majorité des cas (sauf les très petite
 - la langue
 - l'utilisateur
 - l'identifiant de la requête
+
+### Guideline
+
+#### CSS
+
+Le CSS sémantique est privilié, cela signifie que le style sera définit selon les éléments html, par exemple `button`, `article`..., ou par des attributs, par exemple `aria-busy`...
+
+Les classes doivent définir des fonctionnalités et non des utilitaires. Les différentes parties du nom sont séparées par un tiret. Par exemple `product-card`, `header-menu`, et non pas `md-6 ft-3`.
