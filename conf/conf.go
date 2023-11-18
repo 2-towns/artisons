@@ -79,6 +79,8 @@ const WebsiteURL = "http://localhost"
 // the performance.
 const TagMaxDepth = 3
 
+const AdminPrefix = "/admin"
+
 // Pagination returns the start items index and the
 // end items index.
 func Pagination(page int) (int, int) {

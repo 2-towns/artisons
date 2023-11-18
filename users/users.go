@@ -32,7 +32,9 @@ type User struct {
 	UpdatedAt int64
 	MagicCode string
 	Lang      language.Tag
-	Role      string
+
+	// admin or user
+	Role string
 }
 
 type Session struct {

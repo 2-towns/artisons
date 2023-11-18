@@ -6,6 +6,7 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
+	"gifthub/http/httperrors"
 	"net/http"
 
 	"golang.org/x/exp/slog"
@@ -63,7 +64,27 @@ func Middleware(next http.Handler) http.Handler {
 
 		ctx := context.WithValue(r.Context(), contexts.User, user)
 
-		// TODO extract the card id from the cookie
+		// TODO extract the cart id from the cookie
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func AdminOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		user, ok := ctx.Value(contexts.User).(User)
+		if !ok {
+			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
+			httperrors.Page(w, ctx, "error_unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if user.Role != "admin" {
+			slog.LogAttrs(ctx, slog.LevelInfo, "the user is not admin", slog.Int64("id", user.ID))
+			http.Error(w, "unauthorize", http.StatusUnauthorized)
+			return
+		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

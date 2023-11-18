@@ -7,6 +7,9 @@ import (
 )
 
 func LoadEn() {
+	message.SetString(language.English, "error_title", "Oops..You just found an error page")
+	message.SetString(language.English, "error_unauthorized", "Your are not authorized to access to this page. This will be reported.")
+	message.SetString(language.English, "error_home_button", "Take me home")
 	message.SetString(language.English, "home_title", "Homepage")
 	message.SetString(language.English, "input_required", "The field %s is required.")
 	message.SetString(language.English, "input_title_required", "The title is required")
