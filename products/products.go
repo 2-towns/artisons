@@ -95,28 +95,29 @@ func Add(product Product) error {
 
 	// Validate the product
 	if err := v.Struct(product); err != nil {
-		log.Printf("input_validation_fail: error when validating product %s", err.Error())
-		return errors.New("product_invalid")
-	}
+    slog.Error("input_validation_fail", "error", err.Error(),"product", product) 
+    return errors.New("product_invalid")
+}
 
 	ctx := context.Background()
 
 	// Generating a new unique ID for the product
-	productID, err := utils.RandomString(10)
+	pid, err := utils.RandomString(10)
 	if err != nil {
-		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
+		slog.Error("sequence_fail", "error", err.Error(), "description", "got error from Redis while generating random string")
 		return errors.New("something_went_wrong")
 	}
+	
 
 	// Adding the ID to the product structure
-	product.ID = productID
+	product.ID = pid
 
 	// Add product to Redis
 	pipe := db.Redis.Pipeline()
 	score, err := db.Redis.Incr(ctx, "product:score").Result()
 
 	// Update products list
-	pipe.ZAdd(ctx, "products", redis.Z{Score: float64(score), Member: productID})
+	pipe.ZAdd(ctx, "products", redis.Z{Score: float64(score), Member: pid})
 
 	// Store product data
 	pipe.HSet(ctx, fmt.Sprintf("product:%s", productID), map[string]interface{}{
@@ -128,14 +129,14 @@ func Add(product Product) error {
 			"slug":        product.Slug,
 	})
 
-pipe.HSet(ctx, fmt.Sprintf("product:%s", productID), product)
+pipe.HSet(ctx, fmt.Sprintf("product:%s", pid), product)
 
 		if _,err = pipe.Exec(ctx); err!=nil {
 		log.Printf("ERROR: sequence_fail: go error from redis %s", err.Error())
 		return errors.New("something_went_wrong")
 	}
 
-	log.Printf("WARN: sensitive_create: a new product is created with id %s\n", productID)
+	log.Printf("WARN: sensitive_create: a new product is created with id %s\n", pid)
 
 	return nil
 }
