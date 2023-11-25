@@ -43,5 +43,5 @@ jobs:
         run: go test -v ./...
       - name: Run the functional tests
         run: |
-          go run main.go && sleep 2
-          hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
+          go run main.go &
+          sleep 2 && hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
