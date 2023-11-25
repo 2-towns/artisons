@@ -41,7 +41,7 @@ jobs:
         run: go build -v ./...
       - name: Run the unit tests
         run: go test -v ./...
-      - name: Start the server
-        run: go run main.go && sleep 2
       - name: Run the functional tests
-        run: hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
+        run: |
+          go run main.go && sleep 2
+          hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
