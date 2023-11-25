@@ -36,6 +36,8 @@ Le serveur est démarré sur le port `8080` par défault.
 
 ## Tester
 
+### Tests unitaires
+
 Pour lancer les tests, utiliser la commande suivante:
 
 ```
@@ -63,6 +65,12 @@ TestXXXReturnsYYYWhenZZZ
 XXX étant le nom de la function testée.
 YYY étant la donnée renvoyé par la function lors du test.
 ZZZ étant la cause du renvoi de cette donnée par le test.
+
+### Tests functionnels
+
+```
+hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
+```
 
 ## Terminal
 
@@ -151,3 +159,25 @@ Le contexte doit être utilisé dans la majorité des cas (sauf les très petite
 Le CSS sémantique est privilié, cela signifie que le style sera définit selon les éléments html, par exemple `button`, `article`..., ou par des attributs, par exemple `aria-busy`...
 
 Les classes doivent définir des fonctionnalités et non des utilitaires. Les différentes parties du nom sont séparées par un tiret. Par exemple `product-card`, `header-menu`, et non pas `md-6 ft-3`.
+
+### Messages
+
+Les messages doivent être prévus pour la traduction. Les erreurs contiennent les clés de traduction qui sont ensuite traduites dans les controlleurs. Les clés sont constituées de trois parties:
+
+- Le type de message
+- La fonctionnalité
+- La description de l'erreur
+
+Example: `error_http_csrf`, `input_firstname_required`, `url_product_details`
+
+Il est important de garder cette convention de nommage et de garder les clés triées par order alphabétique. Les clés commençant par `input_` sont utilisées pour afficher des erreurs `inline`.
+
+### CSP
+
+Une politique CSP stricte est mise en place, ce qui signifie que les styles et javascripts `inline` ne peuvent être executés sans avoir ajouté une empreinte dans l'entête de la réponse http.  
+C'est pour cela que lors du démarrage du serveur, une empreinte et calculée et stockée en mémoire pour chaque script se trouvants dans `web/views/admin/js`. L'empreinte peut être accédée en utilisant `security.CSP["XXX"]`, example:
+
+```
+policy := fmt.Sprintf("default-src 'self'; script-src-elem 'self' %s;", security.CSP["otp"])
+w.Header().Set("Content-Security-Policy", policy)
+```

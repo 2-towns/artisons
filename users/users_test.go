@@ -33,36 +33,36 @@ func TestListReturnsUsersWhenSuccess(t *testing.T) {
 	}
 }
 
-func TestMagicCodeReturnsCodeWhenSuccess(t *testing.T) {
+func TestOtpCodeReturnsCodeWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	magic, err := MagicCode(ctx, faker.Email())
-	if magic == "" || err != nil {
-		t.Fatalf("TestMagicCode(ctx, faker.Email()) = '%s', %v, want string, nil", magic, err)
+	otp, err := Otp(ctx, faker.Email())
+	if otp == "" || err != nil {
+		t.Fatalf("OtpCode(ctx, faker.Email()) = '%s', %v, want string, nil", otp, err)
 	}
 }
 
-func TestMagicCodeReturnsCodeWhenUsedTwice(t *testing.T) {
+func TestOtpCodeReturnsCodeWhenUsedTwice(t *testing.T) {
 	ctx := tests.Context()
-	MagicCode(ctx, faker.Email())
-	magic, err := MagicCode(ctx, faker.Email())
-	if magic == "" || err != nil {
-		t.Fatalf("TestMagicCode(ctx, faker.Email()) = '%s', %v, want string, nil", magic, err)
+	Otp(ctx, faker.Email())
+	otp, err := Otp(ctx, faker.Email())
+	if otp == "" || err != nil {
+		t.Fatalf("OtpCode(ctx, faker.Email()) = '%s', %v, want string, nil", otp, err)
 	}
 }
 
-func TestMagicCodeReturnsErrorWhenEmailIsEmpty(t *testing.T) {
+func TestOtpCodeReturnsErrorWhenEmailIsEmpty(t *testing.T) {
 	ctx := tests.Context()
-	magic, err := MagicCode(ctx, "")
-	if magic != "" || err == nil || err.Error() != "input_email_invalid" {
-		t.Fatalf("TestMagicCode(ctx, '') = '%s', %v, want '', 'input_email_invalid'", magic, err)
+	otp, err := Otp(ctx, "")
+	if otp != "" || err == nil || err.Error() != "input_email_invalid" {
+		t.Fatalf("OtpCode(ctx, '') = '%s', %v, want '', 'input_email_invalid'", otp, err)
 	}
 }
 
-func TestMagicCodeReturnsErrorWhenEmailIsInvalid(t *testing.T) {
+func TestOtpCodeReturnsErrorWhenEmailIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	magic, err := MagicCode(ctx, "toto")
-	if magic != "" || err == nil || err.Error() != "input_email_invalid" {
-		t.Fatalf("TestMagicCode(ctx, 'toto') = '%s', '%v', want '', 'input_email_invalid'", magic, err)
+	otp, err := Otp(ctx, "toto")
+	if otp != "" || err == nil || err.Error() != "input_email_invalid" {
+		t.Fatalf("OtpCode(ctx, 'toto') = '%s', '%v', want '', 'input_email_invalid'", otp, err)
 	}
 }
 
@@ -85,35 +85,106 @@ func TestDeleteReturnsErrorWhenUserDoesNotExist(t *testing.T) {
 func TestLoginReturnsSidWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	db.Redis.Set(ctx, "magic:"+"hello-world", "1", conf.SessionDuration)
+	otp := "hello-world"
 
-	sid, err := Login(ctx, "hello-world", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	db.Redis.Set(ctx, "hellow@world.com:otp", otp, conf.SessionDuration)
+	db.Redis.Set(ctx, "otp:glue", "hellow@world.com", conf.SessionDuration)
+
+	sid, err := Login(ctx, otp, "glue", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid == "" || err != nil {
-		t.Fatalf(`Login(ctx, "hello-world", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+		t.Fatalf(`Login(ctx, "hello-world", "glue", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	}
+}
+
+func TestLoginReturnsErrorWhenGlueIsEmpty(t *testing.T) {
+	ctx := tests.Context()
+
+	otp := "hello-world"
+
+	sid, err := Login(ctx, otp, "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || err == nil || err.Error() != "error_http_unauthorized" {
+		t.Fatalf(`Login(ctx, "hello-world", "", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	}
+}
+
+func TestLoginReturnsErrorWhenOtpDoesNotExistForGlue(t *testing.T) {
+	ctx := tests.Context()
+
+	otp := "hello-world"
+
+	db.Redis.Set(ctx, "otp:glue", "hellow@world.com", conf.SessionDuration)
+
+	sid, err := Login(ctx, otp, "glue", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || err == nil || err.Error() != "error_http_unauthorized" {
+		t.Fatalf(`Login(ctx, "hello-world", "glue", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	}
+}
+
+func TestLoginReturnsErrorWhenOtpDoesNotMatch(t *testing.T) {
+	ctx := tests.Context()
+
+	otp := "hello-world"
+
+	db.Redis.Set(ctx, "hellow@world.com:otp", otp, conf.SessionDuration)
+	db.Redis.Set(ctx, "otp:glue", "hellow@world.com", conf.SessionDuration)
+
+	sid, err := Login(ctx, "hello", "glue", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || err == nil || err.Error() != "error_otp_mismatch" {
+		t.Fatalf(`Login(ctx, "hello", "glue", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	}
+}
+
+func TestLoginReturnsErrorWhenOtpIsBlocked(t *testing.T) {
+	ctx := tests.Context()
+
+	otp := "hello-world"
+
+	db.Redis.Set(ctx, "hellow@world.com:otp", otp, conf.SessionDuration)
+	db.Redis.Set(ctx, "hellow@world.com:otp:attempts", 2, conf.SessionDuration)
+	db.Redis.Set(ctx, "otp:glue", "hellow@world.com", conf.SessionDuration)
+
+	sid, err := Login(ctx, "hello", "glue", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || err == nil || err.Error() != "error_otp_locked" {
+		t.Fatalf(`Login(ctx, "hello", "glue", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	}
+}
+
+func TestLoginReturnsErrorWhenEmailOtpIsNotFound(t *testing.T) {
+	ctx := tests.Context()
+
+	otp := "hello-world"
+
+	db.Redis.Set(ctx, "hellow@world.com:otp", otp, conf.SessionDuration)
+
+	sid, err := Login(ctx, otp, "glue", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || err == nil || err.Error() != "error_http_unauthorized" {
+		t.Fatalf(`Login(ctx, "hello-world", "glue", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenDeviceIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, err := Login(ctx, "magic", "")
-	if sid != "" || err == nil || err.Error() != "input_device_required" {
-		t.Fatalf(`Login(ctx, "magic",'') = '%s', %v, want '', 'input_device_required'`, sid, err)
+	sid, err := Login(ctx, "otp", "glue", "")
+	if sid != "" || err == nil || err.Error() != "error_login_device" {
+		t.Fatalf(`Login(ctx, "otp", "glue", "") = '%s', %v, want '', 'error_login_device'`, sid, err)
 	}
 }
 
-func TestLoginReturnsErrorWhenMagicIsMissing(t *testing.T) {
+func TestLoginReturnsErrorWhenOtpIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, err := Login(ctx, "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "input_magic_code_required" {
-		t.Fatalf("Login(ctx, '','Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want '', 'input_magic_code_required'", sid, err)
+	glue := "glue"
+	sid, err := Login(ctx, "", glue, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || err == nil || err.Error() != "input_otp_required" {
+		t.Fatalf(`Login(ctx, "", "glue", "Mozilla/5.0 Gecko/20100101 Firefox/115.0") = '%s', %v, want '', 'input_otp_required'`, sid, err)
 	}
 }
 
-func TestLoginReturnsErrorWhenMagicDoesNotExist(t *testing.T) {
+func TestLoginReturnsErrorWhenOtpDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	sid, err := Login(ctx, "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	glue := "glue"
+	sid, err := Login(ctx, "titi", glue, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil {
-		t.Fatalf("Login(ctx, 'titi') = '%s', %v, want '', 'input_magic_code_required'", sid, err)
+		t.Fatalf("Login(ctx, 'titi') = '%s', %v, want '', 'input_otp_required'", sid, err)
 	}
 }
 
@@ -131,23 +202,23 @@ func TestLogoutRetunsEmptyWhenSuccess(t *testing.T) {
 func TestLogoutRetunsErrorWhenSidIsMissing(t *testing.T) {
 	ctx := tests.Context()
 	err := Logout(ctx, "")
-	if err == nil || err.Error() != "unauthorized" {
-		t.Fatalf("Logout(ctx, '') = %v, want 'user_logout_invalid'", err)
+	if err == nil || err.Error() != "error_http_unauthorized" {
+		t.Fatalf("Logout(ctx, '') = %v, want 'error_user_logout'", err)
 	}
 }
 
 func TestLogoutRetunsErrorWhenSessionIsExpired(t *testing.T) {
 	ctx := tests.Context()
 	err := Logout(ctx, "expired")
-	if err == nil || err.Error() != "unauthorized" {
-		t.Fatalf(`Logout(ctx, "expired") = %v, want 'user_logout_invalid'`, err)
+	if err == nil || err.Error() != "error_http_unauthorized" {
+		t.Fatalf(`Logout(ctx, "expired") = %v, want 'error_user_logout'`, err)
 	}
 }
 
 func TestLogoutRetunsErrorWhenSessionIsNotFound(t *testing.T) {
 	ctx := tests.Context()
 	err := Logout(ctx, "122")
-	if err == nil || err.Error() != "unauthorized" {
+	if err == nil || err.Error() != "error_http_unauthorized" {
 		t.Fatalf("Logout(ctx, 124, '122') = %v, want nil", err)
 	}
 }
@@ -195,8 +266,8 @@ func TestSaveAddressReturnNilWhenNoComplementary(t *testing.T) {
 func TestSaveAddressReturnErrorWhenUidIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	err := User{ID: 0}.SaveAddress(ctx, address)
-	if err == nil || err.Error() != "something_went_wrong" {
-		t.Fatalf("User{ID: 0}.SaveAddress(ctx, a) = %v, want 'something_went_wrong'", err)
+	if err == nil || err.Error() != "error_http_general" {
+		t.Fatalf("User{ID: 0}.SaveAddress(ctx, a) = %v, want 'error_http_general'", err)
 	}
 }
 
@@ -277,15 +348,30 @@ func TestGetReturnsUserWhenSuccess(t *testing.T) {
 func TestGetReturnsErrorWhenIdIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	user, err := Get(ctx, 0)
-	if err == nil || err.Error() != "user_not_found" || user.ID != 0 {
-		t.Fatalf("users.Get(ctx, 0) = %v, %v, wan t User{}, 'user_not_found'", user, err)
+	if err == nil || err.Error() != "error_session_notfound" || user.ID != 0 {
+		t.Fatalf("users.Get(ctx, 0) = %v, %v, wan t User{}, 'error_session_notfound'", user, err)
 	}
 }
 
 func TestGetReturnsErrorWhenUserDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 	user, err := Get(ctx, 123)
-	if err == nil || err.Error() != "user_not_found" || user.ID != 0 {
-		t.Fatalf("users.Get(ctx, 0) = %v, %v, want User{}, 'user_not_found'", user, err)
+	if err == nil || err.Error() != "error_session_notfound" || user.ID != 0 {
+		t.Fatalf("users.Get(ctx, 0) = %v, %v, want User{}, 'error_session_notfound'", user, err)
+	}
+}
+
+func TestIsAdminReturnsFalseWhenUserIsNotAdmin(t *testing.T) {
+	ctx := tests.Context()
+
+	if IsAdmin(ctx, user.Email) {
+		t.Fatalf("user.IsAdmin(ctx)= true, want false")
+	}
+}
+
+func TestIsAdminReturnsTrueWhenUserIsAdmin(t *testing.T) {
+	ctx := tests.Context()
+	if !IsAdmin(ctx, "hello@world.com") {
+		t.Fatalf("user.IsAdmin(ctx)= false, want true")
 	}
 }

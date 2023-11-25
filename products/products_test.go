@@ -206,21 +206,21 @@ func TestSaveReturnsErrorWhenPidIsEmpty(t *testing.T) {
 	c := tests.Context()
 	p := Product{ID: ""}
 	if err := p.Save(c); err == nil {
-		t.Fatalf(`p.Save(c) = %v, want "product_pid_required"`, err.Error())
+		t.Fatalf(`p.Save(c) = %v, want "input_pid_required"`, err.Error())
 	}
 }
 
 func TestFindReturnsErrorWhenPidIsMissing(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, ""); err == nil || err.Error() != "product_id_required" {
-		t.Fatalf(`Find(c,"") = %v, want "product_id_required"`, err.Error())
+	if _, err := Find(c, ""); err == nil || err.Error() != "input_id_required" {
+		t.Fatalf(`Find(c,"") = %v, want "input_id_required"`, err.Error())
 	}
 }
 
 func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, ""); err == nil || err.Error() != "product_id_required" {
-		t.Fatalf(`Find(c,"hello") = %v, want "product_id_required"`, err.Error())
+	if _, err := Find(c, ""); err == nil || err.Error() != "input_id_required" {
+		t.Fatalf(`Find(c,"hello") = %v, want "input_id_required"`, err.Error())
 	}
 }
 

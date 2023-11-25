@@ -3,34 +3,53 @@ package mails
 
 import (
 	"context"
+	"fmt"
 	"gifthub/conf"
+	"gifthub/string/stringutil"
 	"log/slog"
 	"net/smtp"
+	"time"
 )
+
+const rfc2822 = "Mon, 02 Jan 2006 15:04:05 -0700"
 
 // Send an email.
 // Only text format is supported for now.
-func Send(c context.Context, email, message string) error {
+func Send(c context.Context, email, subject, message string) error {
 	l := slog.With(slog.String("email", email))
 	l.LogAttrs(c, slog.LevelInfo, "sending a new email")
 
-	from := conf.EmailUsername
-	password := conf.EmailPassword
+	mid, err := stringutil.Random()
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot generated the message-id", slog.String("error", err.Error()))
+		return err
+	}
 
+	from := conf.Email.From
+	host := conf.Email.Host
+	port := conf.Email.Port
+	login := conf.Email.Username
+	pass := conf.Email.Password
 	to := []string{
 		email,
 	}
+	msg := fmt.Sprintf("From: %s\r\n", from) +
+		fmt.Sprintf("To: %s\r\n", to[0]) +
+		fmt.Sprintf("Date: %s\r\n", time.Now().Format(rfc2822)) +
+		fmt.Sprintf("Content-Type: %s\r\n", "text/plain; charset=us-ascii") +
+		fmt.Sprintf("Message-ID: <%s@%s>\r\n", mid, conf.Email.Domain) +
+		fmt.Sprintf("MIME-Version: %s\r\n", "1.0") +
+		fmt.Sprintf("Subject: %s\r\n\r\n", subject) +
+		fmt.Sprintf("%s\r\n", message)
 
-	smtpHost := conf.EmailHost
-	smtpPort := conf.EmailPort
+	auth := smtp.PlainAuth("", login, pass, host)
+	err = smtp.SendMail(fmt.Sprintf("%s:%s", host, port), auth, from, to, []byte(msg))
 
-	m := []byte(message)
-
-	auth := smtp.PlainAuth("", from, password, smtpHost)
-
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, m)
-
-	l.LogAttrs(c, slog.LevelInfo, "the email is sent")
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot send the email", slog.String("error", err.Error()))
+	} else {
+		l.LogAttrs(c, slog.LevelInfo, "the email is sent")
+	}
 
 	return err
 }

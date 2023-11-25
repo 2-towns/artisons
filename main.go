@@ -1,24 +1,55 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"gifthub/admin"
+	"gifthub/admin/login"
+	"gifthub/admin/urls"
 	"gifthub/conf"
+	"gifthub/http/httperrors"
+	"gifthub/http/security"
+	"gifthub/http/seo"
 	"gifthub/locales"
 	"gifthub/logs"
 	"gifthub/pages"
 	"gifthub/users"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v2"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
+
+func get(router chi.Router, pathname string, handlerFn http.HandlerFunc) {
+	for _, lang := range conf.Languages {
+		l := language.Make(lang)
+		p := message.NewPrinter(l)
+		url := p.Sprint(pathname)
+		router.Get(url, handlerFn)
+	}
+}
+
+func post(router chi.Router, pathname string, handlerFn http.HandlerFunc) {
+	for _, lang := range conf.Languages {
+		l := language.Make(lang)
+		p := message.NewPrinter(l)
+		url := p.Sprint(pathname)
+		router.Post(url, handlerFn)
+	}
+}
 
 func adminRouter() http.Handler {
 	r := chi.NewRouter()
+	r.NotFound(httperrors.NotFound)
+	r.Use(seo.BlockRobots)
 	r.Use(users.AdminOnly)
-	r.Get("/", pages.Home)
+	r.Use(security.Csrf)
+
+	r.Get("/", admin.Dashboard)
 
 	return r
 }
@@ -26,24 +57,16 @@ func adminRouter() http.Handler {
 func main() {
 	locales.LoadEn()
 	logs.Init()
+	security.LoadCsp()
 
-	logger := httplog.NewLogger("httplog-example", httplog.Options{
-		// JSON:             true,
+	logger := httplog.NewLogger("http", httplog.Options{
 		LogLevel: slog.LevelDebug,
-		Concise:  true,
+		// Concise:  true,
 		// RequestHeaders:   true,
-		MessageFieldName: "message",
-		TimeFieldFormat:  time.RFC850,
+		// TimeFieldFormat:  time.RFC850,
 		Tags: map[string]string{
-			"version": "v1.0-81aa4244d9fc8076a",
-			"env":     "dev",
+			"debug": fmt.Sprintf("%t", conf.Debug),
 		},
-		QuietDownRoutes: []string{
-			"/",
-			"/ping",
-		},
-		QuietDownPeriod: 10 * time.Second,
-		// SourceFieldName: "source",
 	})
 
 	router := chi.NewRouter()
@@ -52,13 +75,30 @@ func main() {
 	router.Use(middleware.RealIP)
 	router.Use(httplog.RequestLogger(logger))
 	router.Use(locales.Middleware)
+	router.Use(security.Csrf)
+	router.Use(security.Headers)
+	router.Use(users.Middleware)
+
+	if conf.Debug {
+		router.Use(seo.BlockRobots)
+	}
 
 	fs := http.FileServer(http.Dir("web/public"))
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
 
 	router.Get("/", pages.Home)
-	router.Mount(conf.AdminPrefix, adminRouter())
+	router.Get(urls.AuthPrefix, login.Form)
+	router.Post(urls.Otp, login.Otp)
+	router.Post(urls.Login, login.Login)
 
-	http.ListenAndServe(":8080", router)
+	router.Mount(urls.AdminPrefix, adminRouter())
 
+	slog.LogAttrs(context.Background(), slog.LevelInfo, "starting server on addr", slog.String("addr", conf.ServerAddr))
+
+	http.ListenAndServe(conf.ServerAddr, router)
 }
+
+// Add copy event for otp
+// add back button
+// remove otp label
+// add cache

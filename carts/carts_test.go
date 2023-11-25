@@ -5,7 +5,6 @@ import (
 	"gifthub/http/contexts"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
-	"log"
 	"testing"
 )
 
@@ -65,8 +64,6 @@ func TestGetReturnsCartWhenSuccess(t *testing.T) {
 	if c.ID == "" || err != nil {
 		t.Fatalf(`Get(ctx) = %v, %v, want Cart, nil`, c, err)
 	}
-
-	log.Println(c)
 }
 
 func TestGetReturnsErrorWhenCidIsNotExisting(t *testing.T) {
@@ -74,8 +71,8 @@ func TestGetReturnsErrorWhenCidIsNotExisting(t *testing.T) {
 	ctx = context.WithValue(ctx, contexts.Cart, "text")
 
 	c, err := Get(ctx)
-	if c.ID != "" || len(c.Products) != 0 || err == nil || err.Error() != "cart_not_found" {
-		t.Fatalf(`Get(ctx) = %v, %v, want Cart{}, 'cart_not_found'`, c, err)
+	if c.ID != "" || len(c.Products) != 0 || err == nil || err.Error() != "error_cart_notfound" {
+		t.Fatalf(`Get(ctx) = %v, %v, want Cart{}, 'error_cart_notfound'`, c, err)
 	}
 }
 
@@ -88,7 +85,7 @@ func TestUpdateDeliveryReturnsNilWhenSuccess(t *testing.T) {
 
 func TestUpdateDeliveryWhenDeliveryIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "unauthorized" {
+	if err := cart.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "error_http_unauthorized" {
 		t.Fatalf("cart.UpdateDelivery(ctx,'toto') = %v, want unauthorized", err)
 	}
 }
@@ -102,7 +99,7 @@ func TestUpdatePaymentReturnsNilWhenSuccess(t *testing.T) {
 
 func TestUpdatePaymentReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "unauthorized" {
+	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "error_http_unauthorized" {
 		t.Fatalf("cart.UpdatePayment(ctx, 'toto') = %v, want 'unauthorized'", err)
 	}
 }

@@ -28,7 +28,7 @@ func Get(c context.Context) (Shop, error) {
 	data, err := db.Redis.HGetAll(context.Background(), "shop").Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the shop info", slog.String("error", err.Error()))
-		return Shop{}, errors.New("something_went_wrong")
+		return Shop{}, errors.New("error_http_general")
 	}
 
 	return Shop{
@@ -75,7 +75,7 @@ func (s Shop) Save(c context.Context) error {
 
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	return nil

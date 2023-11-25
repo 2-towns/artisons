@@ -74,7 +74,7 @@ func TestSaveReturnsErrorWhenDeliveryIsInvalid(t *testing.T) {
 	o.Delivery = "toto"
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "unauthorized" {
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "error_http_unauthorized" {
 		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'unauthorized'`, oid, err)
 	}
 }
@@ -84,7 +84,7 @@ func TestSaveReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	o.Payment = "toto"
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "unauthorized" {
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "error_http_unauthorized" {
 		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'unauthorized'`, oid, err)
 	}
 }
@@ -94,8 +94,8 @@ func TestSaveReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 	o.Quantities = map[string]int{}
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "cart_empty" {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'cart_empty'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "title_cart_empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'title_cart_empty'`, oid, err)
 	}
 }
 
@@ -104,8 +104,8 @@ func TestSaveReturnsErrorWhenProductsAreUnavailable(t *testing.T) {
 	o.Quantities = map[string]int{"toto12": 1}
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "cart_empty" {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want "", 'cart_empty'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "title_cart_empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want "", 'title_cart_empty'`, oid, err)
 	}
 }
 
@@ -120,8 +120,8 @@ func TestUpdateStatusReturnsNilWhenSuccess(t *testing.T) {
 func TestUpdateStatusReturnsErrorWhenStatusIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	o := order
-	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "order_bad_status" {
-		t.Fatalf(`UpdateStatus(ctx, o.ID, "toto") = '%s', want 'order_bad_status'`, err.Error())
+	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "error_http_badstatus" {
+		t.Fatalf(`UpdateStatus(ctx, o.ID, "toto") = '%s', want 'error_http_badstatus'`, err.Error())
 	}
 }
 
@@ -129,8 +129,8 @@ func TestUpdateStatusReturnsErrorWhenOrderDoesNotExist(t *testing.T) {
 	oid, _ := stringutil.Random()
 	ctx := tests.Context()
 
-	if err := UpdateStatus(ctx, oid, "processing"); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`UpdateStatus(ctx, oid, "processing") = '%s', want 'order_not_found'`, err.Error())
+	if err := UpdateStatus(ctx, oid, "processing"); err == nil || err.Error() != "error_order_notfound" {
+		t.Fatalf(`UpdateStatus(ctx, oid, "processing") = '%s', want 'error_order_notfound'`, err.Error())
 	}
 }
 
@@ -147,8 +147,8 @@ func TestFindReturnsErrorWhenOrderIsNotFound(t *testing.T) {
 	oid, _ := stringutil.Random()
 	ctx := tests.Context()
 
-	if oo, err := Find(ctx, oid); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`Find(ctx, oid) = %v, %s, want Order{},'order_not_found'`, oo, err.Error())
+	if oo, err := Find(ctx, oid); err == nil || err.Error() != "error_order_notfound" {
+		t.Fatalf(`Find(ctx, oid) = %v, %s, want Order{},'error_order_notfound'`, oo, err.Error())
 	}
 }
 
@@ -171,8 +171,8 @@ func TestAddNoteReturnsErrorWhenNoteIsEmpty(t *testing.T) {
 func TestAddNoteReturnsErrorWhenOrderDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, "123", "Useless"); err == nil || err.Error() != "order_not_found" {
-		t.Fatalf(`orders.AddNote(ctx, "123", "Useless") = '%s', want 'order_not_found'`, err.Error())
+	if err := AddNote(ctx, "123", "Useless"); err == nil || err.Error() != "error_order_notfound" {
+		t.Fatalf(`orders.AddNote(ctx, "123", "Useless") = '%s', want 'error_order_notfound'`, err.Error())
 	}
 }
 
@@ -202,16 +202,16 @@ func TestProductsReturnsProductsWhenSuccess(t *testing.T) {
 func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	message.SetString(language.English, "order_created_email", "Hi %s,\nWoo hoo! Your order is on its way. Your order details can be found below.\n\n")
-	message.SetString(language.English, "order_id_email", "Order ID: %s\n")
-	message.SetString(language.English, "order_date_email", "Order date: %s\n")
-	message.SetString(language.English, "order_total_email", "Order total: %.2f\n\n")
-	message.SetString(language.English, "order_title", "Title")
-	message.SetString(language.English, "order_quantity", "Quantity")
-	message.SetString(language.English, "order_price", "Price")
-	message.SetString(language.English, "order_total", "Total")
-	message.SetString(language.English, "order_link", "Link")
-	message.SetString(language.English, "order_footer_email", "\nSee you around,\nThe Customer Experience Team at gifthub shop")
+	message.SetString(language.English, "email_order_confirmation", "Hi %s,\nWoo hoo! Your order is on its way. Your order details can be found below.\n\n")
+	message.SetString(language.English, "email_order_confirmationid", "Order ID: %s\n")
+	message.SetString(language.English, "email_order_confirmationdate", "Order date: %s\n")
+	message.SetString(language.English, "email_order_confirmationtotal", "Order total: %.2f\n\n")
+	message.SetString(language.English, "label_order_title", "Title")
+	message.SetString(language.English, "label_order_quality", "Quantity")
+	message.SetString(language.English, "label_order_price", "Price")
+	message.SetString(language.English, "label_order_total", "Total")
+	message.SetString(language.English, "label_order_link", "Link")
+	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at gifthub shop")
 
 	tpl, err := order.SendConfirmationEmail(ctx)
 	if err != nil {

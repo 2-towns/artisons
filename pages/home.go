@@ -19,7 +19,7 @@ func homeI18n(lang language.Tag) map[string]string {
 
 	t := locales.GetPage(lang, "home")
 	t["detail"] = p.Sprintf("detail")
-	t["product_url"] = p.Sprintf("product_url")
+	t["url_product_details"] = p.Sprintf("url_product_details")
 
 	return t
 }

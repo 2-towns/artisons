@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/http/contexts"
-	"log"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -192,7 +190,6 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 
 func (p Product) Validate(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "validating a product")
-	log.Println(c.Value(contexts.Locale))
 
 	v := validator.New()
 	if err := v.Struct(p); err != nil {
@@ -216,7 +213,7 @@ func (p Product) Validate(c context.Context) error {
 func (p Product) Save(ctx context.Context) error {
 	if p.ID == "" {
 		slog.Error("cannot continue with empty pid")
-		return errors.New("product_pid_required")
+		return errors.New("input_pid_required")
 	}
 
 	l := slog.With(slog.String("id", p.ID))
@@ -260,7 +257,7 @@ func Find(c context.Context, pid string) (Product, error) {
 
 	if pid == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty product id")
-		return Product{}, errors.New("product_id_required")
+		return Product{}, errors.New("input_id_required")
 	}
 
 	ctx := context.Background()

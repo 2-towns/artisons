@@ -26,7 +26,7 @@ func (u User) AddWPToken(c context.Context, token string) error {
 	ctx := context.Background()
 	if _, err := db.Redis.HSet(ctx, fmt.Sprintf("auth:%s:session", u.SID), "wptoken", token).Result(); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the token", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "token stored successfully")
@@ -44,13 +44,13 @@ func (u User) DeleteWPToken(c context.Context, sid string) error {
 
 	if sid == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the session id")
-		return errors.New("unauthorized")
+		return errors.New("error_http_unauthorized")
 	}
 
 	ctx := context.Background()
 	if _, err := db.Redis.HDel(ctx, fmt.Sprintf("auth:%s:session", u.SID), "wptoken").Result(); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot delete the token from redis", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "token deleted successfully")

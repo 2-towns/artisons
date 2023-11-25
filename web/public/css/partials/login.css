@@ -1,0 +1,10 @@
+.login-logo {
+  margin-bottom: calc(var(--spacing) * 2);
+}
+
+.input-digits {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing);
+  margin-bottom: var(--spacing);
+}

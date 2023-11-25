@@ -124,8 +124,9 @@ func main() {
 			}
 
 			p := message.NewPrinter(user.Lang)
-			msg := p.Sprintf("mail_magic_link", id, status)
-			mails.Send(ctx, user.Email, msg)
+			msg := p.Sprintf("login_mail_otp", id, status)
+			subject := p.Sprintf("email_order_update", id)
+			mails.Send(ctx, user.Email, subject, msg)
 
 			sessions, err := user.Sessions(ctx)
 			if err != nil {

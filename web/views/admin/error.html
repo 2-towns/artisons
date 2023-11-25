@@ -1,0 +1,12 @@
+{{define "body"}}
+
+<main class="page-simple text-center">
+    <div class="mini-container">
+        <h1>{{.Code}}</h1>
+        <h2>{{index .T "title" }}</h2>
+        <p class="subtitle">{{index .T "message" }} {{index .T "request" }}</p>
+        <a href="{{.Link}}" class="button btn-primary">{{template "back.html"}} {{index .T "home_button" }}</a>
+    </div>
+</main>
+
+{{end}}

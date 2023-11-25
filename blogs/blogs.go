@@ -8,7 +8,6 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/string/stringutil"
-	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -47,7 +46,7 @@ func (a Article) Save(c context.Context) error {
 	id, err := db.Redis.Incr(ctx, "blog_next_id").Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	slug := stringutil.Slugify(a.Title)
@@ -79,7 +78,7 @@ func (a Article) Save(c context.Context) error {
 		return nil
 	}); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "blog article created", slog.Int64("id", id))
@@ -98,7 +97,7 @@ func List(c context.Context, page int) ([]Article, error) {
 	ids, err := db.Redis.ZRange(ctx, "articles", start, end).Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return []Article{}, errors.New("something_went_wrong")
+		return []Article{}, errors.New("error_http_general")
 	}
 
 	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -111,7 +110,7 @@ func List(c context.Context, page int) ([]Article, error) {
 
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the articles", slog.String("error", err.Error()))
-		return []Article{}, errors.New("something_went_wrong")
+		return []Article{}, errors.New("error_http_general")
 	}
 
 	articles := []Article{}
@@ -175,8 +174,6 @@ func Delete(c context.Context, id int64) error {
 
 		err := os.Remove(image)
 		if err != nil {
-			log.Println("fdfds", err)
-
 			slog.LogAttrs(c, slog.LevelError, "cannot remove the temporary file", slog.String("file", image), slog.String("error", err.Error()))
 			return err
 		}
@@ -186,9 +183,8 @@ func Delete(c context.Context, id int64) error {
 
 		return nil
 	}); err != nil {
-		log.Println(err)
 		slog.LogAttrs(c, slog.LevelError, "cannot delete the data", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	return nil

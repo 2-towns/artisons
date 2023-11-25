@@ -138,16 +138,16 @@ func (o Order) Save(c context.Context) (string, error) {
 	l.LogAttrs(c, slog.LevelInfo, "saving the order")
 
 	if !IsValidDelivery(c, o.Delivery) {
-		return "", errors.New("unauthorized")
+		return "", errors.New("error_http_unauthorized")
 	}
 
 	if !IsValidPayment(c, o.Payment) {
-		return "", errors.New("unauthorized")
+		return "", errors.New("error_http_unauthorized")
 	}
 
 	if len(o.Quantities) == 0 {
 		l.LogAttrs(c, slog.LevelInfo, "the product list is empty")
-		return "", errors.New("cart_empty")
+		return "", errors.New("title_cart_empty")
 	}
 
 	v := validator.New()
@@ -165,13 +165,13 @@ func (o Order) Save(c context.Context) (string, error) {
 
 	if !products.Availables(c, pids) {
 		l.LogAttrs(c, slog.LevelInfo, "no product is available")
-		return "", errors.New("cart_empty")
+		return "", errors.New("title_cart_empty")
 	}
 
 	oid, err := stringutil.Random()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot generate the pid", slog.String("error", err.Error()))
-		return "", errors.New("something_went_wrong")
+		return "", errors.New("error_http_general")
 	}
 
 	now := time.Now()
@@ -207,7 +207,7 @@ func (o Order) Save(c context.Context) (string, error) {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot save the order in redis", slog.String("error", err.Error()))
-		return "", errors.New("something_went_wrong")
+		return "", errors.New("error_http_general")
 	}
 
 	go stats.Order(c, oid)
@@ -245,9 +245,9 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 	lang := c.Value(contexts.Locale).(language.Tag)
 	p := message.NewPrinter(lang)
 
-	msg := p.Sprintf("order_created_email", o.Address.Firstname)
-	msg += p.Sprintf("order_id_email", o.ID)
-	msg += p.Sprintf("order_date_email", time.Unix(o.CreatedAt, 0).Format("Monday, January 1"))
+	msg := p.Sprintf("email_order_confirmation", o.Address.Firstname)
+	msg += p.Sprintf("email_order_confirmationid", o.ID)
+	msg += p.Sprintf("email_order_confirmationdate", time.Unix(o.CreatedAt, 0).Format("Monday, January 1"))
 
 	pds, err := o.Products(c)
 	if err != nil {
@@ -256,12 +256,12 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 	}
 
 	total := o.Total(pds)
-	msg += p.Sprintf("order_total_email", total)
+	msg += p.Sprintf("email_order_confirmationtotal", total)
 
 	t := table.NewWriter()
 	buf := new(bytes.Buffer)
 	t.SetOutputMirror(buf)
-	t.AppendHeader(table.Row{p.Sprintf("order_title"), p.Sprintf("order_quantity"), p.Sprintf("order_price"), p.Sprintf("order_total"), p.Sprintf("order_link")})
+	t.AppendHeader(table.Row{p.Sprintf("label_order_title"), p.Sprintf("label_order_quality"), p.Sprintf("label_order_price"), p.Sprintf("label_order_total"), p.Sprintf("label_order_link")})
 
 	for _, value := range pds {
 		t.AppendRow([]interface{}{value.Title, value.Quantity, value.Price, float32(value.Quantity) * value.Price, value.URL()})
@@ -271,9 +271,9 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 
 	msg += buf.String()
 
-	msg += p.Sprintf("order_footer_email")
+	msg += p.Sprintf("email_order_confirmationfooter")
 
-	err = mails.Send(c, email, msg)
+	err = mails.Send(c, email, p.Sprintf("email_order_subject", o.ID), msg)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelWarn, "cannot send the email", slog.String("error", err.Error()))
 		return "", err
@@ -296,25 +296,25 @@ func UpdateStatus(c context.Context, oid, status string) error {
 	v := validator.New()
 	if err := v.Var(c, "oneof=created processing delivering delivered canceled"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
-		return errors.New("order_bad_status")
+		return errors.New("error_http_badstatus")
 	}
 
 	if !slices.Contains(Status, status) {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the status")
-		return errors.New("order_bad_status")
+		return errors.New("error_http_badstatus")
 	}
 
 	ctx := context.Background()
 
 	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the order")
-		return errors.New("order_not_found")
+		return errors.New("error_order_notfound")
 	}
 
 	_, err := db.Redis.HSet(ctx, "order:"+oid, "status", status).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, " cannot update the status order", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the status is updated")
@@ -330,7 +330,7 @@ func (o Order) Products(c context.Context) ([]products.Product, error) {
 	m, err := db.Redis.HGetAll(ctx, "order:"+o.ID+":products").Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot retrieve the order products", slog.String("error", err.Error()))
-		return []products.Product{}, errors.New("something_went_wrong")
+		return []products.Product{}, errors.New("error_http_general")
 	}
 
 	op := []products.Product{}
@@ -339,13 +339,13 @@ func (o Order) Products(c context.Context) ([]products.Product, error) {
 		product, err := products.Find(c, key)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot retrieve the product", slog.String("pid", key), slog.String("error", err.Error()))
-			return []products.Product{}, errors.New("something_went_wrong")
+			return []products.Product{}, errors.New("error_http_general")
 		}
 
 		q, err := strconv.ParseInt(value, 10, 8)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the quantity", slog.String("quantity", value), slog.String("error", err.Error()))
-			return []products.Product{}, errors.New("something_went_wrong")
+			return []products.Product{}, errors.New("error_http_general")
 		}
 
 		product.Quantity = int(q)
@@ -362,32 +362,32 @@ func Find(c context.Context, oid string) (Order, error) {
 
 	if oid == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty id")
-		return Order{}, errors.New("order_id_required")
+		return Order{}, errors.New("input_id_required")
 	}
 
 	ctx := context.Background()
 
 	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the order")
-		return Order{}, errors.New("order_not_found")
+		return Order{}, errors.New("error_order_notfound")
 	}
 
 	data, err := db.Redis.HGetAll(ctx, "order:"+oid).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the order from redis", slog.String("error", err.Error()))
-		return Order{}, errors.New("something_went_wrong")
+		return Order{}, errors.New("error_http_general")
 	}
 
 	o, err := parseOrder(c, data)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the order", slog.String("error", err.Error()))
-		return Order{}, errors.New("something_went_wrong")
+		return Order{}, errors.New("error_http_general")
 	}
 
 	ids, err := db.Redis.SMembers(ctx, "order:"+oid+":notes").Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the order note ids", slog.String("error", err.Error()))
-		return Order{}, errors.New("something_went_wrong")
+		return Order{}, errors.New("error_http_general")
 	}
 
 	if _, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -414,7 +414,7 @@ func Find(c context.Context, oid string) (Order, error) {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the order notes", slog.String("error", err.Error()))
-		return Order{}, errors.New("something_went_wrong")
+		return Order{}, errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "got the order with notes", slog.Int("notes", len(o.Notes)))
@@ -440,7 +440,7 @@ func AddNote(c context.Context, oid, note string) error {
 	rep, err := db.Redis.Exists(ctx, "order:"+oid).Result()
 	if rep == 0 || err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the order")
-		return errors.New("order_not_found")
+		return errors.New("error_order_notfound")
 	}
 
 	now := time.Now()
@@ -454,7 +454,7 @@ func AddNote(c context.Context, oid, note string) error {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the note", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "note added")
@@ -469,19 +469,19 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 	uid, err := strconv.ParseInt(m["uid"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot parse the uid", slog.String("error", err.Error()))
-		return Order{}, errors.New("something_went_wrong")
+		return Order{}, errors.New("error_http_general")
 	}
 
 	createdAt, err := strconv.ParseInt(m["created_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the created_at", slog.String("created_at", m["created_at"]), slog.String("error", err.Error()))
-		return Order{}, errors.New("something_went_wrong")
+		return Order{}, errors.New("error_http_general")
 	}
 
 	updatedAt, err := strconv.ParseInt(m["updated_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the updated_at", slog.String("updated_at", m["updated_at"]), slog.String("error", err.Error()))
-		return Order{}, errors.New("something_went_wrong")
+		return Order{}, errors.New("error_http_general")
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "order parsed", slog.String("id", m["id"]))

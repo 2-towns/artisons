@@ -1,0 +1,25 @@
+.alert {
+  padding: var(--spacing);
+  margin-bottom: var(--spacing);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+.alert-danger {
+  border-left: 3px solid var(--danger);
+  box-shadow: var(--box-shadow);
+}
+
+.alert-container {
+  display: flex;
+}
+
+.alert p {
+  color: var(--secondary);
+  margin: 0;
+}
+
+.alert-danger b,
+.alert-danger svg {
+  color: var(--danger);
+}

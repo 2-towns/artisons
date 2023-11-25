@@ -18,8 +18,8 @@ func TestSaveReturnsErrorWhenEmptyWhenTheTagIsEmpty(t *testing.T) {
 	ta := tag
 	ta.Name = ""
 
-	if err := ta.Save(c); err == nil || err.Error() != "input_tag_name_invalid" {
-		t.Fatalf(`ta.Save(c) = %v, want 'input_tag_name_invalid'`, err.Error())
+	if err := ta.Save(c); err == nil || err.Error() != "input_tagname_invalid" {
+		t.Fatalf(`ta.Save(c) = %v, want 'input_tagname_invalid'`, err.Error())
 	}
 }
 
@@ -29,8 +29,8 @@ func TestSaveReturnsErrorWhenEmptyWhenTheTagIsNotAlpha(t *testing.T) {
 	ta := tag
 	ta.Name = "test1"
 
-	if err := ta.Save(c); err == nil || err.Error() != "input_tag_name_invalid" {
-		t.Fatalf(`ta.Save(c) = %v, want 'input_tag_name_invalid'`, err.Error())
+	if err := ta.Save(c); err == nil || err.Error() != "input_tagname_invalid" {
+		t.Fatalf(`ta.Save(c) = %v, want 'input_tagname_invalid'`, err.Error())
 	}
 }
 
@@ -40,8 +40,8 @@ func TestSaveReturnsErrorWhenEmptyLabel(t *testing.T) {
 	ta := tag
 	ta.Label = ""
 
-	if err := ta.Save(c); err == nil || err.Error() != "input_tag_label_invalid" {
-		t.Fatalf(`ta.Save(c) = %v, want 'input_tag_label_invalid'`, err.Error())
+	if err := ta.Save(c); err == nil || err.Error() != "input_taglabel_invalid" {
+		t.Fatalf(`ta.Save(c) = %v, want 'input_taglabel_invalid'`, err.Error())
 	}
 }
 
@@ -51,8 +51,8 @@ func TestSaveReturnsErrorWhenKeywordIsUsed(t *testing.T) {
 	ta := tag
 	ta.Name = "en"
 
-	if err := ta.Save(c); err == nil || err.Error() != "tag_name_reserved" {
-		t.Fatalf(`ta.Save(c) = %v, want 'tag_name_reserved'`, err)
+	if err := ta.Save(c); err == nil || err.Error() != "input_name_reserved" {
+		t.Fatalf(`ta.Save(c) = %v, want 'input_name_reserved'`, err)
 	}
 }
 
@@ -60,31 +60,31 @@ func TestSaveReturnsNilWhenEmptyWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	if err := tag.Save(c); err != nil {
-		t.Fatalf(`tag.Save(c) = %v, want 'input_tag_name_invalid'`, err)
+		t.Fatalf(`tag.Save(c) = %v, want 'input_tagname_invalid'`, err)
 	}
 }
 
 func TestLinkReturnsNilWhenTagIsEmpty(t *testing.T) {
 	c := tests.Context()
 
-	if err := tag.Link(c, "", 1); err == nil || err.Error() != "tag_name_required" {
-		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'tag_name_required'`, err.Error())
+	if err := tag.Link(c, "", 1); err == nil || err.Error() != "input_name_required" {
+		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'input_name_required'`, err.Error())
 	}
 }
 
 func TestLinkReturnsErrorWhenScoreIsZero(t *testing.T) {
 	c := tests.Context()
 
-	if err := tag.Link(c, "", 1); err == nil || err.Error() != "tag_name_required" {
-		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'tag_name_required'`, err.Error())
+	if err := tag.Link(c, "", 1); err == nil || err.Error() != "input_name_required" {
+		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'input_name_required'`, err.Error())
 	}
 }
 
 func TestLinkReturnsErrorWhenTagIsNotFound(t *testing.T) {
 	c := tests.Context()
 
-	if err := tag.Link(c, "hello", 1); err == nil || err.Error() != "tag_not_found" {
-		t.Fatalf(`tag.Link(c, "hello", 1) = %v, want 'tag_not_found'`, err.Error())
+	if err := tag.Link(c, "hello", 1); err == nil || err.Error() != "input_tag_notfound" {
+		t.Fatalf(`tag.Link(c, "hello", 1) = %v, want 'input_tag_notfound'`, err.Error())
 	}
 }
 

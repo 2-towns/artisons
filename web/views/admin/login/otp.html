@@ -1,0 +1,43 @@
+<article id="otp">
+    <h2 class="text-center">{{index .T "title_sub"}}</h2>
+
+    <p class="text-center page-simple-message">{{index .T "message_otp"}}</p>
+
+    <form hx-post="{{.Url}}">
+        <div class="form-row">
+            <div class="input-otp">
+                <input type="text" class="input-digital" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                    data-code-input="" name="otp" required>
+                <input type="text" class="input-digital" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                    data-code-input="" name="otp" required>
+                <input type="text" class="input-digital" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                    data-code-input="" name="otp" required>
+                <input type="text" class="input-digital" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                    data-code-input="" name="otp" required>
+                <input type="text" class="input-digital" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                    data-code-input="" name="otp" required>
+                <input type="text" class="input-digital" maxlength="1" inputmode="numeric" pattern="[0-9]*"
+                    data-code-input="" name="otp" required>
+            </div>
+
+            <div id="otp-error"></div>
+        </div>
+
+        <div class="buttons">
+            <a href="#" class="button" hx-get='{{.UrlCancel}}' hx-target=" #otp" hx-swap="outerHTML">
+                {{index .T "label_cancel"}}
+            </a>
+            <button class="button-full button-primary">
+                <div class="htmx-indicator spinner spinner-white"></div>
+                {{index .T "label_verify"}}
+            </button>
+        </div>
+
+
+        <input id="glue" type="hidden" name="glue" value="{{.Glue}}" />
+    </form>
+
+    <div id="alert"></div>
+
+    {{template "otp.js.html" }}
+</article>

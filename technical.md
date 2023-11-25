@@ -330,7 +330,7 @@ Les éléments de configuration de la plateforme sont disponibles à travers des
 - **MERCHANT**: L'identifiant du marchant par défaut. La valeur par défaut est `me`.
 - **LANGS**: Liste de langues supportées par l'application. La valeur par défaut est `["fr"]`.
 - **SESSION_EXPIRATION**: La durée de la session utilisateur en secondes. La valeur par défaut est 7 \*24 \* 3600.
-- **MAGIC_LINK_EXPIRATION**: La durée du lien magique en secondes. La valeur par défaut est 5 \* 60.
+- **OTP_EXPIRATION**: La durée du lien magique en secondes. La valeur par défaut est 5 \* 60.
 
 # 10 Internationalisation
 

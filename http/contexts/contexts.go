@@ -14,3 +14,5 @@ const Cart contextKey = "cart"
 
 // Locale is the context key used to store the lang
 const Locale contextKey = "lang"
+
+const AlertTarget contextKey = "alert"

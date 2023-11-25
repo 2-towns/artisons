@@ -33,12 +33,12 @@ func User(ctx context.Context, sid string, alive bool) (users.User, error) {
 		return users.User{}, err
 	}
 
-	magic, err := stringutil.Random()
+	otp, err := stringutil.Random()
 	if err != nil {
 		return users.User{}, err
 	}
 
-	if _, err = db.Redis.Set(ctx, "magic:"+magic, id, conf.MagicCodeDuration).Result(); err != nil {
+	if _, err = db.Redis.Set(ctx, "otp:"+otp, id, conf.OtpDuration).Result(); err != nil {
 		return users.User{}, err
 	}
 
@@ -68,6 +68,10 @@ func User(ctx context.Context, sid string, alive bool) (users.User, error) {
 	}
 
 	if _, err = db.Redis.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", locales.Default.String()).Result(); err != nil {
+		return users.User{}, err
+	}
+
+	if _, err = db.Redis.SAdd(ctx, "admins", "hello@world.com", "lock@world.com").Result(); err != nil {
 		return users.User{}, err
 	}
 

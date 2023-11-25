@@ -1,0 +1,9 @@
+<div class="alert alert-danger" role="alert">
+    <div class="alert-container">
+        {{template "error.svg" .}}
+        <div>
+            <b class="alert-title">{{index .T "title_error" }}</b>
+            <p>{{index .T "message_error" }}</p>
+        </div>
+    </div>
+</div>

@@ -38,26 +38,37 @@ const StatisticsDuration = time.Hour * 24 * 30 * 3
 // Cart duration in nanoseconds
 const CartDuration = time.Hour * 24 * 7
 
-// SessionIDCookie is the session id cookie name
-const SessionIDCookie = "session_id"
+// OtpDuration in nanoseconds
+const OtpDuration = time.Minute * 5
 
-// Magic link duration in nanoseconds
-const MagicCodeDuration = time.Minute * 5
+// OtpInterval is the time minimum between two otp attemps
+const OtpInterval = time.Minute / 10
+
+// OtpAttempts is the maximum attemps for an otp
+const OtpAttempts = 3
+
+// OtpDemo allows to use 111111 as otp.
+// It should be used only for testing purpose.
+const OtpDemo = true
 
 // AppURL is the application root URL
 const AppURL = "http://localhost:8080"
 
-// EmailUsername is the username for email sending
-const EmailUsername = "a3a5f2d396a820"
-
-// EmailPassword is the password for email sending
-const EmailPassword = "12fcfd3c6edb95"
-
-// EmailHost is the email host for email sending
-const EmailHost = "sandbox.smtp.mailtrap.io"
-
-// EmailPort is the email port for email sending
-const EmailPort = "587"
+var Email = struct {
+	From     string
+	Host     string
+	Domain   string
+	Username string
+	Password string
+	Port     string
+}{
+	From:     "hello@debugmail.io",
+	Domain:   "debugmail.io",
+	Host:     "sandbox.smtp.mailtrap.io",
+	Username: "a3a5f2d396a820",
+	Password: "12fcfd3c6edb95",
+	Port:     "25",
+}
 
 // HasHomeDelivery enabled the "home" delivery if true
 const HasHomeDelivery = true
@@ -79,7 +90,24 @@ const WebsiteURL = "http://localhost"
 // the performance.
 const TagMaxDepth = 3
 
-const AdminPrefix = "/admin"
+// ServerAddr is the server start poi
+const ServerAddr = ":8080"
+
+// Disable robotx
+const Debug = false
+
+const CookieDomain = ""
+
+var Cookie = struct {
+	Domain string
+	Secure bool
+	MaxAge time.Duration
+}{
+	Domain: "",
+	Secure: true,
+	// https://chromestatus.com/feature/4887741241229312
+	MaxAge: time.Hour * 24 * 400,
+}
 
 // Pagination returns the start items index and the
 // end items index.

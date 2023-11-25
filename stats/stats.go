@@ -122,7 +122,7 @@ func zadd(c context.Context, key string, data interface{}) error {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot set revenue statistiscs", slog.String("err", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "statistics added")

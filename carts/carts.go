@@ -53,7 +53,7 @@ func Add(c context.Context, pid string, quantity int) error {
 	l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
 
 	if !cartExists(c) {
-		return errors.New("cart_not_found")
+		return errors.New("error_cart_notfound")
 	}
 
 	if !products.Available(c, pid) {
@@ -63,7 +63,7 @@ func Add(c context.Context, pid string, quantity int) error {
 	ctx := context.Background()
 	if _, err := db.Redis.HIncrBy(ctx, "cart:"+cid, pid, int64(quantity)).Result(); err != nil {
 		l.LogAttrs(c, slog.LevelError, " cannot store the product", slog.String("error", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "product added in the cart")
@@ -78,14 +78,14 @@ func Get(c context.Context) (Cart, error) {
 	l.LogAttrs(c, slog.LevelInfo, "get the cart")
 
 	if !cartExists(c) {
-		return Cart{}, errors.New("cart_not_found")
+		return Cart{}, errors.New("error_cart_notfound")
 	}
 
 	ctx := context.Background()
 	values, err := db.Redis.HGetAll(ctx, "cart:"+cid).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the cart", slog.String("error", err.Error()))
-		return Cart{}, errors.New("something_went_wrong")
+		return Cart{}, errors.New("error_http_general")
 	}
 
 	pds := []products.Product{}
@@ -124,13 +124,13 @@ func (c Cart) UpdateDelivery(co context.Context, d string) error {
 	l.LogAttrs(co, slog.LevelInfo, "updating the delivery")
 
 	if !orders.IsValidDelivery(co, d) {
-		return errors.New("unauthorized")
+		return errors.New("error_http_unauthorized")
 	}
 
 	ctx := context.Background()
 	if _, err := db.Redis.HSet(ctx, "cart:"+c.ID, "delivery", d).Result(); err != nil {
 		l.LogAttrs(co, slog.LevelError, "cannot update the delivery", slog.String("err", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(co, slog.LevelInfo, "the delivery is updated")
@@ -144,13 +144,13 @@ func (c Cart) UpdatePayment(co context.Context, p string) error {
 	l.LogAttrs(co, slog.LevelInfo, "updating the payment")
 
 	if !orders.IsValidPayment(co, p) {
-		return errors.New("unauthorized")
+		return errors.New("error_http_unauthorized")
 	}
 
 	ctx := context.Background()
 	if _, err := db.Redis.HSet(ctx, "cart:"+c.ID, "payment", p).Result(); err != nil {
 		l.LogAttrs(co, slog.LevelError, "cannot update the payment", slog.String("err", err.Error()))
-		return errors.New("something_went_wrong")
+		return errors.New("error_http_general")
 	}
 
 	l.LogAttrs(co, slog.LevelInfo, "the payment is updated")
@@ -173,7 +173,7 @@ func RefreshCID(c context.Context, s string, uid int64) (string, error) {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot refresh the cart", slog.String("err", err.Error()))
-		return "", errors.New("something_went_wrong")
+		return "", errors.New("error_http_general")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the cart is refreshed")
