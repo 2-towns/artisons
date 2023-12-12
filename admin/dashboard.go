@@ -2,6 +2,7 @@ package admin
 
 import (
 	"gifthub/admin/urls"
+	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
@@ -45,6 +46,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lang := ctx.Value(contexts.Locale).(language.Tag)
+	isHX, _ := ctx.Value(contexts.HX).(bool)
 
 	files := []string{
 		"web/views/admin/dashboard/dashboard.html",
@@ -54,7 +56,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		"web/views/admin/icons/anchor.svg",
 	}
 
-	if r.Header.Get("HX-Request") != "true" {
+	if !isHX {
 		files = append([]string{
 			"web/views/admin/base.html",
 			"web/views/admin/ui.html",
@@ -70,11 +72,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	tpl, err := template.ParseFiles(files...)
 
 	if err != nil {
-		if r.Header.Get("HX-Request") == "true" {
-			httperrors.Catch(w, ctx, err.Error())
-		} else {
-			httperrors.Page(w, ctx, err.Error(), 500)
-		}
+		httperrors.Catch(w, ctx, err.Error())
 		return
 	}
 
@@ -124,6 +122,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
+		CB             map[string]string
 		T              map[string]string
 		Urls           map[string]string
 		CSS            map[string]string
@@ -138,6 +137,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		Demo           bool
 		Currency       string
 	}{
+		cache.Buster,
 		t,
 		urls,
 		css,
@@ -171,7 +171,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		conf.Currency,
 	}
 
-	if r.Header.Get("HX-Request") == "true" {
+	if isHX {
 		w.Header().Set("HX-Trigger-After-Settle", "ecm-dashboard-reload")
 	}
 

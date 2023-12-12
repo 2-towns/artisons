@@ -21,10 +21,6 @@ func LoadCsp() {
 
 	for _, e := range entries {
 		name := e.Name()
-		_, err := os.ReadFile("web/views/admin/js/" + name)
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		tpl, err := template.ParseFiles(
 			"web/views/admin/js/" + name,

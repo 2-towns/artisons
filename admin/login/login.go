@@ -3,6 +3,7 @@ package login
 import (
 	"fmt"
 	"gifthub/admin/urls"
+	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
@@ -24,7 +25,7 @@ func Form(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	htmx := r.Header.Get("HX-Request") == "true"
+	isHX, _ := ctx.Value(contexts.HX).(bool)
 
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
@@ -35,7 +36,7 @@ func Form(w http.ResponseWriter, r *http.Request) {
 
 	files := []string{}
 
-	if htmx {
+	if isHX {
 		files = append(files,
 			"web/views/admin/htmx.html",
 			"web/views/admin/login/login.html",
@@ -68,12 +69,14 @@ func Form(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		T   map[string]string
 		Url string
+		CB  map[string]string
 	}{
 		t,
 		urls.Otp,
+		cache.Buster,
 	}
 
-	if !htmx {
+	if !isHX {
 		policy := fmt.Sprintf("default-src 'self'; script-src-elem 'self' %s;", security.CSP["otp"])
 		w.Header().Set("Content-Security-Policy", policy)
 	}

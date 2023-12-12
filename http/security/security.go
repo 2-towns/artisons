@@ -1,6 +1,8 @@
 package security
 
 import (
+	"context"
+	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
 	"log/slog"
 	"net/http"
@@ -15,7 +17,13 @@ func Csrf(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		if r.Header.Get("HX-Request") == "true" {
+			ctx := context.WithValue(r.Context(), contexts.HX, true)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		} else {
+			ctx := context.WithValue(r.Context(), contexts.HX, false)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		}
 	})
 }
 

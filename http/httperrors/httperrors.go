@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gifthub/admin/urls"
+	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/locales"
@@ -46,10 +47,16 @@ func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 }
 
 func Catch(w http.ResponseWriter, ctx context.Context, msg string) {
-	if strings.HasPrefix("input_", msg) {
-		InputMessage(w, ctx, msg)
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+
+	if isHX {
+		if strings.HasPrefix("input_", msg) {
+			InputMessage(w, ctx, msg)
+		} else {
+			Alert(w, ctx, msg)
+		}
 	} else {
-		Alert(w, ctx, msg)
+		Page(w, ctx, msg, 400)
 	}
 }
 
@@ -112,10 +119,12 @@ func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 		Code int
 		Link string
 		T    map[string]string
+		CB   map[string]string
 	}{
 		code,
 		url,
 		t,
+		cache.Buster,
 	}
 
 	w.WriteHeader(code)

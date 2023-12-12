@@ -6,6 +6,7 @@ import (
 	"gifthub/admin"
 	"gifthub/admin/login"
 	"gifthub/admin/urls"
+	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/httperrors"
 	"gifthub/http/security"
@@ -61,6 +62,7 @@ func main() {
 	locales.LoadEn()
 	logs.Init()
 	security.LoadCsp()
+	cache.Busting()
 
 	logger := httplog.NewLogger("http", httplog.Options{
 		LogLevel: slog.LevelDebug,
@@ -102,6 +104,6 @@ func main() {
 	http.ListenAndServe(conf.ServerAddr, router)
 }
 
-// add test middleware
-// add demo
+// migration => migrate
+// calcule md5 js
 // add cache

@@ -1,10 +1,14 @@
 package httpext
 
-import "net/http"
+import (
+	"gifthub/http/contexts"
+	"net/http"
+)
 
 func Redirect(w http.ResponseWriter, r *http.Request, url string, status int) {
-	htmx := r.Header.Get("HX-Request") == "true"
-	if htmx {
+	isHX, _ := r.Context().Value(contexts.HX).(bool)
+
+	if isHX {
 		w.Header().Set("HX-Redirect", url)
 	} else {
 		http.Redirect(w, r, url, http.StatusFound)

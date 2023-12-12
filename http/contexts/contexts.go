@@ -21,4 +21,7 @@ const Demo contextKey = "demo"
 // Locale is the context key used to store the lang
 const Locale contextKey = "lang"
 
+// HX true if the request is htmx request
+const HX contextKey = "hx"
+
 const AlertTarget contextKey = "alert"
