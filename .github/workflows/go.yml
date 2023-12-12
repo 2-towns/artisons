@@ -51,4 +51,4 @@ jobs:
       - name: Run the functional tests
         run: |
           go run main.go &
-          sleep 2 && hurl --variables-file data/hurl/admin/.env --test data/hurl/admin/*.hurl
+          sleep 2 && hurl --variables-file web/hurl/admin/.env --test web/hurl/admin/*.hurl
