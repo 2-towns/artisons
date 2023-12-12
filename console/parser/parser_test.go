@@ -344,7 +344,7 @@ func TestImportReturnsOneCountWhenLocalImageAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../../web/datas/product.png"
+	l[7] = "../../web/data/product.png"
 	csv := lines{header, l}
 
 	count, err := Import(csv, conf.DefaultMID)

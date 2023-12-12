@@ -264,12 +264,13 @@ func GetAll(c context.Context, days int) (Data, error) {
 			continue
 		}
 
-		value, err := strconv.ParseInt(s, 10, 64)
+		f, err := strconv.ParseFloat(s, 64)
 
 		if err != nil {
 			slog.LogAttrs(c, slog.LevelError, "cannot convert the value to int", slog.String("value", s), slog.String("error", err.Error()))
 			values[row].Value = append([]int64{0}, values[row].Value...)
 		} else {
+			value := int64(f)
 			values[row].Value = append([]int64{value}, values[row].Value...)
 		}
 	}
