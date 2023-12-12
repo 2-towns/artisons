@@ -33,6 +33,8 @@ jobs:
         run: go get .
       - name: Create folder
         run: mkdir -p ./web/images/articles
+      - name: PWD
+        run: pwd
       - name: Populating data
         run: WORKSPACE_DIR=. go run console/console.go populate
       - name: Run migration
