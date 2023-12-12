@@ -277,7 +277,7 @@ func TestImportReturnsCountZeroWhenLocalImageHaveBadExtension(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[7] = "../../web/testdata/product.svg"
+	l[7] = "../../web/data/product.svg"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -292,7 +292,7 @@ func TestImportReturnsCountZeroWhenLocalImageIsNotFound(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[7] = "../../web/testdata/toto.png"
+	l[7] = "../../web/data/toto.png"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -344,7 +344,7 @@ func TestImportReturnsOneCountWhenLocalImageAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../../web/testdata/product.png"
+	l[7] = "../../web/datas/product.png"
 	csv := lines{header, l}
 
 	count, err := Import(csv, conf.DefaultMID)

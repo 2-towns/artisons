@@ -1,0 +1,97 @@
+{{define "content"}}
+<div id="dashboard">
+	<article class="fill stats-orders">
+		<div class="row row-center stats-header-multiple">
+			<a href="#" class="stats-orders-selected" id="orders-anchor">
+				<b class="card-subheader">{{index .T "label_totalearning"}}</b>
+				<b class="stats-big-number">{{(index .Data 3).Sum}} {{.Currency}}</b>
+			</a>
+			<a href="#" class="" id="orders-counts-anchor">
+				<b class="card-subheader">{{index .T "label_totalorders"}}</b>
+				<b class="stats-big-number">{{(index .Data 4).Sum}}</b>
+			</a>
+		</div>
+
+		<div class="stats-chart-container stats-chart-container-{{.Days}}">
+			<div id="orders-chart" class="stats-chart"></div>
+		</div>
+	</article>
+
+	<div class="stats-grid">
+		<article class="card-nospace">
+			<h3>{{index .T "label_mostproductssold"}}</h3>
+			{{template "table-most-values.html" .Products}}
+		</article>
+		<article class="card-nospace">
+			<h3>{{index .T "label_mostproductsshared"}}</h3>
+			{{template "table-top-values.html" .ProductsShared}}
+		</article>
+	</div>
+
+	<article class="fill">
+		<div class="row row-center stats-header-multiple">
+			<a href="#" class="stats-selected" id="visits-anchor">
+				<b class="card-subheader">{{index .T "label_visits"}}</b>
+				<b class="stats-big-number">{{(index .Data 0).Sum}}</b>
+			</a>
+			<a href="#" class="" id="unique-visits-anchor">
+				<b class="card-subheader">{{index .T "label_unique"}}</b>
+				<b class="stats-big-number">{{(index .Data 1).Sum}}</b>
+			</a>
+			<a href="#" class="" id="pageviews-anchor">
+				<b class="card-subheader">{{index .T "label_pageviews"}}</b>
+				<b class="stats-big-number">{{(index .Data 2).Sum}}</b>
+			</a>
+			<a href="#" class="" id="bounce-rates-anchor">
+				<b class="card-subheader">{{index .T "label_bouncerate"}}</b>
+				<b class="stats-big-number">{{(index .Data 5).Sum}}</b>
+			</a>
+		</div>
+
+		<div class="stats-chart-container">
+			<div id="stats-chart" class="stats-chart"></div>
+		</div>
+	</article>
+	<div class="stats-grid">
+		<article class="card-nospace">
+			<h3>{{index .T "label_mostvisited"}}</h3>
+			{{template "table-most-values.html" .Visits}}
+		</article>
+		<article class="card-nospace">
+			<h3>{{index .T "label_topreferers"}}</h3>
+			{{template "table-top-values.html" .Referers}}
+		</article>
+	</div>
+	<div class="stats-grid">
+		<article class="card-nospace">
+			<h3>{{index .T "label_topbrowsers"}}</h3>
+			{{template "table-top-values.html" .Browsers}}
+		</article>
+		<article class="card-nospace">
+			<h3>{{index .T "label_topsystems"}}</h3>
+			{{template "table-top-values.html" .Systems}}
+		</article>
+	</div>
+
+	<script id="visits" type="application/json">
+		{{(index .Data 0).Value}}
+	</script>
+	<script id="unique-visits" type="application/json">
+		{{(index .Data 1).Value}}
+	</script>
+	<script id="pageviews" type="application/json">
+		{{(index .Data 2).Value}}
+	</script>
+	<script id="bounce-rates" type="application/json">
+		{{(index .Data 5).Value}}
+	</script>
+	<script id="orders" type="application/json">
+		{{(index .Data 3).Value}}
+	</script>
+	<script id="orders-counts" type="application/json">
+		{{(index .Data 4).Value}}
+	</script>
+	<input type="hidden" value="{{.Days}}" id="days" />
+</div>
+
+{{end}}

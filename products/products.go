@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/http/contexts"
+	"gifthub/tracking"
+	"gifthub/users"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -21,9 +24,9 @@ type Product struct {
 	ID          string  `redis:"id"` // ID is an unique identifier
 	Title       string  `redis:"title" validate:"required"`
 	Description string  `redis:"description" validate:"required"`
-	Price       float32 `redis:"price"`
+	Price       float64 `redis:"price"`
 	// The percent discount
-	Discount float32 `redis:"discount"`
+	Discount float64 `redis:"discount"`
 	Slug     string  `redis:"slug"`
 	MID      string  `redis:"mid"`
 	Sku      string  `redis:"sku" validate:"required,alphanum"`
@@ -32,7 +35,7 @@ type Product struct {
 	// Images length
 	Length int     `redis:"length" validate:"required"`
 	Status string  `redis:"status" validate:"oneof=online offline"`
-	Weight float32 `redis:"weight"`
+	Weight float64 `redis:"weight"`
 
 	Images []string
 	Tags   []string
@@ -129,7 +132,7 @@ func Available(c context.Context, pid string) bool {
 func parse(c context.Context, data map[string]string) (Product, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "parsing the product data")
 
-	l, err := strconv.ParseInt(data["length"], 10, 8)
+	l, err := strconv.ParseInt(data["length"], 10, 32)
 	if err != nil {
 		slog.Error("cannot parse the product length", slog.String("length", data["length"]))
 		return Product{}, err
@@ -142,13 +145,13 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		return Product{}, err
 	}
 
-	quantity, err := strconv.ParseInt(data["quantity"], 10, 8)
+	quantity, err := strconv.ParseInt(data["quantity"], 10, 32)
 	if err != nil {
 		slog.Error("cannot parse the product quantity", slog.String("quantity", data["quantity"]))
 		return Product{}, err
 	}
 
-	var weight float32
+	var weight float64
 
 	if data["weight"] != "" {
 		v, err := strconv.ParseFloat(data["weight"], 32)
@@ -157,7 +160,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 			return Product{}, err
 		}
 
-		weight = float32(v)
+		weight = v
 	}
 
 	images := []string{}
@@ -172,13 +175,13 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		ID:          data["id"],
 		Title:       data["title"],
 		Description: data["description"],
-		Price:       float32(price),
+		Price:       price,
 		Slug:        data["slug"],
 		MID:         data["mid"],
 		Sku:         data["sku"],
 		Currency:    data["currency"],
 		Quantity:    int(quantity),
-		Weight:      float32(weight),
+		Weight:      weight,
 		Status:      data["status"],
 		Tags:        strings.Split(data["tags"], ";"),
 		Links:       strings.Split(data["links"], ";"),
@@ -353,11 +356,20 @@ func Search(c context.Context, q Query) ([]Product, error) {
 		products = append(products, product)
 	}
 
+	user, ok := ctx.Value(contexts.User).(users.User)
+	if !ok || user.Role != "admin" {
+		tra := map[string]string{
+			"query": fmt.Sprintf("'%s'", qs),
+		}
+
+		go tracking.Log(c, "product_search", tra)
+	}
+
 	return products, nil
 }
 
 func (p Product) URL() string {
-	return conf.WebsiteURL + "/" + p.ID + "-" + p.Slug
+	return conf.WebsiteURL + "/" + p.ID + "-" + p.Slug + ".html"
 }
 
 // SerializeMeta transforms a meta map to a string representation.

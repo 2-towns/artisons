@@ -13,6 +13,7 @@ import (
 	"gifthub/products"
 	"gifthub/stats"
 	"gifthub/string/stringutil"
+	"gifthub/tracking"
 	"gifthub/users"
 	"log/slog"
 	"strconv"
@@ -40,7 +41,7 @@ type Order struct {
 	// "collect" or "home"
 	Delivery string
 
-	DeliveryCost float32
+	DeliveryCost float64
 
 	// "cash", "card", "bitcoin" or "wire"
 	Payment string
@@ -63,6 +64,10 @@ type Order struct {
 
 	CreatedAt int64
 	UpdateAt  int64
+
+	Products []products.Product
+
+	Total float64
 }
 
 type Note struct {
@@ -134,7 +139,7 @@ func IsValidPayment(c context.Context, p string) bool {
 // An error occurs if the delivery or the payment values are invalid,
 // if the product list is empty, or one of the product is not available.
 func (o Order) Save(c context.Context) (string, error) {
-	l := slog.With(slog.String("oid", o.ID))
+	l := slog.With()
 	l.LogAttrs(c, slog.LevelInfo, "saving the order")
 
 	if !IsValidDelivery(c, o.Delivery) {
@@ -158,9 +163,16 @@ func (o Order) Save(c context.Context) (string, error) {
 		return "", fmt.Errorf("address_%s_required", low)
 	}
 
+	tra := map[string]string{
+		"uid":      fmt.Sprintf("%d", o.UID),
+		"delivery": o.Delivery,
+		"payment":  o.Payment,
+	}
+
 	pids := []string{}
-	for key := range o.Quantities {
+	for key, q := range o.Quantities {
 		pids = append(pids, key)
+		tra[key] = fmt.Sprintf("%d", q)
 	}
 
 	if !products.Availables(c, pids) {
@@ -173,6 +185,16 @@ func (o Order) Save(c context.Context) (string, error) {
 		l.LogAttrs(c, slog.LevelError, "cannot generate the pid", slog.String("error", err.Error()))
 		return "", errors.New("error_http_general")
 	}
+
+	tra["oid"] = oid
+
+	o, err = o.WithProducts(c)
+	if err != nil {
+		l.LogAttrs(c, slog.LevelWarn, "cannot get the products", slog.Int64("uid", o.UID))
+		return "", err
+	}
+
+	o = o.WithTotal()
 
 	now := time.Now()
 	ctx := context.Background()
@@ -191,6 +213,7 @@ func (o Order) Save(c context.Context) (string, error) {
 			"address_complementary", o.Address.Complementary,
 			"address_zipcode", o.Address.Zipcode,
 			"address_phone", o.Address.Phone,
+			"total", o.Total,
 			"updated_at", now.Unix(),
 			"created_at", now.Unix(),
 		)
@@ -210,26 +233,26 @@ func (o Order) Save(c context.Context) (string, error) {
 		return "", errors.New("error_http_general")
 	}
 
-	go stats.Order(c, oid)
-
-	for pid, quantity := range o.Quantities {
-		go stats.SoldProduct(c, oid, pid, quantity)
-	}
+	go stats.Order(c, oid, o.Quantities, o.Total)
 
 	go o.SendConfirmationEmail(c)
+
+	go tracking.Log(c, "order", tra)
 
 	l.LogAttrs(c, slog.LevelInfo, "the new order is created", slog.String("oid", oid))
 
 	return oid, nil
 }
 
-func (o Order) Total(p []products.Product) float32 {
+func (o Order) WithTotal() Order {
 	total := o.DeliveryCost
-	for _, value := range p {
-		total += float32(value.Quantity) * value.Price
+	for _, value := range o.Products {
+		total += float64(value.Quantity) * value.Price
 	}
 
-	return total
+	o.Total = total
+
+	return o
 }
 
 func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
@@ -248,23 +271,15 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 	msg := p.Sprintf("email_order_confirmation", o.Address.Firstname)
 	msg += p.Sprintf("email_order_confirmationid", o.ID)
 	msg += p.Sprintf("email_order_confirmationdate", time.Unix(o.CreatedAt, 0).Format("Monday, January 1"))
-
-	pds, err := o.Products(c)
-	if err != nil {
-		l.LogAttrs(c, slog.LevelWarn, "cannot get the products", slog.Int64("uid", o.UID))
-		return "", err
-	}
-
-	total := o.Total(pds)
-	msg += p.Sprintf("email_order_confirmationtotal", total)
+	msg += p.Sprintf("email_order_confirmationtotal", o.Total)
 
 	t := table.NewWriter()
 	buf := new(bytes.Buffer)
 	t.SetOutputMirror(buf)
 	t.AppendHeader(table.Row{p.Sprintf("label_order_title"), p.Sprintf("label_order_quality"), p.Sprintf("label_order_price"), p.Sprintf("label_order_total"), p.Sprintf("label_order_link")})
 
-	for _, value := range pds {
-		t.AppendRow([]interface{}{value.Title, value.Quantity, value.Price, float32(value.Quantity) * value.Price, value.URL()})
+	for _, value := range o.Products {
+		t.AppendRow([]interface{}{value.Title, value.Quantity, value.Price, float64(value.Quantity) * value.Price, value.URL()})
 	}
 
 	t.Render()
@@ -317,12 +332,19 @@ func UpdateStatus(c context.Context, oid, status string) error {
 		return errors.New("error_http_general")
 	}
 
+	tra := map[string]string{
+		"oid":    oid,
+		"status": status,
+	}
+
+	go tracking.Log(c, "order_status", tra)
+
 	l.LogAttrs(c, slog.LevelInfo, "the status is updated")
 
 	return nil
 }
 
-func (o Order) Products(c context.Context) ([]products.Product, error) {
+func (o Order) WithProducts(c context.Context) (Order, error) {
 	l := slog.With(slog.String("oid", o.ID))
 
 	ctx := context.Background()
@@ -330,30 +352,32 @@ func (o Order) Products(c context.Context) ([]products.Product, error) {
 	m, err := db.Redis.HGetAll(ctx, "order:"+o.ID+":products").Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot retrieve the order products", slog.String("error", err.Error()))
-		return []products.Product{}, errors.New("error_http_general")
+		return Order{}, errors.New("error_http_general")
 	}
 
-	op := []products.Product{}
+	pds := []products.Product{}
 
 	for key, value := range m {
 		product, err := products.Find(c, key)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot retrieve the product", slog.String("pid", key), slog.String("error", err.Error()))
-			return []products.Product{}, errors.New("error_http_general")
+			return Order{}, errors.New("error_http_general")
 		}
 
-		q, err := strconv.ParseInt(value, 10, 8)
+		q, err := strconv.ParseInt(value, 10, 32)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the quantity", slog.String("quantity", value), slog.String("error", err.Error()))
-			return []products.Product{}, errors.New("error_http_general")
+			return Order{}, errors.New("error_http_general")
 		}
 
 		product.Quantity = int(q)
 
-		op = append(op, product)
+		pds = append(pds, product)
 	}
 
-	return op, nil
+	o.Products = pds
+
+	return o, nil
 }
 
 func Find(c context.Context, oid string) (Order, error) {
@@ -484,6 +508,12 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 		return Order{}, errors.New("error_http_general")
 	}
 
+	total, err := strconv.ParseFloat(m["total"], 64)
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot parse the total", slog.String("total", m["total"]), slog.String("error", err.Error()))
+		return Order{}, errors.New("error_http_general")
+	}
+
 	slog.LogAttrs(c, slog.LevelInfo, "order parsed", slog.String("id", m["id"]))
 
 	return Order{
@@ -506,6 +536,7 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 		Notes:      []Note{},
 		CreatedAt:  createdAt,
 		UpdateAt:   updatedAt,
+		Total:      total,
 	}, nil
 }
 
@@ -525,7 +556,7 @@ func Search(c context.Context, q Query) ([]Order, error) {
 		qs += fmt.Sprintf("@payment:{%s}", q.Payment)
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
+	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs), slog.String("index", db.OrderIdx))
 
 	ctx := context.Background()
 	cmds, err := db.Redis.Do(

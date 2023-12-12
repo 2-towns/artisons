@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"gifthub/admin/urls"
+	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
+	"gifthub/http/httperrors"
+	"gifthub/string/stringutil"
 	"net/http"
 
 	"golang.org/x/exp/slog"
@@ -50,21 +53,70 @@ func findBySessionID(c context.Context, sid string) (User, error) {
 // user into the context.
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var cid string
+		c, err := r.Cookie(cookies.CartID)
+		if err != nil || c.Value == "" {
+			cid, err = stringutil.Random()
+			if err != nil {
+				slog.LogAttrs(r.Context(), slog.LevelError, "cannot generate cart id", slog.String("error", err.Error()))
+				httperrors.Page(w, r.Context(), err.Error(), 500)
+				return
+			}
+		} else {
+			cid = c.Value
+		}
+
+		cookie := &http.Cookie{
+			Name:     cookies.CartID,
+			Value:    cid,
+			MaxAge:   int(conf.Cookie.MaxAge),
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   conf.Cookie.Secure,
+			Domain:   conf.Cookie.Domain,
+		}
+
+		http.SetCookie(w, cookie)
+
+		ctx := context.WithValue(r.Context(), contexts.Cart, cid)
+
 		sid, err := r.Cookie(cookies.SessionID)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		user, err := findBySessionID(r.Context(), sid.Value)
+		user, err := findBySessionID(ctx, sid.Value)
 		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelInfo, "session id not found so destroying it", slog.String("sid", sid.Value))
+
+			cookie := &http.Cookie{
+				Name:     cookies.SessionID,
+				Value:    sid.Value,
+				MaxAge:   0,
+				Path:     "/",
+				HttpOnly: true,
+				Secure:   conf.Cookie.Secure,
+				Domain:   conf.Cookie.Domain,
+			}
+			http.SetCookie(w, cookie)
 			next.ServeHTTP(w, r)
 			return
+		} else {
+			cookie := &http.Cookie{
+				Name:     cookies.SessionID,
+				Value:    sid.Value,
+				MaxAge:   int(conf.Cookie.MaxAge),
+				Path:     "/",
+				HttpOnly: true,
+				Secure:   conf.Cookie.Secure,
+				Domain:   conf.Cookie.Domain,
+			}
+			http.SetCookie(w, cookie)
 		}
 
-		ctx := context.WithValue(r.Context(), contexts.User, user)
-
-		// TODO extract the cart id from the cookie
+		ctx = context.WithValue(ctx, contexts.User, user)
+		ctx = context.WithValue(ctx, contexts.UserID, user.ID)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -86,6 +138,8 @@ func AdminOnly(next http.Handler) http.Handler {
 			http.Redirect(w, r, urls.AuthPrefix, http.StatusFound)
 			return
 		}
+
+		ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

@@ -1,5 +1,11 @@
 {
-  "go.testEnvVars": {
-    "WORKSPACE_DIR": "${workspaceFolder}"
-  }
+	"terminal.integrated.env.linux": {
+		"WORKSPACE_DIR": "${workspaceFolder}"
+	},
+	"go.testEnvVars": {
+		"WORKSPACE_DIR": "${workspaceFolder}"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	}
 }

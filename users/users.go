@@ -10,8 +10,8 @@ import (
 	"gifthub/http/contexts"
 	"gifthub/locales"
 	"gifthub/notifications/mails"
-	"gifthub/stats"
 	"gifthub/string/stringutil"
+	"gifthub/tracking"
 	"log/slog"
 	"math/rand"
 	"strconv"
@@ -39,6 +39,8 @@ type User struct {
 
 	// admin or user
 	Role string
+
+	Demo bool
 }
 
 type Session struct {
@@ -208,6 +210,7 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 		Role:      m["role"],
+		Demo:      m["demo"] == "1",
 	}, nil
 }
 
@@ -455,7 +458,6 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 	}
 
 	var uid int64
-	new := false
 
 	if eid == "" {
 		uid, err = db.Redis.Incr(ctx, "user_next_id").Result()
@@ -465,8 +467,6 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 			return "", errors.New("error_http_general")
 		}
 	} else {
-		new = true
-
 		uid, err = strconv.ParseInt(eid, 10, 64)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the uid", slog.String("user_id", eid), slog.String("error", err.Error()))
@@ -510,8 +510,14 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 		return "", errors.New("error_http_general")
 	}
 
-	if new {
-		go stats.NewUser(c, uid)
+	data := map[string]string{
+		"sid":   sid,
+		"otp":   otp,
+		"email": email,
+	}
+
+	if role != "admin" {
+		go tracking.Log(c, "login", data)
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the login is successful", slog.String("device", device), slog.String("sid", sid), slog.Int64("user_id", uid))
@@ -545,6 +551,12 @@ func Logout(c context.Context, sid string) error {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
 		return errors.New("error_http_general")
 	}
+
+	data := map[string]string{
+		"sid": sid,
+	}
+
+	go tracking.Log(c, "logout", data)
 
 	l.LogAttrs(c, slog.LevelInfo, "the logout is successful")
 
@@ -594,4 +606,24 @@ func IsAdmin(c context.Context, email string) bool {
 	l.LogAttrs(c, slog.LevelInfo, "the user is admin", slog.Bool("yes", is))
 
 	return is
+}
+
+func (u User) ToggleDemo(c context.Context) (bool, error) {
+	l := slog.With(slog.Int64("uid", u.ID), slog.Bool("demo", u.Demo))
+	l.LogAttrs(c, slog.LevelInfo, "toggle demo mode")
+
+	v := "1"
+	if u.Demo {
+		v = "0"
+	}
+
+	_, err := db.Redis.HSet(context.Background(), fmt.Sprintf("user:%d", u.ID), "demo", v).Result()
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot toggle demo mode", slog.String("error", err.Error()))
+		return u.Demo, err
+	}
+
+	l.LogAttrs(c, slog.LevelInfo, "demo modo toggled", slog.Bool("demo", !u.Demo))
+
+	return !u.Demo, nil
 }

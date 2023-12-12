@@ -2,15 +2,15 @@ package populate
 
 import (
 	"context"
-	"gifthub/db"
-	"gifthub/shops"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
-func Shop(ctx context.Context) (shops.Shop, error) {
+func shop(ctx context.Context, pipe redis.Pipeliner) {
 	now := time.Now()
 
-	if _, err := db.Redis.HSet(ctx, "shop",
+	pipe.HSet(ctx, "shop",
 		"logo", "../web/images/logo",
 		"slug", "manger-de-l-ail-c-est-bon-pour-la-santé",
 		"address_firstname", "Arnaud",
@@ -21,9 +21,5 @@ func Shop(ctx context.Context) (shops.Shop, error) {
 		"address_zipcode", "31244",
 		"address_phone", "0559682532",
 		"updated_at", now.Unix(),
-	).Result(); err != nil {
-		return shops.Shop{}, err
-	}
-
-	return shops.Shop{}, nil
+	)
 }

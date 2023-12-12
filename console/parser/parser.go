@@ -198,7 +198,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 		return products.Product{}, errors.New(printer.Sprintf("input_validation", "price"))
 	}
 
-	quantity, quantityErr := strconv.ParseInt(line[iquantity], 10, 8)
+	quantity, quantityErr := strconv.ParseInt(line[iquantity], 10, 32)
 	if quantityErr != nil {
 		slog.Error("cannot parse the quantity", slog.Int64("quantity", quantity), slog.String("error", quantityErr.Error()))
 		return products.Product{}, errors.New(printer.Sprintf("input_validation", "quantity"))
@@ -228,7 +228,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 	length := len(line)
 
-	var weight float32
+	var weight float64
 	if length > iweight && line[iweight] != "" {
 		w, weightErr := strconv.ParseFloat(line[iweight], 32)
 
@@ -236,7 +236,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 			slog.Error("cannot parse the weight", slog.String("weight", line[iweight]), slog.String("error", weightErr.Error()))
 			return products.Product{}, errors.New(printer.Sprintf("input_validation", "weight"))
 		} else {
-			weight = float32(w)
+			weight = w
 		}
 	}
 
@@ -277,7 +277,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 		Sku:         line[isku],
 		Title:       strings.ReplaceAll(line[ititle], "\"", ""),
 		Description: strings.ReplaceAll(line[idescription], "\"", ""),
-		Price:       float32(price),
+		Price:       price,
 		Currency:    line[icurrency],
 		Quantity:    int(quantity),
 		Status:      line[istatus],

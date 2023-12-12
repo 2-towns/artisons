@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"gifthub/http/contexts"
+	"gifthub/string/stringutil"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -15,6 +16,8 @@ func Context() context.Context {
 	var ctx context.Context = context.WithValue(context.Background(), middleware.RequestIDKey, fmt.Sprintf("%d", time.Now().UnixMilli()))
 	ctx = context.WithValue(ctx, contexts.Locale, language.English)
 
-	return context.WithValue(ctx, contexts.Cart, fmt.Sprintf("%d", time.Now().UnixMilli()))
+	rid, _ := stringutil.Random()
+	ctx = context.WithValue(ctx, middleware.RequestIDKey, rid)
 
+	return context.WithValue(ctx, contexts.Cart, fmt.Sprintf("%d", time.Now().UnixMilli()))
 }

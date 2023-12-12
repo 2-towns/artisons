@@ -2,17 +2,12 @@ package populate
 
 import (
 	"context"
-	"gifthub/carts"
 	"gifthub/conf"
-	"gifthub/db"
+
+	"github.com/redis/go-redis/v9"
 )
 
-func Cart(ctx context.Context, cid string, uid int64) (carts.Cart, error) {
-	if _, err := db.Redis.HSet(ctx, "cart:"+cid, "cid", "test").Result(); err != nil {
-		return carts.Cart{}, err
-	}
-
-	_, err := db.Redis.Set(ctx, "cart:"+cid+":user", uid, conf.CartDuration).Result()
-
-	return carts.Cart{ID: cid}, err
+func cart(ctx context.Context, pipe redis.Pipeliner, cid string, uid int64) {
+	pipe.HSet(ctx, "cart:"+cid, "cid", "CAR1")
+	pipe.Set(ctx, "cart:"+cid+":user", uid, conf.CartDuration)
 }

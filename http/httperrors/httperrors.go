@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"gifthub/admin/urls"
+	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/locales"
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 
@@ -82,8 +84,13 @@ func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	tpl, err := template.ParseFiles("web/views/admin/base.html", "web/views/admin/error.html", "web/views/admin/icons/back.html")
+	tpl, err := template.ParseFiles(
+		conf.WorkingSpace+"web/views/admin/base.html",
+		conf.WorkingSpace+"web/views/admin/error.html",
+		conf.WorkingSpace+"web/views/admin/icons/back.svg",
+	)
 	if err != nil {
+		log.Println(err)
 		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
 		return
 	}

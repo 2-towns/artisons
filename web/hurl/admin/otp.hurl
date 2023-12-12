@@ -19,7 +19,7 @@ HX-Request: true
 email: arnaud@yandex.com
 HTTP 200
 [Asserts]
-body contains "<div class=\"invalid-feedback\">The email is invalid.</div>"
+body contains "<div class=\"form-error\">The email is invalid.</div>"
 
 # Display otp form when the correct email is used
 POST {{host}}/auth/otp.html

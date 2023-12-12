@@ -1,0 +1,59 @@
+.text-center {
+	text-align: center;
+}
+
+.container-fluid,
+.container {
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+.container-fluid {
+	width: 100%;
+}
+
+.container {
+	padding: 0 var(--spacing);
+	width: calc(100% - var(--spacing) * 2);
+}
+
+.mini-container {
+	width: 100%;
+	max-width: 450px;
+	margin: auto;
+	padding: var(--spacing);
+}
+
+.row {
+	display: flex;
+}
+
+.row-align {
+	align-items: center;
+}
+
+.row-center {
+	justify-content: center;
+}
+
+.row-between {
+	justify-content: space-between;
+}
+
+.row-gap,
+.column-gap {
+	gap: var(--spacing);
+}
+
+.column {
+	display: flex;
+	flex-direction: column;
+}
+
+.link {
+	color: var(--primary);
+}
+
+.fill {
+	flex: 1;
+}

@@ -43,7 +43,7 @@ func (a Article) Save(c context.Context) error {
 	}
 
 	ctx := context.Background()
-	id, err := db.Redis.Incr(ctx, "blog_next_id").Result()
+	id, err := db.Redis.Incr(ctx, "article_next_id").Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
 		return errors.New("error_http_general")

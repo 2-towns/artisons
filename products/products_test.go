@@ -220,15 +220,15 @@ func TestFindReturnsErrorWhenPidIsMissing(t *testing.T) {
 func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	c := tests.Context()
 	if _, err := Find(c, ""); err == nil || err.Error() != "input_id_required" {
-		t.Fatalf(`Find(c,"hello") = %v, want "input_id_required"`, err.Error())
+		t.Fatalf(`Find(c, "") = %v, want "input_id_required"`, err.Error())
 	}
 }
 
 func TestFindReturnsProductWhenSuccess(t *testing.T) {
 	c := tests.Context()
-	p, err := Find(c, "test")
+	p, err := Find(c, "PDT1")
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want "product_not_found"`, err.Error())
+		t.Fatalf(`Find(c, "PDT1") = %v, want nil`, err.Error())
 	}
 
 	if p.Sku == "" {
@@ -247,8 +247,8 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 		t.Fatalf(`p.MID = %v, want string`, p.MID)
 	}
 
-	if p.ID != "test" {
-		t.Fatalf(`p.PID = %v, want "test"`, p.ID)
+	if p.ID != "PDT1" {
+		t.Fatalf(`p.PID = %v, want "PDT1"`, p.ID)
 	}
 
 	if p.Slug == "" {
@@ -271,12 +271,8 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 		t.Fatalf(`p.Images = %d, want "%d"`, len(p.Images), p.Length)
 	}
 
-	if p.Links[0] != "http://google.fr" {
-		t.Fatalf(`p.Links[0] = %v, want "http://google.fr"`, p.Links[0])
-	}
-
-	if p.Tags[0] != "gift" {
-		t.Fatalf(`p.Tags[0] = %v, want "gift"`, p.Tags[0])
+	if p.Tags[0] != "clothes" {
+		t.Fatalf(`p.Tags[0] = %v, want "clothes"`, p.Tags[0])
 	}
 
 	if p.Meta["color"] != "blue" {
@@ -287,49 +283,49 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 
 func TestSearchReturnsProductsWhenTitleIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "pull"})
+	p, err := Search(c, Query{Keywords: "Sweat"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: "Sweat"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
 		t.Fatalf(`len(p) = %d, want > 0`, len(p))
 	}
 
-	if p[0].ID != "test" {
-		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	if p[0].ID != "PDT5" {
+		t.Fatalf(`p[0].ID = %s, want "PDT5"`, p[0].ID)
 	}
 }
 
 func TestSearchReturnsProductsWhenDescriptionIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "Lorem"})
+	p, err := Search(c, Query{Keywords: "Cet incroyable mug augment"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: "Cet incroyable mug augment"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
 		t.Fatalf(`len(p) = %d, want > 0`, len(p))
 	}
 
-	if p[0].ID != "test" {
-		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	if p[0].ID != "PDT4" {
+		t.Fatalf(`p[0].ID = %s, want "PDT4"`, p[0].ID)
 	}
 }
 
 func TestSearchReturnsProductsWhenSkuIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "skutest"})
+	p, err := Search(c, Query{Keywords: "SKU1"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: "SKU1"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
 		t.Fatalf(`len(p) = %d, want > 0`, len(p))
 	}
 
-	if p[0].ID != "test" {
-		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	if p[0].ID != "PDT1" {
+		t.Fatalf(`p[0].ID = %s, want "PDT1"`, p[0].ID)
 	}
 }
 
@@ -337,7 +333,7 @@ func TestSearchReturnsEmptySliceWhenKeywordIsNotFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Keywords: "crazy"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: "crazy"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) > 0 {
@@ -349,15 +345,15 @@ func TestSearchReturnsProductsWhenPriceIsMoreThanPriceMin(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMin: 50})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{PriceMin: 50}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
 		t.Fatalf(`len(p) = %d, want > 0`, len(p))
 	}
 
-	if p[0].ID != "test" {
-		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	if p[0].ID != "PDT2" {
+		t.Fatalf(`p[0].ID = %s, want "PDT2"`, p[0].ID)
 	}
 }
 
@@ -365,7 +361,7 @@ func TestSearchReturnsEmptySliceWhenPriceMinIsOutOfRange(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMin: 1500000000})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{PriceMin: 1500000000}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) != 0 {
@@ -377,7 +373,7 @@ func TestSearchReturnsProductsWhenPriceIsLessThanPriceMax(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMax: 150})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{PriceMax: 150}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
@@ -389,7 +385,7 @@ func TestSearchReturnsEmptySliceWhenPriceMaxIsOutOfRange(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{PriceMax: 0.5})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{PriceMax: 0.5}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) != 0 {
@@ -399,17 +395,17 @@ func TestSearchReturnsEmptySliceWhenPriceMaxIsOutOfRange(t *testing.T) {
 
 func TestSearchReturnsProductsWhenTagsAreFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Tags: []string{"gift"}})
+	p, err := Search(c, Query{Tags: []string{"clothes"}})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Tags: []string{"clothes"}}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
 		t.Fatalf(`len(p) = %d, want > 0`, len(p))
 	}
 
-	if p[0].ID != "test" {
-		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	if p[0].ID != "PDT2" {
+		t.Fatalf(`p[0].ID = %s, want "PDT2"`, p[0].ID)
 	}
 }
 
@@ -417,7 +413,7 @@ func TestSearchReturnsEmptySliceWhenTagsAreNotFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Tags: []string{"crazy"}})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Tags: []string{"crazy"}}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) != 0 {
@@ -429,15 +425,15 @@ func TestSearchReturnsProductsWhenMetaAreFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Meta: map[string]string{"color": "blue"}})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "blue"}}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
 		t.Fatalf(`len(p) = %d, want > 0`, len(p))
 	}
 
-	if p[0].ID != "test" {
-		t.Fatalf(`p[0].ID = %s, want "test"`, p[0].ID)
+	if p[0].ID != "PDT2" {
+		t.Fatalf(`p[0].ID = %s, want "PDT2"`, p[0].ID)
 	}
 }
 
@@ -445,7 +441,7 @@ func TestSearchReturnsEmptySliceWhenMetaAreNotFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Meta: map[string]string{"color": "crazy"}})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "crazy"}}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) != 0 {
@@ -454,7 +450,7 @@ func TestSearchReturnsEmptySliceWhenMetaAreNotFound(t *testing.T) {
 }
 
 func TestURLReturnsTheProductURLWhenSuccess(t *testing.T) {
-	if product.URL() != "http://localhost/123-title" {
-		t.Fatalf(`product.URL()  = %s, want 'http://localhost/123-title'`, product.URL())
+	if product.URL() != "http://localhost/123-title.html" {
+		t.Fatalf(`product.URL()  = %s, want 'http://localhost/123-title.html'`, product.URL())
 	}
 }

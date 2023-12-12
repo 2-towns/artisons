@@ -12,12 +12,12 @@ import (
 )
 
 var order Order = Order{
-	ID:       "test",
+	ID:       "ORD1",
 	UID:      1,
 	Delivery: "collect",
 	Payment:  "cash",
 	Quantities: map[string]int{
-		"test": 1,
+		"PDT1": 1,
 	},
 	DeliveryCost: 5,
 	Address: users.Address{
@@ -155,16 +155,16 @@ func TestFindReturnsErrorWhenOrderIsNotFound(t *testing.T) {
 func TestAddNoteReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, "test", "Ta commande, tu peux te la garder !"); err != nil {
-		t.Fatalf(`AddNote(ctx, "test", "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
+	if err := AddNote(ctx, "ORD1", "Ta commande, tu peux te la garder !"); err != nil {
+		t.Fatalf(`AddNote(ctx, "ORD1", "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
 	}
 }
 
 func TestAddNoteReturnsErrorWhenNoteIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, "test", ""); err == nil || err.Error() != "input_note_required" {
-		t.Fatalf(`orders.AddNote(ctx, "test", "") = '%s', want 'input_note_required'`, err.Error())
+	if err := AddNote(ctx, "ORD1", ""); err == nil || err.Error() != "input_note_required" {
+		t.Fatalf(`orders.AddNote(ctx, "ORD1", "") = '%s', want 'input_note_required'`, err.Error())
 	}
 }
 
@@ -179,23 +179,23 @@ func TestAddNoteReturnsErrorWhenOrderDoesNotExist(t *testing.T) {
 func TestProductsReturnsProductsWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	p, err := order.Products(ctx)
+	o, err := order.WithProducts(ctx)
 	if err != nil {
-		t.Fatalf(`order.Products(ctx) = %v, %s, want []Products{}, nil`, p, err.Error())
+		t.Fatalf(`order.Products(ctx) = %v, %s, want []Products{}, nil`, o, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if len(o.Products) == 0 {
+		t.Fatalf(`len(p) = %d, want > 0`, len(o.Products))
 	}
 
-	op := p[0]
+	p := o.Products[0]
 
-	if op.Quantity == 0 {
-		t.Fatalf(`op.Quantity = %d, want > 0`, op.Quantity)
+	if p.Quantity == 0 {
+		t.Fatalf(`op.Quantity = %d, want > 0`, p.Quantity)
 	}
 
-	if op.Slug == "" {
-		t.Fatalf(`op.Slug = %s, want not empty`, op.Slug)
+	if p.Slug == "" {
+		t.Fatalf(`op.Slug = %s, want not empty`, p.Slug)
 	}
 }
 
@@ -213,7 +213,10 @@ func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 	message.SetString(language.English, "label_order_link", "Link")
 	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at gifthub shop")
 
-	tpl, err := order.SendConfirmationEmail(ctx)
+	o, _ := order.WithProducts(ctx)
+	o = o.WithTotal()
+
+	tpl, err := o.SendConfirmationEmail(ctx)
 	if err != nil {
 		t.Fatalf(`order.SendConfirmationEmail(ctx) = '%s', %v, want not empty, nil`, tpl, err)
 	}
@@ -221,29 +224,30 @@ func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 	expected := `Hi Arnaud,
 Woo hoo! Your order is on its way. Your order details can be found below.
 
-Order ID: test
+Order ID: ORD1
 Order date: Friday, November 11
 Order total: 105.50
 
-+-----------------------------------+----------+-------+-------+---------------------------------------------------------+
-| TITLE                             | QUANTITY | PRICE | TOTAL | LINK                                                    |
-+-----------------------------------+----------+-------+-------+---------------------------------------------------------+
-| Un joli pull tricoté par ma maman |        1 | 100.5 | 100.5 | http://localhost/test-un-joli-pull-tricoté-par-ma-maman |
-+-----------------------------------+----------+-------+-------+---------------------------------------------------------+
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
+| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                   |
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
+| T-shirt Tester c’est douter |        1 | 100.5 | 100.5 | http://localhost/PDT1-t-shirt-tester-c’est-douter.html |
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
 
 See you around,
 The Customer Experience Team at gifthub shop`
 
 	if tpl != expected {
-		t.Fatalf(`tpl != expected`)
+		t.Fatalf(`tpl = \n%s, want \n%s`, tpl, expected)
 	}
 }
 
 func TestTotalReturnsTheOrderTotalWhenSuccess(t *testing.T) {
-	p := []products.Product{{Quantity: 1, Price: 11}, {Quantity: 2, Price: 24.5}}
-	total := order.Total(p)
-	if total != 65 {
-		t.Fatalf(`order.Total(p)  = %f, want 65`, total)
+	o := order
+	o.Products = []products.Product{{Quantity: 1, Price: 11}, {Quantity: 2, Price: 24.5}}
+	o = o.WithTotal()
+	if o.Total != 65 {
+		t.Fatalf(`order.Total(p)  = %f, want 65`, o.Total)
 	}
 }
 
@@ -251,7 +255,7 @@ func TestSearchReturnsOrdersWhenStatusIsFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Status: "created"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Status: "created"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
@@ -267,7 +271,7 @@ func TestSearchReturnsOrdersWhenPaymentIsFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Payment: "card"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Payment: "card"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
@@ -283,7 +287,7 @@ func TestSearchReturnsOrdersWhenDeliveryIsFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Delivery: "home"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Delivery: "home"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) == 0 {
@@ -299,7 +303,7 @@ func TestSearchReturnsNoOrdersWhenDeliveryIsCrazy(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Delivery: "crazy"})
 	if err != nil {
-		t.Fatalf(`Find(c,"test") = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Delivery: "crazy"}) = %v, want nil`, err.Error())
 	}
 
 	if len(p) != 0 {

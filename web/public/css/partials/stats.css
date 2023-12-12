@@ -1,0 +1,119 @@
+.stats-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: var(--spacing);
+	margin-bottom: 16px;
+	margin-top: var(--spacing);
+}
+
+@media (max-width: 800px) {
+	.stats-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.stats-big-number {
+	font-size: 24px;
+	display: block;
+	font-weight: 600;
+	color: var(--color);
+}
+
+.stats-chart-container {
+	height: var(--chart-height);
+}
+
+.stats-header-multiple {
+	margin-bottom: calc(var(--spacing) * 2);
+}
+
+.stats-header-multiple .stats-orders-selected .card-subheader,
+.stats-header-multiple .stats-selected .card-subheader {
+	color: var(--primary);
+}
+
+.stats-header-multiple > a:not(:last-child) {
+	padding-right: calc(var(--spacing) * 2);
+	border-right: 2px solid var(--border-color);
+}
+
+.stats-header-multiple > a:not(:first-child) {
+	padding-left: calc(var(--spacing) * 2);
+}
+
+.stats-orders {
+	margin-bottom: var(--spacing);
+}
+
+@media (max-width: 800px) {
+	.stats-header-multiple {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--spacing);
+	}
+
+	.stats-header-multiple > a:nth-child(2) {
+		border: none;
+	}
+
+	.stats-header-multiple > a:nth-child(3) {
+		padding-left: 0;
+	}
+
+	.ct-labels foreignObject:nth-child(even) {
+		display: none;
+	}
+}
+
+.stats-chart {
+	position: relative;
+}
+
+body .ct-series-a .ct-area,
+body .ct-series-a .ct-slice-donut-solid,
+body .ct-series-a .ct-slice-pie {
+	fill: var(--primary);
+}
+
+body .ct-series-a .ct-bar,
+body .ct-series-a .ct-line,
+body .ct-series-a .ct-point,
+body .ct-series-a .ct-slice-donut {
+	stroke: var(--primary);
+}
+
+body .chartist-tooltip {
+	background-color: #182433;
+	color: white;
+}
+
+body .chartist-tooltip:before {
+	border-top-color: #182433;
+}
+
+.stats-chart-container .ct-labels foreignObject {
+	height: 30px;
+}
+
+.stats-chart-container-30 .ct-labels foreignObject:nth-child(2n) {
+	display: none;
+}
+
+@media (max-width: 800px) {
+	.stats-chart-container-14 .ct-labels foreignObject,
+	.stats-chart-container-30 .ct-labels foreignObject {
+		display: none;
+	}
+
+	.stats-chart-container-30 .ct-labels foreignObject:nth-child(1),
+	.stats-chart-container-30 .ct-labels foreignObject:nth-child(8n),
+	.stats-chart-container-30 .ct-labels foreignObject:nth-child(30n),
+	.stats-chart-container-14 .ct-labels foreignObject:nth-child(1),
+	.stats-chart-container-14 .ct-labels foreignObject:nth-child(4n) {
+		display: block;
+	}
+
+	.stats-chart-container .ct-labels foreignObject {
+		width: 30px;
+	}
+}

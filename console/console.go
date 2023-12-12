@@ -61,7 +61,7 @@ func main() {
 
 	case "import":
 		{
-			file := flag.String("file", "./web/testdata/data.csv", "The path to the csv file")
+			file := flag.String("file", "./web/data/data.csv", "The path to the csv file")
 
 			f, err := os.Open(*file)
 			if err != nil {

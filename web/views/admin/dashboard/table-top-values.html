@@ -1,0 +1,30 @@
+<table class="table-fixed">
+	<thead>
+		<tr>
+			<th colspan="2">{{index .T "label_name"}}</th>
+			<th>{{index .T "label_count"}}</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		{{ range index .Data}}
+		<tr>
+			<td colspan="2">
+				<div class="row row-align row-gap">{{.Key}}</div>
+			</td>
+			<td>{{.Value}}</td>
+			<td>
+				<div class="progress progress-xs">
+					<progress
+						class="progress-bar bg-primary"
+						value="{{.Percent}}"
+						max="100"
+					>
+						{{.Percent}}%
+					</progress>
+				</div>
+			</td>
+		</tr>
+		{{end}}
+	</tbody>
+</table>

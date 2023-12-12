@@ -9,8 +9,14 @@ type contextKey string
 // User is the context key used to store the lang
 const User contextKey = "user"
 
+// User is the context key used to store the lang
+const UserID contextKey = "user_id"
+
 // Cart is the context key used to store the lang
 const Cart contextKey = "cart"
+
+// Demo is the context key used when the admin activated the demo mode
+const Demo contextKey = "demo"
 
 // Locale is the context key used to store the lang
 const Locale contextKey = "lang"

@@ -1,25 +1,37 @@
 <html lang="en" data-theme="light">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="theme-color" content="#FFF" />
+		<meta
+			name="htmx-config"
+			content='{"allowEval": false, "includeIndicatorStyles": false}'
+		/>
+		<meta name="generator" content="WordPress 6.1.1" />
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
+		<meta name="description" content='{{index .T "seo_description"}}' />
+		<link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
+		<link rel="stylesheet" href="/public/css/admin.css" />
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#FFF" />
-    <meta name="htmx-config" content='{"allowEval": false, "includeIndicatorStyles": false}' />
-    <meta name="generator" content="WordPress 6.1.1" />
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <meta name="description" content='{{index .T "seo_description"}}' />
-    <link rel="icon" type="image/x-icon" href="/public/favicon.ico">
-    <link rel="stylesheet" href="/public/css/admin.css" />
+		{{template "head" .}}
 
-    <title>{{index .T "seo_title" }}</title>
-</head>
+		<title>{{index .T "seo_title" }}</title>
+	</head>
 
-<body>
-    {{template "body" .}}
+	<body>
+		{{template "body" .}}
 
-    <script src="/public/js/htmx-1.9.2.min.js"></script>
-</body>
-
+		<script src="/public/js/htmx-1.9.2.min.js"></script>
+		{{template "scripts" .}}
+	</body>
 </html>
+
+<!-- -->
+
+{{define "head"}} {{end}}
+
+<!-- -->
+
+{{define "scripts"}} {{end}}

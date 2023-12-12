@@ -1,0 +1,24 @@
+{{define "actions"}}
+
+<!-- -->
+<div id="alert"></div>
+<div class="row row-align row-gap">
+	<div id="spinner" class="htmx-indicator spinner spinner-white"></div>
+
+	<select
+		name="days"
+		hx-trigger="change"
+		hx-target="#dashboard"
+		hx-swap="outerHTML"
+		hx-indicator="#spinner"
+		hx-get='{{index .Urls "home"}}'
+	>
+		<option value="7">{{index .T "label_7days"}}</option>
+		<option value="14">{{index .T "label_14days"}}</option>
+		<option value="30">{{index .T "label_30days"}}</option>
+	</select>
+
+	{{template "dashboard-demo-button.html" .}}
+</div>
+
+{{end}}

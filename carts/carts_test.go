@@ -8,15 +8,15 @@ import (
 	"testing"
 )
 
-var cart Cart = Cart{ID: "test"}
+var cart Cart = Cart{ID: "CAR1"}
 
 func TestAddReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "test")
+	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
 	quantity := 1
 
-	if err := Add(ctx, "test", quantity); err != nil {
-		t.Fatalf(`Add(ctx, "test", quantity), %v, want nil, error`, err)
+	if err := Add(ctx, "PDT1", quantity); err != nil {
+		t.Fatalf(`Add(ctx, "PDT1", quantity), %v, want nil, error`, err)
 	}
 }
 
@@ -58,7 +58,7 @@ func TestRefreshCIDReturnsCidWhenCidExisting(t *testing.T) {
 
 func TestGetReturnsCartWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "test")
+	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
 
 	c, err := Get(ctx)
 	if c.ID == "" || err != nil {

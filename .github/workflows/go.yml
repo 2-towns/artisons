@@ -48,5 +48,5 @@ jobs:
           sudo apt update && sudo apt install ./hurl_4.0.0_amd64.deb
       - name: Run the functional tests
         run: |
-          go run main.go &
+          WORKSPACE_DIR=. go run main.go &
           sleep 2 && hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl

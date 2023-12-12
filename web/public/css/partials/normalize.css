@@ -1,7 +1,60 @@
 html {
-  min-height: 100%;
+	min-height: 100%;
 }
 
 body {
-  margin: 0;
+	margin: 0;
+	letter-spacing: 0;
+	touch-action: manipulation;
+	text-rendering: optimizeLegibility;
+	height: 100%;
+	-webkit-font-smoothing: antialiased;
+}
+
+ul {
+	padding: 0;
+	margin: 0;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+a {
+	text-decoration: none;
+}
+
+::-webkit-scrollbar {
+	width: 1rem;
+	height: 1rem;
+	-webkit-transition: background 0.3s;
+	transition: background 0.3s;
+}
+@media (prefers-reduced-motion: reduce) {
+	::-webkit-scrollbar {
+		-webkit-transition: none;
+		transition: none;
+	}
+}
+
+::-webkit-scrollbar-thumb {
+	border-radius: 1rem;
+	border: 5px solid transparent;
+	box-shadow: inset 0 0 0 1rem rgba(var(--color-rgb), 0.16);
+}
+
+::-webkit-scrollbar-track {
+	background: 0 0;
+}
+
+:hover::-webkit-scrollbar-thumb {
+	box-shadow: inset 0 0 0 1rem rgba(var(--color-rgb), 0.32);
+}
+
+::-webkit-scrollbar-corner {
+	background: 0 0;
+}
+
+progress {
+	inline-size: 100%;
 }

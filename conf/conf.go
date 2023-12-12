@@ -1,7 +1,10 @@
 // Package conf manages the application configuration
 package conf
 
-import "time"
+import (
+	"os"
+	"time"
+)
 
 // ImgProxyPath is the path to imgproxy folder
 var ImgProxyPath = "../web/images"
@@ -11,6 +14,8 @@ var ImgProxyPath = "../web/images"
 func IsCurrencySupported(c string) bool {
 	return c == "EUR"
 }
+
+const Currency = "EUR"
 
 // DefaultMerchantId is the default merchant id
 var DefaultMID = "1234"
@@ -50,6 +55,9 @@ const OtpAttempts = 3
 // OtpDemo allows to use 111111 as otp.
 // It should be used only for testing purpose.
 const OtpDemo = true
+
+// Cachebuster is used to bypass the assets cache
+var Cachebuster = time.Now().Unix()
 
 // AppURL is the application root URL
 const AppURL = "http://localhost:8080"
@@ -96,7 +104,11 @@ const ServerAddr = ":8080"
 // Disable robotx
 const Debug = false
 
-const CookieDomain = ""
+// DashboardItems give the numbers of items for most XX statistics
+const DashboardMostItems = 5
+
+// WorkingSpace is the project root folder. Mainly used for testing
+var WorkingSpace = os.Getenv("WORKSPACE_DIR") + "/"
 
 var Cookie = struct {
 	Domain string

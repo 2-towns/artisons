@@ -22,3 +22,9 @@ go.work
 
 # improxy folder
 web/images
+
+# tracking logs
+web/tracking/*
+!web/tracking/.gitkeep
+
+node_modules

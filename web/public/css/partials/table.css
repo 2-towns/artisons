@@ -1,0 +1,38 @@
+table {
+	width: 100%;
+}
+
+table thead {
+	text-align: left;
+	background-color: var(--background-color);
+}
+
+table th,
+table td {
+	padding: calc(var(--spacing) / 2) var(--spacing);
+}
+
+table tbody tr:not(:last-child) {
+	border-bottom: 1px solid var(--border-color);
+}
+
+table thead th {
+	font-weight: 500;
+	color: var(--secondary);
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.5px;
+}
+
+table td div {
+	padding: calc(var(--spacing) / 2) 0;
+}
+
+.table-responsive {
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.table-fixed {
+	table-layout: fixed;
+}

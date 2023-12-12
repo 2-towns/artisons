@@ -1,0 +1,26 @@
+<div class="table-responsive">
+	<table class="">
+		<thead>
+			<tr>
+				<th>{{index .T "label_name"}}</th>
+				<th>{{index .T "label_visitors"}}</th>
+				<th>{{index .T "label_link"}}</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{ range index .Data}}
+			<tr>
+				<td>
+					<div class="row row-align row-gap">{{.Key}}</div>
+				</td>
+				<td>{{.Value}}</td>
+				<td>
+					<a href="{{.URL}}" target="_blank" class="link">
+						{{template "anchor.svg"}}
+					</a>
+				</td>
+			</tr>
+			{{end}}
+		</tbody>
+	</table>
+</div>

@@ -13,9 +13,11 @@ import (
 	"gifthub/locales"
 	"gifthub/logs"
 	"gifthub/pages"
+	"gifthub/stats"
 	"gifthub/users"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -50,6 +52,7 @@ func adminRouter() http.Handler {
 	r.Use(security.Csrf)
 
 	r.Get("/", admin.Dashboard)
+	r.Post(strings.Replace(urls.Demo, urls.AdminPrefix, "", 1), stats.Demo)
 
 	return r
 }
@@ -61,7 +64,7 @@ func main() {
 
 	logger := httplog.NewLogger("http", httplog.Options{
 		LogLevel: slog.LevelDebug,
-		// Concise:  true,
+		Concise:  true,
 		// RequestHeaders:   true,
 		// TimeFieldFormat:  time.RFC850,
 		Tags: map[string]string{
@@ -78,6 +81,7 @@ func main() {
 	router.Use(security.Csrf)
 	router.Use(security.Headers)
 	router.Use(users.Middleware)
+	router.Use(stats.Middleware)
 
 	if conf.Debug {
 		router.Use(seo.BlockRobots)
@@ -98,7 +102,6 @@ func main() {
 	http.ListenAndServe(conf.ServerAddr, router)
 }
 
-// Add copy event for otp
-// add back button
-// remove otp label
+// add test middleware
+// add demo
 // add cache

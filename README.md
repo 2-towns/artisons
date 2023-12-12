@@ -69,7 +69,7 @@ ZZZ étant la cause du renvoi de cette donnée par le test.
 ### Tests functionnels
 
 ```
-hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
+hurl --variables-file web/hurl/admin/.env --test web/hurl/admin/*.hurl
 ```
 
 ## Terminal
@@ -82,7 +82,7 @@ Pour importer un csv, lancer la commande:
 go run console/console.go import
 ```
 
-Par défault, le path est `./web/testdata/data.csv`. Il est possible de préciser un fichier en utilisant le flag `--file` suivi du chemin du fichier.
+Par défault, le path est `./web/data/data.csv`. Il est possible de préciser un fichier en utilisant le flag `--file` suivi du chemin du fichier.
 
 ### Peuplement
 

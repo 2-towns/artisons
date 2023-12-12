@@ -1,0 +1,40 @@
+{{ define "body"}}
+
+<header class="header-navbar">
+	<div class="container">
+		<a class="row row-align" href='{{index .Urls "home"}}'>
+			<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
+		</a>
+		<a href="#" hx-post='{{index .Urls "logout"}}' class="button">
+			{{index .T "label_logout"}}
+		</a>
+	</div>
+</header>
+
+<header class="header-menu">
+	<div class="container">
+		<ul class="row">
+			<li class='row {{index .CSS "home"}}'>
+				<a href=".">
+					{{template "home.svg" .}}
+
+					<span class="nav-link-title"> {{index .T "label_home"}} </span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</header>
+
+<div class="container">
+	<div class="header-navigation row row-between row-align">
+		<h2>{{index .T "title_page"}}</h2>
+		{{template "actions" .}}
+	</div>
+	{{template "content" .}}
+</div>
+
+<footer></footer>
+{{end}}
+
+<!-- -->
+{{define "actions"}} {{end}}

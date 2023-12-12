@@ -1,269 +1,379 @@
 package stats
 
 import (
+	"cmp"
 	"context"
-	"errors"
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
+	"gifthub/http/referer"
+	"gifthub/string/stringutil"
 	"log/slog"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/mileusna/useragent"
 	"github.com/redis/go-redis/v9"
 )
 
-type View struct {
-	Key   string
-	Value int
+type MostValue struct {
+	Key     string
+	Value   float64
+	Percent float64
+	// Label   string
+	URL string
 }
 
-func zcount(c context.Context, key string, days int) ([]int64, error) {
-	l := slog.With(slog.String("key", key), slog.Int("days", days))
-	l.LogAttrs(c, slog.LevelInfo, "get count statistics")
+type Count struct {
+	Value []int64
+	Sum   int64
+	// Label string
+}
 
+type Data []Count
+
+type VisitData struct {
+	URL     string
+	Referer string
+}
+
+// MostValues returns the most values statistics.
+// The keys available are:
+// - stats:pageviews - the most visited pages
+// - stats:browsers - the most used browsers
+// - stats:referers - the most used referers
+// - stats:systems - the most used systems
+// - stats:products:most - the most sold products
+// - stats:products:shared - the most shared products
+// For each statistics keys, a subset of keys is generated to retrieve the data
+// for the specified days interval. So if the days are 7, 7 keys will be added to the subset:
+// stats:pageviews:20060102, stats:pageviews:20060103 ...
+// The most values are returned by Redis in using ZUnionWithScores.
+// Then the sum is calculated, the results are ordered and the percent representation is added
+// for each entry.
+// The returned value is an array containing the most values described above, respecting the
+// available keys order. So stats:pageviews is the index 0, stats:browsers 1...
+// The product titles of the most sold products and most share are loaded from redis
+// at the end of the function.
+func MostValues(c context.Context, days int) ([][]MostValue, error) {
+	prefix := ""
+	demo, ok := c.Value(contexts.Demo).(bool)
+	if demo && ok {
+		prefix = "demo:"
+	}
+
+	keys := []string{
+		prefix + "stats:pageviews",
+		prefix + "stats:browsers",
+		prefix + "stats:referers",
+		prefix + "stats:systems",
+		prefix + "stats:products:most",
+		prefix + "stats:products:shared",
+	}
+
+	l := slog.With(slog.Any("key", keys), slog.Int("days", days), slog.Bool("demo", demo))
+	l.LogAttrs(c, slog.LevelInfo, "get range statistics")
+
+	now := time.Now()
 	ctx := context.Background()
 	pipe := db.Redis.Pipeline()
-	now := time.Now()
 
-	for i := 0; i < days; i++ {
-		t := now.AddDate(0, 0, -i)
-		min := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-		max := time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
-		k := key + ":" + t.Format("20060102")
-
-		pipe.ZCount(ctx, k, fmt.Sprintf("%d", min.Unix()), fmt.Sprintf("%d", max.Unix()))
-	}
-
-	cmds, err := pipe.Exec(ctx)
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get statistics", slog.String("key", key), slog.String("error", err.Error()))
-		return []int64{}, err
-	}
-
-	s := []int64{}
-	for _, cmd := range cmds {
-		value := cmd.(*redis.IntCmd).Val()
-		s = append(s, value)
-	}
-
-	slog.LogAttrs(c, slog.LevelInfo, "got statistics")
-
-	return s, nil
-}
-
-func zsum(c context.Context, key string, days int) ([]float32, error) {
-	l := slog.With(slog.String("key", key), slog.Int("days", days))
-	l.LogAttrs(c, slog.LevelInfo, "get sum statistics")
-
-	ctx := context.Background()
-	pipe := db.Redis.Pipeline()
-	now := time.Now()
-
-	for i := 0; i < days; i++ {
-		t := now.AddDate(0, 0, -i)
-		min := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-		max := time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
-		k := key + ":" + t.Format("20060102")
-
-		pipe.ZRangeByScore(ctx, k, &redis.ZRangeBy{
-			Min:   fmt.Sprintf("%d", min.Unix()),
-			Max:   fmt.Sprintf("%d", max.Unix()),
-			Count: -1,
-		})
-	}
-
-	cmds, err := pipe.Exec(ctx)
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get statistics", slog.String("key", key), slog.String("error", err.Error()))
-		return []float32{}, err
-	}
-
-	s := []float32{}
-	for _, cmd := range cmds {
-		value := cmd.(*redis.StringSliceCmd).Val()
-
-		var sum float32 = 0
-		for _, v := range value {
-			parts := strings.Split(v, ":")
-			total, err := strconv.ParseFloat(parts[0], 32)
-			if err != nil {
-				slog.LogAttrs(c, slog.LevelError, "cannot parse the value", slog.String("value", v), slog.String("error", err.Error()))
-				continue
-			}
-
-			sum += float32(total)
-		}
-
-		s = append(s, sum)
-	}
-
-	slog.LogAttrs(c, slog.LevelInfo, "got statistics")
-
-	return s, nil
-}
-
-func zadd(c context.Context, key string, data interface{}) error {
-	l := slog.With(slog.String("key", key))
-	l.LogAttrs(c, slog.LevelInfo, "adding statistics", slog.Any("data", data))
-	k := key + ":" + time.Now().Format("20060102")
-
-	if _, err := db.Redis.TxPipelined(context.Background(), func(p redis.Pipeliner) error {
-		p.ZAdd(context.Background(), k, redis.Z{
-			Score:  float64(time.Now().Unix()),
-			Member: data,
-		})
-		p.Expire(context.Background(), k, conf.StatisticsDuration)
-
-		return nil
-	}); err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot set revenue statistiscs", slog.String("err", err.Error()))
-		return errors.New("error_http_general")
-	}
-
-	l.LogAttrs(c, slog.LevelInfo, "statistics added")
-
-	return nil
-}
-
-func zgroup(c context.Context, key string, days int) ([]View, error) {
-	l := slog.With(slog.String("key", key), slog.Int("days", days))
-	l.LogAttrs(c, slog.LevelInfo, "get group statistics")
-
-	ctx := context.Background()
-	pipe := db.Redis.Pipeline()
-	now := time.Now()
-
-	for i := 0; i < days; i++ {
-		t := now.AddDate(0, 0, -i)
-		min := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-		max := time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
-		k := key + ":" + t.Format("20060102")
-
-		pipe.ZRangeByScore(ctx, k, &redis.ZRangeBy{
-			Min:   fmt.Sprintf("%d", min.Unix()),
-			Max:   fmt.Sprintf("%d", max.Unix()),
-			Count: -1,
-		})
-	}
-
-	cmds, err := pipe.Exec(ctx)
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get statistics", slog.String("key", key), slog.String("error", err.Error()))
-		return []View{}, err
-	}
-
-	p := map[string]int{}
-	for _, cmd := range cmds {
-		value := cmd.(*redis.StringSliceCmd).Val()
-		for _, v := range value {
-			parts := strings.Split(v, ":")
-
-			p[parts[0]]++
-		}
-	}
-
-	keys := make([]string, 0, len(p))
-	for key := range p {
-		keys = append(keys, key)
-	}
-
-	sort.SliceStable(keys, func(i, j int) bool {
-		return p[keys[i]] > p[keys[j]]
-	})
-
-	views := []View{}
 	for _, key := range keys {
-		views = append(views, View{
-			Key:   key,
-			Value: p[key],
+		cKeys := []string{}
+
+		for i := 0; i < days; i++ {
+			t := now.AddDate(0, 0, -i)
+			k := key + ":" + t.Format("20060102")
+			cKeys = append(cKeys, k)
+		}
+
+		pipe.ZUnionWithScores(ctx, redis.ZStore{
+			Keys: cKeys,
 		})
+	}
+
+	cmds, err := pipe.Exec(ctx)
+	if err != nil && err.Error() != "redis: nil" {
+		slog.LogAttrs(c, slog.LevelError, "cannot get statistics", slog.String("error", err.Error()))
+		return [][]MostValue{}, err
+	}
+
+	values := [][]MostValue{}
+	pids := []string{}
+
+	for _, cmd := range cmds {
+		var total float64 = 0
+		cur := []MostValue{}
+
+		v := cmd.(*redis.ZSliceCmd).Val()
+
+		for _, val := range v {
+			total += val.Score
+		}
+
+		slices.SortFunc(v, func(a, b redis.Z) int {
+			return cmp.Compare(b.Score, a.Score)
+		})
+
+		key := cmd.(*redis.ZSliceCmd).Args()[2].(string)
+
+		for i, value := range v {
+			val := value.Member.(string)
+			cur = append(cur, MostValue{
+				Key:     val,
+				Value:   value.Score,
+				Percent: value.Score / total * 100,
+				URL:     val,
+			})
+
+			if i < conf.DashboardMostItems && strings.HasPrefix(key, prefix+"stats:products") {
+				pids = append(pids, val)
+			}
+		}
+
+		values = append(values, cur)
+	}
+
+	pipe = db.Redis.Pipeline()
+	for _, pid := range pids {
+		pipe.HGet(ctx, "product:"+pid, "title")
+	}
+
+	cmds, err = pipe.Exec(ctx)
+	if err != nil && err.Error() != "redis: nil" {
+		slog.LogAttrs(c, slog.LevelError, "cannot get the product names", slog.String("error", err.Error()))
+		return values, nil
+	}
+
+	pnames := map[string]string{}
+
+	for idx, cmd := range cmds {
+		v := cmd.(*redis.StringCmd).Val()
+		pid := pids[idx]
+		pnames[pid] = v
+	}
+
+	for i := 0; i < conf.DashboardMostItems; i++ {
+		if len(values[4]) > i {
+			val := values[4][i]
+			name := pnames[val.Key]
+			values[4][i].Key = name
+			slug := stringutil.Slugify(name)
+			values[4][i].URL = fmt.Sprintf("%s-%s.html", val.Key, slug)
+		}
+
+		if len(values[5]) > i {
+			val := values[5][i]
+			name := pnames[val.Key]
+			values[5][i].Key = name
+			slug := stringutil.Slugify(name)
+			values[5][i].URL = fmt.Sprintf("%s-%s.html", val.Key, slug)
+		}
+	}
+
+	return values, nil
+}
+
+func sum(array []int64) int64 {
+	var result int64 = 0
+
+	for _, v := range array {
+		result += v
+	}
+	return result
+}
+
+// GetAll returns the count statistics values.
+// The keys available are:
+// - stats:visits - the visits
+// - stats:visits:unique - the unique visits
+// - stats:pageview - the page views
+// - stats:orders - the order total amount
+// - stats:orders:count - the order total count
+// For each statistics keys, a subset of keys is generated to retrieve the data
+// for the specified days interval.
+// To use only one loop, the stop number is the multiplication result between the total of keys
+// and the days. Then the current row is depending of the the dividend of this operation, which is
+// also used as the current indice. The result are keys like this :
+// stats:visits:20060102, stats:visits:20060103 ...
+// If the value does not exist, 0 will be added.
+// For each statistics, the sum is calculated and added to the struct.
+// Finalylly a bounce rate between the visits and the unique visits is calculated and added
+// in the same format than the other statistics.
+func GetAll(c context.Context, days int) (Data, error) {
+	prefix := ""
+	demo, ok := c.Value(contexts.Demo).(bool)
+	if demo && ok {
+		prefix = "demo:"
+	}
+
+	l := slog.With(slog.Int("days", days), slog.Bool("demo", demo))
+	l.LogAttrs(c, slog.LevelInfo, "get all statistics")
+
+	ctx := context.Background()
+	now := time.Now()
+	pipe := db.Redis.Pipeline()
+	keys := []string{
+		prefix + "stats:visits:",
+		prefix + "stats:visits:unique:",
+		prefix + "stats:pageviews:all:",
+		prefix + "stats:orders:revenues:",
+		prefix + "stats:orders:count:",
+	}
+	row := 0
+
+	for i := 0; i < days*len(keys); i++ {
+		if i > 0 && i%days == 0 {
+			row++
+		}
+
+		t := now.AddDate(0, 0, -(i % days))
+		k := keys[row] + t.Format("20060102")
+		pipe.Get(ctx, k)
+	}
+
+	cmds, err := pipe.Exec(ctx)
+	if err != nil && err.Error() != "redis: nil" {
+		slog.LogAttrs(c, slog.LevelError, "cannot get statistics", slog.String("error", err.Error()))
+		return Data{}, err
+	}
+
+	values := Data{
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+	}
+	row = 0
+
+	for i, cmd := range cmds {
+		if i > 0 && i%days == 0 {
+			values[row].Sum = sum(values[row].Value)
+			row++
+		}
+
+		s := cmd.(*redis.StringCmd).Val()
+
+		if s == "" {
+			values[row].Value = append([]int64{0}, values[row].Value...)
+			continue
+		}
+
+		value, err := strconv.ParseInt(s, 10, 64)
+
+		if err != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot convert the value to int", slog.String("value", s), slog.String("error", err.Error()))
+			values[row].Value = append([]int64{0}, values[row].Value...)
+		} else {
+			values[row].Value = append([]int64{value}, values[row].Value...)
+		}
+	}
+
+	values[row].Sum = sum(values[row].Value)
+
+	for i := 0; i < days; i++ {
+		if values[1].Value[i] == 0 {
+			values[len(keys)].Value = append(values[len(keys)].Value, 0)
+		} else {
+			p := float64(values[1].Value[i]) / float64(values[0].Value[i]) * 100
+			values[len(keys)].Value = append(values[len(keys)].Value, int64(p))
+		}
+	}
+
+	if values[1].Sum == 0 {
+		values[len(keys)].Sum = 0
+	} else {
+		values[len(keys)].Sum = int64(float64(values[1].Sum) / float64(values[0].Sum) * 100)
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "got statistics")
 
-	return views, nil
+	return values, nil
 }
 
-func Visit(c context.Context) error {
-	rid := c.Value(middleware.RequestIDKey).(string)
-	if err := zadd(c, "statvisits", rid); err != nil {
+func Visit(c context.Context, ua useragent.UserAgent, data VisitData) error {
+	l := slog.With()
+	l.LogAttrs(c, slog.LevelInfo, "get range statistics")
+
+	ctx := context.Background()
+	now := time.Now().Format("20060102")
+
+	cid := c.Value(contexts.Cart).(string)
+	hasVisited, err := db.Redis.SIsMember(ctx, "stats:visits:members:"+now, cid).Result()
+	if err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot get is member", slog.String("error", err.Error()))
 		return err
 	}
 
-	cid := c.Value(contexts.Cart).(string)
-	return zadd(c, "statuniquevisits", cid)
-}
+	pipe := db.Redis.Pipeline()
 
-func Visits(c context.Context) ([]int64, error) {
-	return zcount(c, "statvisits", 30)
-}
+	r := referer.Parse(data.Referer)
 
-func UniqueVisits(c context.Context) ([]int64, error) {
-	return zcount(c, "statuniquevisits", 30)
-}
+	if r.Referer != "" {
+		pipe.Incr(ctx, "stats:visits:"+now)
 
-func Users(c context.Context, days int) ([]int64, error) {
-	return zcount(c, "statnewusers", days)
-}
+		l.LogAttrs(ctx, slog.LevelInfo, "visits stat added to pipe")
 
-func NewUser(c context.Context, id int64) error {
-	return zadd(c, "statnewusers", id)
-}
+		r := referer.Parse(data.Referer)
+		pipe.ZIncrBy(ctx, "stats:referers:"+now, 1, r.Referer)
+		l.LogAttrs(ctx, slog.LevelInfo, "referer stat added to pipe", slog.String("referer", r.Referer))
+	}
 
-func ActiveUsers(c context.Context, days int) ([]int64, error) {
-	return zcount(c, "statactiveusers", days)
-}
+	pipe.ZIncrBy(ctx, "stats:pageviews:"+now, 1, data.URL)
+	l.LogAttrs(ctx, slog.LevelInfo, "pageviews stat added to pipe", slog.String("url", data.URL))
 
-func ActiveUser(c context.Context, id string) error {
-	return zadd(c, "statactiveusers", id)
-}
+	if ua.Name != "" {
+		pipe.ZIncrBy(ctx, "stats:browsers:"+now, 1, ua.Name)
+		l.LogAttrs(ctx, slog.LevelInfo, "browsers stat added to pipe", slog.String("browser", ua.Name))
+	}
 
-func Order(c context.Context, id string) error {
-	return zadd(c, "statorders", id)
-}
+	if ua.OS != "" {
+		pipe.ZIncrBy(ctx, "stats:systems:"+now, 1, ua.Name)
+		l.LogAttrs(ctx, slog.LevelInfo, "systems stat added to pipe", slog.String("system", ua.OS))
+	}
 
-func Orders(c context.Context, days int) ([]int64, error) {
-	return zcount(c, "statorders", days)
-}
+	if !hasVisited {
+		pipe.Incr(ctx, "stats:visits:unique:"+now)
+		pipe.SAdd(ctx, "stats:visits:members:"+now, cid)
+		pipe.Expire(ctx, "stats:visits:members:"+now, time.Hour*24)
+		l.LogAttrs(ctx, slog.LevelInfo, "unique visite stat added to pipe", slog.String("cid", cid))
+	}
 
-func Revenue(c context.Context, oid string, total float32) error {
-	return zadd(c, "statrevenues", fmt.Sprintf("%f:%s", total, oid))
-}
+	pipe.Incr(ctx, "stats:pageviews:all:"+now)
+	l.LogAttrs(ctx, slog.LevelInfo, "pageview stats added to pipe")
 
-func Revenues(c context.Context, days int) ([]float32, error) {
-	return zsum(c, "statrevenues", days)
-}
-
-func SoldProduct(c context.Context, oid, id string, quantity int) error {
-	for i := 0; i < quantity; i++ {
-		err := zadd(c, "statsoldproducts", fmt.Sprintf("%s:%d:%s", id, quantity, oid))
-		if err != nil {
-			return err
-		}
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot add statistics", slog.String("error", err.Error()))
 	}
 
 	return nil
 }
 
-func SoldProducts(c context.Context, days int) ([]int64, error) {
-	return zcount(c, "statsoldproducts", days)
-}
+func Order(c context.Context, id string, quantites map[string]int, total float64) error {
+	l := slog.With(slog.String("id", id), slog.Float64("total", total))
+	l.LogAttrs(c, slog.LevelInfo, "store order statistics")
 
-func ProductView(c context.Context, id string) error {
-	rid := c.Value(middleware.RequestIDKey).(string)
-	return zadd(c, "statvisitproduct", id+":"+rid)
-}
+	ctx := context.Background()
+	now := time.Now().Format("20060102")
+	pipe := db.Redis.Pipeline()
 
-func ProductUniqueView(c context.Context, id string) error {
-	cid := c.Value(contexts.Cart).(string)
-	return zadd(c, "statuniquevisitproduct", id+":"+cid)
-}
+	for pid, q := range quantites {
+		pipe.ZIncrBy(ctx, "stats:products:most:"+now, float64(q), pid)
+	}
 
-func ProductViews(c context.Context, days int) ([]View, error) {
-	return zgroup(c, "statvisitproduct", days)
+	pipe.IncrByFloat(ctx, "stats:orders:revenues:"+now, total)
+	pipe.Incr(ctx, "stats:orders:count:"+now)
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot add statistics", slog.String("error", err.Error()))
+	}
+
+	return nil
 }

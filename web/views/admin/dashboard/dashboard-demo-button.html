@@ -1,0 +1,10 @@
+<a
+	hx-swap="outerHTML"
+	hx-indicator="#spinner"
+	hx-post='{{index .Urls "demo"}}'
+	href="#"
+	class="button button-primary"
+>
+	{{if .Demo }} {{index .T "label_demodisable"}} {{else}} {{index .T
+	"label_demoactivate"}} {{end}}
+</a>

@@ -11,7 +11,7 @@ import (
 
 var user User = User{
 	ID:  1,
-	SID: "test",
+	SID: "SE1",
 }
 
 var ra faker.RealAddress = faker.GetRealAddress()
@@ -227,7 +227,7 @@ func TestSessionsReturnsSessionsWhenUserHasSession(t *testing.T) {
 	ctx := tests.Context()
 	sessions, err := user.Sessions(ctx)
 	if len(sessions) == 0 || err != nil {
-		t.Fatalf("user.Session(ctx) = %v, %v, want []Session, nil", sessions, err)
+		t.Fatalf("user.Session(ctx) = %v, %v, want not empty, nil", sessions, err)
 	}
 
 	session := sessions[0]

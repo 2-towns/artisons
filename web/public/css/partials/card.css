@@ -1,0 +1,23 @@
+article {
+	padding: calc(var(--spacing) * 2);
+	background-color: white;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+}
+
+.card-nospace {
+	padding: 0;
+}
+
+.card-nospace h3 {
+	padding: var(--spacing);
+	margin: 0;
+	font-weight: 500;
+}
+
+.card-subheader {
+	text-transform: uppercase;
+	color: var(--secondary);
+	font-weight: 600;
+	font-size: 12px;
+}

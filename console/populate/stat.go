@@ -2,102 +2,47 @@ package populate
 
 import (
 	"context"
-	"fmt"
-	"gifthub/db"
-	"gifthub/string/stringutil"
 	"math/rand"
 	"time"
 
-	"github.com/go-faker/faker/v4"
 	"github.com/redis/go-redis/v9"
 )
 
-func Stats(ctx context.Context) error {
+func stats(ctx context.Context, pipe redis.Pipeliner) {
 	now := time.Now()
 
-	pipe := db.Redis.Pipeline()
-
-	products := []string{"test", "test-1", "test-2", "test-3"}
-
-	devices := []string{}
-
-	for i := 0; i < 100; i++ {
-		cid, err := stringutil.Random()
-		if err != nil {
-			return err
-		}
-
-		devices = append(devices, cid)
-	}
+	referers := []string{"Google", "Unknown", "Yandex", "DuckDuckGo"}
+	products := []string{"PDT1", "PDT2", "PDT3", "PDT4", "PDT5"}
+	browsers := []string{"Chrome", "Safari", "Firefox", "Edge"}
+	systems := []string{"Windows", "Android", "iOS", "Linux"}
+	urls := []string{"index.html", "/super-article-du-blog.html", "/PDT2-sweat-a-capuche-uniforme.html", "/cgv.html", "/panier.html", "/coucou.html"}
 
 	for i := 0; i < 5000; i++ {
 		i := rand.Intn(30)
 		score := now.AddDate(0, 0, -i)
 
-		idx := rand.Intn(len(devices))
-		cid := devices[idx]
+		urli := rand.Intn(len(urls))
+		slug := urls[urli]
 
-		rid, err := stringutil.Random()
-		if err != nil {
-			return err
-		}
+		visits := rand.Intn(1000) + 100
+		amount := rand.Intn(5000) + 100
+		count := rand.Intn(10) + 1
+		uniques := rand.Intn(visits)
+		rrand := rand.Intn(len(referers))
+		brand := rand.Intn(len(browsers))
+		srand := rand.Intn(len(systems))
+		prand := rand.Intn(len(products))
 
-		oid, err := stringutil.Random()
-		if err != nil {
-			return err
-		}
-
-		key := ":" + score.Format("20060102")
-
-		pipe.ZAdd(ctx, "statvisits"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: rid,
-		})
-
-		pipe.ZAdd(ctx, "statuniquevisits"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: cid,
-		})
-
-		pipe.ZAdd(ctx, "statnewusers"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: faker.Email(),
-		})
-
-		pipe.ZAdd(ctx, "statactiveusers"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: faker.Email(),
-		})
-
-		pipe.ZAdd(ctx, "statorders"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: oid,
-		})
-
-		pipe.ZAdd(ctx, "statrevenues"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: fmt.Sprintf("%f:%s", rand.Float32()*100, oid),
-		})
-
-		pidx := rand.Intn(len(products))
-
-		pipe.ZAdd(ctx, "statsoldproducts"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: fmt.Sprintf("%s:%d:%s", products[pidx], 1, oid),
-		})
-
-		pipe.ZAdd(ctx, "statvisitproduct"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: products[pidx] + ":" + rid,
-		})
-
-		pipe.ZAdd(ctx, "statuniquevisitproduct:"+key, redis.Z{
-			Score:  float64(score.Unix()),
-			Member: products[pidx] + cid,
-		})
+		pipe.ZIncrBy(ctx, "demo:stats:pageviews:"+score.Format("20060102"), 1, slug)
+		pipe.ZIncrBy(ctx, "demo:stats:products:most:"+score.Format("20060102"), 1, products[prand])
+		pipe.ZIncrBy(ctx, "demo:stats:products:shared:"+score.Format("20060102"), 1, products[prand])
+		pipe.ZIncrBy(ctx, "demo:stats:browsers:"+score.Format("20060102"), 1, browsers[brand])
+		pipe.ZIncrBy(ctx, "demo:stats:referers:"+score.Format("20060102"), 1, referers[rrand])
+		pipe.ZIncrBy(ctx, "demo:stats:systems:"+score.Format("20060102"), 1, systems[srand])
+		pipe.Set(ctx, "demo:stats:visits:"+score.Format("20060102"), visits, 0)
+		pipe.Set(ctx, "demo:stats:orders:revenues:"+score.Format("20060102"), amount, 0)
+		pipe.Set(ctx, "demo:stats:orders:count:"+score.Format("20060102"), count, 0)
+		pipe.Set(ctx, "demo:stats:visits:unique:"+score.Format("20060102"), uniques, 0)
+		pipe.Set(ctx, "demo:stats:pageviews:all:"+score.Format("20060102"), visits*2, 0)
 	}
-
-	_, err := pipe.Exec(ctx)
-
-	return err
 }

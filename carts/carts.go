@@ -4,11 +4,13 @@ package carts
 import (
 	"context"
 	"errors"
+	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/orders"
 	"gifthub/products"
+	"gifthub/tracking"
 	"log/slog"
 	"strconv"
 
@@ -66,6 +68,13 @@ func Add(c context.Context, pid string, quantity int) error {
 		return errors.New("error_http_general")
 	}
 
+	tra := map[string]string{
+		"pid":      pid,
+		"quantity": fmt.Sprintf("%d", quantity),
+	}
+
+	go tracking.Log(c, "cart_add", tra)
+
 	l.LogAttrs(c, slog.LevelInfo, "product added in the cart")
 
 	return nil
@@ -97,7 +106,7 @@ func Get(c context.Context) (Cart, error) {
 			continue
 		}
 
-		q, err := strconv.ParseInt(value, 10, 8)
+		q, err := strconv.ParseInt(value, 10, 32)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the quantity", slog.String("error", err.Error()))
 			continue
@@ -133,6 +142,12 @@ func (c Cart) UpdateDelivery(co context.Context, d string) error {
 		return errors.New("error_http_general")
 	}
 
+	tra := map[string]string{
+		"delivery": d,
+	}
+
+	go tracking.Log(co, "cart_delivery", tra)
+
 	l.LogAttrs(co, slog.LevelInfo, "the delivery is updated")
 
 	return nil
@@ -152,6 +167,12 @@ func (c Cart) UpdatePayment(co context.Context, p string) error {
 		l.LogAttrs(co, slog.LevelError, "cannot update the payment", slog.String("err", err.Error()))
 		return errors.New("error_http_general")
 	}
+
+	tra := map[string]string{
+		"payment": p,
+	}
+
+	go tracking.Log(co, "cart_payment", tra)
 
 	l.LogAttrs(co, slog.LevelInfo, "the payment is updated")
 

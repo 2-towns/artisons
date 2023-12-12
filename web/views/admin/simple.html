@@ -1,16 +1,15 @@
 {{define "body"}}
 
-<main class="page-simple">
-    <div class="mini-container">
+<main class="page-simple row row-align row-center">
+	<div class="mini-container">
+		<div class="text-center">
+			<div class="login-logo">
+				<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
+			</div>
+		</div>
 
-        <div class="text-center">
-            <div class="login-logo">
-                <img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
-            </div>
-        </div>
-
-        <main>{{template "content" .}}</main>
-    </div>
+		<main>{{template "content" .}}</main>
+	</div>
 </main>
 
 {{end}}

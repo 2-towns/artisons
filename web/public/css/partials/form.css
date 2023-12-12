@@ -1,19 +1,44 @@
-input {
-  padding: calc(var(--spacing) / 1.25);
-  border-color: var(--border-color);
-  border-radius: var(--border-radius);
-  border-width: 1px;
-  border-style: solid;
-  width: 100%;
-  outline: 0;
-  line-height: var(--input-line-height);
-  background-color: white;
+label {
+	display: block;
+	font-weight: 500;
+	margin-bottom: var(--spacing);
 }
 
+select,
+input {
+	height: var(--input-height);
+	padding-left: var(--spacing);
+	border-color: var(--border-color);
+	border-radius: var(--border-radius);
+	border-width: 1px;
+	border-style: solid;
+	outline: 0;
+	line-height: var(--input-line-height);
+	font-family: var(--font-family);
+	font-feature-settings: var(--font-feature-settings);
+	background-color: white;
+}
+
+select {
+	background-image: url("/public/icons/select.svg");
+	background-repeat: no-repeat;
+	background-position: right 0.75rem center;
+	background-size: 16px 12px;
+	appearance: none;
+	padding-right: calc(var(--spacing) * 3);
+}
+
+input {
+	width: 100%;
+	padding-right: var(--spacing);
+}
+
+select:active,
+select:focus,
 input:active,
 input:focus {
-  border-color: var(--input-border-color-focus);
-  box-shadow: var(--input-shadow);
+	border-color: var(--input-border-color-focus);
+	box-shadow: var(--input-shadow);
 }
 
 /* Remove chrome autofill color */
@@ -21,74 +46,75 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  transition: background-color 5000000s ease-in-out 0s;
+	transition: background-color 5000000s ease-in-out 0s;
 }
 
 input:autofill {
-  filter: none;
+	filter: none;
 }
 
 input:-internal-autofill-selected {
-  background-color: rgb(255, 255, 255) !important;
-  background-image: none !important;
-  color: rgb(0, 0, 0) !important;
+	background-color: rgb(255, 255, 255) !important;
+	background-image: none !important;
+	color: rgb(0, 0, 0) !important;
 }
 
-.input-digital {
-  padding: var(--spacing) calc(var(--spacing) * 1.75);
-  font-size: calc(var(--font-size) * 1.25);
-  text-align: center;
+.input-digit {
+	height: var(--input-height);
+	font-size: calc(var(--font-size) * 1.25);
+	text-align: center;
 }
 
 .input-otp {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing);
+	display: flex;
+	justify-content: space-between;
+	gap: var(--spacing);
 }
 
 .form-row {
-  margin-bottom: var(--spacing);
+	margin-bottom: var(--spacing);
 }
 
-.form-row:has(.invalid-feedback) input {
-  border-color: var(--danger);
+.form-row:has(.form-error) input {
+	border-color: var(--danger);
 }
 
-.form-row:has(.invalid-feedback) input:focus {
-  box-shadow: 0 0 0 4px rgba(var(--danger-rgb), 0.25);
+.form-row:has(.form-error) input:focus {
+	box-shadow: 0 0 0 4px rgba(var(--danger-rgb), 0.25);
 }
 
-.form-row:has(.invalid-feedback) .invalid-feedback {
-  color: var(--danger);
+.form-row:has(.form-error) .form-error {
+	color: var(--danger);
 }
 
-.invalid-feedback {
-  margin-top: calc(var(--spacing) / 2);
-  font-size: 12px;
+.form-error {
+	margin-top: calc(var(--spacing) / 2);
+	font-size: 12px;
 }
 
 @keyframes spinner-border {
-  to {
-    transform: rotate(360deg);
-  }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .spinner {
-  color: var(--secondary);
-  border: 1px solid currentcolor;
-  border-right-color: transparent;
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  /* vertical-align: var(--tblr-spinner-vertical-align); */
-  border-radius: 50%;
-  animation: 1.5s linear infinite spinner-border;
+	color: var(--secondary);
+	border: 1px solid currentcolor;
+	border-right-color: transparent;
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	/* vertical-align: var(--tblr-spinner-vertical-align); */
+	border-radius: 50%;
+	animation: 1.5s linear infinite spinner-border;
 }
 
 .htmx-indicator {
-  display: none;
+	display: none;
 }
 
+.htmx-request.spinner,
 .htmx-request .spinner {
-  display: inline-block;
+	display: inline-block;
 }
