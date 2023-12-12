@@ -18,6 +18,7 @@ func Context() context.Context {
 
 	rid, _ := stringutil.Random()
 	ctx = context.WithValue(ctx, middleware.RequestIDKey, rid)
+	ctx = context.WithValue(ctx, contexts.Demo, true)
 
 	return context.WithValue(ctx, contexts.Cart, fmt.Sprintf("%d", time.Now().UnixMilli()))
 }
