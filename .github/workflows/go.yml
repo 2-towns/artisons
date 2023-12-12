@@ -35,8 +35,6 @@ jobs:
         run: go get .
       - name: Create folder
         run: mkdir -p ./web/images/articles
-      - name: PWD
-        run: pwd
       - name: Populating data
         run: go run console/console.go populate
       - name: Run migration
@@ -53,4 +51,4 @@ jobs:
       - name: Run the functional tests
         run: |
           go run main.go &
-          sleep 2 && hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
+          sleep 2 && hurl --variables-file data/hurl/admin/.env --test data/hurl/admin/*.hurl
