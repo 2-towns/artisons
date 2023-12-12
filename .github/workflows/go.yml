@@ -23,6 +23,8 @@ jobs:
           - 6379:6379
 
     runs-on: ubuntu-latest
+    env:
+      WORKSPACE_DIR: /home/runner/work/gifthub/gifthub
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
@@ -36,13 +38,13 @@ jobs:
       - name: PWD
         run: pwd
       - name: Populating data
-        run: WORKSPACE_DIR=. go run console/console.go populate
+        run: go run console/console.go populate
       - name: Run migration
-        run: WORKSPACE_DIR=. go run console/console.go migration
+        run: go run console/console.go migration
       - name: Build
         run: go build -v ./...
       - name: Run the unit tests
-        run: WORKSPACE_DIR=. go test -v ./...
+        run: go test -v ./...
       - name: Install HURL
         shell: bash
         run: |
@@ -50,5 +52,5 @@ jobs:
           sudo apt update && sudo apt install ./hurl_4.0.0_amd64.deb
       - name: Run the functional tests
         run: |
-          WORKSPACE_DIR=. go run main.go &
+          go run main.go &
           sleep 2 && hurl --variables-file hurl/admin/.env --test hurl/admin/*.hurl
