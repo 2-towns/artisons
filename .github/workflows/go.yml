@@ -34,9 +34,9 @@ jobs:
       - name: Create folder
         run: mkdir -p ./web/images/articles
       - name: Populating data
-        run: go run console/console.go populate
+        run: WORKSPACE_DIR=. go run console/console.go populate
       - name: Run migration
-        run: go run console/console.go migration
+        run: WORKSPACE_DIR=. go run console/console.go migration
       - name: Build
         run: go build -v ./...
       - name: Run the unit tests
