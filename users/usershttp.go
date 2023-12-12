@@ -10,7 +10,6 @@ import (
 	"gifthub/http/cookies"
 	"gifthub/http/httperrors"
 	"gifthub/string/stringutil"
-	"log"
 	"net/http"
 
 	"golang.org/x/exp/slog"
@@ -133,8 +132,6 @@ func AdminOnly(next http.Handler) http.Handler {
 			http.Redirect(w, r, urls.AuthPrefix, http.StatusFound)
 			return
 		}
-
-		log.Println(user)
 
 		if user.Role != "admin" {
 			slog.LogAttrs(ctx, slog.LevelInfo, "the user is not admin", slog.Int64("id", user.ID))
