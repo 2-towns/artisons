@@ -46,20 +46,30 @@ func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	tpl.Execute(w, &data)
 }
 
-func Catch(w http.ResponseWriter, ctx context.Context, msg string) {
+// Catch an error which can come from ajax (HTMX) or from a standard
+// http request.
+func Catch(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	isHX, _ := ctx.Value(contexts.HX).(bool)
 
 	if isHX {
-		if strings.HasPrefix("input_", msg) {
-			InputMessage(w, ctx, msg)
-		} else {
-			Alert(w, ctx, msg)
-		}
+		HXCatch(w, ctx, msg)
 	} else {
-		Page(w, ctx, msg, 400)
+		Page(w, ctx, msg, code)
 	}
 }
 
+// Catch an ajax error. If the error starts with "input_", the error
+// is related to an wrong input value, so this input will be updated.
+// Otherwise an alert will be displayed.
+func HXCatch(w http.ResponseWriter, ctx context.Context, msg string) {
+	if strings.HasPrefix("input_", msg) {
+		InputMessage(w, ctx, msg)
+	} else {
+		Alert(w, ctx, msg)
+	}
+}
+
+// Alert display an error message through a banner
 func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
@@ -88,6 +98,7 @@ func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 	tpl.Execute(w, &data)
 }
 
+// Page display a full page error for standard http request error
 func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 

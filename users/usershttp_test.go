@@ -326,8 +326,8 @@ func TestAdminOnlyRedirectWhenUserIsNotAdmin(t *testing.T) {
 
 	handler.ServeHTTP(rr, req.WithContext(ctx))
 
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Fatalf(`status = %d, want %d`, status, http.StatusBadRequest)
+	if status := rr.Code; status != http.StatusUnauthorized {
+		t.Fatalf(`status = %d, want %d`, status, http.StatusUnauthorized)
 	}
 }
 

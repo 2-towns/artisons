@@ -18,13 +18,13 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := ctx.Value(contexts.User).(users.User)
 	if !ok {
-		httperrors.Catch(w, ctx, "something_went_wrong")
+		httperrors.Catch(w, ctx, "something_went_wrong", 400)
 		return
 	}
 
 	_, err := user.ToggleDemo(ctx)
 	if err != nil {
-		httperrors.Catch(w, ctx, err.Error())
+		httperrors.Catch(w, ctx, err.Error(), 500)
 		return
 	}
 

@@ -109,7 +109,7 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 
 	glue, err := users.Otp(ctx, email)
 	if err != nil {
-		httperrors.Catch(w, ctx, err.Error())
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
@@ -170,7 +170,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	sid, err := users.Login(ctx, otp, glue, device)
 	if err != nil || sid == "" {
-		httperrors.Catch(w, ctx, err.Error())
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 

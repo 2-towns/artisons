@@ -135,7 +135,7 @@ func AdminOnly(next http.Handler) http.Handler {
 
 		if user.Role != "admin" {
 			slog.LogAttrs(ctx, slog.LevelInfo, "the user is not admin", slog.Int64("id", user.ID))
-			httperrors.Catch(w, ctx, "error_http_unauthorized")
+			httperrors.Catch(w, ctx, "error_http_unauthorized", 401)
 			return
 		}
 

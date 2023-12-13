@@ -31,17 +31,21 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			days = int(d)
 		}
+
+		if d > 30 {
+			days = 30
+		}
 	}
 
 	mvs, err := stats.MostValues(ctx, days)
 	if err != nil {
-		httperrors.Catch(w, ctx, "error_http_general")
+		httperrors.Catch(w, ctx, "error_http_general", 500)
 		return
 	}
 
 	all, err := stats.GetAll(ctx, days)
 	if err != nil {
-		httperrors.Catch(w, ctx, "error_http_general")
+		httperrors.Catch(w, ctx, "error_http_general", 500)
 		return
 	}
 
@@ -72,7 +76,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	tpl, err := template.ParseFiles(files...)
 
 	if err != nil {
-		httperrors.Catch(w, ctx, err.Error())
+		httperrors.Catch(w, ctx, err.Error(), 500)
 		return
 	}
 
