@@ -79,3 +79,13 @@ func Middleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
+type TranslateFunc func(string, ...interface{}) string
+
+func Translate(lang language.Tag) TranslateFunc {
+	p := message.NewPrinter(lang)
+
+	return func(name string, values ...interface{}) string {
+		return p.Sprintf(name, values...)
+	}
+}

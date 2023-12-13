@@ -18,32 +18,11 @@ import (
 	"gifthub/users"
 	"log/slog"
 	"net/http"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v2"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
-
-func get(router chi.Router, pathname string, handlerFn http.HandlerFunc) {
-	for _, lang := range conf.Languages {
-		l := language.Make(lang)
-		p := message.NewPrinter(l)
-		url := p.Sprint(pathname)
-		router.Get(url, handlerFn)
-	}
-}
-
-func post(router chi.Router, pathname string, handlerFn http.HandlerFunc) {
-	for _, lang := range conf.Languages {
-		l := language.Make(lang)
-		p := message.NewPrinter(l)
-		url := p.Sprint(pathname)
-		router.Post(url, handlerFn)
-	}
-}
 
 func adminRouter() http.Handler {
 	r := chi.NewRouter()
@@ -52,8 +31,10 @@ func adminRouter() http.Handler {
 	r.Use(users.AdminOnly)
 	r.Use(security.Csrf)
 
-	r.Get("/", admin.Dashboard)
-	r.Post(strings.Replace(urls.Demo, urls.AdminPrefix, "", 1), stats.Demo)
+	r.Get(urls.Map["dashboard"], admin.Dashboard)
+	r.Get(urls.Map["products"], admin.Products)
+
+	r.Post(urls.Map["demo"], stats.Demo)
 
 	return r
 }
@@ -93,9 +74,9 @@ func main() {
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
 
 	router.Get("/", pages.Home)
-	router.Get(urls.AuthPrefix, login.Form)
-	router.Post(urls.Otp, login.Otp)
-	router.Post(urls.Login, login.Login)
+	router.Get(urls.Map["auth"], login.Form)
+	router.Post(urls.Map["auth_otp"], login.Otp)
+	router.Post(urls.Map["auth_login"], login.Login)
 
 	router.Mount(urls.AdminPrefix, adminRouter())
 

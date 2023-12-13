@@ -1,5 +1,5 @@
 {{define "scripts"}}
 <script src="/public/vendor/admin/chartist.js"></script>
 <script src="/public/vendor/admin/chartist-plugin-tooltip.js"></script>
-<script src='/public/js/admin/dashboard.js?v{{index .CB "dashboard.js"}}'></script>
+<script src='/public/js/admin/dashboard.js?v{{cachebuster "dashboard.js"}}'></script>
 {{end}}

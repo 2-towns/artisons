@@ -4,18 +4,17 @@ import (
 	"context"
 	"fmt"
 	"gifthub/admin/urls"
-	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/locales"
-	"html/template"
+	"gifthub/templates"
 	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
@@ -25,25 +24,25 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	tpl, err := template.ParseFiles("web/views/admin/input-error.html")
+	tpl, err := templates.Build(lang, true).ParseFiles(
+		"web/views/admin/htmx.html",
+		"web/views/admin/input-error.html",
+	)
 	if err != nil {
 		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
 		return
 	}
 
-	p := message.NewPrinter(lang)
-	data := struct {
-		Message string
-	}{
-		p.Sprintf(msg),
-	}
+	data := struct{ Message string }{msg}
 
 	key := strings.Split(msg, "_")[1]
 
 	w.Header().Set("HX-Retarget", fmt.Sprintf("#%s-error", key))
 	w.Header().Set("HX-Reswap", "innerHTML")
 
-	tpl.Execute(w, &data)
+	if err = tpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 // Catch an error which can come from ajax (HTMX) or from a standard
@@ -73,36 +72,32 @@ func HXCatch(w http.ResponseWriter, ctx context.Context, msg string) {
 func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	tpl, err := template.ParseFiles("web/views/admin/alert.html", "web/views/admin/icons/error.svg")
+	tpl, err := templates.Build(lang, true).ParseFiles(
+		"web/views/admin/htmx.html",
+		"web/views/admin/alert.html",
+		"web/views/admin/icons/error.svg",
+	)
 	if err != nil {
 		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
 		return
 	}
 
-	p := message.NewPrinter(lang)
-	t := map[string]string{
-		"title_error":   p.Sprintf("title_error_common"),
-		"message_error": p.Sprintf(msg),
-	}
-
-	data := struct {
-		T map[string]string
-	}{
-		t,
-	}
+	data := struct{ Message string }{msg}
 
 	w.Header().Set("HX-Replace-Url", "false")
 	w.Header().Set("HX-Retarget", "#alert")
 	w.Header().Set("HX-Reswap", "innerHTML")
 
-	tpl.Execute(w, &data)
+	if err = tpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 // Page display a full page error for standard http request error
 func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	tpl, err := template.ParseFiles(
+	tpl, err := templates.Build(lang, false).ParseFiles(
 		conf.WorkingSpace+"web/views/admin/base.html",
 		conf.WorkingSpace+"web/views/admin/error.html",
 		conf.WorkingSpace+"web/views/admin/icons/back.svg",
@@ -115,27 +110,18 @@ func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 
 	rid := ctx.Value(middleware.RequestIDKey).(string)
 
-	p := message.NewPrinter(lang)
-	t := map[string]string{
-		"title":       p.Sprintf("error_http_page"),
-		"request":     p.Sprintf("error_http_requestid", rid),
-		"description": p.Sprintf(msg),
-		"message":     p.Sprintf(msg, rid),
-		"home_button": p.Sprintf("label_button_error"),
-	}
-
 	url := urls.AdminPrefix
 
 	data := struct {
-		Code int
-		Link string
-		T    map[string]string
-		CB   map[string]string
+		Code    int
+		Link    string
+		Message string
+		RID     string
 	}{
 		code,
 		url,
-		t,
-		cache.Buster,
+		msg,
+		rid,
 	}
 
 	w.WriteHeader(code)

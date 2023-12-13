@@ -10,7 +10,11 @@ import (
 	"strings"
 )
 
-var Buster = map[string]string{}
+var buster = map[string]string{}
+
+func Buster(name string) string {
+	return buster[name]
+}
 
 func load(folder string, ext string) {
 	files, err := os.ReadDir(conf.WorkingSpace + folder)
@@ -33,7 +37,7 @@ func load(folder string, ext string) {
 
 		hash := md5.Sum(buf)
 		h := hex.EncodeToString(hash[:])
-		Buster[name] = h
+		buster[name] = h
 	}
 
 	slog.Info("files loaded", slog.String("folder", folder), slog.Int("length", len(files)))

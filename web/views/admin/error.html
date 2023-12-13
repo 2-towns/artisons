@@ -3,10 +3,12 @@
 <main class="page-simple row row-align row-center text-center">
 	<div class="mini-container">
 		<h1>{{.Code}}</h1>
-		<h2>{{index .T "title" }}</h2>
-		<p class="subtitle">{{index .T "message" }} {{index .T "request" }}</p>
+		<h2>{{translate "error_http_page" }}</h2>
+		<p class="subtitle">
+			{{translate .Message}} {{translate "error_http_requestid" .RID}}
+		</p>
 		<a href="{{.Link}}" class="button btn-primary"
-			>{{template "back.svg"}} {{index .T "home_button" }}</a
+			>{{template "back.svg"}} {{translate "label_button_error" }}</a
 		>
 	</div>
 </main>

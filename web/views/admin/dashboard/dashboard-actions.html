@@ -11,14 +11,30 @@
 		hx-target="#dashboard"
 		hx-swap="outerHTML"
 		hx-indicator="#spinner"
-		hx-get='{{index .Urls "home"}}'
+		hx-get='{{urls "admin_dashboard"}}'
 	>
-		<option value="7">{{index .T "label_7days"}}</option>
-		<option value="14">{{index .T "label_14days"}}</option>
-		<option value="30">{{index .T "label_30days"}}</option>
+		<option value="7">{{translate "label_dashboard_7days"}}</option>
+		<option value="14">{{translate "label_dashboard_14days"}}</option>
+		<option value="30">{{translate "label_dashboard_30days"}}</option>
 	</select>
 
-	{{template "dashboard-demo-button.html" .}}
+	<a
+		hx-swap="outerHTML"
+		hx-indicator="#spinner"
+		hx-post='{{urls "admin_demo"}}'
+		href="#"
+		class="button button-primary"
+	>
+		{{if .Demo }}
+		<!---->
+		{{translate "label_dashboard_demodisable"}}
+		<!---->
+		{{else}}
+		<!---->
+		{{translate "label_dashboard_demoactivate"}}
+		<!---->
+		{{end}}
+	</a>
 </div>
 
 {{end}}

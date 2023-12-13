@@ -2,11 +2,11 @@
 
 <header class="header-navbar">
 	<div class="container">
-		<a class="row row-align" href='{{index .Urls "home"}}'>
+		<a class="row row-align" href='{{urls "admin_dashboard"}}'>
 			<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
 		</a>
-		<a href="#" hx-post='{{index .Urls "logout"}}' class="button">
-			{{index .T "label_logout"}}
+		<a href="#" hx-post='{{urls "admin_logout"}}' class="button">
+			{{translate "label_dashboard_logout"}}
 		</a>
 	</div>
 </header>
@@ -14,11 +14,23 @@
 <header class="header-menu">
 	<div class="container">
 		<ul class="row">
-			<li class='row {{index .CSS "home"}}'>
-				<a href=".">
+			<li class='row {{if eq .Page "dashboard"}} header-menu-active {{end}}'>
+				<a href='{{urls "admin_dashboard"}}'>
 					{{template "home.svg" .}}
 
-					<span class="nav-link-title"> {{index .T "label_home"}} </span>
+					<span class="nav-link-title">
+						{{translate "label_dashboard_home"}}
+					</span>
+				</a>
+			</li>
+
+			<li class='row {{if eq .Page "products"}} header-menu-active {{end}}'>
+				<a href='{{urls "admin_products"}}'>
+					{{template "building-store.svg" .}}
+
+					<span class="nav-link-title">
+						{{translate "label_dashboard_products"}}
+					</span>
 				</a>
 			</li>
 		</ul>
@@ -27,7 +39,7 @@
 
 <div class="container">
 	<div class="header-navigation row row-between row-align">
-		<h2>{{index .T "title_page"}}</h2>
+		<h2>{{translate (printf "title_%s_page" .Page) }}</h2>
 		{{template "actions" .}}
 	</div>
 	{{template "content" .}}

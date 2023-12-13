@@ -1,24 +1,25 @@
 {{define "content"}}
 
 <article id="article">
-    <h2 class="text-center">{{index .T "title_sub"}}</h2>
+	<h2 class="text-center">{{translate "title_login_sub"}}</h2>
 
-    <p class="text-center page-simple-message">{{index .T "message_signin"}}</p>
+	<p class="text-center page-simple-message">
+		{{translate "message_login_signin"}}
+	</p>
 
-    <form hx-post="{{.Url}}" hx-target="#article" hx-swap="outerHTML">
-        <div class="form-row">
-            <label>{{index .T "label_email"}}</label>
-            <input name="email" type="email" required />
-            <div id="email-error"></div>
-        </div>
-        <button class="button-full button-primary">
-            <div class="htmx-indicator spinner spinner-white"></div>
-            {{index .T "label_signin"}}
-        </button>
-    </form>
+	<form hx-post='{{urls "auth_otp"}}' hx-target="#article" hx-swap="outerHTML">
+		<div class="form-row">
+			<label>{{translate "input_label_email"}}</label>
+			<input name="email" type="email" required />
+			<div id="email-error"></div>
+		</div>
+		<button class="button-full button-primary">
+			<div class="htmx-indicator spinner spinner-white"></div>
+			{{translate "label_login_signin"}}
+		</button>
+	</form>
 
-    <div id="alert"></div>
+	<div id="alert"></div>
 </article>
-
 
 {{end}}

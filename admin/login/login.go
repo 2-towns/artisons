@@ -3,7 +3,6 @@ package login
 import (
 	"fmt"
 	"gifthub/admin/urls"
-	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
@@ -11,20 +10,18 @@ import (
 	"gifthub/http/httpext"
 	"gifthub/http/security"
 	"gifthub/locales"
+	"gifthub/templates"
 	"gifthub/users"
-	"html/template"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 func Form(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-
 	isHX, _ := ctx.Value(contexts.HX).(bool)
 
 	_, ok := ctx.Value(contexts.User).(users.User)
@@ -50,30 +47,10 @@ func Form(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	tpl, err := template.ParseFiles(files...)
+	tpl, err := templates.Build(lang, isHX).ParseFiles(files...)
 	if err != nil {
 		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
 		return
-	}
-
-	p := message.NewPrinter(lang)
-	t := map[string]string{
-		"seo_title":       p.Sprintf("seo_login_title"),
-		"seo_description": p.Sprintf("seo_login_description"),
-		"label_email":     p.Sprintf("input_label_email"),
-		"label_signin":    p.Sprintf("label_login_signin"),
-		"title_sub":       p.Sprintf("title_login_sub"),
-		"message_signin":  p.Sprintf("message_login_signin"),
-	}
-
-	data := struct {
-		T   map[string]string
-		Url string
-		CB  map[string]string
-	}{
-		t,
-		urls.Otp,
-		cache.Buster,
 	}
 
 	if !isHX {
@@ -81,7 +58,10 @@ func Form(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Security-Policy", policy)
 	}
 
-	tpl.Execute(w, &data)
+	data := struct{}{}
+	if err = tpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func Otp(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +81,6 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := r.FormValue("email")
-
 	if !users.IsAdmin(ctx, email) {
 		httperrors.InputMessage(w, ctx, "input_email_notadmin")
 		return
@@ -114,7 +93,8 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	tpl, err := template.ParseFiles(
+	tpl, err := templates.Build(lang, true).ParseFiles(
+		"web/views/admin/htmx.html",
 		"web/views/admin/login/otp.html",
 		"web/views/admin/js/otp.js.html",
 	)
@@ -124,28 +104,14 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := message.NewPrinter(lang)
-	t := map[string]string{
-		"label_otp":    p.Sprintf("input_label_otp"),
-		"label_verify": p.Sprintf("label_login_verify"),
-		"label_cancel": p.Sprintf("label_login_cancel"),
-		"title_sub":    p.Sprintf("title_otp_sub"),
-		"message_otp":  p.Sprintf("message_otp_login", email),
-	}
-
 	data := struct {
-		T         map[string]string
-		Url       string
-		UrlCancel string
-		Glue      string
-	}{
-		t,
-		urls.Login,
-		urls.AuthPrefix,
-		glue,
-	}
+		Glue  string
+		Email string
+	}{glue, email}
 
-	tpl.Execute(w, &data)
+	if err = tpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -186,6 +152,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	// Todo check user role to redirect on correct page
-	w.Header().Set("HX-Redirect", urls.Dashboard)
+	w.Header().Set("HX-Redirect", urls.Map["admin_dashboard"])
 	w.WriteHeader(http.StatusOK)
 }

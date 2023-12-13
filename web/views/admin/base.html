@@ -11,16 +11,19 @@
 		/>
 		<meta name="generator" content="WordPress 6.1.1" />
 		<meta name="referrer" content="strict-origin-when-cross-origin" />
-		<meta name="description" content='{{index .T "seo_description"}}' />
+		<meta
+			name="description"
+			content='{{translate "seo_dashboard_description"}}'
+		/>
 		<link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
 		<link
 			rel="stylesheet"
-			href='/public/css/admin/admin.css?v{{index .CB "admin.css"}}'
+			href='/public/css/admin/admin.css?v{{cachebuster "admin.css"}}'
 		/>
 
 		{{template "head" .}}
 
-		<title>{{index .T "seo_title" }}</title>
+		<title>{{translate "seo_dashboard_title" }}</title>
 	</head>
 
 	<body>
