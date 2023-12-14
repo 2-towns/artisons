@@ -47,7 +47,6 @@ func Run() error {
 		return err
 	}
 
-<<<<<<< HEAD
 	pipe = db.Redis.Pipeline()
 
 	product(
@@ -100,10 +99,8 @@ func Run() error {
 	alive := true
 	user, err := User(ctx, "test", alive)
 	err = products.Add(products.FakeProduct())
-=======
 	alive := true
 	user, err := User(ctx, "test", alive)
->>>>>>> 9b1f061 (rebase et refacto)
 	if err != nil {
 		return err
 	}

@@ -95,7 +95,7 @@ func Add(product Product) error {
 
 	// Validate the product
 	if err := v.Struct(product); err != nil {
-    slog.Error("input_validation_fail", "error", err.Error(),"product", product) 
+    slog.Error("input_validation_fail", "error", err.Error(),"product", product)
     return errors.New("product_invalid")
 }
 
@@ -107,7 +107,7 @@ func Add(product Product) error {
 		slog.Error("sequence_fail", "error", err.Error(), "description", "got error from Redis while generating random string")
 		return errors.New("something_went_wrong")
 	}
-	
+
 
 	// Adding the ID to the product structure
 	product.ID = pid
@@ -141,58 +141,52 @@ pipe.HSet(ctx, fmt.Sprintf("product:%s", pid), product)
 	return nil
 }
 
-func parseProduct(product Product) (Product, error) {
-	if product.ID == "" {
-		return Product{}, errors.New("ID is missing")
-	}
+// func parseProduct(product Product) (Product, error) {
+// 	if product.ID == "" {
+// 		return Product{}, errors.New("ID is missing")
+// 	}
 
-	var merchantID string
-	if m["merchant_id"] != "" {
-		merchantID = m["merchant_id"]
-	}
+// 	var merchantID string
+// 	if m["merchant_id"] != "" {
+// 		merchantID = m["merchant_id"]
+// 	}
 
-	return Product{
-		ID:          strconv.FormatInt(id, 10),
-		Title:       m["title"],
-		Images:      m["image"],
-		Description: m["description"],
-	if product.Price == 0 {
-    log.Printf("ERROR: sequence_fail: Price is missing or zero")
-    return Product{}, errors.New("price_is_missing_or_zero")
-}
+// 	if product.Price == 0 {
+//     slog.Error("sequence_fail", "error", "Price is missing or zero", "product", product)
+//     return Product{}, errors.New("price_is_missing_or_zero")
+// }
 
-price := math.Round(product.Price * 100) / 100
+// price := math.Round(product.Price * 100) / 100
 
 
-	// Valider ou transformer l'ID du marchand
-	if product.MID == "" {
-		return Product{}, errors.New("merchant_id is missing")
-	}
+// 	// Valider ou transformer l'ID du marchand
+// 	if product.MID == "" {
+// 		return Product{}, errors.New("merchant_id is missing")
+// 	}
 
 
-	// Mettre en majuscule la première lettre de chaque mot du titre
-	t := cases.Title(language.English)
-	// Mettre en majuscule la première lettre du titre
-	product.Title = t.String(product.Title)
+// 	// Mettre en majuscule la première lettre de chaque mot du titre
+// 	t := cases.Title(language.English)
+// 	// Mettre en majuscule la première lettre du titre
+// 	product.Title = t.String(product.Title)
 
-	// Retirer les espaces inutiles dans la description
-	product.Description = strings.TrimSpace(product.Description)
-
-
-	return Product{
+// 	// Retirer les espaces inutiles dans la description
+// 	product.Description = strings.TrimSpace(product.Description)
 
 
-		ID:          strconv.FormatInt(id, 10),
-		Title:       product.Title,
-		Image:       product.Image,
-		Description: product.Description,
-		Price:       price,
-		Slug:        product.Slug,
-		MID:         product.MID,
-		Links:       product.Links,
-		Meta:        product.Meta,
-	}, nil
-}
+// 	return Product{
+
+// 		ID:          strconv.FormatInt(id, 10),
+// 		Title:       product.Title,
+// 		Image:       product.Image,
+// 		Description: product.Description,
+// 		Price:       price,
+// 		Slug:        product.Slug,
+// 		MID:         product.MID,
+// 		Links:       product.Links,
+// 		Meta:        product.Meta,
+// 	}, nil
+// }
 
 
 
@@ -230,8 +224,8 @@ func List(page int64) ([]Product, error) {
     cmdResult := cmd.(*redis.Cmd)
     m, err := cmdResult.Result()
     if err != nil {
-        log.Println("Error getting command result:", err)
-        continue
+			slog.Error("command_result_error", "error", err.Error(), "description", "Error getting command result")
+			continue
     }
 
 		if err != nil {
@@ -247,9 +241,9 @@ func List(page int64) ([]Product, error) {
     // Conversion en map[string]string si nécessaire
     stringMap := make(map[string]string)
     for k, v := range productMap {
-        strVal, ok := v.(string)
+        val, ok := v.(string)
         if ok {
-            stringMap[k] = strVal
+            stringMap[k] = val
         }
     }
 
@@ -275,7 +269,7 @@ func List(page int64) ([]Product, error) {
 			Meta:        meta,
 	}
 
-	product, err := parseProduct(tempProduct)
+	product, err := parse(tempProduct, data)
 			if err != nil {
 			continue
 		}
@@ -661,7 +655,4 @@ func UnSerializeMeta(c context.Context, s, sep string) map[string]string {
 
 	return meta
 }
-<<<<<<< HEAD
-=======
 
->>>>>>> 236ed19 (refacto)

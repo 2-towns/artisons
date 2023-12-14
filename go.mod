@@ -17,24 +17,14 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-<<<<<<< HEAD
-<<<<<<< HEAD
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-=======
->>>>>>> 7747128 (correction des erreurs de type pour l'affichage de la List)
-=======
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
->>>>>>> 9b1f061 (rebase et refacto)
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/mileusna/useragent v1.3.4 // indirect
+	github.com/mileusna/useragent v1.3.4
 	github.com/rivo/uniseg v0.4.4 // indirect
-<<<<<<< HEAD
 	github.com/rs/zerolog v1.29.1 // indirect
 	golang.org/x/image v0.11.0 // indirect
-=======
->>>>>>> 9b1f061 (rebase et refacto)
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.14.0 // indirect
 )
