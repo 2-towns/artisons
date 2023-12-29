@@ -258,7 +258,7 @@ description: 100 % coton pour les couleurs unies
 sku: 123
 price: 123.5
 quantity: 1
-status: online
+status:online
 weight: 12.4
 discount: 12.5
 tags: winter cold

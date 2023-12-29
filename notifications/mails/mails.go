@@ -42,6 +42,11 @@ func Send(c context.Context, email, subject, message string) error {
 		fmt.Sprintf("Subject: %s\r\n\r\n", subject) +
 		fmt.Sprintf("%s\r\n", message)
 
+	if conf.Email.Dry {
+		slog.LogAttrs(c, slog.LevelInfo, "will not send email because of dry")
+		return nil
+	}
+
 	auth := smtp.PlainAuth("", login, pass, host)
 	err = smtp.SendMail(fmt.Sprintf("%s:%s", host, port), auth, from, to, []byte(msg))
 

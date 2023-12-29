@@ -72,6 +72,7 @@ var Email = struct {
 	Username string
 	Password string
 	Port     string
+	Dry      bool
 }{
 	From:     "hello@debugmail.io",
 	Domain:   "debugmail.io",
@@ -79,6 +80,7 @@ var Email = struct {
 	Username: "a3a5f2d396a820",
 	Password: "12fcfd3c6edb95",
 	Port:     "25",
+	Dry:      os.Getenv("EMAIL_DRY") == "1",
 }
 
 // HasHomeDelivery enabled the "home" delivery if true
