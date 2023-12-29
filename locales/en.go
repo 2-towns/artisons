@@ -88,7 +88,6 @@ func LoadEn() {
 	message.SetString(language.English, "input_tagname_invalid", "The tag is invalid, must be lowercase alpha characters only.")
 	message.SetString(language.English, "input_tagparent_invalid", "The parent is invalid, must be lowercase alpha characters only.")
 	message.SetString(language.English, "input_title_invalid", "The title is invalid.")
-	message.SetString(language.English, "input_validation", "The field %s is not correct.")
 	message.SetString(language.English, "input_weight_invalid", "The weight is invalid.")
 	message.SetString(language.English, "input_wptoken_required", "The token is required.")
 	message.SetString(language.English, "input_zipcode_required", "The zipcode is required.")

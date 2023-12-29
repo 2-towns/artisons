@@ -195,13 +195,13 @@ func parseCsvLine(line []string) (products.Product, error) {
 	price, priceErr := strconv.ParseFloat(line[iprice], 32)
 	if priceErr != nil {
 		slog.Error("cannot parse the price", slog.Float64("price", price), slog.String("error", priceErr.Error()))
-		return products.Product{}, errors.New(printer.Sprintf("input_validation", "price"))
+		return products.Product{}, errors.New(printer.Sprintf("input_price_invalid", "price"))
 	}
 
 	quantity, quantityErr := strconv.ParseInt(line[iquantity], 10, 32)
 	if quantityErr != nil {
 		slog.Error("cannot parse the quantity", slog.Int64("quantity", quantity), slog.String("error", quantityErr.Error()))
-		return products.Product{}, errors.New(printer.Sprintf("input_validation", "quantity"))
+		return products.Product{}, errors.New(printer.Sprintf("input_quantity_invalid", "quantity"))
 	}
 
 	images := strings.Split(line[iimages], ";")
@@ -213,9 +213,9 @@ func parseCsvLine(line []string) (products.Product, error) {
 	var paths []string
 	for _, v := range images {
 		p, err := getFile(v)
-
 		if err != nil {
-			return products.Product{}, errors.New(printer.Sprintf("input_validation", "images"))
+			slog.Error("cannot get the file", slog.String("error", err.Error()))
+			return products.Product{}, errors.New(printer.Sprintf("input_images_invalid", "images"))
 		}
 
 		paths = append(paths, p)
@@ -223,7 +223,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 	if len(paths) != len(images) {
 		slog.Info("cannot parse the images", slog.Int("length", len(paths)), slog.Int("images", len(images)))
-		return products.Product{}, errors.New(printer.Sprintf("input_validation", "images"))
+		return products.Product{}, errors.New(printer.Sprintf("input_images_invalid", "images"))
 	}
 
 	length := len(line)
@@ -234,7 +234,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 		if weightErr != nil {
 			slog.Error("cannot parse the weight", slog.String("weight", line[iweight]), slog.String("error", weightErr.Error()))
-			return products.Product{}, errors.New(printer.Sprintf("input_validation", "weight"))
+			return products.Product{}, errors.New(printer.Sprintf("input_weight_invalid", "weight"))
 		} else {
 			weight = w
 		}
@@ -258,7 +258,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 			parts := strings.Split(v, optionSeparator)
 			if len(parts) != 2 {
 				slog.Info("cannot parse the option", slog.Int("index", j), slog.String("option", v))
-				return products.Product{}, errors.New(printer.Sprintf("input_validation", "options"))
+				return products.Product{}, errors.New(printer.Sprintf("input_options_invalid", "options"))
 			}
 
 			k := strings.ReplaceAll(parts[0], "\"", "")
@@ -269,7 +269,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 		if len(o) != len(options) {
 			slog.Info("cannot parse the options", slog.Int("length", len(o)), slog.Int("options", len(options)))
-			return products.Product{}, errors.New(printer.Sprintf("input_validation", "options"))
+			return products.Product{}, errors.New(printer.Sprintf("input_options_invalid", "options"))
 		}
 	}
 
