@@ -129,7 +129,7 @@ var Cookie = struct {
 	MaxAge float64
 }{
 	Domain: "",
-	Secure: true,
+	Secure: os.Getenv("COOKIE_SECURE") == "1",
 	// https://chromestatus.com/feature/4887741241229312
 	MaxAge: time.Hour.Seconds() * 24 * 400,
 }

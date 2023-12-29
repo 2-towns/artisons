@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WORKSPACE_DIR: /home/runner/work/gifthub/gifthub
+      COOKIE_SECURE: 0
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
