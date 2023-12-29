@@ -13,10 +13,6 @@ var line = []string{
 
 var header = []string{"sku", "title", "price", "currency", "quantity", "status", "description", "images", "weight", "tags", "links", "options"}
 
-func init() {
-	conf.ImgProxyPath = "../../../" + conf.ImgProxyPath
-}
-
 func TestImportReturnsErrorWhenHeadersAreMissing(t *testing.T) {
 	h := make([]string, 3)
 	copy(h, header)
