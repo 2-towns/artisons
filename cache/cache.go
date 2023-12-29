@@ -7,6 +7,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -29,7 +30,7 @@ func load(folder string, ext string) {
 			continue
 		}
 
-		buf, err := os.ReadFile(folder + "/" + name)
+		buf, err := os.ReadFile(path.Join(folder, name))
 
 		if err != nil {
 			log.Fatal(err)

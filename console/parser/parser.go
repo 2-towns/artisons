@@ -109,7 +109,8 @@ func downloadFile(url string) (string, error) {
 		return "", err
 	}
 
-	p := path.Join(os.TempDir(), fmt.Sprintf("%s.%s", id, extension))
+	filename := fmt.Sprintf("%s.%s", id, extension)
+	p := path.Join(os.TempDir(), filename)
 	file, err := os.Create(p)
 	if err != nil {
 		slog.Error("cannot generated local folder", slog.String("error", err.Error()), slog.String("extension", extension), slog.String("id", id))
@@ -124,9 +125,9 @@ func downloadFile(url string) (string, error) {
 		return "", err
 	}
 
-	slog.Info("file downloaded", slog.String("url", url))
+	slog.Info("file downloaded", slog.String("url", url), slog.String("id", id))
 
-	return p, nil
+	return filename, nil
 
 }
 
@@ -163,7 +164,8 @@ func copyFile(src string) (string, error) {
 		return "", errors.New(printer.Sprintf("error_http_general"))
 	}
 
-	p := path.Join(os.TempDir(), fmt.Sprintf("%s.%s", id, extension))
+	filename := fmt.Sprintf("%s.%s", id, extension)
+	p := path.Join(os.TempDir(), filename)
 
 	d, err := os.Create(p)
 	if err != nil {
@@ -179,9 +181,9 @@ func copyFile(src string) (string, error) {
 		return "", err
 	}
 
-	slog.Info("file copied successfully", slog.String("path", p))
+	slog.Info("file copied successfully", slog.String("path", p), slog.String("id", id))
 
-	return p, nil
+	return filename, nil
 }
 
 func parseCsvLine(line []string) (products.Product, error) {
@@ -210,19 +212,19 @@ func parseCsvLine(line []string) (products.Product, error) {
 		return products.Product{}, errors.New("input_image_1_required")
 	}
 
-	var paths []string
-	for _, v := range images {
-		p, err := getFile(v)
+	var iids []string
+	for index, v := range images {
+		iid, err := getFile(v)
 		if err != nil {
 			slog.Error("cannot get the file", slog.String("error", err.Error()))
-			return products.Product{}, errors.New(printer.Sprintf("input_images_invalid", "images"))
+			return products.Product{}, errors.New(printer.Sprintf("input_image_%d_invalid", index))
 		}
 
-		paths = append(paths, p)
+		iids = append(iids, iid)
 	}
 
-	if len(paths) != len(images) {
-		slog.Info("cannot parse the images", slog.Int("length", len(paths)), slog.Int("images", len(images)))
+	if len(iids) != len(images) {
+		slog.Info("cannot parse the images", slog.Int("length", len(iids)), slog.Int("images", len(images)))
 		return products.Product{}, errors.New(printer.Sprintf("input_images_invalid", "images"))
 	}
 
@@ -285,7 +287,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 		Tags:        tags,
 		Links:       links,
 		Meta:        options,
-		Image1:      paths[0],
+		Image1:      iids[0],
 	}
 
 	ctx := context.WithValue(context.Background(), contexts.Locale, language.English)
@@ -335,33 +337,36 @@ func createImages(product products.Product) error {
 	l.Info("creating previous images")
 
 	if product.Image1 != "" {
-		p := products.ImagePath(strings.Replace(product.Image1, os.TempDir(), "", 1))
-		if err := os.Rename(product.Image1, p); err != nil {
-			l.Error("cannot move the file", slog.String("old", product.Image1), slog.String("new", p), slog.String("error", err.Error()))
+		p := products.ImagePath(product.Image1)
+		old := path.Join(os.TempDir(), product.Image1)
+		if err := os.Rename(old, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
 		}
 	}
 
 	if product.Image2 != "" {
-		p := products.ImagePath(strings.Replace(product.Image2, os.TempDir(), "", 1))
-		if err := os.Rename(product.Image2, p); err != nil {
-			l.Error("cannot move the file", slog.String("old", product.Image2), slog.String("new", p), slog.String("error", err.Error()))
+		p := products.ImagePath(product.Image2)
+		old := path.Join(os.TempDir(), product.Image2)
+		if err := os.Rename(old, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
 		}
 	}
 
 	if product.Image3 != "" {
-		p := products.ImagePath(strings.Replace(product.Image3, os.TempDir(), "", 1))
-		if err := os.Rename(product.Image3, p); err != nil {
-			l.Error("cannot move the file", slog.String("old", product.Image3), slog.String("new", p), slog.String("error", err.Error()))
+		p := products.ImagePath(product.Image3)
+		old := path.Join(os.TempDir(), product.Image3)
+		if err := os.Rename(old, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
 		}
 	}
-
 	if product.Image4 != "" {
-		p := products.ImagePath(strings.Replace(product.Image4, os.TempDir(), "", 1))
-		if err := os.Rename(product.Image4, p); err != nil {
-			l.Error("cannot move the file", slog.String("old", product.Image4), slog.String("new", p), slog.String("error", err.Error()))
+		p := products.ImagePath(product.Image4)
+		old := path.Join(os.TempDir(), product.Image4)
+		if err := os.Rename(old, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
 		}
 	}
