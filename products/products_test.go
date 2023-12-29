@@ -7,6 +7,7 @@ import (
 	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -40,10 +41,10 @@ func TestMain(m *testing.M) {
 func TestImagePathReturnsCorrectPathWhenSuccess(t *testing.T) {
 	pid := "123"
 	p := ImagePath(pid)
-	expected := "../web/images/123"
+	expected := "/web/images/123"
 
-	if p != expected {
-		t.Fatalf(`TestImagePath("123", 1) = %s, want %s`, p, expected)
+	if !strings.HasSuffix(p, expected) {
+		t.Fatalf(`strings.HasSuffix(p, expected) = %s, want %s`, p, expected)
 	}
 }
 

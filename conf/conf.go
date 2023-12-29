@@ -7,7 +7,7 @@ import (
 )
 
 // ImgProxyPath is the path to imgproxy folder
-var ImgProxyPath = WorkingSpace + "/web/images"
+var ImgProxyPath = WorkingSpace + "web/images"
 
 // ImgProxyURL is the url to imgproxy
 var ImgProxyURL = "http://localhost:8080/"
