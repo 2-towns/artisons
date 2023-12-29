@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"gifthub/admin"
 	"gifthub/admin/login"
 	"gifthub/admin/urls"
@@ -50,21 +49,16 @@ func main() {
 	security.LoadCsp()
 	cache.Busting()
 
-	logger := httplog.NewLogger("http", httplog.Options{
-		LogLevel: slog.LevelDebug,
-		Concise:  true,
-		// RequestHeaders:   true,
-		// TimeFieldFormat:  time.RFC850,
-		Tags: map[string]string{
-			"debug": fmt.Sprintf("%t", conf.Debug),
-		},
-	})
+	l := httplog.Logger{
+		Logger:  slog.Default(),
+		Options: httplog.Options{},
+	}
 
 	router := chi.NewRouter()
 
-	router.Use(middleware.RequestID)
+	// router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
-	router.Use(httplog.RequestLogger(logger))
+	router.Use(httplog.RequestLogger(&l))
 	router.Use(locales.Middleware)
 	router.Use(security.Csrf)
 	router.Use(security.Headers)
