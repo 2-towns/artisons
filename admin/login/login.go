@@ -9,15 +9,52 @@ import (
 	"gifthub/http/httperrors"
 	"gifthub/http/httpext"
 	"gifthub/http/security"
-	"gifthub/locales"
 	"gifthub/templates"
 	"gifthub/users"
+	"html/template"
+	"log"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"golang.org/x/text/language"
 )
+
+var tpl *template.Template
+var hxtpl *template.Template
+var otptpl *template.Template
+
+func init() {
+	var err error
+
+	tpl, err = templates.Build("base.html").ParseFiles([]string{
+		"web/views/admin/base.html",
+		"web/views/admin/simple.html",
+		"web/views/admin/login/login.html",
+		"web/views/admin/icons/logo.svg",
+	}...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	hxtpl, err = templates.Build("login.html").ParseFiles([]string{
+		"web/views/admin/login/login.html",
+	}...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	otptpl, err = templates.Build("otp.html").ParseFiles(
+		"web/views/admin/login/otp.html",
+		"web/views/admin/js/otp.js.html",
+	)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+}
 
 func Form(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -31,35 +68,18 @@ func Form(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	files := []string{}
+	var t *template.Template
 
 	if isHX {
-		files = append(files,
-			"web/views/admin/htmx.html",
-			"web/views/admin/login/login.html",
-		)
+		t = hxtpl
 	} else {
-		files = append(files,
-			"web/views/admin/base.html",
-			"web/views/admin/simple.html",
-			"web/views/admin/login/login.html",
-			"web/views/admin/icons/logo.svg",
-		)
-	}
-
-	tpl, err := templates.Build(lang, isHX).ParseFiles(files...)
-	if err != nil {
-		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
-		return
-	}
-
-	if !isHX {
+		t = tpl
 		policy := fmt.Sprintf("default-src 'self'; script-src-elem 'self' %s;", security.CSP["otp"])
 		w.Header().Set("Content-Security-Policy", policy)
 	}
 
-	data := struct{}{}
-	if err = tpl.Execute(w, &data); err != nil {
+	data := struct{ Lang language.Tag }{lang}
+	if err := t.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }
@@ -93,23 +113,14 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	tpl, err := templates.Build(lang, true).ParseFiles(
-		"web/views/admin/htmx.html",
-		"web/views/admin/login/otp.html",
-		"web/views/admin/js/otp.js.html",
-	)
-
-	if err != nil {
-		httperrors.Alert(w, ctx, locales.TranslateError(err, lang))
-		return
-	}
 
 	data := struct {
+		Lang  language.Tag
 		Glue  string
 		Email string
-	}{glue, email}
+	}{lang, glue, email}
 
-	if err = tpl.Execute(w, &data); err != nil {
+	if err = otptpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }

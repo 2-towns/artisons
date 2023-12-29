@@ -15,6 +15,7 @@ import (
 	"gifthub/string/stringutil"
 	"gifthub/tracking"
 	"gifthub/users"
+	"gifthub/validators"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -89,8 +90,7 @@ func IsValidDelivery(c context.Context, d string) bool {
 	l := slog.With(slog.String("delivery", d))
 	l.LogAttrs(c, slog.LevelInfo, "checking delivery validity")
 
-	v := validator.New()
-	if err := v.Var(d, "oneof=collect home"); err != nil {
+	if err := validators.V.Var(d, "oneof=collect home"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
 		return false
 	}
@@ -112,8 +112,7 @@ func IsValidPayment(c context.Context, p string) bool {
 	l := slog.With(slog.String("payment", p))
 	l.LogAttrs(c, slog.LevelInfo, "checking payment validity")
 
-	v := validator.New()
-	if err := v.Var(c, "oneof=cash wire bitcoin card"); err != nil {
+	if err := validators.V.Var(c, "oneof=cash wire bitcoin card"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate  te payment", slog.String("error", err.Error()))
 		return false
 	}
@@ -155,8 +154,7 @@ func (o Order) Save(c context.Context) (string, error) {
 		return "", errors.New("title_cart_empty")
 	}
 
-	v := validator.New()
-	if err := v.Struct(o.Address); err != nil {
+	if err := validators.V.Struct(o.Address); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
@@ -308,8 +306,7 @@ func UpdateStatus(c context.Context, oid, status string) error {
 	l := slog.With(slog.String("oid", oid), slog.String("status", status))
 	l.LogAttrs(c, slog.LevelInfo, "updating the order")
 
-	v := validator.New()
-	if err := v.Var(c, "oneof=created processing delivering delivered canceled"); err != nil {
+	if err := validators.V.Var(c, "oneof=created processing delivering delivered canceled"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
 		return errors.New("error_http_badstatus")
 	}

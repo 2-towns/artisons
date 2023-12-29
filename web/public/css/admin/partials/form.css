@@ -1,13 +1,14 @@
 label {
 	display: block;
 	font-weight: 500;
-	margin-bottom: var(--spacing);
+	margin-bottom: calc(var(--spacing) / 2);
 }
 
 select,
-input {
+input:not([type="file"]) {
 	height: var(--input-height);
 	padding-left: var(--spacing);
+	padding-right: var(--spacing);
 	border-color: var(--border-color);
 	border-radius: var(--border-radius);
 	border-width: 1px;
@@ -17,6 +18,50 @@ input {
 	font-family: var(--font-family);
 	font-feature-settings: var(--font-feature-settings);
 	background-color: white;
+	box-shadow: var(--box-shadow-input);
+}
+
+input[type="file"] {
+	height: var(--input-height);
+	padding: var(--spacing);
+	border-color: var(--border-color);
+	border-radius: var(--border-radius);
+	border-width: 1px;
+	background-clip: padding-box;
+	border-style: solid;
+	appearance: none;
+	box-shadow: var(--box-shadow-input);
+	cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+	padding: var(--spacing);
+	margin: calc(var(--spacing) * -1);
+	-webkit-margin-end: var(--spacing);
+	margin-inline-end: var(--spacing);
+	color: var(--color);
+	pointer-events: none;
+	border-color: inherit;
+	border-style: solid;
+	border-width: 0;
+	border-inline-end-width: 1px;
+	border-radius: 0;
+	transition:
+		color 0.15s ease-in-out,
+		background-color 0.15s ease-in-out,
+		border-color 0.15s ease-in-out,
+		box-shadow 0.15s ease-in-out;
+}
+
+textarea {
+	border-color: var(--border-color);
+	border-radius: var(--border-radius);
+	border-width: 1px;
+	border-style: solid;
+	outline: 0;
+	font-family: var(--font-family);
+	box-shadow: var(--box-shadow-input);
+	padding: var(--spacing);
 }
 
 select {
@@ -28,11 +73,12 @@ select {
 	padding-right: calc(var(--spacing) * 3);
 }
 
-input {
+.input-100 {
 	width: 100%;
-	padding-right: var(--spacing);
 }
 
+textarea:active,
+textarea:focus,
 select:active,
 select:focus,
 input:active,
@@ -42,6 +88,10 @@ input:focus {
 }
 
 /* Remove chrome autofill color */
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -63,6 +113,7 @@ input:-internal-autofill-selected {
 	height: var(--input-height);
 	font-size: calc(var(--font-size) * 1.25);
 	text-align: center;
+	width: 100%;
 }
 
 .input-otp {
@@ -71,18 +122,46 @@ input:-internal-autofill-selected {
 	gap: var(--spacing);
 }
 
+.input-small {
+	display: inline-block;
+	margin-top: calc(var(--spacing) / 2);
+	color: var(--secondary);
+}
+
+.form {
+	max-width: 500px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .form-row {
+	position: relative;
+	margin-bottom: calc(var(--spacing) * 2);
+}
+
+.form-row-single {
 	margin-bottom: var(--spacing);
 }
 
+.form-row-single:has(.form-error) input,
+.form-row-single:has(.form-error) textarea,
+.form-row:has(.form-error) textarea,
 .form-row:has(.form-error) input {
 	border-color: var(--danger);
 }
 
+.form-row-single:has(.form-error) textarea:focus,
+.form-row:has(.form-error) textarea:focus,
+.form-row-single:has(.form-error) input:focus,
 .form-row:has(.form-error) input:focus {
 	box-shadow: 0 0 0 4px rgba(var(--danger-rgb), 0.25);
 }
 
+.form-row-single:has(.form-error) label,
+.form-row:has(.form-error) label,
+.form-row-single:has(.form-error) .input-small,
+.form-row:has(.form-error) .input-small,
+.form-row-single:has(.form-error) .form-error,
 .form-row:has(.form-error) .form-error {
 	color: var(--danger);
 }
@@ -110,11 +189,64 @@ input:-internal-autofill-selected {
 	animation: 1.5s linear infinite spinner-border;
 }
 
+.htmx-request {
+	pointer-events: none;
+	cursor: default;
+	opacity: 0.7;
+}
+
 .htmx-indicator {
+	display: none;
+}
+
+.htmx-request .htmx-hide {
 	display: none;
 }
 
 .htmx-request.spinner,
 .htmx-request .spinner {
 	display: inline-block;
+}
+
+.input-group {
+	box-shadow: var(--tblr-box-shadow-input);
+	border-radius: var(--tblr-border-radius);
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	width: 100%;
+}
+
+.input-group label {
+	margin-bottom: 0;
+	display: inline;
+}
+
+.input-link {
+	margin-top: calc(var(--spacing) / 2);
+	display: block;
+}
+
+.input-group .input,
+.input-group input {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	box-shadow: none;
+}
+
+.input-group a.button,
+.input-group button {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left: none;
+}
+
+.form-hide {
+	display: none;
+}
+
+.form-row input[type="checkbox"]:checked ~ .input-group .button,
+.form-row input[type="checkbox"]:checked ~ .input-link {
+	display: none;
 }

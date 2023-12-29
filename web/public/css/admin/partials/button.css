@@ -8,12 +8,18 @@ a.button {
 	white-space: nowrap;
 	padding-left: var(--spacing);
 	padding-right: var(--spacing);
+	/* Remove the border width */
 	height: var(--input-height);
 	border-radius: var(--border-radius);
 	line-height: var(--input-line-height);
 	font-weight: 500;
 	font-family: var(--font-family);
 	font-feature-settings: var(--font-feature-settings);
+}
+
+button:not(.button-primary),
+a.button:not(.button-primary) {
+	height: calc(var(--input-height) - 2px);
 }
 
 button:not(.button-primary),
@@ -58,6 +64,11 @@ a.button:hover {
 button .spinner {
 	color: white;
 	margin-right: var(--spacing);
+}
+
+button svg,
+.button svg {
+	color: var(--secondary);
 }
 
 .htmx-request button,

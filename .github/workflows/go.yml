@@ -38,7 +38,7 @@ jobs:
       - name: Populating data
         run: go run console/console.go populate
       - name: Run migration
-        run: go run console/console.go migration
+        run: go run console/console.go migrate
       - name: Build
         run: go build -v ./...
       - name: Run the unit tests

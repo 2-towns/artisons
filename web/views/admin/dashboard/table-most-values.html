@@ -2,13 +2,13 @@
 	<table class="">
 		<thead>
 			<tr>
-				<th>{{translate "label_dashboard_name"}}</th>
-				<th>{{translate "label_dashboard_visitors"}}</th>
-				<th>{{translate "label_dashboard_link"}}</th>
+				<th>{{translate .Lang "label_dashboard_name"}}</th>
+				<th>{{translate .Lang "label_dashboard_visitors"}}</th>
+				<th>{{translate .Lang "label_dashboard_link"}}</th>
 			</tr>
 		</thead>
 		<tbody>
-			{{ range index .}}
+			{{ range index .Data}}
 			<tr>
 				<td>
 					<div class="row row-align row-gap">{{.Key}}</div>

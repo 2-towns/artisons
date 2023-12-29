@@ -42,7 +42,7 @@ func main() {
 
 	switch command {
 
-	case "migration":
+	case "migrate":
 		{
 			ctx := context.Background()
 

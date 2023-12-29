@@ -111,7 +111,7 @@ Les données disponibles sont:
 Afin de pouvoir utiliser la recherche, il faut lancer le script de migration après chaque peuplement:
 
 ```
-go run console/console.go migration
+go run console/console.go migrate
 ```
 
 ## Profiter

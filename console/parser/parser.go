@@ -207,7 +207,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 	images := strings.Split(line[iimages], ";")
 	if len(images) == 0 {
 		slog.Info("cannot parse the empty images")
-		return products.Product{}, errors.New("input_image_required")
+		return products.Product{}, errors.New("input_image_1_required")
 	}
 
 	var paths []string
@@ -282,11 +282,10 @@ func parseCsvLine(line []string) (products.Product, error) {
 		Quantity:    int(quantity),
 		Status:      line[istatus],
 		Weight:      weight,
-		Length:      len(paths),
 		Tags:        tags,
 		Links:       links,
 		Meta:        options,
-		Images:      paths,
+		Image1:      paths[0],
 	}
 
 	ctx := context.WithValue(context.Background(), contexts.Locale, language.English)
@@ -318,7 +317,7 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 	}
 
 	for i := 0; i < img; i++ {
-		_, p := products.ImagePath(pid, i)
+		p := products.ImagePath(pid)
 
 		if err := os.Rename(v, p); err != nil {
 			l.Error("cannot remove the image", slog.String("path", p), slog.String("error", err.Error()))
@@ -335,16 +334,34 @@ func createImages(product products.Product) error {
 	l := slog.With(slog.String("id", product.ID))
 	l.Info("creating previous images")
 
-	for i, v := range product.Images {
-		folder, p := products.ImagePath(product.ID, i)
-
-		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
-			l.Error("cannot create the folder", slog.String("folder", folder), slog.String("error", err.Error()))
+	if product.Image1 != "" {
+		p := products.ImagePath(strings.Replace(product.Image1, os.TempDir(), "", 1))
+		if err := os.Rename(product.Image1, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", product.Image1), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
 		}
+	}
 
-		if err := os.Rename(v, p); err != nil {
-			l.Error("cannot move the file", slog.String("old", v), slog.String("new", p), slog.String("error", err.Error()))
+	if product.Image2 != "" {
+		p := products.ImagePath(strings.Replace(product.Image2, os.TempDir(), "", 1))
+		if err := os.Rename(product.Image2, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", product.Image2), slog.String("new", p), slog.String("error", err.Error()))
+			return errors.New(printer.Sprintf("error_http_general"))
+		}
+	}
+
+	if product.Image3 != "" {
+		p := products.ImagePath(strings.Replace(product.Image3, os.TempDir(), "", 1))
+		if err := os.Rename(product.Image3, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", product.Image3), slog.String("new", p), slog.String("error", err.Error()))
+			return errors.New(printer.Sprintf("error_http_general"))
+		}
+	}
+
+	if product.Image4 != "" {
+		p := products.ImagePath(strings.Replace(product.Image4, os.TempDir(), "", 1))
+		if err := os.Rename(product.Image4, p); err != nil {
+			l.Error("cannot move the file", slog.String("old", product.Image4), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
 		}
 	}
@@ -357,11 +374,27 @@ func createImages(product products.Product) error {
 func removeTmpFiles(product products.Product) {
 	slog.Info("remove temporary images")
 
-	if len(product.Images) >= 0 {
-		for _, v := range product.Images {
-			if err := os.Remove(v); err != nil {
-				slog.Error("cannot remove the file", slog.String("file", v), slog.String("error", err.Error()))
-			}
+	if product.Image1 != "" {
+		if err := os.Remove(product.Image1); err != nil {
+			slog.Error("cannot move the file", slog.String("old", product.Image1), slog.String("error", err.Error()))
+		}
+	}
+
+	if product.Image2 != "" {
+		if err := os.Remove(product.Image2); err != nil {
+			slog.Error("cannot move the file", slog.String("old", product.Image2), slog.String("error", err.Error()))
+		}
+	}
+
+	if product.Image3 != "" {
+		if err := os.Remove(product.Image3); err != nil {
+			slog.Error("cannot move the file", slog.String("old", product.Image3), slog.String("error", err.Error()))
+		}
+	}
+
+	if product.Image4 != "" {
+		if err := os.Remove(product.Image4); err != nil {
+			slog.Error("cannot move the file", slog.String("old", product.Image4), slog.String("error", err.Error()))
 		}
 	}
 
@@ -466,7 +499,6 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 func Import(data [][]string, mid string) (int, error) {
 	slog.Info("importing the data", slog.String("mid", mid))
 
-	// ctx := context.Background()
 	lines := 0
 	chans := make(chan int, len(data)-1)
 

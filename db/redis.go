@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"log/slog"
+	"strings"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -16,7 +17,6 @@ var Redis = redis.NewClient(&redis.Options{
 	Password: "",                 // no password set
 	DB:       conf.DatabaseIndex, // use default DB
 })
-
 var ProductIdx = "product-idx"
 var OrderIdx = "order-idx"
 
@@ -36,6 +36,7 @@ func ProductIndex(ctx context.Context) error {
 		"ON", "HASH",
 		"PREFIX", "1", "product:",
 		"SCHEMA",
+		"id", "TAG",
 		"title", "TEXT",
 		"sku", "TAG",
 		"description", "TEXT",
@@ -96,6 +97,50 @@ func ConvertMap(m map[interface{}]interface{}) map[string]string {
 	}
 
 	return v
+}
+
+// Escape escapes the key characters used in Redis Search by
+// adding backslashes.
+func Escape(value string) string {
+	replacements := map[string]string{
+		",": "\\,",
+		".": "\\.",
+		"<": "\\<",
+		">": "\\>",
+		"{": "\\{",
+		"}": "\\}",
+		"[": "\\[",
+		"]": "\\]",
+		`"`: "\\\"",
+		":": "\\:",
+		";": "\\;",
+		"!": "\\!",
+		"@": "\\@",
+		"#": "\\#",
+		"$": "\\$",
+		"%": "\\%",
+		"^": "\\^",
+		"&": "\\&",
+		"*": "\\*",
+		"(": "\\(",
+		")": "\\)",
+		"-": "\\-",
+		"+": "\\+",
+		"=": "\\=",
+		"~": "\\~",
+	}
+
+	s := value
+
+	for key, v := range replacements {
+		s = strings.ReplaceAll(s, key, v)
+	}
+
+	return s
+}
+
+func Unescape(s string) string {
+	return strings.ReplaceAll(s, "\\", "")
 }
 
 /*func SubscribeToExpireKeys() {

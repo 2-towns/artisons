@@ -12,6 +12,7 @@ import (
 	"gifthub/notifications/mails"
 	"gifthub/string/stringutil"
 	"gifthub/tracking"
+	"gifthub/validators"
 	"log/slog"
 	"math/rand"
 	"strconv"
@@ -73,8 +74,7 @@ func Otp(c context.Context, email string) (string, error) {
 	l := slog.With(slog.String("email", email))
 	l.LogAttrs(c, slog.LevelInfo, "generating a otp code")
 
-	v := validator.New()
-	if err := v.Var(email, "required,email"); err != nil {
+	if err := validators.V.Var(email, "required,email"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the email", slog.String("error", err.Error()))
 		return "", errors.New("input_email_invalid")
 	}
@@ -172,6 +172,11 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 	l := slog.With(slog.String("user_id", m["id"]))
 	l.LogAttrs(c, slog.LevelInfo, "parsing the user data")
 
+	if m["id"] == "" {
+		l.LogAttrs(c, slog.LevelInfo, "cannot continue with empty id")
+		return User{}, errors.New("error_http_general")
+	}
+
 	id, err := strconv.ParseInt(m["id"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the id", slog.String("error", err.Error()))
@@ -266,8 +271,7 @@ func List(c context.Context, page int) ([]User, error) {
 func (u User) SaveAddress(c context.Context, a Address) error {
 	slog.LogAttrs(c, slog.LevelInfo, "saving the address")
 
-	v := validator.New()
-	if err := v.Struct(a); err != nil {
+	if err := validators.V.Struct(a); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())

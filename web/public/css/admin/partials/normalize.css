@@ -58,3 +58,7 @@ a {
 progress {
 	inline-size: 100%;
 }
+
+form {
+	margin-bottom: 0;
+}

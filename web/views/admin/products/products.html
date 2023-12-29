@@ -1,14 +1,42 @@
 {{define "content"}}
-<table class="table-fixed">
-	<thead>
-		<tr>
-			<th colspan="2">{{translate "label_dashboard_name"}}</th>
-			<th>{{translate "label_dashboard_count"}}</th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-		fdsfds
-	</tbody>
-</table>
+<div hx-ext="alert, input">
+	<div id="alert">
+		{{if .Flash }}
+		<div class="alert alert-success box" role="alert">
+			<div class="alert-container">
+				{{template "success.svg" .}}
+				<div>
+					<b class="alert-title">{{translate .Lang "title_success_common"}}</b>
+					<p>{{translate .Lang .Flash}}</p>
+				</div>
+			</div>
+		</div>
+		{{end}}
+	</div>
+
+	<article class="card-nospace" id="products">
+		<div class="row row-align row-gap row-between box">
+			<div>
+				<h3>{{translate .Lang "label_dashboard_list"}}</h3>
+			</div>
+			<div>
+				<div id="spinner" class="htmx-indicator spinner spinner-white"></div>
+
+				<input
+					type="search"
+					class="form-control"
+					hx-get='{{urls "admin_products"}}?page={{.Pagination.Page}}'
+					hx-trigger="input changed delay:500ms, search"
+					hx-target="#table"
+					hx-indicator="#spinner"
+					hx-swap="outerHTML"
+					name="q"
+					placeholder='{{translate .Lang "label_dashboard_productssearchplaceholder"}}'
+				/>
+				<div id="search-error"></div>
+			</div>
+		</div>
+		{{template "products-table.html" .}}
+	</article>
+</div>
 {{end}}

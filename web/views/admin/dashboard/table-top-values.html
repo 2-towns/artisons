@@ -1,13 +1,13 @@
 <table class="table-fixed">
 	<thead>
 		<tr>
-			<th colspan="2">{{translate "label_dashboard_name"}}</th>
-			<th>{{translate "label_dashboard_count"}}</th>
+			<th colspan="2">{{translate .Lang "label_dashboard_name"}}</th>
+			<th>{{translate .Lang "label_dashboard_count"}}</th>
 			<th></th>
 		</tr>
 	</thead>
 	<tbody>
-		{{ range index .}}
+		{{ range index .Data}}
 		<tr>
 			<td colspan="2">
 				<div class="row row-align row-gap">{{.Key}}</div>

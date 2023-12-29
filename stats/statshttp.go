@@ -34,7 +34,10 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/public") || strings.HasPrefix(r.URL.Path, urls.AdminPrefix) || strings.HasPrefix(r.URL.Path, urls.AuthPrefix) {
+		if strings.HasPrefix(r.URL.Path, "/public") ||
+			strings.HasPrefix(r.URL.Path, "/favicon") ||
+			strings.HasPrefix(r.URL.Path, urls.AdminPrefix) ||
+			strings.HasPrefix(r.URL.Path, urls.AuthPrefix) {
 			next.ServeHTTP(w, r.WithContext(r.Context()))
 			return
 		}

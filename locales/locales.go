@@ -13,6 +13,10 @@ import (
 	"golang.org/x/text/message"
 )
 
+var trans = map[language.Tag]*message.Printer{
+	language.English: message.NewPrinter(language.English),
+}
+
 // GetPage returns the common translations for a page
 func GetPage(lang language.Tag, name string) map[string]string {
 	p := message.NewPrinter(lang)
@@ -33,22 +37,6 @@ var Default = language.English
 
 // Console is the default language for console
 var Console language.Tag = language.English
-
-// UntranslatedError contains the translation key
-type UntranslatedError struct {
-	Key string
-}
-
-// Error is here for error type compatibility
-func (e UntranslatedError) Error() string {
-	return e.Key
-}
-
-// TranslateError translates an error to a user friendly message
-func TranslateError(e error, tag language.Tag) string {
-	p := message.NewPrinter(tag)
-	return p.Sprint(e.Error())
-}
 
 // Middleware load the detected language in the context.
 // It looks into Accept-Language header and fallback
@@ -80,12 +68,20 @@ func Middleware(next http.Handler) http.Handler {
 	})
 }
 
-type TranslateFunc func(string, ...interface{}) string
+type TranslatorFunc func(message.Reference, ...interface{}) string
 
-func Translate(lang language.Tag) TranslateFunc {
+func Translator(lang language.Tag) TranslatorFunc {
 	p := message.NewPrinter(lang)
 
-	return func(name string, values ...interface{}) string {
-		return p.Sprintf(name, values...)
+	return p.Sprintf
+}
+
+func Translate(l language.Tag, msg string, attr ...interface{}) string {
+	t := trans[l]
+
+	if t == nil {
+		t = trans[Default]
 	}
+
+	return t.Sprintf(msg, attr...)
 }

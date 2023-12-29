@@ -27,4 +27,8 @@ web/images
 web/tracking/*
 !web/tracking/.gitkeep
 
+# upload 
+web/upload
+!web/upload/.gitkeep
+
 node_modules

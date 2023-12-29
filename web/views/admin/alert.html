@@ -1,11 +1,9 @@
-{{define "content"}}
-<div class="alert alert-danger" role="alert">
+<div class="alert alert-danger box" role="alert">
 	<div class="alert-container">
 		{{template "error.svg" .}}
 		<div>
-			<b class="alert-title">{{translate "title_error"}}</b>
-			<p>{{translate .Message}}</p>
+			<b class="alert-title">{{translate .Lang "title_error_common"}}</b>
+			<p>{{translate .Lang .Message}}</p>
 		</div>
 	</div>
 </div>
-{{end}}

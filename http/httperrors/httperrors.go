@@ -6,8 +6,8 @@ import (
 	"gifthub/admin/urls"
 	"gifthub/conf"
 	"gifthub/http/contexts"
-	"gifthub/locales"
 	"gifthub/templates"
+	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
@@ -17,6 +17,41 @@ import (
 	"golang.org/x/text/language"
 )
 
+var itpl *template.Template
+var atpl *template.Template
+var ptpl *template.Template
+
+func init() {
+	var err error
+
+	itpl, err = templates.Build("input-error.html").ParseFiles([]string{
+		conf.WorkingSpace + "web/views/admin/input-error.html",
+	}...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	atpl, err = templates.Build("alert.html").ParseFiles([]string{
+		conf.WorkingSpace + "web/views/admin/alert.html",
+		conf.WorkingSpace + "web/views/admin/icons/error.svg",
+	}...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	ptpl, err = templates.Build("base.html").ParseFiles(
+		conf.WorkingSpace+"web/views/admin/base.html",
+		conf.WorkingSpace+"web/views/admin/error.html",
+		conf.WorkingSpace+"web/views/admin/icons/back.svg",
+	)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+}
+
 func NotFound(w http.ResponseWriter, r *http.Request) {
 	Page(w, r.Context(), "error_http_notfound", 404)
 }
@@ -24,23 +59,17 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	tpl, err := templates.Build(lang, true).ParseFiles(
-		"web/views/admin/htmx.html",
-		"web/views/admin/input-error.html",
-	)
-	if err != nil {
-		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
-		return
-	}
-
-	data := struct{ Message string }{msg}
+	data := struct {
+		Lang    language.Tag
+		Message string
+	}{lang, msg}
 
 	key := strings.Split(msg, "_")[1]
 
 	w.Header().Set("HX-Retarget", fmt.Sprintf("#%s-error", key))
-	w.Header().Set("HX-Reswap", "innerHTML")
+	w.Header().Set("HX-Reswap", fmt.Sprintf("innerHTML show:#%s-row:top", key))
 
-	if err = tpl.Execute(w, &data); err != nil {
+	if err := itpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }
@@ -61,7 +90,7 @@ func Catch(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 // is related to an wrong input value, so this input will be updated.
 // Otherwise an alert will be displayed.
 func HXCatch(w http.ResponseWriter, ctx context.Context, msg string) {
-	if strings.HasPrefix("input_", msg) {
+	if strings.HasPrefix(msg, "input_") {
 		InputMessage(w, ctx, msg)
 	} else {
 		Alert(w, ctx, msg)
@@ -72,23 +101,16 @@ func HXCatch(w http.ResponseWriter, ctx context.Context, msg string) {
 func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	tpl, err := templates.Build(lang, true).ParseFiles(
-		"web/views/admin/htmx.html",
-		"web/views/admin/alert.html",
-		"web/views/admin/icons/error.svg",
-	)
-	if err != nil {
-		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
-		return
-	}
-
-	data := struct{ Message string }{msg}
+	data := struct {
+		Lang    language.Tag
+		Message string
+	}{lang, msg}
 
 	w.Header().Set("HX-Replace-Url", "false")
 	w.Header().Set("HX-Retarget", "#alert")
 	w.Header().Set("HX-Reswap", "innerHTML")
 
-	if err = tpl.Execute(w, &data); err != nil {
+	if err := atpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }
@@ -97,27 +119,16 @@ func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	tpl, err := templates.Build(lang, false).ParseFiles(
-		conf.WorkingSpace+"web/views/admin/base.html",
-		conf.WorkingSpace+"web/views/admin/error.html",
-		conf.WorkingSpace+"web/views/admin/icons/back.svg",
-	)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, locales.TranslateError(err, lang), http.StatusInternalServerError)
-		return
-	}
-
 	rid := ctx.Value(middleware.RequestIDKey).(string)
-
 	url := urls.AdminPrefix
-
 	data := struct {
+		Lang    language.Tag
 		Code    int
 		Link    string
 		Message string
 		RID     string
 	}{
+		lang,
 		code,
 		url,
 		msg,
@@ -126,5 +137,5 @@ func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 
 	w.WriteHeader(code)
 
-	tpl.Execute(w, &data)
+	ptpl.Execute(w, &data)
 }

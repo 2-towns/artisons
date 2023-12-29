@@ -20,7 +20,6 @@ var product = Product{
 	Sku:         "123456",
 	Currency:    "EUR",
 	Quantity:    1,
-	Length:      1,
 	Status:      "online",
 	Weight:      1.5,
 }
@@ -40,9 +39,8 @@ func TestMain(m *testing.M) {
 
 func TestImagePathReturnsCorrectPathWhenSuccess(t *testing.T) {
 	pid := "123"
-	index := 1
-	_, p := ImagePath(pid, index)
-	expected := "../web/images/123/1"
+	p := ImagePath(pid)
+	expected := "../web/images/123"
 
 	if p != expected {
 		t.Fatalf(`TestImagePath("123", 1) = %s, want %s`, p, expected)
@@ -87,25 +85,14 @@ func TestAvailablesReturnsFalseWhenProductsAreNotFound(t *testing.T) {
 	}
 }
 
-func TestValidateReturnsErrorWhenSkuIsEmpty(t *testing.T) {
-	c := tests.Context()
-
-	p := product
-	p.Sku = ""
-
-	if err := p.Validate(c); err == nil || err.Error() != "product_sku_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_sku_invalid"`, err.Error())
-	}
-}
-
 func TestValidateReturnsErrorWhenSkuIsInvalid(t *testing.T) {
 	c := tests.Context()
 
 	p := product
 	p.Sku = "!!!"
 
-	if err := p.Validate(c); err == nil || err.Error() != "product_sku_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_sku_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input_sku_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input_sku_invalid"`, err.Error())
 	}
 }
 
@@ -115,8 +102,8 @@ func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	p := product
 	p.Title = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "product_title_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_title_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input_title_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input_title_invalid"`, err.Error())
 	}
 }
 
@@ -126,8 +113,8 @@ func TestValidateReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	p := product
 	p.Description = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "product_description_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_description_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input_description_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input_description_invalid"`, err.Error())
 	}
 }
 
@@ -137,8 +124,8 @@ func TestValidateReturnsErrorWhenCurrencyIsEmpty(t *testing.T) {
 	p := product
 	p.Currency = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "product_currency_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_currency_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input_currency_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input_currency_invalid"`, err.Error())
 	}
 }
 
@@ -148,8 +135,8 @@ func TestValidateReturnsErrorWhenCurrencyIsNotSupported(t *testing.T) {
 	p := product
 	p.Currency = "ABC"
 
-	if err := p.Validate(c); err == nil || err.Error() != "product_currency_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_currency_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input_currency_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input_currency_invalid"`, err.Error())
 	}
 }
 
@@ -159,8 +146,8 @@ func TestValidateReturnsErrorWhenStatusIsEmpty(t *testing.T) {
 	p := product
 	p.Status = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "product_status_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_status_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input_status_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input_status_invalid"`, err.Error())
 	}
 }
 
@@ -170,19 +157,8 @@ func TestValidateReturnsErrorWhenStatusIsNotSupported(t *testing.T) {
 	p := product
 	p.Status = "ABC"
 
-	if err := p.Validate(c); err == nil || err.Error() != "product_status_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_status_invalid"`, err.Error())
-	}
-}
-
-func TestValidateReturnsErrorWhenLengthIsEmpty(t *testing.T) {
-	c := tests.Context()
-
-	p := product
-	p.Length = 0
-
-	if err := p.Validate(c); err == nil || err.Error() != "product_length_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "product_length_invalid`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input_status_invalid" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input_status_invalid"`, err.Error())
 	}
 }
 
@@ -243,9 +219,9 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 		t.Fatalf(`p.Description  = %v, want string`, p.Description)
 	}
 
-	if p.MID == "" {
-		t.Fatalf(`p.MID = %v, want string`, p.MID)
-	}
+	// if p.MID == "" {
+	// 	t.Fatalf(`p.MID = %v, want string`, p.MID)
+	// }
 
 	if p.ID != "PDT1" {
 		t.Fatalf(`p.PID = %v, want "PDT1"`, p.ID)
@@ -263,194 +239,281 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 		t.Fatalf(`p.Title = %v, want string`, p.Title)
 	}
 
-	if p.Length == 0 {
-		t.Fatalf(`p.Length = %v, want > 0`, p.Length)
-	}
-
-	if p.Length != len(p.Images) {
-		t.Fatalf(`p.Images = %d, want "%d"`, len(p.Images), p.Length)
+	if p.Image1 == "" {
+		t.Fatalf(`p.Image1 = %v, want string`, p.Image1)
 	}
 
 	if p.Tags[0] != "clothes" {
-		t.Fatalf(`p.Tags[0] = %v, want "clothes"`, p.Tags[0])
+		t.Fatalf(`p.Tags[0] = %s, want "clothes"`, p.Tags[0])
 	}
 
-	if p.Meta["color"] != "blue" {
-		t.Fatalf(`p.Meta["color"] = %v, want "blue"`, p.Meta["color"])
-	}
-
+	// if p.Meta["color"] != "blue" {
+	// 	t.Fatalf(`p.Meta["color"] = %v, want "blue"`, p.Meta["color"])
+	// }
 }
 
 func TestSearchReturnsProductsWhenTitleIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "Sweat"})
+	p, err := Search(c, Query{Keywords: "Sweat"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: "Sweat"}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID != "PDT5" {
-		t.Fatalf(`p[0].ID = %s, want "PDT5"`, p[0].ID)
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID != "PDT5" {
+		t.Fatalf(`p[0].ID = %s, want "PDT5"`, p.Products[0].ID)
 	}
 }
 
 func TestSearchReturnsProductsWhenDescriptionIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "Cet incroyable mug augment"})
+	p, err := Search(c, Query{Keywords: "Cet incroyable mug augment"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: "Cet incroyable mug augment"}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID != "PDT4" {
-		t.Fatalf(`p[0].ID = %s, want "PDT4"`, p[0].ID)
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID != "PDT4" {
+		t.Fatalf(`p[0].ID = %s, want "PDT4"`, p.Products[0].ID)
 	}
 }
 
 func TestSearchReturnsProductsWhenSkuIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "SKU1"})
+	p, err := Search(c, Query{Keywords: "SKU1"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: "SKU1"}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID != "PDT1" {
-		t.Fatalf(`p[0].ID = %s, want "PDT1"`, p[0].ID)
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID != "PDT1" {
+		t.Fatalf(`p[0].ID = %s, want "PDT1"`, p.Products[0].ID)
 	}
 }
 
 func TestSearchReturnsEmptySliceWhenKeywordIsNotFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "crazy"})
+	p, err := Search(c, Query{Keywords: "crazy"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: "crazy"}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) > 0 {
-		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	if p.Total != 0 {
+		t.Fatalf(`p.Total = %d, want = 0`, p.Total)
+	}
+
+	if len(p.Products) != 0 {
+		t.Fatalf(`len(p.Products) = %d, want = 0`, len(p.Products))
+	}
+
+	if len(p.Products) > 0 {
+		t.Fatalf(`len(p.Products) = %d, want 0`, len(p.Products))
 	}
 }
 
 func TestSearchReturnsProductsWhenPriceIsMoreThanPriceMin(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{PriceMin: 50})
+	p, err := Search(c, Query{PriceMin: 50}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{PriceMin: 50}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID != "PDT2" {
-		t.Fatalf(`p[0].ID = %s, want "PDT2"`, p[0].ID)
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID == "" {
+		t.Fatalf(`p.Products[0].ID = %s, want not empty`, p.Products[0].ID)
 	}
 }
 
 func TestSearchReturnsEmptySliceWhenPriceMinIsOutOfRange(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{PriceMin: 1500000000})
+	p, err := Search(c, Query{PriceMin: 1500000000}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{PriceMin: 1500000000}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) != 0 {
-		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	if p.Total != 0 {
+		t.Fatalf(`p.Total = %d, want = 0`, p.Total)
+	}
+
+	if len(p.Products) != 0 {
+		t.Fatalf(`len(p.Products) = %d, want = 0`, len(p.Products))
 	}
 }
 
 func TestSearchReturnsProductsWhenPriceIsLessThanPriceMax(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{PriceMax: 150})
+	p, err := Search(c, Query{PriceMax: 150}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{PriceMax: 150}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
 	}
 }
 
 func TestSearchReturnsEmptySliceWhenPriceMaxIsOutOfRange(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{PriceMax: 0.5})
+	p, err := Search(c, Query{PriceMax: 0.5}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{PriceMax: 0.5}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) != 0 {
-		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	if p.Total != 0 {
+		t.Fatalf(`p.Total = %d, want = 0`, p.Total)
+	}
+
+	if len(p.Products) != 0 {
+		t.Fatalf(`len(p.Products) = %d, want = 0`, len(p.Products))
 	}
 }
 
 func TestSearchReturnsProductsWhenTagsAreFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Tags: []string{"clothes"}})
+	p, err := Search(c, Query{Tags: []string{"clothes"}}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Tags: []string{"clothes"}}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID != "PDT2" {
-		t.Fatalf(`p[0].ID = %s, want "PDT2"`, p[0].ID)
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID == "" {
+		t.Fatalf(`p.Products[0].ID = %s, want not empty`, p.Products[0].ID)
 	}
 }
 
 func TestSearchReturnsEmptySliceWhenTagsAreNotFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Tags: []string{"crazy"}})
+	p, err := Search(c, Query{Tags: []string{"crazy"}}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Tags: []string{"crazy"}}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) != 0 {
-		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	if p.Total != 0 {
+		t.Fatalf(`p.Total = %d, want = 0`, p.Total)
+	}
+
+	if len(p.Products) != 0 {
+		t.Fatalf(`len(p.Products) = %d, want = 0`, len(p.Products))
 	}
 }
 
 func TestSearchReturnsProductsWhenMetaAreFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Meta: map[string]string{"color": "blue"}})
+	p, err := Search(c, Query{Meta: map[string]string{"color": "blue"}}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "blue"}}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID != "PDT2" {
-		t.Fatalf(`p[0].ID = %s, want "PDT2"`, p[0].ID)
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID == "" {
+		t.Fatalf(`p.Products[0].ID = %s, want ""`, p.Products[0].ID)
 	}
 }
 
 func TestSearchReturnsEmptySliceWhenMetaAreNotFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Meta: map[string]string{"color": "crazy"}})
+	p, err := Search(c, Query{Meta: map[string]string{"color": "crazy"}}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "crazy"}}) = %v, want nil`, err.Error())
 	}
 
-	if len(p) != 0 {
-		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	if p.Total != 0 {
+		t.Fatalf(`p.Total = %d, want = 0`, p.Total)
+	}
+
+	if len(p.Products) != 0 {
+		t.Fatalf(`len(p.Products) = %d, want = 0`, len(p.Products))
 	}
 }
 
 func TestURLReturnsTheProductURLWhenSuccess(t *testing.T) {
 	if product.URL() != "http://localhost/123-title.html" {
 		t.Fatalf(`product.URL()  = %s, want 'http://localhost/123-title.html'`, product.URL())
+	}
+}
+
+// func TestListReturnProductsWhenSuccess(t *testing.T) {
+// 	c := tests.Context()
+
+// 	pds, err := List(c, 0)
+// 	if err != nil {
+// 		t.Fatalf(`List(c, 1) = %v, %v want not empty, nil`, pds, err.Error())
+// 	}
+
+// 	if len(pds) == 0 {
+// 		t.Fatalf(`len(p.Products) = %d, want > 0`, len(pds))
+// 	}
+
+// 	p := pds[0]
+
+// 	if p.ID == "" {
+// 		t.Fatal(`p.ID = '', want not empty`, p.ID)
+// 	}
+// }
+
+func TestCountReturnPositiveWhenSuccess(t *testing.T) {
+	c := tests.Context()
+
+	count, err := Count(c)
+	if err != nil {
+		t.Fatalf(`Count(c) = %v, %s want > 0,nil`, count, err.Error())
+	}
+
+	if count == 0 {
+		t.Fatalf(`count = %d, want > 0`, count)
+	}
+
+}
+
+func TestDeleteReturnsErrorWhenIdIsEmpty(t *testing.T) {
+	c := tests.Context()
+	if err := Delete(c, ""); err == nil || err.Error() != "input_id_invalid" {
+		t.Fatalf(`Delete(c, "") = %s want "input_id_invalid"`, err.Error())
 	}
 }

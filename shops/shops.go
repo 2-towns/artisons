@@ -7,6 +7,7 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/users"
+	"gifthub/validators"
 	"log/slog"
 	"strings"
 	"time"
@@ -51,8 +52,7 @@ func (s Shop) Save(c context.Context) error {
 
 	s.Address.Lastname = "None"
 
-	v := validator.New()
-	if err := v.Struct(s); err != nil {
+	if err := validators.V.Struct(s); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the admin", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())

@@ -1,13 +1,12 @@
-{{define "content"}}
 <article id="otp">
-	<h2 class="text-center">{{translate "title_otp_sub"}}</h2>
+	<h2 class="text-center">{{translate .Lang "title_otp_sub"}}</h2>
 
 	<p class="text-center page-simple-message">
-		{{translate "message_otp_login" .Email}}
+		{{translate .Lang "message_otp_login" .Email}}
 	</p>
 
 	<form hx-post='{{urls "auth_login"}}'>
-		<div class="form-row">
+		<div id="otp-row" class="form-row-single">
 			<div class="input-otp">
 				<input
 					type="text"
@@ -82,11 +81,11 @@
 				hx-target=" #otp"
 				hx-swap="outerHTML"
 			>
-				{{translate "label_login_cancel"}}
+				{{translate .Lang "label_login_cancel"}}
 			</a>
 			<button class="button-full button-primary fill">
 				<div class="htmx-indicator spinner spinner-white"></div>
-				{{translate "label_login_verify"}}
+				{{translate .Lang "label_login_verify"}}
 			</button>
 		</div>
 
@@ -97,4 +96,3 @@
 
 	{{template "otp.js.html" }}
 </article>
-{{end}}

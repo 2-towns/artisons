@@ -33,8 +33,13 @@ func adminRouter() http.Handler {
 
 	r.Get(urls.Map["dashboard"], admin.Dashboard)
 	r.Get(urls.Map["products"], admin.Products)
+	r.Get("/products/add.html", admin.AddProductForm)
+	r.Get("/products/{id}/edit.html", admin.EditProductForm)
 
 	r.Post(urls.Map["demo"], stats.Demo)
+	r.Post("/products/add.html", admin.AddProduct)
+	r.Post("/products/{id}/edit.html", admin.EditProduct)
+	r.Post("/products/{id}/delete.html", admin.DeleteProduct)
 
 	return r
 }
@@ -85,6 +90,4 @@ func main() {
 	http.ListenAndServe(conf.ServerAddr, router)
 }
 
-// migration => migrate
-// calcule md5 js
-// add cache
+// searchin input error bien positioné + disparaitree

@@ -204,7 +204,7 @@ func TestOrderIncrementsDataWhenValid(t *testing.T) {
 
 	r, _ := db.Redis.Get(ctx, "stats:orders:revenues:"+now).Result()
 	fr, _ := strconv.ParseFloat(r, 64)
-	if fr != frevenues+total {
+	if fmt.Sprintf("%f", fr) != fmt.Sprintf("%f", frevenues+total) {
 		t.Fatalf(`revenues = %f, want %f`, fr, frevenues+total)
 	}
 }

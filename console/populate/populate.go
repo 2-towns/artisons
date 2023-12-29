@@ -21,7 +21,7 @@ func Run() error {
 	pipe := db.Redis.Pipeline()
 
 	del(ctx, pipe, "user:*")
-	del(ctx, pipe, "users:*")
+	del(ctx, pipe, "users")
 	del(ctx, pipe, "stats:*")
 	del(ctx, pipe, "product:*")
 	del(ctx, pipe, "tag:*")
@@ -54,7 +54,7 @@ func Run() error {
 		ctx,
 		pipe,
 		"T-shirt développeur unisexe JavaScript Park",
-		" 100 % coton pour les couleurs unies",
+		"100 % coton pour les couleurs unies",
 		"PDT2",
 		"SKU2",
 	)

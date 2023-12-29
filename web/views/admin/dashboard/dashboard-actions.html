@@ -1,7 +1,6 @@
 {{define "actions"}}
 
 <!-- -->
-<div id="alert"></div>
 <div class="row row-align row-gap">
 	<div id="spinner" class="htmx-indicator spinner spinner-white"></div>
 
@@ -13,9 +12,9 @@
 		hx-indicator="#spinner"
 		hx-get='{{urls "admin_dashboard"}}'
 	>
-		<option value="7">{{translate "label_dashboard_7days"}}</option>
-		<option value="14">{{translate "label_dashboard_14days"}}</option>
-		<option value="30">{{translate "label_dashboard_30days"}}</option>
+		<option value="7">{{translate .Lang "label_dashboard_7days"}}</option>
+		<option value="14">{{translate .Lang "label_dashboard_14days"}}</option>
+		<option value="30">{{translate .Lang "label_dashboard_30days"}}</option>
 	</select>
 
 	<a
@@ -27,11 +26,11 @@
 	>
 		{{if .Demo }}
 		<!---->
-		{{translate "label_dashboard_demodisable"}}
+		{{translate .Lang "label_dashboard_demodisable"}}
 		<!---->
 		{{else}}
 		<!---->
-		{{translate "label_dashboard_demoactivate"}}
+		{{translate .Lang "label_dashboard_demoactivate"}}
 		<!---->
 		{{end}}
 	</a>

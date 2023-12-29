@@ -9,18 +9,21 @@
 @import url("./partials/card.css");
 @import url("./partials/stats.css");
 @import url("./partials/table.css");
-@import url("./partials/footer.css");
+@import url("./partials/tooltip.css");
 
 :root {
 	--font-family: "InterVariable", -apple-system, BlinkMacSystemFont,
 		San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
 	--color: #182433;
 	--color-rgb: 24, 36, 51;
+	--box-shadow-input: 0 1px 1px rgba(var(--color-rgb), 0.06);
 	--primary: #206bc4;
 	--primary-rgb: 32, 107, 196;
+	--link-hover-color: #1a569d;
 	--background-color: #f6f8fb;
 	--secondary: #6c7a91;
 	--spacing: 12px;
+	--tooltip-background-color: hsl(205, 30%, 15%);
 	--font-size: 14px;
 	--button-color-hover: #f6f8fb;
 	--button-background-color-hover: rgba(var(--primary-rgb), 0.8);
@@ -33,10 +36,13 @@
 	--input-line-height: 1.4;
 	--input-height: 40px;
 	--danger: #d63939;
+	--success: #2fb344;
 	--danger-rgb: 214, 57, 57;
 	--box-shadow: rgba(24, 36, 51, 0.04) 0 2px 4px 0;
 	--font-feature-settings: "cv03", "cv04", "cv11";
 	--chart-height: 200px;
+	--pagination-disabled-color: #b8c4d4;
+	--input-button-color: #eef3f6;
 }
 
 ::selection {
@@ -73,6 +79,10 @@ h2 {
 	font-weight: 500;
 }
 
+/* a {
+	color: var(--primary);
+} */
+
 .page-simple {
 	border-top: 2px solid var(--primary);
 	height: 100%;
@@ -89,7 +99,4 @@ h2 {
 
 .icon {
 	margin-right: var(--spacing);
-}
-
-.test {
 }

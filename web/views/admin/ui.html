@@ -6,7 +6,7 @@
 			<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
 		</a>
 		<a href="#" hx-post='{{urls "admin_logout"}}' class="button">
-			{{translate "label_dashboard_logout"}}
+			{{translate .Lang "label_dashboard_logout"}}
 		</a>
 	</div>
 </header>
@@ -15,21 +15,21 @@
 	<div class="container">
 		<ul class="row">
 			<li class='row {{if eq .Page "dashboard"}} header-menu-active {{end}}'>
-				<a href='{{urls "admin_dashboard"}}'>
+				<a href='{{urls "admin_dashboard"}}' class="gutters row row-align">
 					{{template "home.svg" .}}
 
 					<span class="nav-link-title">
-						{{translate "label_dashboard_home"}}
+						{{translate .Lang "label_dashboard_home"}}
 					</span>
 				</a>
 			</li>
 
 			<li class='row {{if eq .Page "products"}} header-menu-active {{end}}'>
-				<a href='{{urls "admin_products"}}'>
+				<a href='{{urls "admin_products"}}' class="gutters row row-align">
 					{{template "building-store.svg" .}}
 
 					<span class="nav-link-title">
-						{{translate "label_dashboard_products"}}
+						{{translate .Lang "label_dashboard_products"}}
 					</span>
 				</a>
 			</li>
@@ -39,13 +39,13 @@
 
 <div class="container">
 	<div class="header-navigation row row-between row-align">
-		<h2>{{translate (printf "title_%s_page" .Page) }}</h2>
+		<h2>{{translate .Lang (printf "title_%s_page" .Page) }}</h2>
 		{{template "actions" .}}
 	</div>
 	{{template "content" .}}
 </div>
 
-<footer></footer>
+<footer class="box"></footer>
 {{end}}
 
 <!-- -->

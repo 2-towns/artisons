@@ -16,13 +16,8 @@ header .container {
 }
 
 .header-menu a {
-	padding-left: var(--spacing);
-	padding-right: var(--spacing);
-	display: inline;
 	text-decoration: none;
 	color: var(--font-color);
-	display: flex;
-	align-items: center;
 }
 
 .header-menu svg {

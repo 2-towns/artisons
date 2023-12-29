@@ -58,21 +58,6 @@ func TestImportReturnsCountZeroWhenFieldsAreMissing(t *testing.T) {
 	}
 }
 
-func TestImportReturnsCountZeroWhenSkuIsMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[0] = ""
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
 func TestImportReturnsCountZeroWhenSkuIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)

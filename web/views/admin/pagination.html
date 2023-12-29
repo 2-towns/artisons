@@ -1,0 +1,55 @@
+<div class="card-footer box row row-between">
+	<p>{{translate .Lang "label_dashboard_pagination" .Start .End .Total}}</p>
+	<ul class="pagination">
+		<li class="page-item {{if .IsFirst }} disabled {{end}}">
+			{{if not .IsFirst}}
+			<a
+				class="page-link"
+				href="#"
+				hx-get="{{.URL}}?page=0"
+				hx-target="#table"
+				hx-swap="outerHTML"
+			>
+				{{template "arrow-left.svg"}}
+			</a>
+			{{else }}
+			<a class="page-link" href="#"> {{template "arrow-left.svg"}} </a>
+			{{end}}
+		</li>
+
+		{{range .Items}}
+		<li class="page-item">
+			{{if eq . $.Page}}
+			<a class="page-link active" href="#">{{.}}</a>
+			{{else}}
+			<a
+				class="page-link"
+				href="#"
+				hx-get="{{$.URL}}?page={{.}}"
+				hx-target="#table"
+				hx-swap="outerHTML"
+				>{{.}}</a
+			>
+			{{end}}
+		</li>
+		{{end}}
+
+		<li class="page-item {{if .IsLast}} disabled {{end}}">
+			{{if not .IsLast}}
+			<a
+				class="page-link"
+				href="#"
+				hx-get="{{.URL}}?page={{.Max}}"
+				hx-target="#table"
+				hx-swap="outerHTML"
+			>
+				{{template "arrow-right.svg"}}
+			</a>
+			{{else }}
+			<a class="page-link" href="#"> {{template "arrow-right.svg"}} </a>
+			{{end}}
+		</li>
+	</ul>
+
+	<input type="hidden" name="page" id="page" value="{{.Page}}" />
+</div>

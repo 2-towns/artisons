@@ -1,14 +1,15 @@
 {{define "body"}}
 
 <main class="page-simple row row-align row-center text-center">
-	<div class="mini-container">
+	<div class="mini-container box">
 		<h1>{{.Code}}</h1>
-		<h2>{{translate "error_http_page" }}</h2>
+		<h2>{{translate .Lang "error_http_page" }}</h2>
 		<p class="subtitle">
-			{{translate .Message}} {{translate "error_http_requestid" .RID}}
+			{{translate .Lang .Message}} {{translate .Lang "error_http_requestid"
+			.RID}}
 		</p>
 		<a href="{{.Link}}" class="button btn-primary"
-			>{{template "back.svg"}} {{translate "label_button_error" }}</a
+			>{{template "back.svg"}} {{translate .Lang "label_button_error" }}</a
 		>
 	</div>
 </main>

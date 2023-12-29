@@ -9,6 +9,9 @@ import (
 // ImgProxyPath is the path to imgproxy folder
 var ImgProxyPath = "../web/images"
 
+// ImgProxyURL is the url to imgproxy
+var ImgProxyURL = "http://localhost:8080/"
+
 // IsCurrencySupported returns true if the currency is supported
 // in the application
 func IsCurrencySupported(c string) bool {
@@ -107,18 +110,28 @@ const Debug = false
 // DashboardItems give the numbers of items for most XX statistics
 const DashboardMostItems = 5
 
+// MaxUploadSize is the max size of the body for a
+// multipart request. 10 Mb.
+const MaxUploadSize = 1024 * 1024 * 10
+
 // WorkingSpace is the project root folder. Mainly used for testing
 var WorkingSpace = os.Getenv("WORKSPACE_DIR") + "/"
+
+// ImagesAllowed defines the image extensions supported by file upload
+var ImagesAllowed = []string{"image/jpg", "image/jpeg", "image/png"}
+
+// UploadFolder is the upload folder destination
+const UploadFolder = "web/upload"
 
 var Cookie = struct {
 	Domain string
 	Secure bool
-	MaxAge time.Duration
+	MaxAge float64
 }{
 	Domain: "",
 	Secure: true,
 	// https://chromestatus.com/feature/4887741241229312
-	MaxAge: time.Hour * 24 * 400,
+	MaxAge: time.Hour.Seconds() * 24 * 400,
 }
 
 // Pagination returns the start items index and the

@@ -1,0 +1,370 @@
+{{if .ID}} {{end}}
+<form
+	hx-post="{{if .ID }}/admin/products/{{.ID}}/edit.html{{else}}/admin/products/add.html{{end}}"
+	enctype="multipart/form-data"
+>
+	<div class="form box">
+		<div class="form-row" id="title-row">
+			<label for="title">{{translate .Lang "input_label_title"}}</label>
+			<input
+				id="title"
+				name="title"
+				required
+				class="input-100"
+				required
+				value="{{if .Data.Title }}{{.Data.Title}}{{end}}"
+			/>
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_titlesub"}}
+			</small>
+			<div id="title-error"></div>
+		</div>
+
+		<div class="form-row" id="description-row">
+			<label id="description">
+				{{translate .Lang "input_label_description"}}
+			</label>
+			<textarea
+				id="description"
+				rows="5"
+				name="description"
+				required
+				class="input-100"
+			>
+{{if .Data.Description}}{{.Data.Description}}{{end}}</textarea
+			>
+			<div id="description-error"></div>
+		</div>
+
+		<div class="form-row" id="sku-row">
+			<label for="sku">
+				{{translate .Lang "input_label_sku"}} -
+				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+			</label>
+			<input
+				id="sku"
+				name="sku"
+				class="input-100"
+				pattern="[a-zA-Z0-9]+"
+				value="{{if .Data.Sku }}{{.Data.Sku}}{{end}}"
+			/>
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_skusub"}}
+			</small>
+			<div id="sku-error"></div>
+		</div>
+
+		<div class="form-row" id="status-row">
+			<label for="status">{{translate .Lang "input_label_status"}}</label>
+			<select id="status" name="status" class="input-100">
+				{{if eq .Data.Status "online" }}
+				<option value="online" selected>
+					{{translate .Lang "label_dashboard_online"}}
+				</option>
+				{{else}}
+				<option value="online">
+					{{translate .Lang "label_dashboard_online"}}
+				</option>
+				{{end}}
+
+				<!---->
+
+				{{if eq .Data.Status "offline" }}
+				<option value="offline" selected>
+					{{translate .Lang "label_dashboard_offline"}}
+				</option>
+				{{else}}
+				<option value="offline">
+					{{translate .Lang "label_dashboard_offline"}}
+				</option>
+				{{end}}
+			</select>
+			<div id="status-error"></div>
+		</div>
+
+		<div class="form-row" id="price-row">
+			<label for="price">{{translate .Lang "input_label_price"}}</label>
+			<input
+				id="price"
+				name="price"
+				required
+				class="input-100"
+				type="number"
+				step=".01"
+				value="{{if .Data.Price }}{{twodigits .Data.Price}}{{end}}"
+			/>
+			<div id="price-error"></div>
+		</div>
+
+		<div class="form-row" id="discount-row">
+			<label for="discount">
+				{{translate .Lang "input_label_discount"}} -
+				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+			</label>
+			<input
+				id="discount"
+				name="discount"
+				class="input-100"
+				type="number"
+				step=".01"
+				value="{{if .Data.Discount }}{{twodigits.Data.Discount}}{{end}}"
+			/>
+			<div id="discount-error"></div>
+		</div>
+
+		<div class="form-row" id="quantity-row">
+			<label for="quantity">{{translate .Lang "input_label_quantity"}}</label>
+			<input
+				id="quantity"
+				name="quantity"
+				class="input-100"
+				required
+				type="number"
+				value="{{if .Data.Quantity }}{{.Data.Quantity}}{{end}}"
+			/>
+			<div id="quantity-error"></div>
+		</div>
+
+		<div class="form-row" id="weight-row">
+			<label for="weight">
+				{{translate .Lang "input_label_weight"}} -
+				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+			</label>
+			<input
+				id="weight"
+				name="weight"
+				class="input-100"
+				type="number"
+				step=".01"
+				value="{{if .Data.Weight }}{{twodigits .Data.Weight}}{{end}}"
+			/>
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_weightsub"}}
+			</small>
+			<div id="weight-error"></div>
+		</div>
+
+		<div class="form-row" id="tags-row">
+			<label for="tags">
+				{{translate .Lang "input_label_tags"}} -
+				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+			</label>
+			<input
+				id="tags"
+				name="tags"
+				class="input-100"
+				placeholder='{{translate .Lang "label_dashboard_tagsplaceholder"}}'
+				value='{{if .Data.Tags }}{{join .Data.Tags " "}}{{end}}'
+			/>
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_tagssub"}}
+			</small>
+			<div id="tags-error"></div>
+		</div>
+
+		<div class="form-row" id="image_1-row">
+			<label for="image_1">{{translate .Lang "input_label_image"}} 1</label>
+			<input
+				id="image_1"
+				name="image_1"
+				class="input-100"
+				type="file"
+				accept="image/png, image/jpeg, image/jpg"
+				{{if
+				.ID
+				}}{{else}}required{{end}}
+			/>
+
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_imagesub"}}
+			</small>
+
+			{{if .Data.Image1}}
+
+			<small class="input-link">
+				<a href="{{.Data.Image1}}" target="_blank" class="link">
+					{{.Data.Image1}}
+				</a>
+			</small>
+
+			{{end}}
+
+			<div id="image_1-error"></div>
+		</div>
+
+		<div class="form-row" id="image_2-row">
+			<label for="image_2">
+				{{translate .Lang "input_label_image"}} 2 -
+				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+			</label>
+
+			{{if .Data.Image2}}
+
+			<input
+				id="image_2_delete"
+				type="checkbox"
+				class="form-hide"
+				name="image_2_delete"
+			/>
+
+			{{end}}
+
+			<div class="input-group row">
+				<input
+					id="image_2"
+					name="image_2"
+					class="fill"
+					type="file"
+					accept="image/png, image/jpeg, image/jpg"
+				/>
+
+				{{if .Data.Image2}}
+
+				<label for="image_2_delete">
+					<a class="button"> {{template "close.svg"}} </a>
+				</label>
+
+				{{end}}
+			</div>
+
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_imagesub"}}
+			</small>
+
+			{{if .Data.Image2}}
+
+			<small class="input-link">
+				<a href="{{.Data.Image2}}" target="_blank" class="link">
+					{{.Data.Image2}}
+				</a>
+			</small>
+
+			{{end}}
+
+			<div id="image_2-error"></div>
+		</div>
+
+		<div class="form-row" id="image_3-row">
+			<label for="image_3">
+				{{translate .Lang "input_label_image"}} 3 -
+				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+			</label>
+
+			{{if .Data.Image3}}
+
+			<input
+				id="image_3_delete"
+				type="checkbox"
+				class="form-hide"
+				name="image_3_delete"
+			/>
+
+			{{end}}
+
+			<div class="input-group row">
+				<input
+					id="image_3"
+					name="image_3"
+					class="fill"
+					type="file"
+					accept="image/png, image/jpeg, image/jpg"
+				/>
+
+				{{if .Data.Image3}}
+
+				<label for="image_3_delete">
+					<a class="button"> {{template "close.svg"}} </a>
+				</label>
+
+				{{end}}
+			</div>
+
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_imagesub"}}
+			</small>
+
+			{{if .Data.Image3}}
+
+			<small class="input-link">
+				<a href="{{.Data.Image3}}" target="_blank" class="link">
+					{{.Data.Image3}}
+				</a>
+			</small>
+
+			{{end}}
+
+			<div id="image_3-error"></div>
+		</div>
+
+		<div class="form-row" id="image_4-row">
+			<label for="image_4">
+				{{translate .Lang "input_label_image"}} 4 -
+				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+			</label>
+
+			{{if .Data.Image4}}
+
+			<input
+				id="image_4_delete"
+				type="checkbox"
+				class="form-hide"
+				name="image_4_delete"
+			/>
+
+			{{end}}
+
+			<div class="input-group row">
+				<input
+					id="image_4"
+					name="image_4"
+					class="fill"
+					type="file"
+					accept="image/png, image/jpeg, image/jpg"
+				/>
+
+				{{if .Data.Image4}}
+
+				<label for="image_4_delete">
+					<a class="button"> {{template "close.svg"}} </a>
+				</label>
+
+				{{end}}
+			</div>
+
+			<small class="input-small">
+				{{translate .Lang "label_dashboard_imagesub"}}
+			</small>
+
+			{{if .Data.Image4}}
+
+			<small class="input-link">
+				<a href="{{.Data.Image4}}" target="_blank" class="link">
+					{{.Data.Image4}}
+				</a>
+			</small>
+
+			{{end}}
+
+			<div id="image_4-error"></div>
+		</div>
+
+		<div id="alert"></div>
+	</div>
+
+	<div class="card-footer box">
+		<div class="form row row-between row-gap">
+			<a href="/admin/products.html" class="button row row-align fill"
+				>{{translate .Lang "label_dashboard_back"}}</a
+			>
+			<button class="button-primary fill">
+				<div id="spinner" class="htmx-indicator spinner spinner-white"></div>
+
+				{{translate .Lang "label_dashboard_send"}}
+			</button>
+		</div>
+	</div>
+
+	{{if .ID}}
+	<input type="hidden" value="{{.ID}}" name="id" />
+	{{end}}
+</form>

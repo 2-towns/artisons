@@ -1,0 +1,13 @@
+{{define "content"}}
+
+<article class="card-nospace" hx-ext="alert, input">
+	<div class="row row-align box card-header">
+		<div>
+			<h3>{{translate .Lang "label_dashboard_create"}}</h3>
+		</div>
+	</div>
+
+	{{template "products-form.html" .}}
+</article>
+
+{{end}}

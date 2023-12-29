@@ -8,6 +8,7 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/string/stringutil"
+	"gifthub/validators"
 	"log/slog"
 	"os"
 	"strconv"
@@ -34,8 +35,7 @@ type Article struct {
 func (a Article) Save(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "creating a blog article")
 
-	v := validator.New()
-	if err := v.Struct(a); err != nil {
+	if err := validators.V.Struct(a); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())

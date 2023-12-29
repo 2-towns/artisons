@@ -7,11 +7,11 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
+	"gifthub/validators"
 	"log/slog"
 	"slices"
 	"strings"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 )
@@ -28,13 +28,12 @@ func (t Tag) Save(c context.Context) error {
 	l := slog.With(slog.String("tag", t.Name))
 	l.LogAttrs(c, slog.LevelInfo, "adding a new tag")
 
-	v := validator.New()
-	if err := v.Var(t.Name, "alpha"); err != nil {
+	if err := validators.V.Var(t.Name, "alpha"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate name", slog.String("name", t.Name), slog.String("error", err.Error()))
 		return errors.New("input_tagname_invalid")
 	}
 
-	if err := v.Var(t.Label, "required"); err != nil {
+	if err := validators.V.Var(t.Label, "required"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate label", slog.String("label", t.Label), slog.String("error", err.Error()))
 		return errors.New("input_taglabel_invalid")
 	}

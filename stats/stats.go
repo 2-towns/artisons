@@ -17,6 +17,7 @@ import (
 
 	"github.com/mileusna/useragent"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/text/language"
 )
 
 type MostValue struct {
@@ -24,7 +25,8 @@ type MostValue struct {
 	Value   float64
 	Percent float64
 	// Label   string
-	URL string
+	URL  string
+	Lang language.Tag
 }
 
 type Count struct {

@@ -13,7 +13,7 @@
 		<meta name="referrer" content="strict-origin-when-cross-origin" />
 		<meta
 			name="description"
-			content='{{translate "seo_dashboard_description"}}'
+			content='{{translate .Lang "seo_dashboard_description"}}'
 		/>
 		<link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
 		<link
@@ -23,7 +23,7 @@
 
 		{{template "head" .}}
 
-		<title>{{translate "seo_dashboard_title" }}</title>
+		<title>{{translate .Lang "seo_dashboard_title" }}</title>
 	</head>
 
 	<body>
@@ -31,6 +31,7 @@
 
 		<script src="/public/vendor/admin/htmx-1.9.2.min.js"></script>
 		{{template "scripts" .}}
+		<script src='/public/js/admin/admin.js?v{{cachebuster "admin.js"}}'></script>
 	</body>
 </html>
 

@@ -6,12 +6,55 @@ import (
 	"gifthub/http/httperrors"
 	"gifthub/stats"
 	"gifthub/templates"
+	"html/template"
+	"log"
 	"log/slog"
 	"net/http"
 	"strconv"
 
 	"golang.org/x/text/language"
 )
+
+var dashboardTpl *template.Template
+var dashboardHxTpl *template.Template
+
+func init() {
+	var err error
+
+	files := []string{
+		conf.WorkingSpace + "web/views/admin/dashboard/dashboard.html",
+		conf.WorkingSpace + "web/views/admin/dashboard/table-top-values.html",
+		conf.WorkingSpace + "web/views/admin/dashboard/table-most-values.html",
+		conf.WorkingSpace + "web/views/admin/icons/anchor.svg",
+		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
+	}
+
+	dashboardTpl, err = templates.Build("base.html").ParseFiles(append([]string{
+		conf.WorkingSpace + "web/views/admin/base.html",
+		conf.WorkingSpace + "web/views/admin/ui.html",
+		conf.WorkingSpace + "web/views/admin/icons/home.svg",
+		conf.WorkingSpace + "web/views/admin/dashboard/dashboard-actions.html",
+		conf.WorkingSpace + "web/views/admin/dashboard/dashboard-head.html",
+		conf.WorkingSpace + "web/views/admin/dashboard/dashboard-scripts.html",
+	}, files...)...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	dashboardHxTpl, err = templates.Build("dashboard-hx.html").ParseFiles(
+		append([]string{conf.WorkingSpace + "web/views/admin/dashboard/dashboard-hx.html"}, files...)...,
+	)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+}
+
+type table struct {
+	Data []stats.MostValue
+	Lang language.Tag
+}
 
 func Dashboard(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -44,68 +87,65 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	isHX, _ := ctx.Value(contexts.HX).(bool)
-
-	files := []string{
-		"web/views/admin/dashboard/dashboard.html",
-		"web/views/admin/dashboard/table-top-values.html",
-		"web/views/admin/dashboard/table-most-values.html",
-		"web/views/admin/icons/anchor.svg",
-		"web/views/admin/icons/building-store.svg",
-	}
-
-	if !isHX {
-		files = append([]string{
-			"web/views/admin/base.html",
-			"web/views/admin/ui.html",
-			"web/views/admin/icons/home.svg",
-			"web/views/admin/dashboard/dashboard-actions.html",
-			"web/views/admin/dashboard/dashboard-head.html",
-			"web/views/admin/dashboard/dashboard-scripts.html",
-		}, files...)
-	} else {
-		files = append([]string{"web/views/admin/htmx.html"}, files...)
-	}
-
-	tpl, err := templates.Build(lang, isHX).ParseFiles(files...)
-
-	if err != nil {
-		httperrors.Catch(w, ctx, err.Error(), 500)
-		return
-	}
-
 	demo := ctx.Value(contexts.Demo).(bool)
-
 	data := struct {
+		Lang           language.Tag
 		Page           string
 		Data           stats.Data
 		Days           int
-		Referers       []stats.MostValue
-		Browsers       []stats.MostValue
-		Systems        []stats.MostValue
-		ProductsShared []stats.MostValue
-		Visits         []stats.MostValue
-		Products       []stats.MostValue
+		Referers       table
+		Browsers       table
+		Systems        table
+		ProductsShared table
+		Visits         table
+		Products       table
 		Demo           bool
 		Currency       string
 	}{
+		lang,
 		"dashboard",
 		all,
 		days,
-		mvs[2],
-		mvs[1],
-		mvs[3],
-		mvs[5],
-		mvs[0],
-		mvs[4],
+		table{
+			Data: mvs[2],
+			Lang: lang,
+		},
+		table{
+			Data: mvs[1],
+			Lang: lang,
+		},
+		table{
+			Data: mvs[3],
+			Lang: lang,
+		},
+		table{
+			Data: mvs[5],
+			Lang: lang,
+		},
+		table{
+			Data: mvs[0],
+			Lang: lang,
+		},
+		table{
+			Data: mvs[4],
+			Lang: lang,
+		},
 		demo,
 		conf.Currency,
 	}
 
+	var t *template.Template
+
 	if isHX {
 		w.Header().Set("HX-Trigger-After-Settle", "ecm-dashboard-reload")
+		t = dashboardHxTpl
+	} else {
+		t = dashboardTpl
 	}
 
-	if err = tpl.Execute(w, &data); err != nil {
+	log.Println("fdfds")
+
+	if err = t.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 

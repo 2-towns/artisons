@@ -5,12 +5,15 @@ article {
 	border-radius: var(--border-radius);
 }
 
+.card-header {
+	border-bottom: 1px solid var(--border-color);
+}
+
 .card-nospace {
 	padding: 0;
 }
 
 .card-nospace h3 {
-	padding: var(--spacing);
 	margin: 0;
 	font-weight: 500;
 }
@@ -20,4 +23,9 @@ article {
 	color: var(--secondary);
 	font-weight: 600;
 	font-size: 12px;
+}
+
+.card-footer {
+	border-top: 1px solid var(--border-color);
+	background-color: var(--background-color);
 }
