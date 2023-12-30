@@ -266,7 +266,6 @@ image_1:file,image.jpg;
 image_2:file,image.jpg;
 HTTP 200
 [Asserts]
-body contains "fffdsfsdfsd"
 header "HX-Redirect" == "/admin/products.html"
 cookie "flash" exists
 cookie "flash[HttpOnly]" exists

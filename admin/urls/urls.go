@@ -3,6 +3,7 @@ package urls
 const (
 	AdminPrefix = "/admin"
 	AuthPrefix  = "/auth"
+	A           = ""
 )
 
 var Map = map[string]string{
