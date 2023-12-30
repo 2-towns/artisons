@@ -12,7 +12,6 @@ import (
 	"gifthub/tracking"
 	"gifthub/users"
 	"gifthub/validators"
-	"log"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -206,8 +205,6 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		slog.Error("cannot parse the product updatede at", slog.String("updated_at", data["updated_at"]))
 		return Product{}, errors.New("input_updated_at_invalid")
 	}
-
-	log.Println(data["meta"])
 
 	return Product{
 		ID:          data["id"],

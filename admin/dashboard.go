@@ -143,8 +143,6 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		t = dashboardTpl
 	}
 
-	log.Println("fdfds")
-
 	if err = t.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}

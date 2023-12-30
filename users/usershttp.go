@@ -10,9 +10,8 @@ import (
 	"gifthub/http/cookies"
 	"gifthub/http/httperrors"
 	"gifthub/string/stringutil"
+	"log/slog"
 	"net/http"
-
-	"golang.org/x/exp/slog"
 )
 
 func findBySessionID(c context.Context, sid string) (User, error) {
@@ -24,14 +23,13 @@ func findBySessionID(c context.Context, sid string) (User, error) {
 		return User{}, errors.New("error_http_unauthorized")
 	}
 
-	ctx := context.Background()
-	id, err := db.Redis.Get(ctx, "auth:"+sid).Result()
+	id, err := db.Redis.Get(c, "auth:"+sid).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the auth id from redis", slog.String("error", err.Error()))
 		return User{}, errors.New("error_http_unauthorized")
 	}
 
-	m, err := db.Redis.HGetAll(ctx, "user:"+id).Result()
+	m, err := db.Redis.HGetAll(c, "user:"+id).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the session from redis", slog.String("error", err.Error()))
 		return User{}, errors.New("error_http_unauthorized")

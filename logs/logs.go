@@ -31,10 +31,9 @@ func (h RequestIDHandler) Handle(ctx context.Context, r slog.Record) error {
 func Init() {
 	//handler := RequestIDHandler{slog.Default().Handler()}
 	handler := RequestIDHandler{slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
+		AddSource: false,
 	})}
 	logger := slog.New(handler)
-
 	slog.SetDefault(logger)
 	// https://github.com/golang/go/issues/61892#issuecomment-1675123776
 	log.SetOutput(os.Stderr)
