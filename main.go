@@ -83,5 +83,3 @@ func main() {
 
 	http.ListenAndServe(conf.ServerAddr, router)
 }
-
-// searchin input error bien positioné + disparaitree
