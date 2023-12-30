@@ -21,14 +21,15 @@
 go.work
 
 # improxy folder
-web/images
+web/images/*
+!web/images/.gitkeep
 
 # tracking logs
 web/tracking/*
 !web/tracking/.gitkeep
 
 # upload 
-web/upload
+web/upload/*
 !web/upload/.gitkeep
 
 node_modules
