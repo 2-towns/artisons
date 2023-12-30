@@ -195,7 +195,7 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 		return User{}, errors.New("error_http_general")
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "the user is parse", slog.String("sid", m["sid"]))
+	l.LogAttrs(c, slog.LevelInfo, "the user is parsed", slog.String("sid", m["sid"]))
 
 	return User{
 		ID:    id,

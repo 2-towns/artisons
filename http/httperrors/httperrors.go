@@ -100,11 +100,13 @@ func HXCatch(w http.ResponseWriter, ctx context.Context, msg string) {
 // Alert display an error message through a banner
 func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
+	rid, _ := ctx.Value(middleware.RequestIDKey).(string)
 
 	data := struct {
 		Lang    language.Tag
 		Message string
-	}{lang, msg}
+		RID     string
+	}{lang, msg, rid}
 
 	w.Header().Set("HX-Replace-Url", "false")
 	w.Header().Set("HX-Retarget", "#alert")

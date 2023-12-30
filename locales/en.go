@@ -26,7 +26,7 @@ func LoadEn() {
 	message.SetString(language.English, "error_csv_line", "Found error at line %d. %s")
 	message.SetString(language.English, "error_http_badstatus", "Received bad status %d from %s.")
 	message.SetString(language.English, "error_http_csrf", "The request is invalid. This will be reported.")
-	message.SetString(language.English, "error_http_general", "Something went wrong, please try again later.")
+	message.SetString(language.English, "error_http_general", "Something went wrong, please try again later. Your request id is %s.")
 	message.SetString(language.English, "error_http_notfound", "The page is not found or not accessible anymore.")
 	message.SetString(language.English, "error_http_page", "Oops..You just found an error page.")
 	message.SetString(language.English, "error_http_productnotfound", "Oops..the product is not found.")
