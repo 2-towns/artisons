@@ -23,7 +23,7 @@ otp: 1
 otp: 1 
 HTTP 200
 [Asserts]
-header "HX-Redirect" == "/admin"
+header "HX-Redirect" == "/admin/index.html"
 
 # Adding a product without price shows an error 
 POST {{host}}/admin/products/add.html

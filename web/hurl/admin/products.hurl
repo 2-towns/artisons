@@ -23,7 +23,7 @@ otp: 1
 otp: 1 
 HTTP 200
 [Asserts]
-header "HX-Redirect" == "/admin"
+header "HX-Redirect" == "/admin/index.html"
 
 # Display the products
 GET {{host}}/admin/products.html

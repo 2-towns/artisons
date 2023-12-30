@@ -3,7 +3,6 @@ package httperrors
 import (
 	"context"
 	"fmt"
-	"gifthub/admin/urls"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/templates"
@@ -122,17 +121,14 @@ func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	rid := ctx.Value(middleware.RequestIDKey).(string)
-	url := urls.AdminPrefix
 	data := struct {
 		Lang    language.Tag
 		Code    int
-		Link    string
 		Message string
 		RID     string
 	}{
 		lang,
 		code,
-		url,
 		msg,
 		rid,
 	}

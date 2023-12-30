@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"gifthub/admin/urls"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
@@ -82,7 +81,7 @@ func Products(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pag := templates.Paginate(page, len(res.Products), int(res.Total))
-	pag.URL = urls.Map["admin_products"]
+	pag.URL = "/admin/products.html"
 	pag.Lang = lang
 
 	flash := ""

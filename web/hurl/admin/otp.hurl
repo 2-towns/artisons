@@ -2,7 +2,7 @@
 GET {{host}}/admin/dashboard.html
 HTTP 302
 [Asserts]
-header "Location" == "/auth"
+header "Location" == "/auth/index.html"
 
 # Returns error when trying to post a non htmx request
 POST {{host}}/otp
@@ -71,10 +71,10 @@ otp: 1
 otp: 1 
 HTTP 200
 [Asserts]
-header "HX-Redirect" == "/admin"
+header "HX-Redirect" == "/admin/index.html"
 
 # Redirect when the admin is connected and try to access to auth
-GET {{host}}/auth
+GET {{host}}/auth/index.html
 HTTP 302
 [Asserts]
-header "Location" == "/admin"
+header "Location" == "/admin/index.html"

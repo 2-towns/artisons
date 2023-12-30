@@ -3,7 +3,6 @@ package users
 import (
 	"context"
 	"errors"
-	"gifthub/admin/urls"
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
@@ -127,7 +126,7 @@ func AdminOnly(next http.Handler) http.Handler {
 
 		if !ok {
 			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
-			http.Redirect(w, r, urls.AuthPrefix, http.StatusFound)
+			http.Redirect(w, r, "/auth/index.html", http.StatusFound)
 			return
 		}
 

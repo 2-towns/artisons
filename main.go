@@ -4,7 +4,6 @@ import (
 	"context"
 	"gifthub/admin"
 	"gifthub/admin/login"
-	"gifthub/admin/urls"
 	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/httperrors"
@@ -30,12 +29,12 @@ func adminRouter() http.Handler {
 	r.Use(users.AdminOnly)
 	r.Use(security.Csrf)
 
-	r.Get(urls.Map["dashboard"], admin.Dashboard)
-	r.Get(urls.Map["products"], admin.Products)
+	r.Get("/index.html", admin.Dashboard)
+	r.Get("/products.html", admin.Products)
 	r.Get("/products/add.html", admin.AddProductForm)
 	r.Get("/products/{id}/edit.html", admin.EditProductForm)
 
-	r.Post(urls.Map["demo"], stats.Demo)
+	r.Post("/demo.html", stats.Demo)
 	r.Post("/products/add.html", admin.AddProduct)
 	r.Post("/products/{id}/edit.html", admin.EditProduct)
 	r.Post("/products/{id}/delete.html", admin.DeleteProduct)
@@ -73,11 +72,11 @@ func main() {
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
 
 	router.Get("/", pages.Home)
-	router.Get(urls.Map["auth"], login.Form)
-	router.Post(urls.Map["auth_otp"], login.Otp)
-	router.Post(urls.Map["auth_login"], login.Login)
+	router.Get("/auth/index.html", login.Form)
+	router.Post("/auth/otp.html", login.Otp)
+	router.Post("/auth/login.html", login.Login)
 
-	router.Mount(urls.AdminPrefix, adminRouter())
+	router.Mount("/admin", adminRouter())
 
 	slog.LogAttrs(context.Background(), slog.LevelInfo, "starting server on addr", slog.String("addr", conf.ServerAddr))
 

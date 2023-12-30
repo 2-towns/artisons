@@ -2,7 +2,6 @@ package stats
 
 import (
 	"fmt"
-	"gifthub/admin/urls"
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
 	"gifthub/tracking"
@@ -28,7 +27,7 @@ func Demo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("HX-Redirect", urls.AdminPrefix)
+	w.Header().Set("HX-Redirect", "/admin/index.html")
 	w.Write([]byte(""))
 }
 
@@ -36,8 +35,8 @@ func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/public") ||
 			strings.HasPrefix(r.URL.Path, "/favicon") ||
-			strings.HasPrefix(r.URL.Path, urls.AdminPrefix) ||
-			strings.HasPrefix(r.URL.Path, urls.AuthPrefix) {
+			strings.HasPrefix(r.URL.Path, "/admin") ||
+			strings.HasPrefix(r.URL.Path, "/auth") {
 			next.ServeHTTP(w, r.WithContext(r.Context()))
 			return
 		}

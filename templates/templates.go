@@ -2,7 +2,6 @@ package templates
 
 import (
 	"fmt"
-	"gifthub/admin/urls"
 	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/locales"
@@ -35,7 +34,6 @@ func Build(name string) *template.Template {
 	return template.New(name).Funcs(template.FuncMap{
 		"translate":   locales.Translate,
 		"cachebuster": cache.Buster,
-		"urls":        urls.Get,
 		"date": func(t time.Time) string {
 			return t.Format("02 Jan 2006")
 		},

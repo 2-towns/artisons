@@ -7,7 +7,7 @@
 		{{translate .Lang "message_login_signin"}}
 	</p>
 
-	<form hx-post='{{urls "auth_otp"}}' hx-target="#article" hx-swap="outerHTML">
+	<form hx-post="/auth/otp.html" hx-target="#article" hx-swap="outerHTML">
 		<div id="email-row" class="form-row-single">
 			<label for="email">{{translate .Lang "input_label_email"}}</label>
 			<input id="email" name="email" type="email" required class="input-100" />

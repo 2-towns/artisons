@@ -5,7 +5,7 @@
 		{{translate .Lang "message_otp_login" .Email}}
 	</p>
 
-	<form hx-post='{{urls "auth_login"}}'>
+	<form hx-post="/auth/login.html">
 		<div id="otp-row" class="form-row-single">
 			<div class="input-otp">
 				<input
@@ -77,7 +77,7 @@
 			<a
 				href="#"
 				class="button fill"
-				hx-get='{{urls "auth_auth"}}'
+				hx-get="/auth/index.html"
 				hx-target=" #otp"
 				hx-swap="outerHTML"
 			>

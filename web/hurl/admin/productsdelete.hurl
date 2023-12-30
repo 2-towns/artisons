@@ -23,7 +23,7 @@ otp: 1
 otp: 1 
 HTTP 200
 [Asserts]
-header "HX-Redirect" == "/admin"
+header "HX-Redirect" == "/admin/index.html"
 
 # Get the last id 
 GET {{host}}/admin/products.html

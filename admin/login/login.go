@@ -2,7 +2,6 @@ package login
 
 import (
 	"fmt"
-	"gifthub/admin/urls"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
@@ -64,7 +63,7 @@ func Form(w http.ResponseWriter, r *http.Request) {
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
-		httpext.Redirect(w, r, urls.AdminPrefix, http.StatusFound)
+		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
 		return
 	}
 
@@ -90,7 +89,7 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
-		httpext.Redirect(w, r, urls.AdminPrefix, http.StatusFound)
+		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
 		return
 	}
 
@@ -131,7 +130,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
-		httpext.Redirect(w, r, urls.AdminPrefix, http.StatusFound)
+		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
 		return
 	}
 
@@ -163,6 +162,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	// Todo check user role to redirect on correct page
-	w.Header().Set("HX-Redirect", urls.Map["admin_dashboard"])
+	w.Header().Set("HX-Redirect", "/admin/index.html")
 	w.WriteHeader(http.StatusOK)
 }

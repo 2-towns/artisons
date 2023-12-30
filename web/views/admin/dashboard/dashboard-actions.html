@@ -10,7 +10,7 @@
 		hx-target="#dashboard"
 		hx-swap="outerHTML"
 		hx-indicator="#spinner"
-		hx-get='{{urls "admin_dashboard"}}'
+		hx-get="/admin/index.html"
 	>
 		<option value="7">{{translate .Lang "label_dashboard_7days"}}</option>
 		<option value="14">{{translate .Lang "label_dashboard_14days"}}</option>
@@ -20,7 +20,7 @@
 	<a
 		hx-swap="outerHTML"
 		hx-indicator="#spinner"
-		hx-post='{{urls "admin_demo"}}'
+		hx-post="/admin/demo.html"
 		href="#"
 		class="button button-primary"
 	>

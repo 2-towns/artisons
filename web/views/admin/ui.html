@@ -2,10 +2,10 @@
 
 <header class="header-navbar">
 	<div class="container">
-		<a class="row row-align" href='{{urls "admin_dashboard"}}'>
+		<a class="row row-align" href="/admin/index.html">
 			<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
 		</a>
-		<a href="#" hx-post='{{urls "admin_logout"}}' class="button">
+		<a href="#" hx-post="/auth/logout" class="button">
 			{{translate .Lang "label_dashboard_logout"}}
 		</a>
 	</div>
@@ -15,7 +15,7 @@
 	<div class="container">
 		<ul class="row">
 			<li class='row {{if eq .Page "dashboard"}} header-menu-active {{end}}'>
-				<a href='{{urls "admin_dashboard"}}' class="gutters row row-align">
+				<a href="/admin/index.html" class="gutters row row-align">
 					{{template "home.svg" .}}
 
 					<span class="nav-link-title">
@@ -25,7 +25,7 @@
 			</li>
 
 			<li class='row {{if eq .Page "products"}} header-menu-active {{end}}'>
-				<a href='{{urls "admin_products"}}' class="gutters row row-align">
+				<a href="/admin/products.html" class="gutters row row-align">
 					{{template "building-store.svg" .}}
 
 					<span class="nav-link-title">

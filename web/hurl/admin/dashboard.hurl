@@ -23,13 +23,13 @@ otp: 1
 otp: 1 
 HTTP 200
 [Asserts]
-header "HX-Redirect" == "/admin"
+header "HX-Redirect" == "/admin/index.html"
 
 # Display the dashboard
-GET {{host}}/admin
+GET {{host}}/admin/index.html
 HTTP 200
 [Asserts]
-xpath "//select[@name='days'][@hx-get='/admin']" exists
+xpath "//select[@name='days'][@hx-get='/admin/index.html']" exists
 xpath "//script[@id='visits']" exists
 xpath "//script[@id='unique-visits']" exists
 xpath "//script[@id='pageviews']" exists
@@ -41,7 +41,7 @@ xpath "//script[@src='/public/vendor/admin/chartist-plugin-tooltip.js']" exists
 xpath "//input[@id='days'][@value='7']" exists
 
 # Change the pagination
-GET {{host}}/admin?days=14
+GET {{host}}/admin/index.html?days=14
 HX-Request: true
 HTTP 200
 [Asserts]

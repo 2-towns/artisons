@@ -25,7 +25,7 @@
 				<input
 					type="search"
 					class="form-control"
-					hx-get='{{urls "admin_products"}}?page={{.Pagination.Page}}'
+					hx-get="/admin/products.html?page={{.Pagination.Page}}"
 					hx-trigger="input changed delay:500ms, search"
 					hx-target="#table"
 					hx-indicator="#spinner"
