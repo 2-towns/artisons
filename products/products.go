@@ -76,16 +76,6 @@ const (
 // ImageExtensions is the allowed extensions in the application
 const ImageExtensions = "jpg jpeg png"
 
-// ImageURL returns the imgproxy URL
-func ImageURL(id string) string {
-	if id == "" {
-		return ""
-	}
-
-	folder := fmt.Sprintf("%s/%s", conf.ImgProxyURL, id)
-	return folder
-}
-
 // GetImagePath returns the imgproxy path for a file
 // Later on, the method should be improve to generate subfolders path,
 // if the products are more than the unix file limit/
@@ -95,7 +85,7 @@ func ImagePath(id string) string {
 		return ""
 	}
 
-	folder := fmt.Sprintf("%s/%s", conf.ImgProxyPath, id)
+	folder := fmt.Sprintf("%s/%s", conf.ImgProxy.Path, id)
 	return folder
 }
 
@@ -221,10 +211,10 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		Tags:        strings.Split(db.Unescape(data["tags"]), ";"),
 		Links:       strings.Split(db.Unescape(data["links"]), ";"),
 		Meta:        UnSerializeMeta(c, db.Unescape(data["meta"]), ";"),
-		Image1:      ImageURL(data["image_1"]),
-		Image2:      ImageURL(data["image_2"]),
-		Image3:      ImageURL(data["image_3"]),
-		Image4:      ImageURL(data["image_4"]),
+		Image1:      data["image_1"],
+		Image2:      data["image_2"],
+		Image3:      data["image_3"],
+		Image4:      data["image_4"],
 		CreatedAt:   time.Unix(createdAt, 0),
 		UpdatedAt:   time.Unix(updatedAt, 0),
 	}, nil

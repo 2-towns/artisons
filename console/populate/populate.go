@@ -96,6 +96,7 @@ func Run() error {
 
 	var uid int64 = 1
 	order(ctx, pipe, "ORD1", uid, map[string]int64{"PDT1": 1})
+	order(ctx, pipe, "ORD2", uid, map[string]int64{"PDT2": 1})
 	cart(ctx, pipe, "CAR1", uid)
 
 	online := true

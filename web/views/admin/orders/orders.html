@@ -2,13 +2,19 @@
 <div hx-ext="alert, input">
 	<div id="alert">
 		{{if .Flash }}
-		<!---->
-		{{template "alert-success.html" .}}
-		<!---->
+		<div class="alert alert-success box" role="alert">
+			<div class="row row-align">
+				{{template "success.svg" .}}
+				<div>
+					<b class="alert-title">{{translate .Lang "title_success_common"}}</b>
+					<p>{{translate .Lang .Flash}}</p>
+				</div>
+			</div>
+		</div>
 		{{end}}
 	</div>
 
-	<article class="" id="products">
+	<article class="" id="orders">
 		<div class="row row-align row-gap row-between box">
 			<div>
 				<h3>{{translate .Lang "label_dashboard_list"}}</h3>
@@ -19,18 +25,18 @@
 				<input
 					type="search"
 					class="form-control"
-					hx-get="/admin/products.html?page={{.Pagination.Page}}"
+					hx-get="/admin/orders.html?page={{.Pagination.Page}}"
 					hx-trigger="input changed delay:500ms, search"
 					hx-target="#table"
 					hx-indicator="#spinner"
 					hx-swap="outerHTML"
 					name="q"
-					placeholder='{{translate .Lang "label_dashboard_productssearchplaceholder"}}'
+					placeholder='{{translate .Lang "label_dashboard_orderssearchplaceholder"}}'
 				/>
 				<div id="search-error"></div>
 			</div>
 		</div>
-		{{template "products-table.html" .}}
+		{{template "orders-table.html" .}}
 	</article>
 </div>
 {{end}}

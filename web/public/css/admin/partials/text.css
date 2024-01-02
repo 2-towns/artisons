@@ -1,0 +1,8 @@
+.text-group b {
+	display: inline-block;
+	margin-bottom: calc(var(--spacing) / 4);
+}
+
+.text-group p {
+	margin: 0;
+}

@@ -60,6 +60,7 @@ table td div {
 	word-wrap: break-word;
 	word-break: break-all;
 	white-space: normal;
+	min-width: 200px;
 }
 
 .pagination {

@@ -61,7 +61,7 @@ func (s Shop) Save(c context.Context) error {
 
 	now := time.Now()
 	_, err := db.Redis.HSet(context.Background(), "shop",
-		"logo", fmt.Sprintf("%s/%s", conf.ImgProxyPath, s.Logo),
+		"logo", fmt.Sprintf("%s/%s", conf.ImgProxy.Path, s.Logo),
 		"address_lastname", s.Address.Lastname,
 		"address_firstname", s.Address.Firstname,
 		"address_street", s.Address.Street,

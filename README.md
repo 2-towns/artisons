@@ -33,6 +33,19 @@ go run main.go
 ```
 
 Le serveur est démarré sur le port `8080` par défault.
+Pour obtenir la coloration des logs, on peut lancer le serveur de cette façon:
+
+```
+go run main.go > server.log
+```
+
+Le fichier log devrait s'afficher avec des couleurs dans l'IDE.
+
+Démarrer le serveur imgproxy:
+
+```
+./imgproxy.sh
+```
 
 ## Tester
 
@@ -91,22 +104,6 @@ Pour peupler les données, lancer la commande suivante:
 ```
 go run console/console.go populate
 ```
-
-Les données disponibles sont:
-
-- a sample product with `test` as id, `skutest` as sku et `100.5` as price
-- a sample user with `test` as sid and `1` as id
-- a sample order with `test` as id
-- a sample cart with `test` as id
-- a sample expired user with `expired` as sid and `2` as id
-- a sample blog article with `1` as id
-- a sample blog article with `2` as id
-- multiple tags:
-  - mens => tshirts, books, clothes
-  - womens => tshirts, clothes
-  - books => arabic
-  - en => womens, men
-  - games => kids
 
 Afin de pouvoir utiliser la recherche, il faut lancer le script de migration après chaque peuplement:
 

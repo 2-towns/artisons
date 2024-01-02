@@ -1,0 +1,37 @@
+<div id="notes">
+	{{range .Data.Notes}}
+	<div class="box list-item">
+		<div class="text-group">
+			<b>{{.Note}}</b>
+			<p class="secondary">{{datetime .CreatedAt}}</p>
+		</div>
+	</div>
+	{{end}}
+
+	<form
+		hx-post="/admin/orders/{{.Data.ID}}/note.html"
+		hx-target="#notes"
+		class="list-item"
+	>
+		<div class="box" id="note-row">
+			<label id="description"> {{translate .Lang "input_label_note"}} </label>
+			<textarea
+				id="note"
+				rows="3"
+				name="note"
+				required
+				class="input-100"
+			></textarea>
+			<small class="input-small">
+				{{translate .Lang "message_dashboard_note"}}
+			</small>
+			<div id="note-error"></div>
+		</div>
+
+		<div class="card-footer box row row-end">
+			<button class="button-primary">
+				{{translate .Lang "label_dashboard_add"}}
+			</button>
+		</div>
+	</form>
+</div>

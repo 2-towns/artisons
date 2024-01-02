@@ -33,6 +33,36 @@
 					</span>
 				</a>
 			</li>
+
+			<li class='row {{if eq .Page "orders"}} header-menu-active {{end}}'>
+				<a href="/admin/orders.html" class="gutters row row-align">
+					{{template "receipt.svg" .}}
+
+					<span class="nav-link-title">
+						{{translate .Lang "label_dashboard_orders"}}
+					</span>
+				</a>
+			</li>
+
+			<li class='row {{if eq .Page "blog"}} header-menu-active {{end}}'>
+				<a href="/admin/blog.html" class="gutters row row-align">
+					{{template "article.svg" .}}
+
+					<span class="nav-link-title">
+						{{translate .Lang "label_dashboard_blog"}}
+					</span>
+				</a>
+			</li>
+
+			<li class='row {{if eq .Page "settings"}} header-menu-active {{end}}'>
+				<a href="/admin/settings.html" class="gutters row row-align">
+					{{template "settings.svg" .}}
+
+					<span class="nav-link-title">
+						{{translate .Lang "label_dashboard_settings"}}
+					</span>
+				</a>
+			</li>
 		</ul>
 	</div>
 </header>

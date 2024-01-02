@@ -1,11 +1,13 @@
 package orders
 
 import (
+	"gifthub/conf"
 	"gifthub/products"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"gifthub/users"
 	"testing"
+	"time"
 
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -29,7 +31,7 @@ var order Order = Order{
 		Zipcode:       "31244",
 		Phone:         "0559682532",
 	},
-	CreatedAt: 1699628645,
+	CreatedAt: time.Unix(1699628645, 0),
 }
 
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {
@@ -117,11 +119,19 @@ func TestUpdateStatusReturnsNilWhenSuccess(t *testing.T) {
 	}
 }
 
+func TestUpdateStatusReturnsErrorWhenStatusIsEmpty(t *testing.T) {
+	ctx := tests.Context()
+	o := order
+	if err := UpdateStatus(ctx, o.ID, ""); err == nil || err.Error() != "input_status_invalid" {
+		t.Fatalf(`UpdateStatus(ctx, o.ID, "") = '%v', want 'input_status_invalid'`, err)
+	}
+}
+
 func TestUpdateStatusReturnsErrorWhenStatusIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	o := order
-	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "error_http_badstatus" {
-		t.Fatalf(`UpdateStatus(ctx, o.ID, "toto") = '%s', want 'error_http_badstatus'`, err.Error())
+	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "input_status_invalid" {
+		t.Fatalf(`UpdateStatus(ctx, o.ID, "toto") = '%s', want 'input_status_invalid'`, err.Error())
 	}
 }
 
@@ -253,60 +263,60 @@ func TestTotalReturnsTheOrderTotalWhenSuccess(t *testing.T) {
 
 func TestSearchReturnsOrdersWhenStatusIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Status: "created"})
+	p, err := Search(c, Query{Keyword: "created"}, 0, conf.DashboardMostItems)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Status: "created"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keyword: "created"}, 0, conf.DashboardMostItems) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID == "" {
-		t.Fatalf(`p[0].ID = %s, want not empty`, p[0].ID)
+	if p.Orders[0].ID == "" {
+		t.Fatalf(`p.Orders[0].ID = %s, want not empty`, p.Orders[0].ID)
 	}
 }
 
 func TestSearchReturnsOrdersWhenPaymentIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Payment: "card"})
+	p, err := Search(c, Query{Keyword: "card"}, 0, conf.DashboardMostItems)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Payment: "card"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keyword: "card"}, 0, conf.DashboardMostItems) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID == "" {
-		t.Fatalf(`p[0].ID = %s, want not empty`, p[0].ID)
+	if p.Orders[0].ID == "" {
+		t.Fatalf(`p.Orders[0].ID = %s, want not empty`, p.Orders[0].ID)
 	}
 }
 
 func TestSearchReturnsOrdersWhenDeliveryIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Delivery: "home"})
+	p, err := Search(c, Query{Keyword: "home"}, 0, conf.ItemsPerPage)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Delivery: "home"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keyword: "home"}, conf.ItemsPerPage)) = %v, want nil`, err.Error())
 	}
 
-	if len(p) == 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 
-	if p[0].ID == "" {
-		t.Fatalf(`p[0].ID = %s, want not empty`, p[0].ID)
+	if p.Orders[0].ID == "" {
+		t.Fatalf(`p.Orders[0].ID = %s, want not empty`, p.Orders[0].ID)
 	}
 }
 
 func TestSearchReturnsNoOrdersWhenDeliveryIsCrazy(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Delivery: "crazy"})
+	p, err := Search(c, Query{Keyword: "crazy"}, 0, conf.ItemsPerPage)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Delivery: "crazy"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keyword: "crazy"}, 0, conf.ItemsPerPage) = %v, want nil`, err.Error())
 	}
 
-	if len(p) != 0 {
-		t.Fatalf(`len(p) = %d, want > 0`, len(p))
+	if p.Total != 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
 	}
 }

@@ -27,6 +27,11 @@ func init() {
 		conf.WorkingSpace + "web/views/admin/ui.html",
 		conf.WorkingSpace + "web/views/admin/icons/home.svg",
 		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
+		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
+		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
+		conf.WorkingSpace + "web/views/admin/icons/article.svg",
+		conf.WorkingSpace + "web/views/admin/icons/seo.svg",
+		conf.WorkingSpace + "web/views/admin/icons/close.svg",
 		conf.WorkingSpace + "web/views/admin/products/products-add.html",
 		conf.WorkingSpace + "web/views/admin/products/products-form.html",
 	}...)

@@ -92,7 +92,7 @@ func TestListReturnsArticlesWhenSuccess(t *testing.T) {
 func TestDeleteReturnNilSuccess(t *testing.T) {
 	c := tests.Context()
 
-	image := fmt.Sprintf("%s/articles/%d", conf.ImgProxyPath, 3)
+	image := fmt.Sprintf("%s/articles/%d", conf.ImgProxy.Path, 3)
 	os.Create(image)
 
 	if err := Delete(c, 3); err != nil {

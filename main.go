@@ -14,8 +14,10 @@ import (
 	"gifthub/pages"
 	"gifthub/stats"
 	"gifthub/users"
+	"log"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -31,13 +33,17 @@ func adminRouter() http.Handler {
 
 	r.Get("/index.html", admin.Dashboard)
 	r.Get("/products.html", admin.Products)
+	r.Get("/orders.html", admin.Orders)
 	r.Get("/products/add.html", admin.AddProductForm)
 	r.Get("/products/{id}/edit.html", admin.EditProductForm)
+	r.Get("/orders/{id}/edit.html", admin.EditOrderForm)
 
 	r.Post("/demo.html", stats.Demo)
 	r.Post("/products/add.html", admin.AddProduct)
 	r.Post("/products/{id}/edit.html", admin.EditProduct)
 	r.Post("/products/{id}/delete.html", admin.DeleteProduct)
+	r.Post("/orders/{id}/status.html", admin.UpdateOrderStatus)
+	r.Post("/orders/{id}/note.html", admin.AddOrderNote)
 
 	return r
 }
@@ -47,7 +53,7 @@ func main() {
 	logs.Init()
 	security.LoadCsp()
 	cache.Busting()
-
+	log.Println(time.Now().Unix())
 	l := httplog.Logger{
 		Logger:  slog.Default(),
 		Options: httplog.Options{},

@@ -92,7 +92,7 @@ body .chartist-tooltip:before {
 }
 
 .stats-chart-container .ct-labels foreignObject {
-	height: 30px;
+	height: 40px;
 }
 
 .stats-chart-container-30 .ct-labels foreignObject:nth-child(2n) {

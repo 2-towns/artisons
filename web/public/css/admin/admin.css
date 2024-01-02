@@ -10,6 +10,8 @@
 @import url("./partials/stats.css");
 @import url("./partials/table.css");
 @import url("./partials/tooltip.css");
+@import url("./partials/text.css");
+@import url("./partials/list.css");
 
 :root {
 	--font-family: "InterVariable", -apple-system, BlinkMacSystemFont,

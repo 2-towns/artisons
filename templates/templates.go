@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gifthub/cache"
 	"gifthub/conf"
+	"gifthub/images"
 	"gifthub/locales"
 	"html/template"
 	"strings"
@@ -37,11 +38,21 @@ func Build(name string) *template.Template {
 		"date": func(t time.Time) string {
 			return t.Format("02 Jan 2006")
 		},
+		"datetime": func(t time.Time) string {
+			return t.Format("02 Jan 2006 15:04:05")
+		},
 		"twodigits": func(f float64) string {
 			return fmt.Sprintf("%.2f", f)
 		},
 		"join": func(values []string, sep string) string {
 			return strings.Join(values, sep)
+		},
+		"image": func(id, width, height string, cachebuster time.Time) string {
+			return images.URL(id, images.Options{
+				Width:       width,
+				Height:      height,
+				Cachebuster: cachebuster.Unix(),
+			})
 		},
 	})
 }

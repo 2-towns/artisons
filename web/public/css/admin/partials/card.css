@@ -1,5 +1,4 @@
 article {
-	padding: calc(var(--spacing) * 2);
 	background-color: white;
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius);
@@ -9,13 +8,14 @@ article {
 	border-bottom: 1px solid var(--border-color);
 }
 
-.card-nospace {
-	padding: 0;
+.card-separator {
+	margin-bottom: var(--spacing);
 }
 
-.card-nospace h3 {
-	margin: 0;
+article h3 {
 	font-weight: 500;
+	margin-top: 0;
+	margin-bottom: 0;
 }
 
 .card-subheader {

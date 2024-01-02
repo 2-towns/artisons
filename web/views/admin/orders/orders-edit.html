@@ -1,0 +1,206 @@
+{{define "content"}}
+
+<div hx-ext="alert, input">
+	<div id="alert"></div>
+
+	<div class="row row-between row-gap">
+		<div class="fill">
+			<article class="card-separator">
+				<div class="card-header box">
+					<h3>{{translate .Lang "label_dashboard_products"}}</h3>
+				</div>
+				<div>
+					{{range .Data.Products}}
+					<div class="row row-gap row-align row-between box list-item">
+						<div class="row row-gap row-align">
+							<img
+								src='{{image .Image1 "" "48" .CreatedAt}}'
+								alt="{{.Title}}"
+								height="48"
+								width="48"
+							/>
+							<div class="row row-between">
+								<div class="text-group">
+									<b>{{.Title}}</b>
+									<p class="secondary">
+										{{.Quantity}} x {{.Price}} {{$.Currency}}
+									</p>
+								</div>
+								<a href=""> </a>
+							</div>
+						</div>
+						<a
+							href="/admin/products/{{.ID}}/edit.html"
+							target="_blank"
+							class="link"
+						>
+							{{template "anchor.svg"}}
+						</a>
+					</div>
+					{{end}}
+				</div>
+			</article>
+
+			<article class="">
+				<div>
+					<div class="card-header box">
+						<h3>{{translate .Lang "label_dashboard_info"}}</h3>
+					</div>
+
+					<div>
+						<div class="text-group box list-item">
+							<b> {{translate .Lang "label_dashboard_id"}}</b>
+							<p class="secondary">{{.Data.ID}}</p>
+						</div>
+
+						<div class="text-group box list-item">
+							<b> {{translate .Lang "label_dashboard_total"}}</b>
+							<p class="secondary">{{.Data.Total}} {{.Currency}}</p>
+						</div>
+
+						<div class="text-group box list-item">
+							<b> {{translate .Lang "label_dashboard_delivery"}}</b>
+							<p class="secondary">
+								{{translate .Lang "dynamic_delivery_" .Data.Delivery}}
+							</p>
+						</div>
+
+						<div class="text-group box list-item">
+							<b> {{translate .Lang "label_dashboard_payment"}}</b>
+							<p class="secondary">
+								{{translate .Lang "dynamic_payment_" .Data.Payment}}
+							</p>
+						</div>
+
+						<div class="text-group box list-item">
+							<b> {{translate .Lang "label_dashboard_name"}}</b>
+							<p class="secondary">
+								{{.Data.Address.Firstname}} {{.Data.Address.Lastname}}
+							</p>
+						</div>
+
+						<div class="text-group box list-item">
+							<b> {{translate .Lang "label_dashboard_address"}}</b>
+							<p class="secondary">
+								{{.Data.Address.Street}} {{.Data.Address.Complementary}}
+							</p>
+						</div>
+
+						<div class="text-group box list-item">
+							<b> {{translate .Lang "label_dashboard_city"}}</b>
+							<p class="secondary">
+								{{.Data.Address.City}} {{.Data.Address.Zipcode}}
+							</p>
+						</div>
+
+						<div class="text-group box list-item">
+							<b>{{translate .Lang "label_dashboard_phone"}}</b>
+							<p class="secondary">{{.Data.Address.Phone}}</p>
+						</div>
+					</div>
+				</div>
+				<div class="card-footer box row row-start">
+					<a href="/admin/orders.html" class="button row row-align">
+						{{translate .Lang "label_dashboard_back"}}
+					</a>
+				</div>
+			</article>
+		</div>
+		<div class="fill">
+			<article class="card-separator">
+				<form
+					hx-post="/admin/orders/{{.Data.ID}}/status.html"
+					hx-target="#alert"
+				>
+					<div class="box">
+						<h3>{{translate .Lang "label_dashboard_status"}}</h3>
+
+						<p class="secondary">
+							{{translate .Lang "message_dashboard_status"}}
+						</p>
+
+						<select id="status" name="status" class="input-100">
+							{{if eq .Data.Status "created" }}
+							<option value="created" selected>
+								{{translate .Lang "label_dashboard_created"}}
+							</option>
+							{{else}}
+							<option value="created">
+								{{translate .Lang "label_dashboard_created"}}
+							</option>
+							{{end}}
+
+							<!---->
+
+							{{if eq .Data.Status "processing" }}
+							<option value="processing" selected>
+								{{translate .Lang "label_dashboard_processing"}}
+							</option>
+							{{else}}
+							<option value="processing">
+								{{translate .Lang "label_dashboard_processing"}}
+							</option>
+							{{end}}
+
+							<!---->
+
+							{{if eq .Data.Status "delivering" }}
+							<option value="delivering" selected>
+								{{translate .Lang "label_dashboard_delivering"}}
+							</option>
+							{{else}}
+							<option value="delivering">
+								{{translate .Lang "label_dashboard_delivering"}}
+							</option>
+							{{end}}
+
+							<!---->
+
+							{{if eq .Data.Status "delivered" }}
+							<option value="delivered" selected>
+								{{translate .Lang "label_dashboard_delivered"}}
+							</option>
+							{{else}}
+							<option value="delivered">
+								{{translate .Lang "label_dashboard_delivered"}}
+							</option>
+							{{end}}
+
+							<!---->
+
+							{{if eq .Data.Status "canceled" }}
+							<option value="canceled" selected>
+								{{translate .Lang "label_dashboard_canceled"}}
+							</option>
+							{{else}}
+							<option value="canceled">
+								{{translate .Lang "label_dashboard_canceled"}}
+							</option>
+							{{end}}
+						</select>
+					</div>
+
+					<div class="card-footer box row row-end">
+						<button class="button-primary">
+							<div
+								id="spinner"
+								class="htmx-indicator spinner spinner-white"
+							></div>
+
+							{{translate .Lang "label_dashboard_save"}}
+						</button>
+					</div>
+				</form>
+			</article>
+
+			<article class="">
+				<div class="card-header box">
+					<h3>{{translate .Lang "label_dashboard_notes"}}</h3>
+				</div>
+
+				{{template "orders-notes.html" .}}
+			</article>
+		</div>
+	</div>
+	{{end}}
+</div>

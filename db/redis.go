@@ -71,9 +71,11 @@ func OrderIndex(ctx context.Context) error {
 		"ON", "HASH",
 		"PREFIX", "1", "order:",
 		"SCHEMA",
+		"id", "TAG",
 		"status", "TAG",
 		"delivery", "TAG",
 		"payment", "TAG",
+		"type", "TAG",
 		"created_at", "NUMERIC", "SORTABLE",
 		"updated_at", "NUMERIC", "SORTABLE",
 	).Result()

@@ -27,6 +27,10 @@ func init() {
 		conf.WorkingSpace + "web/views/admin/dashboard/table-most-values.html",
 		conf.WorkingSpace + "web/views/admin/icons/anchor.svg",
 		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
+		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
+		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
+		conf.WorkingSpace + "web/views/admin/icons/article.svg",
+		conf.WorkingSpace + "web/views/admin/icons/seo.svg",
 	}
 
 	dashboardTpl, err = templates.Build("base.html").ParseFiles(append([]string{

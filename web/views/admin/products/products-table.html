@@ -1,99 +1,101 @@
-<div id="table">
-	<table>
-		<thead>
-			<tr>
-				<th>{{translate .Lang "label_dashboard_id"}}</th>
-				<th>{{translate .Lang "label_dashboard_title"}}</th>
-				<th>{{translate .Lang "label_dashboard_price"}}</th>
-				<th>{{translate .Lang "label_dashboard_sku"}}</th>
-				<th>{{translate .Lang "label_dashboard_status"}}</th>
-				<th>{{translate .Lang "label_dashboard_updatedat"}}</th>
-				<th></th>
-			</tr>
-		</thead>
-		<tbody>
-			{{ if .Empty }}
-			<tr>
-				<td colspan="9" class="text-center box">
-					{{translate .Lang "label_dashboard_empty"}}
-				</td>
-			</tr>
-			{{else}}
-			<!-- -->
+<div class="table-responsive">
+	<div id="table">
+		<table>
+			<thead>
+				<tr>
+					<th>{{translate .Lang "label_dashboard_id"}}</th>
+					<th>{{translate .Lang "label_dashboard_title"}}</th>
+					<th>{{translate .Lang "label_dashboard_price"}}</th>
+					<th>{{translate .Lang "label_dashboard_sku"}}</th>
+					<th>{{translate .Lang "label_dashboard_status"}}</th>
+					<th>{{translate .Lang "label_dashboard_updatedat"}}</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{ if .Empty }}
+				<tr>
+					<td colspan="9" class="text-center box">
+						{{translate .Lang "label_dashboard_empty"}}
+					</td>
+				</tr>
+				{{else}}
+				<!-- -->
 
-			{{ range .Products}}
-			<tr>
-				<td class="secondary table-td-id box">{{.ID}}</td>
-				<td class="box" hx-disable>{{.Title}}</td>
-				<td class="box">{{twodigits .Price}} {{.Currency}}</td>
-				<td class="box" hx-disable>{{.Sku}}</td>
-				<td class="box">
-					<div class="row row-align row-gap">
-						{{ if eq .Status "online"}}
-						<span class="table-badge table-badge-success"></span>
-						{{translate $.Lang "label_dashboard_online"}}
-						<!---->
-						{{else}}
-						<span class="table-badge table-badge-danger"></span>
-						{{translate $.Lang "label_dashboard_offline"}}
-						<!---->
-						{{end}}
-					</div>
-				</td>
-				<td class="box">{{date .UpdatedAt}}</td>
-				<td class="box">
-					<div class="row row-align row-gap">
-						<a href="/admin/products/{{.ID}}/edit.html" class="button">
-							{{template "edit.svg"}}
-						</a>
-
-						<label for="destroy-{{.ID}}">
-							<input
-								type="checkbox"
-								id="destroy-{{.ID}}"
-								class="table-destroy-checkbox"
-							/>
-
-							<a class="button"> {{template "trash.svg"}} </a>
-
-							<a
-								hx-post="/admin/products/{{.ID}}/delete.html"
-								hx-include="[name='query'], [name='page']"
-								hx-target="#table"
-								class="button table-destroy-button"
-							>
-								<div
-									id="spinner"
-									class="htmx-indicator spinner spinner-white"
-								></div>
-
-								<span class="htmx-hide"> {{template "trash.svg"}} </span>
-
-								<span class="table-destroy-confirmation">
-									{{template "question-mark.svg"}}
-								</span>
+				{{ range .Products}}
+				<tr>
+					<td class="secondary table-td-id box">{{.ID}}</td>
+					<td class="box" hx-disable>{{.Title}}</td>
+					<td class="box">{{twodigits .Price}} {{.Currency}}</td>
+					<td class="box" hx-disable>{{.Sku}}</td>
+					<td class="box">
+						<div class="row row-align row-gap">
+							{{ if eq .Status "online"}}
+							<span class="table-badge table-badge-success"></span>
+							{{translate $.Lang "label_dashboard_online"}}
+							<!---->
+							{{else}}
+							<span class="table-badge table-badge-danger"></span>
+							{{translate $.Lang "label_dashboard_offline"}}
+							<!---->
+							{{end}}
+						</div>
+					</td>
+					<td class="box">{{date .UpdatedAt}}</td>
+					<td class="box">
+						<div class="row row-align row-gap">
+							<a href="/admin/products/{{.ID}}/edit.html" class="button">
+								{{template "edit.svg"}}
 							</a>
-						</label>
-					</div>
-				</td>
-			</tr>
-			{{end}}
 
-			<!-- -->
+							<label for="destroy-{{.ID}}">
+								<input
+									type="checkbox"
+									id="destroy-{{.ID}}"
+									class="table-destroy-checkbox"
+								/>
 
-			{{end}}
-		</tbody>
-	</table>
+								<a class="button"> {{template "trash.svg"}} </a>
 
-	<div id="product-destroy-htmx"></div>
+								<a
+									hx-post="/admin/products/{{.ID}}/delete.html"
+									hx-include="[name='query'], [name='page']"
+									hx-target="#table"
+									class="button table-destroy-button"
+								>
+									<div
+										id="spinner"
+										class="htmx-indicator spinner spinner-white"
+									></div>
 
-	{{if .Pagination.Total }}
+									<span class="htmx-hide"> {{template "trash.svg"}} </span>
 
-	<!-- -->
+									<span class="table-destroy-confirmation">
+										{{template "question-mark.svg"}}
+									</span>
+								</a>
+							</label>
+						</div>
+					</td>
+				</tr>
+				{{end}}
 
-	{{template "pagination.html" .Pagination}}
+				<!-- -->
 
-	<!-- -->
+				{{end}}
+			</tbody>
+		</table>
 
-	{{end}}
+		<div id="product-destroy-htmx"></div>
+
+		{{if .Pagination.Total }}
+
+		<!-- -->
+
+		{{template "pagination.html" .Pagination}}
+
+		<!-- -->
+
+		{{end}}
+	</div>
 </div>

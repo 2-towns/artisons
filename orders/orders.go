@@ -29,7 +29,10 @@ import (
 	"golang.org/x/text/message"
 )
 
-var Status = []string{"created", "processing", "delivering", "delivered", "canceled"}
+type SearchResults struct {
+	Total  int64
+	Orders []Order
+}
 
 var Payments = []string{"cash", "wire", "bitcoin", "card"}
 
@@ -63,8 +66,8 @@ type Order struct {
 
 	Address users.Address
 
-	CreatedAt int64
-	UpdateAt  int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	Products []products.Product
 
@@ -73,13 +76,11 @@ type Order struct {
 
 type Note struct {
 	Note      string
-	CreatedAt int64
+	CreatedAt time.Time
 }
 
 type Query struct {
-	Status   string
-	Delivery string
-	Payment  string
+	Keyword string
 }
 
 // IsValidDelivery returns true if the delivery
@@ -214,6 +215,9 @@ func (o Order) Save(c context.Context) (string, error) {
 			"total", o.Total,
 			"updated_at", now.Unix(),
 			"created_at", now.Unix(),
+
+			// Use for Redis Search in order to restrict the items
+			"type", "order",
 		)
 
 		for key, value := range o.Quantities {
@@ -268,7 +272,7 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 
 	msg := p.Sprintf("email_order_confirmation", o.Address.Firstname)
 	msg += p.Sprintf("email_order_confirmationid", o.ID)
-	msg += p.Sprintf("email_order_confirmationdate", time.Unix(o.CreatedAt, 0).Format("Monday, January 1"))
+	msg += p.Sprintf("email_order_confirmationdate", o.CreatedAt.Format("Monday, January 1"))
 	msg += p.Sprintf("email_order_confirmationtotal", o.Total)
 
 	t := table.NewWriter()
@@ -304,16 +308,11 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 // - order:oid => the order data
 func UpdateStatus(c context.Context, oid, status string) error {
 	l := slog.With(slog.String("oid", oid), slog.String("status", status))
-	l.LogAttrs(c, slog.LevelInfo, "updating the order")
+	l.LogAttrs(c, slog.LevelInfo, "updating the order status")
 
-	if err := validators.V.Var(c, "oneof=created processing delivering delivered canceled"); err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
-		return errors.New("error_http_badstatus")
-	}
-
-	if !slices.Contains(Status, status) {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate the status")
-		return errors.New("error_http_badstatus")
+	if err := validators.V.Var(status, "required,oneof=created processing delivering delivered canceled"); err != nil {
+		l.LogAttrs(c, slog.LevelInfo, "cannot validate the status", slog.String("error", err.Error()))
+		return errors.New("input_status_invalid")
 	}
 
 	ctx := context.Background()
@@ -399,7 +398,7 @@ func Find(c context.Context, oid string) (Order, error) {
 		return Order{}, errors.New("error_http_general")
 	}
 
-	o, err := parseOrder(c, data)
+	o, err := parse(c, data)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the order", slog.String("error", err.Error()))
 		return Order{}, errors.New("error_http_general")
@@ -428,7 +427,7 @@ func Find(c context.Context, oid string) (Order, error) {
 
 			o.Notes = append(o.Notes, Note{
 				Note:      n["note"],
-				CreatedAt: createdAt,
+				CreatedAt: time.Unix(createdAt, 0),
 			})
 		}
 
@@ -483,7 +482,7 @@ func AddNote(c context.Context, oid, note string) error {
 	return nil
 }
 
-func parseOrder(c context.Context, m map[string]string) (Order, error) {
+func parse(c context.Context, m map[string]string) (Order, error) {
 	l := slog.With(slog.String("user_id", m["uid"]))
 	l.LogAttrs(c, slog.LevelInfo, "parsing the order")
 
@@ -531,26 +530,19 @@ func parseOrder(c context.Context, m map[string]string) (Order, error) {
 		},
 		Quantities: map[string]int{},
 		Notes:      []Note{},
-		CreatedAt:  createdAt,
-		UpdateAt:   updatedAt,
+		CreatedAt:  time.Unix(createdAt, 0),
+		UpdatedAt:  time.Unix(updatedAt, 0),
 		Total:      total,
 	}, nil
 }
 
-func Search(c context.Context, q Query) ([]Order, error) {
+func Search(c context.Context, q Query, offset, num int) (SearchResults, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "searching orders")
 
-	qs := ""
-	if q.Status != "" {
-		qs += fmt.Sprintf("@status:{%s}", q.Status)
-	}
-
-	if q.Delivery != "" {
-		qs += fmt.Sprintf("@delivery:{%s}", q.Delivery)
-	}
-
-	if q.Payment != "" {
-		qs += fmt.Sprintf("@payment:{%s}", q.Payment)
+	qs := "@type:{order}"
+	if q.Keyword != "" {
+		k := db.Escape(q.Keyword)
+		qs += fmt.Sprintf("(@id:'{%s}')|(@status:'{%s}')|(@delivery:'{%s}')|(@payment:'{%s})'", k, k, k, k)
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs), slog.String("index", db.OrderIdx))
@@ -561,13 +553,21 @@ func Search(c context.Context, q Query) ([]Order, error) {
 		"FT.SEARCH",
 		db.OrderIdx,
 		qs,
+		"LIMIT",
+		fmt.Sprintf("%d", offset),
+		fmt.Sprintf("%d", num),
+		"SORTBY",
+		"updated_at",
+		"desc",
 	).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("query", qs), slog.String("error", err.Error()))
-		return []Order{}, err
+		return SearchResults{}, err
 	}
 
 	res := cmds.(map[interface{}]interface{})
+	total := res["total_results"].(int64)
+
 	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", res["total_results"].(int64)))
 
 	results := res["results"].([]interface{})
@@ -578,7 +578,7 @@ func Search(c context.Context, q Query) ([]Order, error) {
 		attributes := m["extra_attributes"].(map[interface{}]interface{})
 		data := db.ConvertMap(attributes)
 
-		order, err := parseOrder(c, data)
+		order, err := parse(c, data)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot order the product", slog.Any("order", data), slog.String("error", err.Error()))
 			continue
@@ -587,5 +587,8 @@ func Search(c context.Context, q Query) ([]Order, error) {
 		orders = append(orders, order)
 	}
 
-	return orders, nil
+	return SearchResults{
+		Total:  total,
+		Orders: orders,
+	}, nil
 }

@@ -54,7 +54,7 @@ func (a Article) Save(c context.Context) error {
 	now := time.Now()
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		image := fmt.Sprintf("%s/articles/%d", conf.ImgProxyPath, id)
+		image := fmt.Sprintf("%s/articles/%d", conf.ImgProxy.Path, id)
 
 		err := os.Rename(a.Image, image)
 		if err != nil {
@@ -143,7 +143,7 @@ func List(c context.Context, page int) ([]Article, error) {
 			continue
 		}
 
-		image := fmt.Sprintf("%s/articles/%d", conf.ImgProxyPath, id)
+		image := fmt.Sprintf("%s/articles/%d", conf.ImgProxy.Path, id)
 
 		a := Article{
 			ID:          id,
@@ -170,7 +170,7 @@ func Delete(c context.Context, id int64) error {
 	ctx := context.Background()
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		image := fmt.Sprintf("%s/articles/%d", conf.ImgProxyPath, id)
+		image := fmt.Sprintf("%s/articles/%d", conf.ImgProxy.Path, id)
 
 		err := os.Remove(image)
 		if err != nil {

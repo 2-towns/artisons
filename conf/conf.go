@@ -6,11 +6,29 @@ import (
 	"time"
 )
 
-// ImgProxyPath is the path to imgproxy folder
-var ImgProxyPath = WorkingSpace + "web/images"
+var ImgProxy = struct {
+	// Path is the path to imgproxy folder
+	Path string
 
-// ImgProxyURL is the url to imgproxy
-var ImgProxyURL = "http://localhost:8080/"
+	// URL is the url to imgproxy
+	URL string
+
+	// Protocol can be local:// s3://
+	// It can also include a path, like local:///folder or s3:///bucket-1
+	Protocol string
+
+	// Key is the encryption key
+	Key string
+
+	// Salt is the encryption Salt
+	Salt string
+}{
+	WorkingSpace + "web/images",
+	"http://localhost:8000",
+	"local://",
+	"",
+	"",
+}
 
 // IsCurrencySupported returns true if the currency is supported
 // in the application

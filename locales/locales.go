@@ -3,6 +3,7 @@ package locales
 
 import (
 	"context"
+	"fmt"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"net/http"
@@ -81,6 +82,10 @@ func Translate(l language.Tag, msg string, attr ...interface{}) string {
 
 	if t == nil {
 		t = trans[Default]
+	}
+
+	if strings.HasPrefix(msg, "dynamic") {
+		return t.Sprintf(fmt.Sprintf("%s%s", msg, attr[0]))
 	}
 
 	return t.Sprintf(msg, attr...)

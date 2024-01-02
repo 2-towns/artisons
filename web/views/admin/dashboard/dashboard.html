@@ -2,7 +2,7 @@
 <div id="alert"></div>
 
 <div id="dashboard">
-	<article class="fill stats-orders">
+	<article class="fill stats-orders box">
 		<div class="row row-center stats-header-multiple">
 			<a href="#" class="stats-orders-selected" id="orders-anchor">
 				<b class="card-subheader"
@@ -11,9 +11,9 @@
 				<b class="stats-big-number">{{(index .Data 3).Sum}} {{.Currency}}</b>
 			</a>
 			<a href="#" class="" id="orders-counts-anchor">
-				<b class="card-subheader"
-					>{{translate .Lang "label_dashboard_totalorders"}}</b
-				>
+				<b class="card-subheader">
+					{{translate .Lang "label_dashboard_totalorders"}}
+				</b>
 				<b class="stats-big-number">{{(index .Data 4).Sum}}</b>
 			</a>
 		</div>
@@ -24,13 +24,13 @@
 	</article>
 
 	<div class="stats-grid">
-		<article class="card-nospace">
+		<article class="">
 			<h3 class="box">
 				{{translate .Lang "label_dashboard_mostproductssold"}}
 			</h3>
 			{{template "table-most-values.html" .Products}}
 		</article>
-		<article class="card-nospace">
+		<article class="">
 			<h3 class="box">
 				{{translate .Lang "label_dashboard_mostproductsshared"}}
 			</h3>
@@ -38,7 +38,7 @@
 		</article>
 	</div>
 
-	<article class="fill">
+	<article class="fill box">
 		<div class="row row-center stats-header-multiple">
 			<a href="#" class="stats-selected" id="visits-anchor">
 				<b class="card-subheader"
@@ -71,21 +71,21 @@
 		</div>
 	</article>
 	<div class="stats-grid">
-		<article class="card-nospace">
+		<article class="">
 			<h3 class="box">{{translate .Lang "label_dashboard_mostvisited"}}</h3>
 			{{template "table-most-values.html" .Visits}}
 		</article>
-		<article class="card-nospace">
+		<article class="">
 			<h3 class="box">{{translate .Lang "label_dashboard_topreferers"}}</h3>
 			{{template "table-top-values.html" .Referers}}
 		</article>
 	</div>
 	<div class="stats-grid">
-		<article class="card-nospace">
+		<article class="">
 			<h3 class="box">{{translate .Lang "label_dashboard_topbrowsers"}}</h3>
 			{{template "table-top-values.html" .Browsers}}
 		</article>
-		<article class="card-nospace">
+		<article class="">
 			<h3 class="box">{{translate .Lang "label_dashboard_topsystems"}}</h3>
 			{{template "table-top-values.html" .Systems}}
 		</article>

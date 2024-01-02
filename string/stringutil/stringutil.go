@@ -8,15 +8,14 @@ import (
 	"strings"
 )
 
-
 // Random provides a random unique string
-func Random() (string,error) {
+func Random() (string, error) {
 	b := make([]byte, 24)
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {
-		return "",err
+		return "", err
 	}
 
-	return base64.URLEncoding.EncodeToString(b),nil
+	return base64.URLEncoding.EncodeToString(b), nil
 }
 
 // Slugify returns the slug representation of a title

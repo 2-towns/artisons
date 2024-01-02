@@ -161,7 +161,7 @@ func MostValues(c context.Context, days int) ([][]MostValue, error) {
 	for i := 0; i < conf.DashboardMostItems; i++ {
 		if len(values[4]) > i {
 			val := values[4][i]
-			name := pnames[val.Key]
+			name := db.Unescape(pnames[val.Key])
 			values[4][i].Key = name
 			slug := stringutil.Slugify(name)
 			values[4][i].URL = fmt.Sprintf("%s-%s.html", val.Key, slug)
@@ -169,7 +169,7 @@ func MostValues(c context.Context, days int) ([][]MostValue, error) {
 
 		if len(values[5]) > i {
 			val := values[5][i]
-			name := pnames[val.Key]
+			name := db.Unescape(pnames[val.Key])
 			values[5][i].Key = name
 			slug := stringutil.Slugify(name)
 			values[5][i].URL = fmt.Sprintf("%s-%s.html", val.Key, slug)

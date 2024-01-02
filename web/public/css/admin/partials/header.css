@@ -12,7 +12,6 @@ header .container {
 	height: var(--menu-item-height);
 	display: flex;
 	justify-content: space-between;
-	align-items: center;
 }
 
 .header-menu a {
@@ -26,6 +25,8 @@ header .container {
 
 .header-menu ul {
 	list-style: none;
+	overflow-x: scroll;
+	height: 73px;
 }
 
 .header-menu li {
