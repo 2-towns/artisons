@@ -6,6 +6,7 @@ import (
 	"gifthub/http/contexts"
 	"gifthub/tests"
 	"os"
+	"path"
 	"strings"
 	"testing"
 	"time"
@@ -23,7 +24,8 @@ func TestSaveTrackingLogWhenSuccess(t *testing.T) {
 
 	folder := conf.WorkingSpace + "web/tracking"
 	now := time.Now()
-	p := fmt.Sprintf("%s/tracking-%s.log", folder, now.Format("20060102"))
+	name := fmt.Sprintf("tracking-%s.log", now.Format("20060102"))
+	p := path.Join(folder, name)
 	buf, err := os.ReadFile(p)
 	if err != nil {
 		t.Fatalf(`os.ReadFile(p) = %s, want empty`, err.Error())

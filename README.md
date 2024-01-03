@@ -2,12 +2,12 @@
 
 ## Go
 
-Installer la version Go 1.19 (suivre la documentation officielle).
+Installer la version Go 1.21 (suivre la documentation officielle).
 
 ## Redis
 
 ```
-docker run -p 6379:6379 -v data:/data redis/redis-stack:latest
+docker run -p 6379:6379 -p 8001:8001 -v data:/data redis/redis-stack:latest
 ```
 
 Installer aussi [Redis Insight](https://redis.com/redis-enterprise/redis-insight) pour explorer facilement les données.
@@ -16,7 +16,22 @@ Installer aussi [Redis Insight](https://redis.com/redis-enterprise/redis-insight
 
 Installer VSCode avec les extensions [Go](https://marketplace.visualstudio.com/items?itemName=golang.Go) et [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
 
+Ajouter ces lignes dans la configuration de vscode:
+
+```
+"terminal.integrated.env.linux": {
+    "WORKSPACE_DIR": "${workspaceFolder}"
+},
+"go.testEnvVars": {
+    "WORKSPACE_DIR": "${workspaceFolder}"
+}
+```
+
 # Lancement
+
+# HURL
+
+Installer [HURL](https://hurl.dev).
 
 ## Dépendances
 

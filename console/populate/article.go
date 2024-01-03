@@ -3,6 +3,8 @@ package populate
 import (
 	"context"
 	"fmt"
+	"gifthub/conf"
+	"path"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -17,7 +19,7 @@ func article(ctx context.Context, pipe redis.Pipeliner, id int64, online bool) {
 		"title", "Manger de l'ail c'est bon pour la santé",
 		"slug", "manger-de-l-ail-c-est-bon-pour-la-santé",
 		"description", "C'est un antiseptique.",
-		"image", "/tmp/hello",
+		"image", path.Join(conf.WorkingSpace, "web", "tmp", "hello"),
 		"online", fmt.Sprintf("%t", online),
 		"updated_at", now.Unix(),
 		"created_at", now.Unix(),

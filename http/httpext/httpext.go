@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"time"
@@ -68,7 +69,7 @@ func Upload(ctx context.Context, headers map[string]*multipart.FileHeader) (map[
 		ext := filepath.Ext(h.Filename)
 		fn := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
 
-		dst, err := os.Create(fmt.Sprintf("%s/%s", conf.UploadFolder, fn))
+		dst, err := os.Create(path.Join(conf.ImgProxy.Path, "products", fn))
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot create the file", slog.String("error", err.Error()), slog.String("filename", h.Filename))
 
@@ -100,7 +101,7 @@ func RollbackUpload(ctx context.Context, images []string) {
 			continue
 		}
 
-		err := os.Remove(fmt.Sprintf("%s/%s", conf.UploadFolder, value))
+		err := os.Remove(path.Join(conf.ImgProxy.Path, "products", value))
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot remove the image", slog.String("error", err.Error()), slog.String("image", value))
 			continue

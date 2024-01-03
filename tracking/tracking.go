@@ -9,6 +9,7 @@ import (
 	"gifthub/http/contexts"
 	"log/slog"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -22,7 +23,8 @@ func Log(ctx context.Context, action string, data map[string]string) error {
 
 	folder := conf.WorkingSpace + "web/tracking"
 	now := time.Now()
-	f, err := os.OpenFile(fmt.Sprintf("%s/tracking-%s.log", folder, now.Format("20060102")),
+	name := fmt.Sprintf("tracking-%s.log", now.Format("20060102"))
+	f, err := os.OpenFile(path.Join(folder, name),
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	if err != nil {

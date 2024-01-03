@@ -9,6 +9,7 @@ import (
 	"gifthub/users"
 	"gifthub/validators"
 	"log/slog"
+	"path"
 	"strings"
 	"time"
 
@@ -61,7 +62,7 @@ func (s Shop) Save(c context.Context) error {
 
 	now := time.Now()
 	_, err := db.Redis.HSet(context.Background(), "shop",
-		"logo", fmt.Sprintf("%s/%s", conf.ImgProxy.Path, s.Logo),
+		"logo", path.Join(conf.ImgProxy.Path, s.Logo),
 		"address_lastname", s.Address.Lastname,
 		"address_firstname", s.Address.Firstname,
 		"address_street", s.Address.Street,

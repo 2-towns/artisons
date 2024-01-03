@@ -13,6 +13,7 @@ import (
 	"gifthub/users"
 	"gifthub/validators"
 	"log/slog"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -85,8 +86,7 @@ func ImagePath(id string) string {
 		return ""
 	}
 
-	folder := fmt.Sprintf("%s/%s", conf.ImgProxy.Path, id)
-	return folder
+	return path.Join(conf.ImgProxy.Path, id)
 }
 
 // Available return true if all the product ids are availables

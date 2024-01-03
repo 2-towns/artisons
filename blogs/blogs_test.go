@@ -1,17 +1,17 @@
 package blogs
 
 import (
-	"fmt"
 	"gifthub/conf"
 	"gifthub/tests"
 	"os"
+	"path"
 	"testing"
 )
 
 var article Article = Article{
 	Title:       "La palestine doit être sauvée",
 	Description: "On attend une réponse des pays musulmans.",
-	Image:       "/tmp/hello",
+	Image:       path.Join(conf.WorkingSpace, "web", "tmp", "hello"),
 }
 
 func TestSaveReturnsErrorWhenTitleIsEmpty(t *testing.T) {
@@ -50,7 +50,7 @@ func TestSaveReturnsErrorWhenImageIsEmpty(t *testing.T) {
 func TestSaveReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
-	os.Create("/tmp/hello")
+	os.Create(path.Join(conf.WorkingSpace, "web", "tmp", "hello"))
 
 	if err := article.Save(c); err != nil {
 		t.Fatalf(`a.Save(c) = %v, want nil`, err.Error())
@@ -92,7 +92,7 @@ func TestListReturnsArticlesWhenSuccess(t *testing.T) {
 func TestDeleteReturnNilSuccess(t *testing.T) {
 	c := tests.Context()
 
-	image := fmt.Sprintf("%s/articles/%d", conf.ImgProxy.Path, 3)
+	image := path.Join(conf.ImgProxy.Path, "blog", "3")
 	os.Create(image)
 
 	if err := Delete(c, 3); err != nil {

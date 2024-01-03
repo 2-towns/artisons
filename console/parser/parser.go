@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/locales"
@@ -110,7 +111,7 @@ func downloadFile(url string) (string, error) {
 	}
 
 	filename := fmt.Sprintf("%s.%s", id, extension)
-	p := path.Join(os.TempDir(), filename)
+	p := path.Join(conf.WorkingSpace, "web", "tmp", filename)
 	file, err := os.Create(p)
 	if err != nil {
 		slog.Error("cannot generated local folder", slog.String("error", err.Error()), slog.String("extension", extension), slog.String("id", id))
@@ -165,7 +166,7 @@ func copyFile(src string) (string, error) {
 	}
 
 	filename := fmt.Sprintf("%s.%s", id, extension)
-	p := path.Join(os.TempDir(), filename)
+	p := path.Join(conf.WorkingSpace, "web", "tmp", filename)
 
 	d, err := os.Create(p)
 	if err != nil {
@@ -338,7 +339,7 @@ func createImages(product products.Product) error {
 
 	if product.Image1 != "" {
 		p := products.ImagePath(product.Image1)
-		old := path.Join(os.TempDir(), product.Image1)
+		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image1)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
@@ -347,7 +348,7 @@ func createImages(product products.Product) error {
 
 	if product.Image2 != "" {
 		p := products.ImagePath(product.Image2)
-		old := path.Join(os.TempDir(), product.Image2)
+		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image2)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
@@ -356,7 +357,7 @@ func createImages(product products.Product) error {
 
 	if product.Image3 != "" {
 		p := products.ImagePath(product.Image3)
-		old := path.Join(os.TempDir(), product.Image3)
+		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image3)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))
@@ -364,7 +365,7 @@ func createImages(product products.Product) error {
 	}
 	if product.Image4 != "" {
 		p := products.ImagePath(product.Image4)
-		old := path.Join(os.TempDir(), product.Image4)
+		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image4)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
 			return errors.New(printer.Sprintf("error_http_general"))

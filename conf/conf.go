@@ -140,9 +140,6 @@ var WorkingSpace = os.Getenv("WORKSPACE_DIR") + "/"
 // ImagesAllowed defines the image extensions supported by file upload
 var ImagesAllowed = []string{"image/jpg", "image/jpeg", "image/png"}
 
-// UploadFolder is the upload folder destination
-const UploadFolder = "web/upload"
-
 var Cookie = struct {
 	Domain string
 	Secure bool
