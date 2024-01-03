@@ -37,6 +37,7 @@ func adminRouter() http.Handler {
 	r.Get("/products/add.html", admin.AddProductForm)
 	r.Get("/products/{id}/edit.html", admin.EditProductForm)
 	r.Get("/orders/{id}/edit.html", admin.EditOrderForm)
+	r.Get("/settings.html", admin.SettingsForm)
 
 	r.Post("/demo.html", stats.Demo)
 	r.Post("/products/add.html", admin.AddProduct)

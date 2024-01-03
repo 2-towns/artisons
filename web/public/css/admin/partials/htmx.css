@@ -1,0 +1,41 @@
+.htmx-request button,
+.htmx-request .button {
+	background-color: var(--button-background-color-hover);
+	pointer-events: none;
+}
+
+.htmx-request {
+	pointer-events: none;
+	cursor: default;
+	opacity: 0.7;
+}
+
+.htmx-indicator {
+	display: none;
+}
+
+.htmx-request .htmx-hide {
+	display: none;
+}
+
+.htmx-spinner {
+	color: var(--secondary);
+	border: 1px solid currentcolor;
+	border-right-color: transparent;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	animation: 1.5s linear infinite spinner-border;
+	color: white;
+	margin-right: var(--spacing);
+}
+
+.htmx-request .htmx-spinner {
+	display: inline-block;
+}
+
+@keyframes spinner-border {
+	to {
+		transform: rotate(360deg);
+	}
+}

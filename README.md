@@ -62,6 +62,22 @@ Démarrer le serveur imgproxy:
 ./imgproxy.sh
 ```
 
+### Peuplement
+
+Pour peupler les données, lancer la commande suivante:
+
+```
+go run console/console.go populate
+```
+
+Afin de pouvoir utiliser la recherche, il faut lancer le script de migration après chaque peuplement:
+
+```
+go run console/console.go migrate
+```
+
+Un compte utilisateur admin existe avec l'adresse suivante: `hello@world.com`. L'OTP est affiché dans les traces du serveur.
+
 ## Tester
 
 ### Tests unitaires
@@ -111,20 +127,6 @@ go run console/console.go import
 ```
 
 Par défault, le path est `./web/data/data.csv`. Il est possible de préciser un fichier en utilisant le flag `--file` suivi du chemin du fichier.
-
-### Peuplement
-
-Pour peupler les données, lancer la commande suivante:
-
-```
-go run console/console.go populate
-```
-
-Afin de pouvoir utiliser la recherche, il faut lancer le script de migration après chaque peuplement:
-
-```
-go run console/console.go migrate
-```
 
 ## Profiter
 

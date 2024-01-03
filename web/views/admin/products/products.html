@@ -8,17 +8,17 @@
 		{{end}}
 	</div>
 
-	<article class="" id="products">
+	<article class="card" id="products">
 		<div class="row row-align row-gap row-between box">
 			<div>
-				<h3>{{translate .Lang "label_dashboard_list"}}</h3>
+				<h3 class="card-title">{{translate .Lang "label_dashboard_list"}}</h3>
 			</div>
 			<div>
-				<div id="spinner" class="htmx-indicator spinner spinner-white"></div>
+				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
 				<input
 					type="search"
-					class="form-control"
+					class="input"
 					hx-get="/admin/products.html?page={{.Pagination.Page}}"
 					hx-trigger="input changed delay:500ms, search"
 					hx-target="#table"

@@ -202,6 +202,7 @@ func LoadEn() {
 	message.SetString(language.English, "seo_dashboard_title", "Access to your dashboard")
 	message.SetString(language.English, "seo_login_description", "")
 	message.SetString(language.English, "seo_login_title", "Login to your account")
+	message.SetString(language.English, "title_settings_page", "Settings")
 	message.SetString(language.English, "title_productsadd_page", "Add product")
 	message.SetString(language.English, "title_cart_empty", "The cart is empty.")
 	message.SetString(language.English, "title_dashboard_page", "Dashboard")

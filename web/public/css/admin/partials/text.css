@@ -1,8 +1,8 @@
-.text-group b {
+.text-group-title {
 	display: inline-block;
 	margin-bottom: calc(var(--spacing) / 4);
 }
 
-.text-group p {
+.text-group-message {
 	margin: 0;
 }

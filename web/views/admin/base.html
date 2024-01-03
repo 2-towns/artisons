@@ -16,12 +16,13 @@
 			content='{{translate .Lang "seo_dashboard_description"}}'
 		/>
 		<link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
+
+		{{template "head" .}}
+
 		<link
 			rel="stylesheet"
 			href='/public/css/admin/admin.css?v{{cachebuster "admin.css"}}'
 		/>
-
-		{{template "head" .}}
 
 		<title>{{translate .Lang "seo_dashboard_title" }}</title>
 	</head>

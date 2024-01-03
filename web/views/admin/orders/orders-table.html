@@ -1,22 +1,22 @@
 <div class="table-responsive">
 	<div id="table">
-		<table>
-			<thead>
-				<tr>
-					<th>{{translate .Lang "label_dashboard_id"}}</th>
-					<th>{{translate .Lang "label_dashboard_total"}}</th>
-					<th>{{translate .Lang "label_dashboard_status"}}</th>
-					<th>{{translate .Lang "label_dashboard_delivery"}}</th>
-					<th>{{translate .Lang "label_dashboard_payment"}}</th>
-					<th>{{translate .Lang "label_dashboard_city"}}</th>
-					<th>{{translate .Lang "label_dashboard_updatedat"}}</th>
-					<th></th>
+		<table class="table">
+			<thead class="thead">
+				<tr class="tr">
+					<th class="th">{{translate .Lang "label_dashboard_id"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_total"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_status"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_delivery"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_payment"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_city"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_updatedat"}}</th>
+					<th class="th"></th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody class="tbody">
 				{{ if .Empty }}
-				<tr>
-					<td colspan="9" class="text-center box">
+				<tr class="tr">
+					<td colspan="9" class="td text-center box">
 						{{translate .Lang "label_dashboard_empty"}}
 					</td>
 				</tr>
@@ -24,20 +24,25 @@
 				<!-- -->
 
 				{{ range .Orders}}
-				<tr>
-					<td class="secondary table-td-id box">{{.ID}}</td>
-					<td class="box">{{twodigits .Total}} {{$.Currency}}</td>
-					<td class="box">{{translate $.Lang "dynamic_status_" .Status}}</td>
-					<td class="box">
+				<tr class="tr">
+					<td class="secondary table-td-id box td">{{.ID}}</td>
+					<td class="box td">{{twodigits .Total}} {{$.Currency}}</td>
+					<td class="box td">{{translate $.Lang "dynamic_status_" .Status}}</td>
+					<td class="box td">
 						{{translate $.Lang "dynamic_delivery_" .Delivery}}
 					</td>
-					<td class="box">{{translate $.Lang "dynamic_payment_" .Payment}}</td>
-					<td class="box">{{.Address.City}}</td>
-					<td class="box">{{date .UpdatedAt}}</td>
-					<td class="box">
+					<td class="box td">
+						{{translate $.Lang "dynamic_payment_" .Payment}}
+					</td>
+					<td class="box td">{{.Address.City}}</td>
+					<td class="box td">{{date .UpdatedAt}}</td>
+					<td class="box td">
 						<div class="row row-align row-gap">
-							<a href="/admin/orders/{{.ID}}/edit.html" class="button">
-								{{template "edit.svg"}}
+							<a
+								href="/admin/orders/{{.ID}}/edit.html"
+								class="button table-button"
+							>
+								<span class="button-icon"> {{template "edit.svg"}} </span>
 							</a>
 						</div>
 					</td>

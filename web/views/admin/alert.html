@@ -1,9 +1,13 @@
 <div class="alert alert-danger box" role="alert">
 	<div class="row row-align">
-		{{template "error.svg" .}}
+		<span class="alert-danger-icon alert-icon">
+			{{template "error.svg" .}}
+		</span>
 		<div>
-			<b class="alert-title">{{translate .Lang "title_error_common"}}</b>
-			<p>{{translate .Lang .Message .RID}}</p>
+			<b class="alert-danger-title alert-title">
+				{{translate .Lang "title_error_common"}}
+			</b>
+			<p class="alert-message">{{translate .Lang .Message .RID}}</p>
 		</div>
 	</div>
 </div>

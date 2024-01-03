@@ -1,39 +1,41 @@
-header {
+.header {
 	border-bottom: 1px solid var(--border-color);
 	background-color: white;
 	--menu-item-height: 55px;
 }
 
-.header-navbar h1 {
-	margin-bottom: 0;
+.header-navbar-button {
+	margin: auto 0;
 }
 
-header .container {
+.header-container {
 	height: var(--menu-item-height);
 	display: flex;
 	justify-content: space-between;
 }
 
-.header-menu a {
+.header-menu-link {
 	text-decoration: none;
 	color: var(--font-color);
+	padding-left: var(--spacing);
+	padding-right: var(--spacing);
 }
 
-.header-menu svg {
+.header-menu-icon {
 	color: var(--menu-icon-color);
 }
 
-.header-menu ul {
+.header-menu-list {
 	list-style: none;
 	overflow-x: scroll;
 	height: 73px;
 }
 
-.header-menu li {
+.header-menu-item {
 	height: var(--menu-item-height);
 }
 
-.header-menu-active {
+.header-menu-item-active {
 	border-bottom: 2px solid var(--primary);
 }
 
@@ -42,7 +44,7 @@ header .container {
 	margin-bottom: var(--spacing);
 }
 
-.header-navigation h2 {
+.header-navigation-title {
 	margin-bottom: 0;
 }
 
@@ -51,7 +53,7 @@ header .container {
 		flex-direction: column;
 	}
 
-	.header-navigation > div {
+	.header-navigation-actions {
 		margin-top: var(--spacing);
 		align-self: flex-end;
 	}

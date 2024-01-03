@@ -1,4 +1,4 @@
-<article id="otp" class="box">
+<article id="otp" class="card box">
 	<h2 class="text-center">{{translate .Lang "title_otp_sub"}}</h2>
 
 	<p class="text-center page-simple-message">
@@ -7,10 +7,10 @@
 
 	<form hx-post="/auth/login.html">
 		<div id="otp-row" class="form-row-single">
-			<div class="input-otp">
+			<div class="row row-between row-gap">
 				<input
 					type="text"
-					class="input-digit"
+					class="input input-digit"
 					maxlength="1"
 					inputmode="numeric"
 					pattern="[0-9]*"
@@ -20,7 +20,7 @@
 				/>
 				<input
 					type="text"
-					class="input-digit"
+					class="input input-digit"
 					maxlength="1"
 					inputmode="numeric"
 					pattern="[0-9]*"
@@ -30,7 +30,7 @@
 				/>
 				<input
 					type="text"
-					class="input-digit"
+					class="input input-digit"
 					maxlength="1"
 					inputmode="numeric"
 					pattern="[0-9]*"
@@ -40,7 +40,7 @@
 				/>
 				<input
 					type="text"
-					class="input-digit"
+					class="input input-digit"
 					maxlength="1"
 					inputmode="numeric"
 					pattern="[0-9]*"
@@ -50,7 +50,7 @@
 				/>
 				<input
 					type="text"
-					class="input-digit"
+					class="input input-digit"
 					maxlength="1"
 					inputmode="numeric"
 					pattern="[0-9]*"
@@ -60,7 +60,7 @@
 				/>
 				<input
 					type="text"
-					class="input-digit"
+					class="input input-digit"
 					maxlength="1"
 					inputmode="numeric"
 					pattern="[0-9]*"
@@ -83,8 +83,8 @@
 			>
 				{{translate .Lang "label_login_cancel"}}
 			</a>
-			<button class="button-full button-primary fill">
-				<div class="htmx-indicator spinner spinner-white"></div>
+			<button class="button button-full button-primary fill">
+				<div class="htmx-indicator htmx-spinner"></div>
 				{{translate .Lang "label_login_verify"}}
 			</button>
 		</div>

@@ -73,7 +73,12 @@
 	padding: var(--spacing);
 }
 
-.gutters {
-	padding-left: var(--spacing);
-	padding-right: var(--spacing);
+.hide {
+	display: none;
+}
+
+@media (max-width: 800px) {
+	.column-mobile {
+		flex-direction: column;
+	}
 }

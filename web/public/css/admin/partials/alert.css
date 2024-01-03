@@ -15,17 +15,17 @@
 	box-shadow: var(--box-shadow);
 }
 
-.alert p {
+.alert-message {
 	color: var(--secondary);
 	margin: 0;
 }
 
-.alert-danger b,
-.alert-danger svg {
+.alert-danger-title,
+.alert-danger-icon {
 	color: var(--danger);
 }
 
-.alert-success b,
-.alert-success svg {
+.alert-success-title,
+.alert-success-icon {
 	color: var(--success);
 }

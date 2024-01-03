@@ -1,19 +1,19 @@
-<table class="table-fixed">
-	<thead>
-		<tr>
-			<th colspan="2">{{translate .Lang "label_dashboard_name"}}</th>
-			<th>{{translate .Lang "label_dashboard_count"}}</th>
-			<th></th>
+<table class="table table-fixed">
+	<thead class="thead">
+		<tr class="tr">
+			<th class="th" colspan="2">{{translate .Lang "label_dashboard_name"}}</th>
+			<th class="th">{{translate .Lang "label_dashboard_count"}}</th>
+			<th class="th"></th>
 		</tr>
 	</thead>
-	<tbody>
+	<tbody class="tbody">
 		{{ range index .Data}}
-		<tr>
-			<td colspan="2">
+		<tr class="tr">
+			<td class="td" colspan="2">
 				<div class="row row-align row-gap">{{.Key}}</div>
 			</td>
-			<td>{{.Value}}</td>
-			<td>
+			<td class="td">{{.Value}}</td>
+			<td class="td">
 				<div class="progress progress-xs">
 					<progress
 						class="progress-bar bg-primary"

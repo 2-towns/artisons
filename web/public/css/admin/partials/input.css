@@ -1,0 +1,124 @@
+.input {
+	height: var(--input-height);
+	padding-left: var(--spacing);
+	padding-right: var(--spacing);
+	border-color: var(--border-color);
+	border-radius: var(--border-radius);
+	border-width: 1px;
+	border-style: solid;
+	outline: 0;
+	line-height: var(--input-line-height);
+	font-family: var(--font-family);
+	font-feature-settings: var(--font-feature-settings);
+	background-color: white;
+	box-shadow: var(--box-shadow-input);
+}
+
+.input:active,
+.input:focus {
+	border-color: var(--input-border-color-focus);
+	box-shadow: var(--input-shadow);
+}
+
+/* Remove chrome autofill color */
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.nput:-webkit-autofill:focus,
+.input:-webkit-autofill:active {
+	transition: background-color 5000000s ease-in-out 0s;
+}
+
+.input:autofill {
+	filter: none;
+}
+
+.input:-internal-autofill-selected {
+	background-color: rgb(255, 255, 255) !important;
+	background-image: none !important;
+	color: rgb(0, 0, 0) !important;
+}
+
+.input-digit {
+	height: var(--input-height);
+	font-size: calc(var(--font-size) * 1.25);
+	text-align: center;
+	width: 100%;
+}
+
+.input-help {
+	display: inline-block;
+	margin-top: calc(var(--spacing) / 2);
+	color: var(--secondary);
+}
+
+.input-group {
+	box-shadow: var(--tblr-box-shadow-input);
+	border-radius: var(--tblr-border-radius);
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	width: 100%;
+}
+
+.input-file {
+	height: var(--input-height);
+	padding: var(--spacing);
+	border-color: var(--border-color);
+	border-radius: var(--border-radius);
+	border-width: 1px;
+	background-clip: padding-box;
+	border-style: solid;
+	appearance: none;
+	box-shadow: var(--box-shadow-input);
+	cursor: pointer;
+}
+
+.input-file::file-selector-button {
+	padding: var(--spacing);
+	margin: calc(var(--spacing) * -1);
+	-webkit-margin-end: var(--spacing);
+	margin-inline-end: var(--spacing);
+	color: var(--color);
+	pointer-events: none;
+	border-color: inherit;
+	border-style: solid;
+	border-width: 0;
+	border-inline-end-width: 1px;
+	border-radius: 0;
+	transition:
+		color 0.15s ease-in-out,
+		background-color 0.15s ease-in-out,
+		border-color 0.15s ease-in-out,
+		box-shadow 0.15s ease-in-out;
+}
+
+.input-label {
+	display: block;
+	font-weight: 500;
+	margin-bottom: calc(var(--spacing) / 2);
+}
+
+.input-group-label {
+	margin-bottom: 0;
+	display: inline;
+}
+
+.input-full {
+	width: 100%;
+}
+
+.input-link {
+	margin-top: calc(var(--spacing) / 2);
+	display: block;
+}
+
+.form-row-single:has(.form-error) .input:focus,
+.form-row:has(.form-error) .input:focus {
+	box-shadow: 0 0 0 4px rgba(var(--danger-rgb), 0.25);
+}
+
+.input-checkbox:checked ~ .input-group .button,
+.input-checkbox:checked ~ .input-link {
+	display: none;
+}

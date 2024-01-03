@@ -98,7 +98,7 @@ var Email = struct {
 	Username: "a3a5f2d396a820",
 	Password: "12fcfd3c6edb95",
 	Port:     "25",
-	Dry:      os.Getenv("EMAIL_DRY") == "1",
+	Dry:      os.Getenv("EMAIL_DRY") != "0",
 }
 
 // HasHomeDelivery enabled the "home" delivery if true

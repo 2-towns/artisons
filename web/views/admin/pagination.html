@@ -1,10 +1,10 @@
 <div class="card-footer box row row-between">
 	<p>{{translate .Lang "label_dashboard_pagination" .Start .End .Total}}</p>
-	<ul class="pagination">
-		<li class="page-item {{if .IsFirst }} disabled {{end}}">
+	<ul class="table-pagination">
+		<li class="table-pagination-item">
 			{{if not .IsFirst}}
 			<a
-				class="page-link"
+				class="table-pagination-link {{if .IsFirst }} table-pagination-link-disabled {{end}}"
 				href="#"
 				hx-get="{{.URL}}?page=0"
 				hx-target="#table"
@@ -13,17 +13,21 @@
 				{{template "arrow-left.svg"}}
 			</a>
 			{{else }}
-			<a class="page-link" href="#"> {{template "arrow-left.svg"}} </a>
+			<a class="table-pagination-link" href="#">
+				{{template "arrow-left.svg"}}
+			</a>
 			{{end}}
 		</li>
 
 		{{range .Items}}
-		<li class="page-item">
+		<li class="table-pagination-item">
 			{{if eq . $.Page}}
-			<a class="page-link active" href="#">{{.}}</a>
+			<a class="table-pagination-link table-pagination-link-active" href="#"
+				>{{.}}</a
+			>
 			{{else}}
 			<a
-				class="page-link"
+				class="table-pagination-link"
 				href="#"
 				hx-get="{{$.URL}}?page={{.}}"
 				hx-target="#table"
@@ -34,10 +38,10 @@
 		</li>
 		{{end}}
 
-		<li class="page-item {{if .IsLast}} disabled {{end}}">
+		<li class="table-pagination-item">
 			{{if not .IsLast}}
 			<a
-				class="page-link"
+				class="table-pagination-link {{if .IsLast}} table-pagination-link-disabled {{end}}"
 				href="#"
 				hx-get="{{.URL}}?page={{.Max}}"
 				hx-target="#table"
@@ -46,7 +50,9 @@
 				{{template "arrow-right.svg"}}
 			</a>
 			{{else }}
-			<a class="page-link" href="#"> {{template "arrow-right.svg"}} </a>
+			<a class="table-pagination-link" href="#">
+				{{template "arrow-right.svg"}}
+			</a>
 			{{end}}
 		</li>
 	</ul>

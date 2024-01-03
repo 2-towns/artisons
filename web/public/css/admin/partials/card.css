@@ -1,4 +1,4 @@
-article {
+.card {
 	background-color: white;
 	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius);
@@ -12,7 +12,7 @@ article {
 	margin-bottom: var(--spacing);
 }
 
-article h3 {
+.card-title {
 	font-weight: 500;
 	margin-top: 0;
 	margin-bottom: 0;

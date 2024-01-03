@@ -1,22 +1,24 @@
 {{ define "body"}}
 
-<header class="header-navbar">
-	<div class="container">
+<header class="header header-navbar">
+	<div class="container header-container">
 		<a class="row row-align" href="/admin/index.html">
 			<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
 		</a>
-		<a href="#" hx-post="/auth/logout" class="button">
+		<a href="#" hx-post="/auth/logout" class="button header-navbar-button">
 			{{translate .Lang "label_dashboard_logout"}}
 		</a>
 	</div>
 </header>
 
-<header class="header-menu">
-	<div class="container">
-		<ul class="row">
-			<li class='row {{if eq .Page "dashboard"}} header-menu-active {{end}}'>
-				<a href="/admin/index.html" class="gutters row row-align">
-					{{template "home.svg" .}}
+<header class="header header-menu">
+	<div class="container header-container">
+		<ul class="row header-menu-list">
+			<li
+				class='row header-menu-item {{if eq .Page "dashboard"}} header-menu-item-active {{end}}'
+			>
+				<a href="/admin/index.html" class="row row-align header-menu-link">
+					<span class="header-menu-icon"> {{template "home.svg" .}} </span>
 
 					<span class="nav-link-title">
 						{{translate .Lang "label_dashboard_home"}}
@@ -24,9 +26,13 @@
 				</a>
 			</li>
 
-			<li class='row {{if eq .Page "products"}} header-menu-active {{end}}'>
-				<a href="/admin/products.html" class="gutters row row-align">
-					{{template "building-store.svg" .}}
+			<li
+				class='row header-menu-item {{if eq .Page "products"}} header-menu-item-active {{end}}'
+			>
+				<a href="/admin/products.html" class="row row-align header-menu-link">
+					<span class="header-menu-icon">
+						{{template "building-store.svg" .}}
+					</span>
 
 					<span class="nav-link-title">
 						{{translate .Lang "label_dashboard_products"}}
@@ -34,9 +40,11 @@
 				</a>
 			</li>
 
-			<li class='row {{if eq .Page "orders"}} header-menu-active {{end}}'>
-				<a href="/admin/orders.html" class="gutters row row-align">
-					{{template "receipt.svg" .}}
+			<li
+				class='row header-menu-item {{if eq .Page "orders"}} header-menu-item-active {{end}}'
+			>
+				<a href="/admin/orders.html" class="row row-align header-menu-link">
+					<span class="header-menu-icon"> {{template "receipt.svg" .}} </span>
 
 					<span class="nav-link-title">
 						{{translate .Lang "label_dashboard_orders"}}
@@ -44,9 +52,11 @@
 				</a>
 			</li>
 
-			<li class='row {{if eq .Page "blog"}} header-menu-active {{end}}'>
-				<a href="/admin/blog.html" class="gutters row row-align">
-					{{template "article.svg" .}}
+			<li
+				class='row header-menu-item {{if eq .Page "blog"}} header-menu-item-active {{end}}'
+			>
+				<a href="/admin/blog.html" class="row row-align header-menu-link">
+					<span class="header-menu-icon"> {{template "article.svg" .}} </span>
 
 					<span class="nav-link-title">
 						{{translate .Lang "label_dashboard_blog"}}
@@ -54,9 +64,11 @@
 				</a>
 			</li>
 
-			<li class='row {{if eq .Page "settings"}} header-menu-active {{end}}'>
-				<a href="/admin/settings.html" class="gutters row row-align">
-					{{template "settings.svg" .}}
+			<li
+				class='row header-menu-item {{if eq .Page "settings"}} header-menu-item-active {{end}}'
+			>
+				<a href="/admin/settings.html" class="row row-align header-menu-link">
+					<span class="header-menu-icon"> {{template "settings.svg" .}} </span>
 
 					<span class="nav-link-title">
 						{{translate .Lang "label_dashboard_settings"}}
@@ -69,7 +81,9 @@
 
 <div class="container">
 	<div class="header-navigation row row-between row-align">
-		<h2>{{translate .Lang (printf "title_%s_page" .Page) }}</h2>
+		<h2 class="header-navigation-title">
+			{{translate .Lang (printf "title_%s_page" .Page) }}
+		</h2>
 		{{template "actions" .}}
 	</div>
 	{{template "content" .}}

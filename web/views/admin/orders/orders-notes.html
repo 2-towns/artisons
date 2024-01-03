@@ -14,22 +14,24 @@
 		class="list-item"
 	>
 		<div class="box" id="note-row">
-			<label id="description"> {{translate .Lang "input_label_note"}} </label>
+			<label class="input-label" id="description">
+				{{translate .Lang "input_label_note"}}
+			</label>
 			<textarea
 				id="note"
-				rows="3"
+				rows="5"
 				name="note"
 				required
-				class="input-100"
+				class="input textarea input-full"
 			></textarea>
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "message_dashboard_note"}}
 			</small>
 			<div id="note-error"></div>
 		</div>
 
 		<div class="card-footer box row row-end">
-			<button class="button-primary">
+			<button class="button button-primary">
 				{{translate .Lang "label_dashboard_add"}}
 			</button>
 		</div>

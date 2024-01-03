@@ -42,7 +42,6 @@ func init() {
 		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
 		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
 		conf.WorkingSpace + "web/views/admin/icons/article.svg",
-		conf.WorkingSpace + "web/views/admin/icons/seo.svg",
 		conf.WorkingSpace + "web/views/admin/products/products.html",
 		conf.WorkingSpace + "web/views/admin/alert-success.html",
 	}...)...)

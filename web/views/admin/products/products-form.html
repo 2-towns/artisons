@@ -5,23 +5,25 @@
 >
 	<div class="form box">
 		<div class="form-row" id="title-row">
-			<label for="title">{{translate .Lang "input_label_title"}}</label>
+			<label class="input-label" for="title">
+				{{translate .Lang "input_label_title"}}
+			</label>
 			<input
 				id="title"
 				name="title"
 				required
-				class="input-100"
+				class="input input-full"
 				required
 				value="{{if .Data.Title }}{{.Data.Title}}{{end}}"
 			/>
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_titlesub"}}
 			</small>
 			<div id="title-error"></div>
 		</div>
 
 		<div class="form-row" id="description-row">
-			<label id="description">
+			<label class="input-label" id="description">
 				{{translate .Lang "input_label_description"}}
 			</label>
 			<textarea
@@ -29,7 +31,7 @@
 				rows="5"
 				name="description"
 				required
-				class="input-100"
+				class="input textarea input-full"
 			>
 {{if .Data.Description}}{{.Data.Description}}{{end}}</textarea
 			>
@@ -37,26 +39,28 @@
 		</div>
 
 		<div class="form-row" id="sku-row">
-			<label for="sku">
+			<label class="input-label" for="sku">
 				{{translate .Lang "input_label_sku"}} -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
 			<input
 				id="sku"
 				name="sku"
-				class="input-100"
+				class="input input-full"
 				pattern="[a-zA-Z0-9]+"
 				value="{{if .Data.Sku }}{{.Data.Sku}}{{end}}"
 			/>
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_skusub"}}
 			</small>
 			<div id="sku-error"></div>
 		</div>
 
 		<div class="form-row" id="status-row">
-			<label for="status">{{translate .Lang "input_label_status"}}</label>
-			<select id="status" name="status" class="input-100">
+			<label class="input-label" for="status">
+				{{translate .Lang "input_label_status"}}
+			</label>
+			<select id="status" name="status" class="input select input-full">
 				{{if eq .Data.Status "online" }}
 				<option value="online" selected>
 					{{translate .Lang "label_dashboard_online"}}
@@ -83,12 +87,14 @@
 		</div>
 
 		<div class="form-row" id="price-row">
-			<label for="price">{{translate .Lang "input_label_price"}}</label>
+			<label class="input-label" for="price">
+				{{translate .Lang "input_label_price"}}
+			</label>
 			<input
 				id="price"
 				name="price"
 				required
-				class="input-100"
+				class="input input-full"
 				type="number"
 				step=".01"
 				value="{{if .Data.Price }}{{twodigits .Data.Price}}{{end}}"
@@ -97,14 +103,14 @@
 		</div>
 
 		<div class="form-row" id="discount-row">
-			<label for="discount">
+			<label for="discount" class="input-label">
 				{{translate .Lang "input_label_discount"}} -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
 			<input
 				id="discount"
 				name="discount"
-				class="input-100"
+				class="input input-full"
 				type="number"
 				step=".01"
 				value="{{if .Data.Discount }}{{twodigits.Data.Discount}}{{end}}"
@@ -113,11 +119,13 @@
 		</div>
 
 		<div class="form-row" id="quantity-row">
-			<label for="quantity">{{translate .Lang "input_label_quantity"}}</label>
+			<label for="quantity" class="input-label">
+				{{translate .Lang "input_label_quantity"}}
+			</label>
 			<input
 				id="quantity"
 				name="quantity"
-				class="input-100"
+				class="input input-full"
 				required
 				type="number"
 				value="{{if .Data.Quantity }}{{.Data.Quantity}}{{end}}"
@@ -126,48 +134,50 @@
 		</div>
 
 		<div class="form-row" id="weight-row">
-			<label for="weight">
+			<label for="weight" class="input-label">
 				{{translate .Lang "input_label_weight"}} -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
 			<input
 				id="weight"
 				name="weight"
-				class="input-100"
+				class="input input-full"
 				type="number"
 				step=".01"
 				value="{{if .Data.Weight }}{{twodigits .Data.Weight}}{{end}}"
 			/>
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_weightsub"}}
 			</small>
 			<div id="weight-error"></div>
 		</div>
 
 		<div class="form-row" id="tags-row">
-			<label for="tags">
+			<label for="tags" class="input-label">
 				{{translate .Lang "input_label_tags"}} -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
 			<input
 				id="tags"
 				name="tags"
-				class="input-100"
+				class="input input-full"
 				placeholder='{{translate .Lang "label_dashboard_tagsplaceholder"}}'
 				value='{{if .Data.Tags }}{{join .Data.Tags " "}}{{end}}'
 			/>
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_tagssub"}}
 			</small>
 			<div id="tags-error"></div>
 		</div>
 
 		<div class="form-row" id="image_1-row">
-			<label for="image_1">{{translate .Lang "input_label_image"}} 1</label>
+			<label for="image_1" class="input-label">
+				{{translate .Lang "input_label_image"}} 1
+			</label>
 			<input
 				id="image_1"
 				name="image_1"
-				class="input-100"
+				class="input-file input-full"
 				type="file"
 				accept="image/png, image/jpeg, image/jpg"
 				{{if
@@ -175,7 +185,7 @@
 				}}{{else}}required{{end}}
 			/>
 
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_imagesub"}}
 			</small>
 
@@ -193,7 +203,7 @@
 		</div>
 
 		<div class="form-row" id="image_2-row">
-			<label for="image_2">
+			<label for="image_2" class="input-label">
 				{{translate .Lang "input_label_image"}} 2 -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
@@ -203,7 +213,7 @@
 			<input
 				id="image_2_delete"
 				type="checkbox"
-				class="form-hide"
+				class="hide"
 				name="image_2_delete"
 			/>
 
@@ -213,21 +223,23 @@
 				<input
 					id="image_2"
 					name="image_2"
-					class="fill"
+					class="input-file fill"
 					type="file"
 					accept="image/png, image/jpeg, image/jpg"
 				/>
 
 				{{if .Data.Image2}}
 
-				<label for="image_2_delete">
-					<a class="button"> {{template "close.svg"}} </a>
+				<label for="image_2_delete" class="input-label input-group-label">
+					<a class="button input-group-button">
+						<span class="button-icon"> {{template "close.svg"}} </span>
+					</a>
 				</label>
 
 				{{end}}
 			</div>
 
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_imagesub"}}
 			</small>
 
@@ -245,7 +257,7 @@
 		</div>
 
 		<div class="form-row" id="image_3-row">
-			<label for="image_3">
+			<label for="image_3" class="input-label">
 				{{translate .Lang "input_label_image"}} 3 -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
@@ -255,7 +267,7 @@
 			<input
 				id="image_3_delete"
 				type="checkbox"
-				class="form-hide"
+				class="hide"
 				name="image_3_delete"
 			/>
 
@@ -265,21 +277,23 @@
 				<input
 					id="image_3"
 					name="image_3"
-					class="fill"
+					class="input-file fill"
 					type="file"
 					accept="image/png, image/jpeg, image/jpg"
 				/>
 
 				{{if .Data.Image3}}
 
-				<label for="image_3_delete">
-					<a class="button"> {{template "close.svg"}} </a>
+				<label for="image_3_delete" class="input-label input-group-label">
+					<a class="button input-group-button">
+						<span class="button-icon"> {{template "close.svg"}} </span>
+					</a>
 				</label>
 
 				{{end}}
 			</div>
 
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_imagesub"}}
 			</small>
 
@@ -297,7 +311,7 @@
 		</div>
 
 		<div class="form-row" id="image_4-row">
-			<label for="image_4">
+			<label for="image_4" class="input-label">
 				{{translate .Lang "input_label_image"}} 4 -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
@@ -307,7 +321,7 @@
 			<input
 				id="image_4_delete"
 				type="checkbox"
-				class="form-hide"
+				class="hide"
 				name="image_4_delete"
 			/>
 
@@ -317,21 +331,23 @@
 				<input
 					id="image_4"
 					name="image_4"
-					class="fill"
+					class="input-file fill"
 					type="file"
 					accept="image/png, image/jpeg, image/jpg"
 				/>
 
 				{{if .Data.Image4}}
 
-				<label for="image_4_delete">
-					<a class="button"> {{template "close.svg"}} </a>
+				<label for="image_4_delete" class="input-label input-group-label">
+					<a class="button input-group-button">
+						<span class="button-icon"> {{template "close.svg"}} </span>
+					</a>
 				</label>
 
 				{{end}}
 			</div>
 
-			<small class="input-small">
+			<small class="input-help">
 				{{translate .Lang "label_dashboard_imagesub"}}
 			</small>
 
@@ -353,11 +369,11 @@
 
 	<div class="card-footer box">
 		<div class="form row row-between row-gap">
-			<a href="/admin/products.html" class="button row row-align fill"
-				>{{translate .Lang "label_dashboard_back"}}</a
-			>
-			<button class="button-primary fill">
-				<div id="spinner" class="htmx-indicator spinner spinner-white"></div>
+			<a href="/admin/products.html" class="button row row-align fill">
+				{{translate .Lang "label_dashboard_back"}}
+			</a>
+			<button class="button button-primary fill">
+				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
 				{{translate .Lang "label_dashboard_send"}}
 			</button>

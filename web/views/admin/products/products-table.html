@@ -1,21 +1,21 @@
 <div class="table-responsive">
 	<div id="table">
-		<table>
-			<thead>
-				<tr>
-					<th>{{translate .Lang "label_dashboard_id"}}</th>
-					<th>{{translate .Lang "label_dashboard_title"}}</th>
-					<th>{{translate .Lang "label_dashboard_price"}}</th>
-					<th>{{translate .Lang "label_dashboard_sku"}}</th>
-					<th>{{translate .Lang "label_dashboard_status"}}</th>
-					<th>{{translate .Lang "label_dashboard_updatedat"}}</th>
+		<table class="table">
+			<thead class="thead">
+				<tr class="tr">
+					<th class="th">{{translate .Lang "label_dashboard_id"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_title"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_price"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_sku"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_status"}}</th>
+					<th class="th">{{translate .Lang "label_dashboard_updatedat"}}</th>
 					<th></th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody class="tbody">
 				{{ if .Empty }}
-				<tr>
-					<td colspan="9" class="text-center box">
+				<tr class="tr">
+					<td colspan="9" class="text-center box td">
 						{{translate .Lang "label_dashboard_empty"}}
 					</td>
 				</tr>
@@ -23,12 +23,12 @@
 				<!-- -->
 
 				{{ range .Products}}
-				<tr>
-					<td class="secondary table-td-id box">{{.ID}}</td>
-					<td class="box" hx-disable>{{.Title}}</td>
-					<td class="box">{{twodigits .Price}} {{.Currency}}</td>
-					<td class="box" hx-disable>{{.Sku}}</td>
-					<td class="box">
+				<tr class="tr">
+					<td class="secondary table-td-id box td">{{.ID}}</td>
+					<td class="box td" hx-disable>{{.Title}}</td>
+					<td class="box td">{{twodigits .Price}} {{.Currency}}</td>
+					<td class="box td" hx-disable>{{.Sku}}</td>
+					<td class="box td">
 						<div class="row row-align row-gap">
 							{{ if eq .Status "online"}}
 							<span class="table-badge table-badge-success"></span>
@@ -41,32 +41,34 @@
 							{{end}}
 						</div>
 					</td>
-					<td class="box">{{date .UpdatedAt}}</td>
-					<td class="box">
+					<td class="box td">{{date .UpdatedAt}}</td>
+					<td class="box td">
 						<div class="row row-align row-gap">
-							<a href="/admin/products/{{.ID}}/edit.html" class="button">
-								{{template "edit.svg"}}
+							<a
+								href="/admin/products/{{.ID}}/edit.html"
+								class="button table-button"
+							>
+								<span class="button-icon"> {{template "edit.svg"}} </span>
 							</a>
 
-							<label for="destroy-{{.ID}}">
+							<label for="destroy-{{.ID}}" class="table-label">
 								<input
 									type="checkbox"
 									id="destroy-{{.ID}}"
-									class="table-destroy-checkbox"
+									class="input table-destroy-checkbox input-checkbox"
 								/>
 
-								<a class="button"> {{template "trash.svg"}} </a>
+								<a class="button table-button table-confirm-button">
+									<span class="button-icon"> {{template "trash.svg"}} </span>
+								</a>
 
 								<a
 									hx-post="/admin/products/{{.ID}}/delete.html"
 									hx-include="[name='query'], [name='page']"
 									hx-target="#table"
-									class="button table-destroy-button"
+									class="button table-button table-delete-confirm-button"
 								>
-									<div
-										id="spinner"
-										class="htmx-indicator spinner spinner-white"
-									></div>
+									<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
 									<span class="htmx-hide"> {{template "trash.svg"}} </span>
 

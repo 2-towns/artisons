@@ -1,5 +1,4 @@
-button,
-a.button {
+.button {
 	border: none;
 	text-decoration: none;
 	display: inline-flex;
@@ -17,31 +16,26 @@ a.button {
 	font-feature-settings: var(--font-feature-settings);
 }
 
-button:not(.button-primary),
-a.button:not(.button-primary) {
+.button:not(.button-primary) {
 	height: calc(var(--input-height) - 2px);
 }
 
-button:not(.button-primary),
 .button:not(.button-primary) {
 	border: 1px solid var(--border-color);
 	background-color: white;
 	color: var(--font-color);
 }
 
-button:not(.button-primary):hover,
 .button:not(.button-primary):hover {
 	border-color: var(--border-active-color);
 }
 
-button:not(.button-primary):active,
 .button:not(.button-primary):active {
 	border-color: var(--primary);
 	color: var(--primary);
 }
 
-button:hover,
-a.button:hover {
+.button:hover {
 	cursor: pointer;
 }
 
@@ -60,19 +54,12 @@ a.button:hover {
 	width: 100%;
 }
 
-.button .spinner,
-button .spinner {
-	color: white;
-	margin-right: var(--spacing);
-}
-
-button svg,
-.button svg {
+.button-icon {
 	color: var(--secondary);
 }
 
-.htmx-request button,
-.htmx-request .button {
-	background-color: var(--button-background-color-hover);
-	pointer-events: none;
+.input-group-button {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left: none;
 }

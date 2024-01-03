@@ -1,0 +1,8 @@
+.select {
+	background-image: url("/public/icons/select.svg");
+	background-repeat: no-repeat;
+	background-position: right 0.75rem center;
+	background-size: 16px 12px;
+	appearance: none;
+	padding-right: calc(var(--spacing) * 3);
+}

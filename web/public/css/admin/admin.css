@@ -2,6 +2,9 @@
 @import url("./partials/normalize.css");
 @import url("./partials/alert.css");
 @import url("./partials/form.css");
+@import url("./partials/input.css");
+@import url("./partials/select.css");
+@import url("./partials/textarea.css");
 @import url("./partials/button.css");
 @import url("./partials/login.css");
 @import url("./partials/header.css");
@@ -9,9 +12,9 @@
 @import url("./partials/card.css");
 @import url("./partials/stats.css");
 @import url("./partials/table.css");
-@import url("./partials/tooltip.css");
 @import url("./partials/text.css");
 @import url("./partials/list.css");
+@import url("./partials/htmx.css");
 
 :root {
 	--font-family: "InterVariable", -apple-system, BlinkMacSystemFont,
@@ -24,7 +27,7 @@
 	--link-hover-color: #1a569d;
 	--background-color: #f6f8fb;
 	--secondary: #6c7a91;
-	--spacing: 12px;
+	--spacing: 14px;
 	--tooltip-background-color: hsl(205, 30%, 15%);
 	--font-size: 14px;
 	--button-color-hover: #f6f8fb;

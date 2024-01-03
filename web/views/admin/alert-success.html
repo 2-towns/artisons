@@ -1,8 +1,12 @@
 <div class="alert alert-success box" role="alert">
 	<div class="row row-align">
-		{{template "success.svg" .}}
+		<span class="alert-success-icon alert-icon">
+			{{template "success.svg" .}}
+		</span>
 		<div>
-			<b class="alert-title">{{translate .Lang "title_success_common"}}</b>
+			<b class="alert-success-title alert-title">
+				{{translate .Lang "title_success_common"}}
+			</b>
 			<p>{{translate .Lang .Flash}}</p>
 		</div>
 	</div>

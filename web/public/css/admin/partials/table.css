@@ -1,22 +1,25 @@
-table {
+.table {
 	width: 100%;
 }
 
-table thead {
+.thead {
 	text-align: left;
 	background-color: var(--background-color);
-}
-
-table th,
-table td {
-	padding: calc(var(--spacing) / 2) var(--spacing);
-}
-
-table tbody tr:not(:last-child) {
+	border-top: 1px solid var(--border-color);
 	border-bottom: 1px solid var(--border-color);
 }
 
-table thead th {
+.table-label {
+	display: block;
+	font-weight: 500;
+	margin-bottom: 0;
+}
+
+.tbody {
+	background-color: white;
+}
+
+.th {
 	font-weight: 500;
 	color: var(--secondary);
 	text-transform: uppercase;
@@ -24,8 +27,13 @@ table thead th {
 	letter-spacing: 0.5px;
 }
 
-table td div {
-	padding: calc(var(--spacing) / 2) 0;
+.th,
+.td {
+	padding: var(--spacing) var(--spacing);
+}
+
+.tr:not(:last-child) {
+	border-bottom: 1px solid var(--border-color);
 }
 
 .table-responsive {
@@ -63,7 +71,7 @@ table td div {
 	min-width: 200px;
 }
 
-.pagination {
+.table-pagination {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
@@ -75,11 +83,11 @@ table td div {
 	gap: calc(var(--spacing) / 2);
 }
 
-.page-item {
+.table-pagination-item {
 	text-align: center;
 }
 
-.page-link {
+.table-pagination-link {
 	width: 28px;
 	height: 28px;
 	border-radius: var(--border-radius);
@@ -90,37 +98,27 @@ table td div {
 	justify-content: center;
 }
 
-.page-link:not(.active):hover {
+.table-pagination-link:not(.table-pagination-link-active):hover {
 	color: var(--link-hover-color);
 }
 
-.page-link.active {
+.table-pagination-link-active {
 	color: white;
 	background-color: var(--primary);
 	border-color: var(--primary);
 }
 
-.pagination .disabled .page-link {
+.table-pagination-link-disabled {
 	color: var(--pagination-disabled-color);
 	cursor: default;
 }
 
-tbody {
-	background-color: white;
-}
-
-thead {
-	border-top: 1px solid var(--border-color);
-	border-bottom: 1px solid var(--border-color);
-}
-
-table button,
-table a.button {
+.table-button {
 	min-width: 48px;
 	transition: 0.5s;
 }
 
-a.button.table-destroy-button,
+.table-delete-confirm-button,
 .table-destroy-checkbox {
 	display: none;
 }
@@ -129,26 +127,16 @@ a.button.table-destroy-button,
 	transition: 0.5s;
 }
 
-.table-destroy-checkbox:checked ~ a:not(.table-destroy-button) {
+.table-destroy-checkbox:checked ~ .table-confirm-button {
 	display: none;
 }
 
-.table-destroy-checkbox:checked ~ a.button.table-destroy-button {
+.table-destroy-checkbox:checked ~ .table-delete-confirm-button {
 	display: flex;
-}
-
-.table-destroy-checkbox:checked ~ .table-destroy-button {
 	transition: 0.35s;
 	--border-color: var(--danger);
 	border-color: var(--border-color);
 	background-color: var(--danger);
 	box-shadow: 0 1px 1px rgba(var(--danger-rgb), 0.06);
-}
-
-.table-destroy-checkbox:checked ~ .table-destroy-button svg {
 	color: white;
-}
-
-table td label {
-	margin-bottom: 0;
 }

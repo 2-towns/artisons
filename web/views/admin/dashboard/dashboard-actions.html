@@ -1,10 +1,11 @@
 {{define "actions"}}
 
 <!-- -->
-<div class="row row-align row-gap">
-	<div id="spinner" class="htmx-indicator spinner spinner-white"></div>
+<div class="row row-align row-gap header-navigation-actions">
+	<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
 	<select
+		class="input select"
 		name="days"
 		hx-trigger="change"
 		hx-target="#dashboard"
