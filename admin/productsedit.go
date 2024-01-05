@@ -95,7 +95,7 @@ func EditProduct(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     cookies.FlashMessage,
-		Value:    "label_dashboard_producteditsuccess",
+		Value:    "text_products_editsuccess",
 		MaxAge:   int(time.Minute.Seconds()),
 		Path:     "/",
 		HttpOnly: true,

@@ -8,6 +8,13 @@
 	border-bottom: 1px solid var(--border-color);
 }
 
+.card-subheader {
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.5px;
+	border-bottom: 1px solid var(--border-color);
+}
+
 .card-separator {
 	margin-bottom: var(--spacing);
 }
@@ -23,6 +30,10 @@
 	color: var(--secondary);
 	font-weight: 600;
 	font-size: 12px;
+}
+
+.card-footer-inside {
+	border-top: 1px solid var(--border-color);
 }
 
 .card-footer {

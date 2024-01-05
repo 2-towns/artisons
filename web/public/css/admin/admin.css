@@ -3,6 +3,7 @@
 @import url("./partials/alert.css");
 @import url("./partials/form.css");
 @import url("./partials/input.css");
+@import url("./partials/switch.css");
 @import url("./partials/select.css");
 @import url("./partials/textarea.css");
 @import url("./partials/button.css");
@@ -14,6 +15,7 @@
 @import url("./partials/table.css");
 @import url("./partials/text.css");
 @import url("./partials/list.css");
+@import url("./partials/settings.css");
 @import url("./partials/htmx.css");
 
 :root {
@@ -33,7 +35,7 @@
 	--button-color-hover: #f6f8fb;
 	--button-background-color-hover: rgba(var(--primary-rgb), 0.8);
 	--border-radius: 4px;
-	--border-color: #ccc;
+	--border-color: #dce1e7;
 	--border-active-color: #aab2bf;
 	--menu-icon-color: #8a97ab;
 	--input-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.25);

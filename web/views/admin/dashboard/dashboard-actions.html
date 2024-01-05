@@ -5,33 +5,31 @@
 	<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
 	<select
-		class="input select"
-		name="days"
-		hx-trigger="change"
-		hx-target="#dashboard"
-		hx-swap="outerHTML"
-		hx-indicator="#spinner"
-		hx-get="/admin/index.html"
-	>
-		<option value="7">{{translate .Lang "label_dashboard_7days"}}</option>
-		<option value="14">{{translate .Lang "label_dashboard_14days"}}</option>
-		<option value="30">{{translate .Lang "label_dashboard_30days"}}</option>
+			class="input select"
+			name="days"
+			hx-trigger="change"
+			hx-target="#dashboard"
+			hx-swap="outerHTML"
+			hx-indicator="#spinner"
+			hx-get="/admin/index.html">
+		<option value="7">{{translate .Lang "text_statistics_7days"}}</option>
+		<option value="14">{{translate .Lang "text_statistics_14days"}}</option>
+		<option value="30">{{translate .Lang "text_statistics_30days"}}</option>
 	</select>
 
 	<a
-		hx-swap="outerHTML"
-		hx-indicator="#spinner"
-		hx-post="/admin/demo.html"
-		href="#"
-		class="button button-primary"
-	>
+	   hx-swap="outerHTML"
+	   hx-indicator="#spinner"
+	   hx-post="/admin/demo.html"
+	   href="#"
+	   class="button button-primary">
 		{{if .Demo }}
 		<!---->
-		{{translate .Lang "label_dashboard_demodisable"}}
+		{{translate .Lang "text_demo_disable"}}
 		<!---->
 		{{else}}
 		<!---->
-		{{translate .Lang "label_dashboard_demoactivate"}}
+		{{translate .Lang "text_demo_activate"}}
 		<!---->
 		{{end}}
 	</a>

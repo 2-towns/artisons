@@ -90,7 +90,7 @@ func AddProduct(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     cookies.FlashMessage,
-		Value:    "label_dashboard_productaddsuccess",
+		Value:    "text_products_addsuccess",
 		MaxAge:   int(time.Minute.Seconds()),
 		Path:     "/",
 		HttpOnly: true,

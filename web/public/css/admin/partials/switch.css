@@ -1,0 +1,36 @@
+.switch:checked {
+	background-position: right center;
+	border: none;
+	background-color: var(--primary);
+	--switch-bg: url(/public/icons/switch-checked.svg);
+	--switch-border-color: var(--primary);
+}
+
+.switch {
+	--switch-border-color: var(--border-color);
+	--switch-bg: url(/public/icons/switch.svg);
+	height: 1.25rem;
+	transition:
+		background-color 0.3s,
+		background-position 0.3s;
+	margin-top: 0;
+	width: 32px;
+	border-radius: 32px;
+	float: left;
+	background-size: 18px;
+	box-shadow: var(--box-shadow-input);
+	appearance: none;
+	background-repeat: no-repeat;
+	print-color-adjust: exact;
+	background-image: var(--switch-bg);
+	border: 1px solid var(--switch-border-color);
+}
+
+.switch:focus {
+	box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.25);
+}
+
+.switch-label {
+	display: block;
+	font-weight: 500;
+}

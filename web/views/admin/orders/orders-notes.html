@@ -9,30 +9,28 @@
 	{{end}}
 
 	<form
-		hx-post="/admin/orders/{{.Data.ID}}/note.html"
-		hx-target="#notes"
-		class="list-item"
-	>
+		  hx-post="/admin/orders/{{.Data.ID}}/note.html"
+		  hx-target="#notes"
+		  class="list-item">
 		<div class="box" id="note-row">
 			<label class="input-label" id="description">
-				{{translate .Lang "input_label_note"}}
+				{{translate .Lang "text_general_note"}}
 			</label>
 			<textarea
-				id="note"
-				rows="5"
-				name="note"
-				required
-				class="input textarea input-full"
-			></textarea>
+					  id="note"
+					  rows="5"
+					  name="note"
+					  required
+					  class="input textarea input-full"></textarea>
 			<small class="input-help">
-				{{translate .Lang "message_dashboard_note"}}
+				{{translate .Lang "text_note_sub"}}
 			</small>
 			<div id="note-error"></div>
 		</div>
 
 		<div class="card-footer box row row-end">
 			<button class="button button-primary">
-				{{translate .Lang "label_dashboard_add"}}
+				{{translate .Lang "text_general_add"}}
 			</button>
 		</div>
 	</form>

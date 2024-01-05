@@ -5,7 +5,7 @@
 	<div class="form box">
 		<div class="form-row" id="title-row">
 			<label class="input-label" for="title">
-				{{translate .Lang "input_label_title"}}
+				{{translate .Lang "text_general_title"}}
 			</label>
 
 			<input
@@ -17,7 +17,7 @@
 				   value="{{if .Data.Title }}{{.Data.Title}}{{end}}" />
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_titlesub"}}
+				{{translate .Lang "text_general_titlesub"}}
 			</small>
 
 			<div id="title-error"></div>
@@ -25,7 +25,7 @@
 
 		<div class="form-row" id="description-row">
 			<label class="input-label" id="description">
-				{{translate .Lang "input_label_description"}}
+				{{translate .Lang "text_general_description"}}
 			</label>
 
 			<textarea
@@ -39,8 +39,8 @@
 
 		<div class="form-row" id="sku-row">
 			<label class="input-label" for="sku">
-				{{translate .Lang "input_label_sku"}} -
-				<i>{{translate .Lang "label_dashboard_optional"}}</i>
+				{{translate .Lang "text_products_sku"}} -
+				<i>{{translate .Lang "text_general_optional"}}</i>
 			</label>
 
 			<input
@@ -51,7 +51,7 @@
 				   value="{{if .Data.Sku }}{{.Data.Sku}}{{end}}" />
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_skusub"}}
+				{{translate .Lang "text_products_skusub"}}
 			</small>
 
 			<div id="sku-error"></div>
@@ -59,16 +59,16 @@
 
 		<div class="form-row" id="status-row">
 			<label class="input-label" for="status">
-				{{translate .Lang "input_label_status"}}
+				{{translate .Lang "text_general_status"}}
 			</label>
 
 			<select id="status" name="status" class="input select input-full">
 				<option value="online" {{if eq .Data.Status "online" }}selected{{end}}>
-					{{translate .Lang "label_dashboard_online"}}
+					{{translate .Lang "text_general_online"}}
 				</option>
 
 				<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
-					{{translate .Lang "label_dashboard_offline"}}
+					{{translate .Lang "text_general_offline"}}
 				</option>
 			</select>
 
@@ -77,7 +77,7 @@
 
 		<div class="form-row" id="price-row">
 			<label class="input-label" for="price">
-				{{translate .Lang "input_label_price"}}
+				{{translate .Lang "text_general_price"}}
 			</label>
 
 			<input
@@ -94,8 +94,8 @@
 
 		<div class="form-row" id="discount-row">
 			<label for="discount" class="input-label">
-				{{translate .Lang "input_label_discount"}} -
-				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+				{{translate .Lang "text_products_discount"}} -
+				<i> {{translate .Lang "text_general_optional"}}</i>
 			</label>
 
 			<input
@@ -111,7 +111,7 @@
 
 		<div class="form-row" id="quantity-row">
 			<label for="quantity" class="input-label">
-				{{translate .Lang "input_label_quantity"}}
+				{{translate .Lang "text_general_quantity"}}
 			</label>
 
 			<input
@@ -127,8 +127,8 @@
 
 		<div class="form-row" id="weight-row">
 			<label for="weight" class="input-label">
-				{{translate .Lang "input_label_weight"}} -
-				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+				{{translate .Lang "text_products_weight"}} -
+				<i> {{translate .Lang "text_general_optional"}}</i>
 			</label>
 
 			<input
@@ -140,7 +140,7 @@
 				   value="{{if .Data.Weight }}{{twodigits .Data.Weight}}{{end}}" />
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_weightsub"}}
+				{{translate .Lang "text_products_weightsub"}}
 			</small>
 
 			<div id="weight-error"></div>
@@ -148,19 +148,19 @@
 
 		<div class="form-row" id="tags-row">
 			<label for="tags" class="input-label">
-				{{translate .Lang "input_label_tags"}} -
-				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+				{{translate .Lang "text_products_tags"}} -
+				<i> {{translate .Lang "text_general_optional"}}</i>
 			</label>
 
 			<input
 				   id="tags"
 				   name="tags"
 				   class="input input-full"
-				   placeholder='{{translate .Lang "label_dashboard_tagsplaceholder"}}'
+				   placeholder='{{translate .Lang "text_products_tagsplaceholder"}}'
 				   value='{{if .Data.Tags }}{{join .Data.Tags " "}}{{end}}' />
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_tagssub"}}
+				{{translate .Lang "text_products_tagssub"}}
 			</small>
 
 			<div id="tags-error"></div>
@@ -168,7 +168,7 @@
 
 		<div class="form-row" id="image_1-row">
 			<label for="image_1" class="input-label">
-				{{translate .Lang "input_label_image"}} 1
+				{{translate .Lang "text_general_image"}} 1
 			</label>
 
 			<input
@@ -180,7 +180,7 @@
 				   {{if.ID}}{{else}}required{{end}} />
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_imagesub"}}
+				{{translate .Lang "text_images_sub"}}
 			</small>
 
 			{{if .Data.Image1}}
@@ -198,8 +198,8 @@
 
 		<div class="form-row" id="image_2-row">
 			<label for="image_2" class="input-label">
-				{{translate .Lang "input_label_image"}} 2 -
-				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+				{{translate .Lang "text_general_image"}} 2 -
+				<i> {{translate .Lang "text_general_optional"}}</i>
 			</label>
 
 			{{if .Data.Image2}}
@@ -232,7 +232,7 @@
 			</div>
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_imagesub"}}
+				{{translate .Lang "text_images_sub"}}
 			</small>
 
 			{{if .Data.Image2}}
@@ -250,8 +250,8 @@
 
 		<div class="form-row" id="image_3-row">
 			<label for="image_3" class="input-label">
-				{{translate .Lang "input_label_image"}} 3 -
-				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+				{{translate .Lang "text_general_image"}} 3 -
+				<i> {{translate .Lang "text_general_optional"}}</i>
 			</label>
 
 			{{if .Data.Image3}}
@@ -284,7 +284,7 @@
 			</div>
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_imagesub"}}
+				{{translate .Lang "text_images_sub"}}
 			</small>
 
 			{{if .Data.Image3}}
@@ -302,8 +302,8 @@
 
 		<div class="form-row" id="image_4-row">
 			<label for="image_4" class="input-label">
-				{{translate .Lang "input_label_image"}} 4 -
-				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+				{{translate .Lang "text_general_image"}} 4 -
+				<i> {{translate .Lang "text_general_optional"}}</i>
 			</label>
 
 			{{if .Data.Image4}}
@@ -336,7 +336,7 @@
 			</div>
 
 			<small class="input-help">
-				{{translate .Lang "label_dashboard_imagesub"}}
+				{{translate .Lang "text_images_sub"}}
 			</small>
 
 			{{if .Data.Image4}}
@@ -358,12 +358,12 @@
 	<div class="card-footer box">
 		<div class="form row row-between row-gap">
 			<a href="/admin/products.html" class="button row row-align fill">
-				{{translate .Lang "label_dashboard_back"}}
+				{{translate .Lang "text_general_back"}}
 			</a>
 			<button class="button button-primary fill">
 				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-				{{translate .Lang "label_dashboard_send"}}
+				{{translate .Lang "text_general_send"}}
 			</button>
 		</div>
 	</div>

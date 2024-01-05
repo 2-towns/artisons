@@ -6,6 +6,9 @@
 
 .form-row {
 	position: relative;
+}
+
+.form-row:not(:last-child) {
 	margin-bottom: calc(var(--spacing) * 2);
 }
 

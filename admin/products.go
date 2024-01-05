@@ -59,7 +59,7 @@ func init() {
 
 func Products(w http.ResponseWriter, r *http.Request) {
 	var page int = 1
-
+	//Obtenir numero de page
 	ppage := r.URL.Query().Get("page")
 	if ppage != "" {
 		if d, err := strconv.ParseInt(ppage, 10, 32); err == nil && d > 0 {

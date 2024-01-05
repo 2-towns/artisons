@@ -54,7 +54,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 		Flash string
 		Lang  language.Tag
 	}{
-		"label_dashboard_ordersstatusupdated",
+		"text_general_ordersstatusupdated",
 		lang,
 	}
 

@@ -1,0 +1,16 @@
+.settings-left {
+	border-right: 1px solid var(--border-color);
+}
+
+.settings-menu {
+	list-style: none;
+}
+
+.settings-menu-link {
+	color: var(--color);
+}
+
+.settings-menu-selected {
+	background-color: var(--background-color);
+	font-weight: bold;
+}

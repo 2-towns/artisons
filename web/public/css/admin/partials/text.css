@@ -6,3 +6,7 @@
 .text-group-message {
 	margin: 0;
 }
+
+.text-no-bottom {
+	margin-bottom: 0;
+}

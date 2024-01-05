@@ -6,7 +6,7 @@
 			<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
 		</a>
 		<a href="#" hx-post="/auth/logout" class="button header-navbar-button">
-			{{translate .Lang "label_dashboard_logout"}}
+			{{translate .Lang "text_general_logout"}}
 		</a>
 	</div>
 </header>
@@ -21,7 +21,7 @@
 					<span class="header-menu-icon"> {{template "home.svg" .}} </span>
 
 					<span class="nav-link-title">
-						{{translate .Lang "label_dashboard_home"}}
+						{{translate .Lang "text_general_home"}}
 					</span>
 				</a>
 			</li>
@@ -34,7 +34,7 @@
 					</span>
 
 					<span class="nav-link-title">
-						{{translate .Lang "label_dashboard_products"}}
+						{{translate .Lang "text_general_products"}}
 					</span>
 				</a>
 			</li>
@@ -45,7 +45,7 @@
 					<span class="header-menu-icon"> {{template "receipt.svg" .}} </span>
 
 					<span class="nav-link-title">
-						{{translate .Lang "label_dashboard_orders"}}
+						{{translate .Lang "text_general_orders"}}
 					</span>
 				</a>
 			</li>
@@ -56,7 +56,7 @@
 					<span class="header-menu-icon"> {{template "article.svg" .}} </span>
 
 					<span class="nav-link-title">
-						{{translate .Lang "label_dashboard_blog"}}
+						{{translate .Lang "text_general_blog"}}
 					</span>
 				</a>
 			</li>
@@ -67,7 +67,7 @@
 					<span class="header-menu-icon"> {{template "settings.svg" .}} </span>
 
 					<span class="nav-link-title">
-						{{translate .Lang "label_dashboard_settings"}}
+						{{translate .Lang "text_general_settings"}}
 					</span>
 				</a>
 			</li>
@@ -78,7 +78,7 @@
 <div class="container">
 	<div class="header-navigation row row-between row-align">
 		<h2 class="header-navigation-title">
-			{{translate .Lang (printf "title_%s_page" .Page) }}
+			{{translate .Lang (printf "text_general_%s" .Page) }}
 		</h2>
 		{{template "actions" .}}
 	</div>

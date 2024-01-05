@@ -52,8 +52,8 @@
 }
 
 .input-group {
-	box-shadow: var(--tblr-box-shadow-input);
-	border-radius: var(--tblr-border-radius);
+	box-shadow: var(--box-shadow-input);
+	border-radius: var(--border-radius);
 	position: relative;
 	display: flex;
 	flex-wrap: wrap;

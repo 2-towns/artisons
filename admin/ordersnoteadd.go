@@ -64,7 +64,7 @@ func AddOrderNote(w http.ResponseWriter, r *http.Request) {
 		Lang  language.Tag
 		Data  orders.Order
 	}{
-		"label_dashboard_ordersnoteadded",
+		"text_general_ordersnoteadded",
 		lang,
 		o,
 	}

@@ -3,13 +3,13 @@
 		<table class="table">
 			<thead class="thead">
 				<tr class="tr">
-					<th class="th">{{translate .Lang "label_dashboard_id"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_total"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_status"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_delivery"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_payment"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_city"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_updatedat"}}</th>
+					<th class="th">{{translate .Lang "text_general_id"}}</th>
+					<th class="th">{{translate .Lang "text_general_total"}}</th>
+					<th class="th">{{translate .Lang "text_general_status"}}</th>
+					<th class="th">{{translate .Lang "text_general_delivery"}}</th>
+					<th class="th">{{translate .Lang "text_general_payment"}}</th>
+					<th class="th">{{translate .Lang "text_general_city"}}</th>
+					<th class="th">{{translate .Lang "text_general_updatedat"}}</th>
 					<th class="th"></th>
 				</tr>
 			</thead>
@@ -17,7 +17,7 @@
 				{{ if .Empty }}
 				<tr class="tr">
 					<td colspan="9" class="td text-center box">
-						{{translate .Lang "label_dashboard_empty"}}
+						{{translate .Lang "text_general_empty"}}
 					</td>
 				</tr>
 				{{else}}
@@ -39,9 +39,8 @@
 					<td class="box td">
 						<div class="row row-align row-gap">
 							<a
-								href="/admin/orders/{{.ID}}/edit.html"
-								class="button table-button"
-							>
+							   href="/admin/orders/{{.ID}}/edit.html"
+							   class="button table-button">
 								<span class="button-icon"> {{template "edit.svg"}} </span>
 							</a>
 						</div>

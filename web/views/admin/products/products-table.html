@@ -3,12 +3,12 @@
 		<table class="table">
 			<thead class="thead">
 				<tr class="tr">
-					<th class="th">{{translate .Lang "label_dashboard_id"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_title"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_price"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_sku"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_status"}}</th>
-					<th class="th">{{translate .Lang "label_dashboard_updatedat"}}</th>
+					<th class="th">{{translate .Lang "text_general_id"}}</th>
+					<th class="th">{{translate .Lang "text_general_title"}}</th>
+					<th class="th">{{translate .Lang "text_general_price"}}</th>
+					<th class="th">{{translate .Lang "text_products_sku"}}</th>
+					<th class="th">{{translate .Lang "text_general_status"}}</th>
+					<th class="th">{{translate .Lang "text_general_updatedat"}}</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -16,7 +16,7 @@
 				{{ if .Empty }}
 				<tr class="tr">
 					<td colspan="9" class="text-center box td">
-						{{translate .Lang "label_dashboard_empty"}}
+						{{translate .Lang "text_general_empty"}}
 					</td>
 				</tr>
 				{{else}}
@@ -33,12 +33,12 @@
 							{{ if eq .Status "online"}}
 
 							<span class="table-badge table-badge-success"></span>
-							{{translate $.Lang "label_dashboard_online"}}
+							{{translate $.Lang "text_general_online"}}
 
 							{{else}}
 
 							<span class="table-badge table-badge-danger"></span>
-							{{translate $.Lang "label_dashboard_offline"}}
+							{{translate $.Lang "text_general_offline"}}
 
 							{{end}}
 						</div>

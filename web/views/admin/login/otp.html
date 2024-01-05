@@ -1,73 +1,67 @@
 <article id="otp" class="card box">
-	<h2 class="text-center">{{translate .Lang "title_otp_sub"}}</h2>
+	<h2 class="text-center">{{translate .Lang "text_otp_sub"}}</h2>
 
 	<p class="text-center page-simple-message">
-		{{translate .Lang "message_otp_login" .Email}}
+		{{translate .Lang "text_otp_message" .Email}}
 	</p>
 
 	<form hx-post="/auth/login.html">
 		<div id="otp-row" class="form-row-single">
 			<div class="row row-between row-gap">
 				<input
-					type="text"
-					class="input input-digit"
-					maxlength="1"
-					inputmode="numeric"
-					pattern="[0-9]*"
-					data-code-input=""
-					name="otp"
-					required
-				/>
+					   type="text"
+					   class="input input-digit"
+					   maxlength="1"
+					   inputmode="numeric"
+					   pattern="[0-9]*"
+					   data-code-input=""
+					   name="otp"
+					   required />
 				<input
-					type="text"
-					class="input input-digit"
-					maxlength="1"
-					inputmode="numeric"
-					pattern="[0-9]*"
-					data-code-input=""
-					name="otp"
-					required
-				/>
+					   type="text"
+					   class="input input-digit"
+					   maxlength="1"
+					   inputmode="numeric"
+					   pattern="[0-9]*"
+					   data-code-input=""
+					   name="otp"
+					   required />
 				<input
-					type="text"
-					class="input input-digit"
-					maxlength="1"
-					inputmode="numeric"
-					pattern="[0-9]*"
-					data-code-input=""
-					name="otp"
-					required
-				/>
+					   type="text"
+					   class="input input-digit"
+					   maxlength="1"
+					   inputmode="numeric"
+					   pattern="[0-9]*"
+					   data-code-input=""
+					   name="otp"
+					   required />
 				<input
-					type="text"
-					class="input input-digit"
-					maxlength="1"
-					inputmode="numeric"
-					pattern="[0-9]*"
-					data-code-input=""
-					name="otp"
-					required
-				/>
+					   type="text"
+					   class="input input-digit"
+					   maxlength="1"
+					   inputmode="numeric"
+					   pattern="[0-9]*"
+					   data-code-input=""
+					   name="otp"
+					   required />
 				<input
-					type="text"
-					class="input input-digit"
-					maxlength="1"
-					inputmode="numeric"
-					pattern="[0-9]*"
-					data-code-input=""
-					name="otp"
-					required
-				/>
+					   type="text"
+					   class="input input-digit"
+					   maxlength="1"
+					   inputmode="numeric"
+					   pattern="[0-9]*"
+					   data-code-input=""
+					   name="otp"
+					   required />
 				<input
-					type="text"
-					class="input input-digit"
-					maxlength="1"
-					inputmode="numeric"
-					pattern="[0-9]*"
-					data-code-input=""
-					name="otp"
-					required
-				/>
+					   type="text"
+					   class="input input-digit"
+					   maxlength="1"
+					   inputmode="numeric"
+					   pattern="[0-9]*"
+					   data-code-input=""
+					   name="otp"
+					   required />
 			</div>
 
 			<div id="otp-error"></div>
@@ -75,17 +69,16 @@
 
 		<div class="row row-gap">
 			<a
-				href="#"
-				class="button fill"
-				hx-get="/auth/index.html"
-				hx-target=" #otp"
-				hx-swap="outerHTML"
-			>
-				{{translate .Lang "label_login_cancel"}}
+			   href="#"
+			   class="button fill"
+			   hx-get="/auth/index.html"
+			   hx-target=" #otp"
+			   hx-swap="outerHTML">
+				{{translate .Lang "text_general_cancel"}}
 			</a>
 			<button class="button button-full button-primary fill">
 				<div class="htmx-indicator htmx-spinner"></div>
-				{{translate .Lang "label_login_verify"}}
+				{{translate .Lang "text_general_verify"}}
 			</button>
 		</div>
 

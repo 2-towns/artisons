@@ -15,6 +15,53 @@ import (
 
 var settingsTpl *template.Template
 
+type Settings struct {
+	Name    string
+	Address string
+	City    string
+	Zipcode string
+	Phone   string
+	Email   string
+	Logo    string
+
+	// Active defines if the store is available or not
+	Active bool
+
+	// Guest allows to accept guest order
+	Guest bool
+
+	// Show quantity in product page
+	Quantity bool
+
+	// Enable the stock managment
+	Stock bool
+
+	// Number of days during which the product is considered 'new'
+	New bool
+
+	// Max items per page
+	Items int
+
+	// Mininimum order
+	Min int
+
+	// Redirect after  the product was added to the cart
+	Redirect bool
+
+	// Display last products when the quantity is under the amount.
+	// Set to zero to disable this feature.
+	LastProducts int
+
+	// AdvancedSearch enables the advanced search
+	AdvancedSearch bool
+
+	// Cache enables the advanced search
+	Cache bool
+
+	// Google map key used for geolocation api
+	GmapKey string
+}
+
 func init() {
 	var err error
 
@@ -48,10 +95,12 @@ func SettingsForm(w http.ResponseWriter, r *http.Request) {
 		Lang  language.Tag
 		Page  string
 		Flash string
+		Data  Settings
 	}{
 		lang,
 		"settings",
 		flash,
+		Settings{},
 	}
 
 	if err = settingsTpl.Execute(w, &data); err != nil {

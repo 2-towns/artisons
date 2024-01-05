@@ -31,6 +31,10 @@
 	align-items: center;
 }
 
+.row-start {
+	align-items: start;
+}
+
 .row-center {
 	justify-content: center;
 }

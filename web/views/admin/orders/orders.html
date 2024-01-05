@@ -6,7 +6,7 @@
 			<div class="row row-align">
 				{{template "success.svg" .}}
 				<div>
-					<b class="alert-title">{{translate .Lang "title_success_common"}}</b>
+					<b class="alert-title">{{translate .Lang "text_general_success"}}</b>
 					<p>{{translate .Lang .Flash}}</p>
 				</div>
 			</div>
@@ -17,22 +17,21 @@
 	<article class="card" id="orders">
 		<div class="row row-align row-gap row-between box">
 			<div>
-				<h3 class="card-title">{{translate .Lang "label_dashboard_list"}}</h3>
+				<h3 class="card-title">{{translate .Lang "text_general_list"}}</h3>
 			</div>
 			<div>
 				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
 				<input
-					type="search"
-					class="input"
-					hx-get="/admin/orders.html?page={{.Pagination.Page}}"
-					hx-trigger="input changed delay:500ms, search"
-					hx-target="#table"
-					hx-indicator="#spinner"
-					hx-swap="outerHTML"
-					name="q"
-					placeholder='{{translate .Lang "label_dashboard_orderssearchplaceholder"}}'
-				/>
+					   type="search"
+					   class="input"
+					   hx-get="/admin/orders.html?page={{.Pagination.Page}}"
+					   hx-trigger="input changed delay:500ms, search"
+					   hx-target="#table"
+					   hx-indicator="#spinner"
+					   hx-swap="outerHTML"
+					   name="q"
+					   placeholder='{{translate .Lang "text_general_orderssearchplaceholder"}}' />
 				<div id="search-error"></div>
 			</div>
 		</div>

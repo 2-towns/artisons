@@ -96,8 +96,8 @@ func TestSaveReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 	o.Quantities = map[string]int{}
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "title_cart_empty" {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'title_cart_empty'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "text_cart_empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'text_cart_empty'`, oid, err)
 	}
 }
 
@@ -106,8 +106,8 @@ func TestSaveReturnsErrorWhenProductsAreUnavailable(t *testing.T) {
 	o.Quantities = map[string]int{"toto12": 1}
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "title_cart_empty" {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want "", 'title_cart_empty'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "text_cart_empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want "", 'text_cart_empty'`, oid, err)
 	}
 }
 
@@ -216,11 +216,11 @@ func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 	message.SetString(language.English, "email_order_confirmationid", "Order ID: %s\n")
 	message.SetString(language.English, "email_order_confirmationdate", "Order date: %s\n")
 	message.SetString(language.English, "email_order_confirmationtotal", "Order total: %.2f\n\n")
-	message.SetString(language.English, "label_order_title", "Title")
-	message.SetString(language.English, "label_order_quality", "Quantity")
-	message.SetString(language.English, "label_order_price", "Price")
-	message.SetString(language.English, "label_order_total", "Total")
-	message.SetString(language.English, "label_order_link", "Link")
+	message.SetString(language.English, "text_general_title", "Title")
+	message.SetString(language.English, "text_general_quality", "Quantity")
+	message.SetString(language.English, "text_general_price", "Price")
+	message.SetString(language.English, "text_general_total", "Total")
+	message.SetString(language.English, "text_general_link", "Link")
 	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at gifthub shop")
 
 	o, _ := order.WithProducts(ctx)

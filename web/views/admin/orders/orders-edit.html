@@ -8,7 +8,7 @@
 			<article class="card card-separator">
 				<div class="card-header box">
 					<h3 class="card-title">
-						{{translate .Lang "label_dashboard_products"}}
+						{{translate .Lang "text_general_products"}}
 					</h3>
 				</div>
 				<div>
@@ -16,11 +16,10 @@
 					<div class="row row-gap row-align row-between box list-item">
 						<div class="row row-gap row-align">
 							<img
-								src='{{image .Image1 "" "48" .CreatedAt}}'
-								alt="{{.Title}}"
-								height="48"
-								width="48"
-							/>
+								 src='{{image .Image1 "" "48" .CreatedAt}}'
+								 alt="{{.Title}}"
+								 height="48"
+								 width="48" />
 							<div class="row row-between">
 								<div class="text-group">
 									<b class="text-group-title">{{.Title}}</b>
@@ -32,10 +31,9 @@
 							</div>
 						</div>
 						<a
-							href="/admin/products/{{.ID}}/edit.html"
-							target="_blank"
-							class="link"
-						>
+						   href="/admin/products/{{.ID}}/edit.html"
+						   target="_blank"
+						   class="link">
 							{{template "anchor.svg"}}
 						</a>
 					</div>
@@ -47,21 +45,21 @@
 				<div>
 					<div class="card-header box">
 						<h3 class="card-title">
-							{{translate .Lang "label_dashboard_info"}}
+							{{translate .Lang "text_general_info"}}
 						</h3>
 					</div>
 
 					<div>
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_id"}}
+								{{translate .Lang "text_general_id"}}
 							</b>
 							<p class="secondary text-group-message">{{.Data.ID}}</p>
 						</div>
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_total"}}
+								{{translate .Lang "text_general_total"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Total}} {{.Currency}}
@@ -70,7 +68,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_delivery"}}
+								{{translate .Lang "text_general_delivery"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{translate .Lang "dynamic_delivery_" .Data.Delivery}}
@@ -79,7 +77,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_payment"}}
+								{{translate .Lang "text_general_payment"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{translate .Lang "dynamic_payment_" .Data.Payment}}
@@ -88,7 +86,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_name"}}
+								{{translate .Lang "text_general_name"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.Firstname}} {{.Data.Address.Lastname}}
@@ -97,7 +95,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_address"}}
+								{{translate .Lang "text_general_address"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.Street}} {{.Data.Address.Complementary}}
@@ -106,7 +104,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_city"}}
+								{{translate .Lang "text_general_city"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.City}} {{.Data.Address.Zipcode}}
@@ -115,7 +113,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "label_dashboard_phone"}}
+								{{translate .Lang "text_general_phone"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.Phone}}
@@ -125,7 +123,7 @@
 				</div>
 				<div class="card-footer box row row-start">
 					<a href="/admin/orders.html" class="button row row-align">
-						{{translate .Lang "label_dashboard_back"}}
+						{{translate .Lang "text_general_back"}}
 					</a>
 				</div>
 			</article>
@@ -133,26 +131,25 @@
 		<div class="fill">
 			<article class="card card-separator">
 				<form
-					hx-post="/admin/orders/{{.Data.ID}}/status.html"
-					hx-target="#alert"
-				>
+					  hx-post="/admin/orders/{{.Data.ID}}/status.html"
+					  hx-target="#alert">
 					<div class="box">
 						<h3 class="card-title">
-							{{translate .Lang "label_dashboard_status"}}
+							{{translate .Lang "text_general_status"}}
 						</h3>
 
 						<p class="secondary">
-							{{translate .Lang "message_dashboard_status"}}
+							{{translate .Lang "text_products_statussub"}}
 						</p>
 
 						<select id="status" name="status" class="input select input-full">
 							{{if eq .Data.Status "created" }}
 							<option value="created" selected>
-								{{translate .Lang "label_dashboard_created"}}
+								{{translate .Lang "text_general_created"}}
 							</option>
 							{{else}}
 							<option value="created">
-								{{translate .Lang "label_dashboard_created"}}
+								{{translate .Lang "text_general_created"}}
 							</option>
 							{{end}}
 
@@ -160,11 +157,11 @@
 
 							{{if eq .Data.Status "processing" }}
 							<option value="processing" selected>
-								{{translate .Lang "label_dashboard_processing"}}
+								{{translate .Lang "text_orders_processing"}}
 							</option>
 							{{else}}
 							<option value="processing">
-								{{translate .Lang "label_dashboard_processing"}}
+								{{translate .Lang "text_orders_processing"}}
 							</option>
 							{{end}}
 
@@ -172,11 +169,11 @@
 
 							{{if eq .Data.Status "delivering" }}
 							<option value="delivering" selected>
-								{{translate .Lang "label_dashboard_delivering"}}
+								{{translate .Lang "text_general_delivering"}}
 							</option>
 							{{else}}
 							<option value="delivering">
-								{{translate .Lang "label_dashboard_delivering"}}
+								{{translate .Lang "text_general_delivering"}}
 							</option>
 							{{end}}
 
@@ -184,11 +181,11 @@
 
 							{{if eq .Data.Status "delivered" }}
 							<option value="delivered" selected>
-								{{translate .Lang "label_dashboard_delivered"}}
+								{{translate .Lang "text_general_delivered"}}
 							</option>
 							{{else}}
 							<option value="delivered">
-								{{translate .Lang "label_dashboard_delivered"}}
+								{{translate .Lang "text_general_delivered"}}
 							</option>
 							{{end}}
 
@@ -196,11 +193,11 @@
 
 							{{if eq .Data.Status "canceled" }}
 							<option value="canceled" selected>
-								{{translate .Lang "label_dashboard_canceled"}}
+								{{translate .Lang "text_general_canceled"}}
 							</option>
 							{{else}}
 							<option value="canceled">
-								{{translate .Lang "label_dashboard_canceled"}}
+								{{translate .Lang "text_general_canceled"}}
 							</option>
 							{{end}}
 						</select>
@@ -210,7 +207,7 @@
 						<button class="button button-primary">
 							<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-							{{translate .Lang "label_dashboard_save"}}
+							{{translate .Lang "text_general_save"}}
 						</button>
 					</div>
 				</form>
@@ -219,7 +216,7 @@
 			<article class="card">
 				<div class="card-header box">
 					<h3 class="card-title">
-						{{translate .Lang "label_dashboard_notes"}}
+						{{translate .Lang "text_general_notes"}}
 					</h3>
 				</div>
 

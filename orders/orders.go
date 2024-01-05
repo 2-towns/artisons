@@ -152,7 +152,7 @@ func (o Order) Save(c context.Context) (string, error) {
 
 	if len(o.Quantities) == 0 {
 		l.LogAttrs(c, slog.LevelInfo, "the product list is empty")
-		return "", errors.New("title_cart_empty")
+		return "", errors.New("text_cart_empty")
 	}
 
 	if err := validators.V.Struct(o.Address); err != nil {
@@ -176,7 +176,7 @@ func (o Order) Save(c context.Context) (string, error) {
 
 	if !products.Availables(c, pids) {
 		l.LogAttrs(c, slog.LevelInfo, "no product is available")
-		return "", errors.New("title_cart_empty")
+		return "", errors.New("text_cart_empty")
 	}
 
 	oid, err := stringutil.Random()
@@ -278,7 +278,7 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 	t := table.NewWriter()
 	buf := new(bytes.Buffer)
 	t.SetOutputMirror(buf)
-	t.AppendHeader(table.Row{p.Sprintf("label_order_title"), p.Sprintf("label_order_quality"), p.Sprintf("label_order_price"), p.Sprintf("label_order_total"), p.Sprintf("label_order_link")})
+	t.AppendHeader(table.Row{p.Sprintf("text_general_title"), p.Sprintf("text_general_quality"), p.Sprintf("text_general_price"), p.Sprintf("text_general_total"), p.Sprintf("text_general_link")})
 
 	for _, value := range o.Products {
 		t.AppendRow([]interface{}{value.Title, value.Quantity, value.Price, float64(value.Quantity) * value.Price, value.URL()})
