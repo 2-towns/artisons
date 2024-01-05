@@ -14,16 +14,34 @@ import (
 )
 
 type Pagination struct {
+	// True if the page is the first page in the pagination
 	IsFirst bool
-	IsLast  bool
-	Items   []int
-	Max     int
-	Page    int
-	URL     string
-	Start   int
-	End     int
-	Total   int
-	Lang    language.Tag
+
+	// True if the page is the lastg page in the pagination
+	IsLast bool
+
+	// Pagination numbers availables
+	Items []int
+
+	// The max page number
+	Max int
+
+	// The current page
+	Page int
+
+	// The URL used to retrieve the previous / next page
+	URL string
+
+	// The corresponding start number of items displayed
+	Start int
+
+	// The corresponding end number of items displayed
+	End int
+
+	// The total items available across all the pages
+	Total int
+
+	Lang language.Tag
 }
 
 type Image struct {
@@ -57,6 +75,10 @@ func Build(name string) *template.Template {
 	})
 }
 
+// Paginate provides data for pagination template.
+// The page parameter is the current page.
+// The loaded parameter is the number of loaded items returned by Redis.
+// The total is the total items available.
 func Paginate(page int, loaded int, total int) Pagination {
 	items := []int{}
 

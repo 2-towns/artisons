@@ -353,6 +353,12 @@ func Find(c context.Context, pid string) (Product, error) {
 	return p, err
 }
 
+// Search is looking into Redis to find dat matching  the criteria.
+// offset are num are coming from Redis api, here is the documentation:
+// limits the results to the offset and number of results given.
+// Note that the offset is zero-indexed.
+// The default is 0 10, which returns 10 items starting from the first result.
+// You can use LIMIT 0 0 to count the number of documents in the result set without actually returning them.
 func Search(c context.Context, q Query, offset, num int) (SearchResults, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "searching products")
 
