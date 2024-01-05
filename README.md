@@ -76,7 +76,7 @@ Afin de pouvoir utiliser la recherche, il faut lancer le script de migration apr
 go run console/console.go migrate
 ```
 
-Un compte utilisateur admin existe avec l'adresse suivante: `hello@world.com`. L'OTP est affiché dans les traces du serveur.
+L'admin est accessible à l'adresse suivante: `/admin/index.html`. Un compte utilisateur admin existe avec l'adresse suivante: `hello@world.com`. L'OTP est affiché dans les traces du serveur.
 
 ## Tester
 
