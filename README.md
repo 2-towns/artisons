@@ -14,11 +14,13 @@ Installer aussi [Redis Insight](https://redis.com/redis-enterprise/redis-insight
 
 ## VSCode
 
-Installer VSCode avec les extensions [Go](https://marketplace.visualstudio.com/items?itemName=golang.Go) et [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
-
 Ajouter ces lignes dans la configuration de vscode:
 
 ```
+"[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features"
+},
+"html.format.wrapAttributes": "preserve-aligned",
 "terminal.integrated.env.linux": {
     "WORKSPACE_DIR": "${workspaceFolder}"
 },

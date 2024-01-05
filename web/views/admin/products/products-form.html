@@ -1,24 +1,25 @@
 {{if .ID}} {{end}}
 <form
-	hx-post="{{if .ID }}/admin/products/{{.ID}}/edit.html{{else}}/admin/products/add.html{{end}}"
-	enctype="multipart/form-data"
->
+	  hx-post="{{if .ID }}/admin/products/{{.ID}}/edit.html{{else}}/admin/products/add.html{{end}}"
+	  enctype="multipart/form-data">
 	<div class="form box">
 		<div class="form-row" id="title-row">
 			<label class="input-label" for="title">
 				{{translate .Lang "input_label_title"}}
 			</label>
+
 			<input
-				id="title"
-				name="title"
-				required
-				class="input input-full"
-				required
-				value="{{if .Data.Title }}{{.Data.Title}}{{end}}"
-			/>
+				   id="title"
+				   name="title"
+				   required
+				   class="input input-full"
+				   required
+				   value="{{if .Data.Title }}{{.Data.Title}}{{end}}" />
+
 			<small class="input-help">
 				{{translate .Lang "label_dashboard_titlesub"}}
 			</small>
+
 			<div id="title-error"></div>
 		</div>
 
@@ -26,33 +27,33 @@
 			<label class="input-label" id="description">
 				{{translate .Lang "input_label_description"}}
 			</label>
+
 			<textarea
-				id="description"
-				rows="5"
-				name="description"
-				required
-				class="input textarea input-full"
-			>
-{{if .Data.Description}}{{.Data.Description}}{{end}}</textarea
-			>
+					  id="description"
+					  rows="5"
+					  name="description"
+					  required
+					  class="input textarea input-full">{{if .Data.Description}}{{.Data.Description}}{{end}}</textarea>
 			<div id="description-error"></div>
 		</div>
 
 		<div class="form-row" id="sku-row">
 			<label class="input-label" for="sku">
 				{{translate .Lang "input_label_sku"}} -
-				<i> {{translate .Lang "label_dashboard_optional"}}</i>
+				<i>{{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
+
 			<input
-				id="sku"
-				name="sku"
-				class="input input-full"
-				pattern="[a-zA-Z0-9]+"
-				value="{{if .Data.Sku }}{{.Data.Sku}}{{end}}"
-			/>
+				   id="sku"
+				   name="sku"
+				   class="input input-full"
+				   pattern="[a-zA-Z0-9]+"
+				   value="{{if .Data.Sku }}{{.Data.Sku}}{{end}}" />
+
 			<small class="input-help">
 				{{translate .Lang "label_dashboard_skusub"}}
 			</small>
+
 			<div id="sku-error"></div>
 		</div>
 
@@ -60,29 +61,17 @@
 			<label class="input-label" for="status">
 				{{translate .Lang "input_label_status"}}
 			</label>
+
 			<select id="status" name="status" class="input select input-full">
-				{{if eq .Data.Status "online" }}
-				<option value="online" selected>
+				<option value="online" {{if eq .Data.Status "online" }}selected{{end}}>
 					{{translate .Lang "label_dashboard_online"}}
 				</option>
-				{{else}}
-				<option value="online">
-					{{translate .Lang "label_dashboard_online"}}
-				</option>
-				{{end}}
 
-				<!---->
-
-				{{if eq .Data.Status "offline" }}
-				<option value="offline" selected>
+				<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
 					{{translate .Lang "label_dashboard_offline"}}
 				</option>
-				{{else}}
-				<option value="offline">
-					{{translate .Lang "label_dashboard_offline"}}
-				</option>
-				{{end}}
 			</select>
+
 			<div id="status-error"></div>
 		</div>
 
@@ -90,15 +79,16 @@
 			<label class="input-label" for="price">
 				{{translate .Lang "input_label_price"}}
 			</label>
+
 			<input
-				id="price"
-				name="price"
-				required
-				class="input input-full"
-				type="number"
-				step=".01"
-				value="{{if .Data.Price }}{{twodigits .Data.Price}}{{end}}"
-			/>
+				   id="price"
+				   name="price"
+				   required
+				   class="input input-full"
+				   type="number"
+				   step=".01"
+				   value="{{if .Data.Price }}{{twodigits .Data.Price}}{{end}}" />
+
 			<div id="price-error"></div>
 		</div>
 
@@ -107,14 +97,15 @@
 				{{translate .Lang "input_label_discount"}} -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
+
 			<input
-				id="discount"
-				name="discount"
-				class="input input-full"
-				type="number"
-				step=".01"
-				value="{{if .Data.Discount }}{{twodigits.Data.Discount}}{{end}}"
-			/>
+				   id="discount"
+				   name="discount"
+				   class="input input-full"
+				   type="number"
+				   step=".01"
+				   value="{{if .Data.Discount }}{{twodigits.Data.Discount}}{{end}}" />
+
 			<div id="discount-error"></div>
 		</div>
 
@@ -122,14 +113,15 @@
 			<label for="quantity" class="input-label">
 				{{translate .Lang "input_label_quantity"}}
 			</label>
+
 			<input
-				id="quantity"
-				name="quantity"
-				class="input input-full"
-				required
-				type="number"
-				value="{{if .Data.Quantity }}{{.Data.Quantity}}{{end}}"
-			/>
+				   id="quantity"
+				   name="quantity"
+				   class="input input-full"
+				   required
+				   type="number"
+				   value="{{if .Data.Quantity }}{{.Data.Quantity}}{{end}}" />
+
 			<div id="quantity-error"></div>
 		</div>
 
@@ -138,17 +130,19 @@
 				{{translate .Lang "input_label_weight"}} -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
+
 			<input
-				id="weight"
-				name="weight"
-				class="input input-full"
-				type="number"
-				step=".01"
-				value="{{if .Data.Weight }}{{twodigits .Data.Weight}}{{end}}"
-			/>
+				   id="weight"
+				   name="weight"
+				   class="input input-full"
+				   type="number"
+				   step=".01"
+				   value="{{if .Data.Weight }}{{twodigits .Data.Weight}}{{end}}" />
+
 			<small class="input-help">
 				{{translate .Lang "label_dashboard_weightsub"}}
 			</small>
+
 			<div id="weight-error"></div>
 		</div>
 
@@ -157,16 +151,18 @@
 				{{translate .Lang "input_label_tags"}} -
 				<i> {{translate .Lang "label_dashboard_optional"}}</i>
 			</label>
+
 			<input
-				id="tags"
-				name="tags"
-				class="input input-full"
-				placeholder='{{translate .Lang "label_dashboard_tagsplaceholder"}}'
-				value='{{if .Data.Tags }}{{join .Data.Tags " "}}{{end}}'
-			/>
+				   id="tags"
+				   name="tags"
+				   class="input input-full"
+				   placeholder='{{translate .Lang "label_dashboard_tagsplaceholder"}}'
+				   value='{{if .Data.Tags }}{{join .Data.Tags " "}}{{end}}' />
+
 			<small class="input-help">
 				{{translate .Lang "label_dashboard_tagssub"}}
 			</small>
+
 			<div id="tags-error"></div>
 		</div>
 
@@ -174,16 +170,14 @@
 			<label for="image_1" class="input-label">
 				{{translate .Lang "input_label_image"}} 1
 			</label>
+
 			<input
-				id="image_1"
-				name="image_1"
-				class="input-file input-full"
-				type="file"
-				accept="image/png, image/jpeg, image/jpg"
-				{{if
-				.ID
-				}}{{else}}required{{end}}
-			/>
+				   id="image_1"
+				   name="image_1"
+				   class="input-file input-full"
+				   type="file"
+				   accept="image/png, image/jpeg, image/jpg"
+				   {{if.ID}}{{else}}required{{end}} />
 
 			<small class="input-help">
 				{{translate .Lang "label_dashboard_imagesub"}}
@@ -211,22 +205,20 @@
 			{{if .Data.Image2}}
 
 			<input
-				id="image_2_delete"
-				type="checkbox"
-				class="hide"
-				name="image_2_delete"
-			/>
+				   id="image_2_delete"
+				   type="checkbox"
+				   class="hide"
+				   name="image_2_delete" />
 
 			{{end}}
 
 			<div class="input-group row">
 				<input
-					id="image_2"
-					name="image_2"
-					class="input-file fill"
-					type="file"
-					accept="image/png, image/jpeg, image/jpg"
-				/>
+					   id="image_2"
+					   name="image_2"
+					   class="input-file fill"
+					   type="file"
+					   accept="image/png, image/jpeg, image/jpg" />
 
 				{{if .Data.Image2}}
 
@@ -265,22 +257,20 @@
 			{{if .Data.Image3}}
 
 			<input
-				id="image_3_delete"
-				type="checkbox"
-				class="hide"
-				name="image_3_delete"
-			/>
+				   id="image_3_delete"
+				   type="checkbox"
+				   class="hide"
+				   name="image_3_delete" />
 
 			{{end}}
 
 			<div class="input-group row">
 				<input
-					id="image_3"
-					name="image_3"
-					class="input-file fill"
-					type="file"
-					accept="image/png, image/jpeg, image/jpg"
-				/>
+					   id="image_3"
+					   name="image_3"
+					   class="input-file fill"
+					   type="file"
+					   accept="image/png, image/jpeg, image/jpg" />
 
 				{{if .Data.Image3}}
 
@@ -319,22 +309,20 @@
 			{{if .Data.Image4}}
 
 			<input
-				id="image_4_delete"
-				type="checkbox"
-				class="hide"
-				name="image_4_delete"
-			/>
+				   id="image_4_delete"
+				   type="checkbox"
+				   class="hide"
+				   name="image_4_delete" />
 
 			{{end}}
 
 			<div class="input-group row">
 				<input
-					id="image_4"
-					name="image_4"
-					class="input-file fill"
-					type="file"
-					accept="image/png, image/jpeg, image/jpg"
-				/>
+					   id="image_4"
+					   name="image_4"
+					   class="input-file fill"
+					   type="file"
+					   accept="image/png, image/jpeg, image/jpg" />
 
 				{{if .Data.Image4}}
 

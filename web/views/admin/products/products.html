@@ -2,9 +2,9 @@
 <div hx-ext="alert, input">
 	<div id="alert">
 		{{if .Flash }}
-		<!---->
+
 		{{template "alert-success.html" .}}
-		<!---->
+
 		{{end}}
 	</div>
 
@@ -17,16 +17,15 @@
 				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
 				<input
-					type="search"
-					class="input"
-					hx-get="/admin/products.html?page={{.Pagination.Page}}"
-					hx-trigger="input changed delay:500ms, search"
-					hx-target="#table"
-					hx-indicator="#spinner"
-					hx-swap="outerHTML"
-					name="q"
-					placeholder='{{translate .Lang "label_dashboard_productssearchplaceholder"}}'
-				/>
+					   type="search"
+					   class="input"
+					   hx-get="/admin/products.html?page={{.Pagination.Page}}"
+					   hx-trigger="input changed delay:500ms, search"
+					   hx-target="#table"
+					   hx-indicator="#spinner"
+					   hx-swap="outerHTML"
+					   name="q"
+					   placeholder='{{translate .Lang "label_dashboard_productssearchplaceholder"}}' />
 				<div id="search-error"></div>
 			</div>
 		</div>

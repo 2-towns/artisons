@@ -5,9 +5,11 @@
 		<h1>{{.Code}}</h1>
 		<h2>{{translate .Lang "error_http_page" }}</h2>
 		<p class="subtitle">
-			{{translate .Lang .Message}} {{translate .Lang "error_http_requestid"
-			.RID}}
+			{{translate .Lang .Message}}
+
+			{{translate .Lang "error_http_requestid" .RID}}
 		</p>
+
 		<a href="/admin/index.html" class="button btn-primary">
 			<span class="button-icon"> {{template "back.svg"}} </span>
 

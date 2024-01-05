@@ -1,7 +1,187 @@
 {{define "content"}}
 
-<article class="card row">
-	<div></div>
-	<div class="flex">ffdsfds</div>
-</article>
+<div class="card row">
+	<div class="settings-left">
+		<div class="card-subheader box">Business settings</div>
+		<ul class="settings-menu">
+			<li class="box settings-menu-selected">
+				<a href="#" class="settings-menu-link">My account</a>
+			</li>
+			<li class="box">
+				<a href="#" class="settings-menu-link">Seo</a>
+			</li>
+			<li class="box">
+				<a href="#" class="settings-menu-link">Traductions</a>
+			</li>
+		</ul>
+	</div>
+	<div class="flex">
+		<div class="card-subheader box">Account</div>
+
+		<form>
+			<div class="box">
+				<div class="form-row" id="name-row">
+					<label class="input-label" for="name">
+						{{translate .Lang "input_label_name"}}
+					</label>
+					<input
+						   id="name"
+						   name="name"
+						   required
+						   class="input input-full"
+						   required
+						   value="{{if .Data.Name }}{{.Data.Name}}{{end}}" />
+					<div id="name-error"></div>
+				</div>
+
+				<div class="form-row" id="address-row">
+					<label class="input-label" for="address">
+						{{translate .Lang "input_label_address"}}
+					</label>
+					<input
+						   id="address"
+						   name="address"
+						   required
+						   class="input input-full"
+						   required
+						   value="{{if .Data.Address }}{{.Data.Address}}{{end}}" />
+					<div id="address-error"></div>
+				</div>
+
+				<div class="form-row" id="city-row">
+					<label class="input-label" for="city">
+						{{translate .Lang "input_label_city"}}
+					</label>
+					<input
+						   id="city"
+						   name="city"
+						   required
+						   class="input input-full"
+						   required
+						   value="{{if .Data.City }}{{.Data.City}}{{end}}" />
+					<div id="city-error"></div>
+				</div>
+
+				<div class="form-row" id="zipcode-row">
+					<label class="input-label" for="zipcode">
+						{{translate .Lang "input_label_zipcode"}}
+					</label>
+					<input
+						   id="zipcode"
+						   name="zipcode"
+						   required
+						   class="input input-full"
+						   required
+						   value="{{if .Data.Zipcode }}{{.Data.Zipcode}}{{end}}" />
+					<div id="zipcode-error"></div>
+				</div>
+
+				<div class="form-row" id="email-row">
+					<label class="input-label" for="email">
+						{{translate .Lang "input_label_phone"}}
+					</label>
+					<input
+						   id="email"
+						   name="email"
+						   type="email"
+						   required
+						   class="input input-full"
+						   value="{{if .Data.Email }}{{.Data.Email}}{{end}}" />
+					<div id="email-error"></div>
+				</div>
+
+				<div class="form-row" id="phone-row">
+					<label class="input-label" for="phone">
+						{{translate .Lang "input_label_phone"}}
+					</label>
+					<input
+						   id="phone"
+						   name="phone"
+						   class="input input-full"
+						   value="{{if .Data.Phone }}{{.Data.Phone}}{{end}}" />
+					<div id="phone-error"></div>
+				</div>
+
+				<div class="form-row" id="logo-row">
+					<label for="logo" class="input-label">
+						{{translate .Lang "input_label_image"}} 1
+					</label>
+					<input
+						   id="logo"
+						   name="logo"
+						   class="input-file input-full"
+						   type="file"
+						   accept="image/png, image/jpeg, image/jpg"
+						   {{if.Data.Logo }}{{else}}required{{end}} />
+
+					<small class="input-help">
+						{{translate .Lang "label_dashboard_imagesub"}}
+					</small>
+
+					{{if .Data.Logo}}
+
+					<small class="input-link">
+						<a href="{{.Data.Logo}}" target="_blank" class="link">
+							{{.Data.Logo}}
+						</a>
+					</small>
+
+					{{end}}
+
+					<div id="logo-error"></div>
+				</div>
+
+				<div class="form-row row row-align row-between" id="active-row">
+					<div>
+						<label class="switch-label" for="active">
+							{{translate .Lang "input_label_active"}}
+						</label>
+
+						<small class="input-help">coucou c'est moi</small>
+						<div id="active-error"></div>
+					</div>
+					<div>
+						<label class="">
+							<input
+								   id="active"
+								   name="active"
+								   class="switch"
+								   type="checkbox"
+								   {{if .Data.Active}}checked{{end}} />
+						</label>
+					</div>
+				</div>
+
+				<div class="form-row row row-align row-between" id="guest-row">
+					<div>
+						<label class="switch-label" for="guest">
+							{{translate .Lang "input_label_guest"}}
+						</label>
+
+						<small class="input-help">coucou c'est moi</small>
+						<div id="guest-error"></div>
+					</div>
+					<div>
+						<label class="">
+							<input
+								   id="guest"
+								   name="guest"
+								   class="switch"
+								   type="checkbox"
+								   checked="" />
+						</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="row row-end card-footer-inside box">
+				<button class="button button-primary">
+					<div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+					{{translate .Lang "label_dashboard_send"}}
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
 {{end}}

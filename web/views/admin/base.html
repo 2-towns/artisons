@@ -1,39 +1,38 @@
 <html lang="en" data-theme="light">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width,initial-scale=1" />
-		<meta name="mobile-web-app-capable" content="yes" />
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta name="theme-color" content="#FFF" />
-		<meta
-			name="htmx-config"
-			content='{"allowEval": false, "includeIndicatorStyles": false}'
-		/>
-		<meta name="generator" content="WordPress 6.1.1" />
-		<meta name="referrer" content="strict-origin-when-cross-origin" />
-		<meta
-			name="description"
-			content='{{translate .Lang "seo_dashboard_description"}}'
-		/>
-		<link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
 
-		{{template "head" .}}
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="theme-color" content="#FFF" />
+	<meta
+		  name="htmx-config"
+		  content='{"allowEval": false, "includeIndicatorStyles": false}' />
+	<meta name="generator" content="WordPress 6.1.1" />
+	<meta name="referrer" content="strict-origin-when-cross-origin" />
+	<meta
+		  name="description"
+		  content='{{translate .Lang "seo_dashboard_description"}}' />
+	<link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
 
-		<link
-			rel="stylesheet"
-			href='/public/css/admin/admin.css?v{{cachebuster "admin.css"}}'
-		/>
+	{{template "head" .}}
 
-		<title>{{translate .Lang "seo_dashboard_title" }}</title>
-	</head>
+	<link
+		  rel="stylesheet"
+		  href='/public/css/admin/admin.css?v{{cachebuster "admin.css"}}' />
 
-	<body>
-		{{template "body" .}}
+	<title>{{translate .Lang "seo_dashboard_title" }}</title>
+</head>
 
-		<script src="/public/vendor/admin/htmx-1.9.2.min.js"></script>
-		{{template "scripts" .}}
-		<script src='/public/js/admin/admin.js?v{{cachebuster "admin.js"}}'></script>
-	</body>
+<body>
+	{{template "body" .}}
+
+	<script src="/public/vendor/admin/htmx-1.9.2.min.js"></script>
+	{{template "scripts" .}}
+	<script src='/public/js/admin/admin.js?v{{cachebuster "admin.js"}}'></script>
+</body>
+
 </html>
 
 <!-- -->
