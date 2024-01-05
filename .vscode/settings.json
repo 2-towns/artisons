@@ -5,8 +5,14 @@
 	"go.testEnvVars": {
 		"WORKSPACE_DIR": "${workspaceFolder}"
 	},
-	"[jsonc]": {
+	"[css]": {
+		"editor.defaultFormatter": "vscode.css-language-features"
+	},
+	"[json]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	},
-	"workbench.colorCustomizations": {}
+	"[html]": {
+		"editor.defaultFormatter": "vscode.html-language-features"
+	},
+	"html.format.wrapAttributes": "preserve-aligned"
 }

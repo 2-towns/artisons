@@ -12,23 +12,6 @@ docker run -p 6379:6379 -p 8001:8001 -v data:/data redis/redis-stack:latest
 
 Installer aussi [Redis Insight](https://redis.com/redis-enterprise/redis-insight) pour explorer facilement les données.
 
-## VSCode
-
-Ajouter ces lignes dans la configuration de vscode:
-
-```
-"[html]": {
-    "editor.defaultFormatter": "vscode.html-language-features"
-},
-"html.format.wrapAttributes": "preserve-aligned",
-"terminal.integrated.env.linux": {
-    "WORKSPACE_DIR": "${workspaceFolder}"
-},
-"go.testEnvVars": {
-    "WORKSPACE_DIR": "${workspaceFolder}"
-}
-```
-
 # Lancement
 
 # HURL
