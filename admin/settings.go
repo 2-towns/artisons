@@ -3,7 +3,6 @@ package admin
 import (
 	"gifthub/conf"
 	"gifthub/http/contexts"
-	"gifthub/http/cookies"
 	"gifthub/shops"
 	"gifthub/templates"
 	"html/template"
@@ -23,6 +22,7 @@ func init() {
 		conf.WorkingSpace+"web/views/admin/base.html",
 		conf.WorkingSpace+"web/views/admin/ui.html",
 		conf.WorkingSpace+"web/views/admin/icons/home.svg",
+		conf.WorkingSpace+"web/views/admin/icons/close.svg",
 		conf.WorkingSpace+"web/views/admin/icons/building-store.svg",
 		conf.WorkingSpace+"web/views/admin/icons/receipt.svg",
 		conf.WorkingSpace+"web/views/admin/icons/settings.svg",
@@ -39,25 +39,17 @@ func SettingsForm(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	flash := ""
-	c, err := r.Cookie(cookies.FlashMessage)
-	if err != nil && c != nil {
-		flash = c.Value
-	}
-
 	data := struct {
-		Lang  language.Tag
-		Page  string
-		Flash string
-		Data  shops.Settings
+		Lang language.Tag
+		Page string
+		Data shops.Settings
 	}{
 		lang,
 		"settings",
-		flash,
 		shops.Data,
 	}
 
-	if err = settingsTpl.Execute(w, &data); err != nil {
+	if err := settingsTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }

@@ -24,4 +24,7 @@ const Locale contextKey = "lang"
 // HX true if the request is htmx request
 const HX contextKey = "hx"
 
+// HXTarget is used to change the default target of alert message
+const HXTarget contextKey = "hx-target"
+
 const AlertTarget contextKey = "alert"

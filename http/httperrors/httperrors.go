@@ -107,9 +107,15 @@ func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 		RID     string
 	}{lang, msg, rid}
 
+	hxt, _ := ctx.Value(contexts.HXTarget).(string)
+	target := "#alert"
+	if hxt != "" {
+		target = hxt
+	}
+
 	w.Header().Set("HX-Replace-Url", "false")
-	w.Header().Set("HX-Retarget", "#alert")
-	w.Header().Set("HX-Reswap", "innerHTML show:#alert:top")
+	w.Header().Set("HX-Retarget", target)
+	w.Header().Set("HX-Reswap", fmt.Sprintf("innerHTML show:%s:top", target))
 
 	if err := atpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))

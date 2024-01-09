@@ -24,15 +24,13 @@ type Contact struct {
 	Zipcode string `validate:"required"`
 	Phone   string
 	Email   string `validate:"required,email"`
-	Logo    string `validate:"required"`
+	Logo    string
 	Banner1 string
 	Banner2 string
 	Banner3 string
 }
 
-type Settings struct {
-	Contact
-
+type ShopSettings struct {
 	// Active defines if the store is available or not
 	Active bool
 
@@ -69,6 +67,11 @@ type Settings struct {
 
 	// Google map key used for geolocation api
 	GmapKey string
+}
+
+type Settings struct {
+	Contact
+	ShopSettings
 }
 
 var Data Settings
@@ -124,17 +127,19 @@ func init() {
 			Banner2: d["banner_2"],
 			Banner3: d["banner_3"],
 		},
-		Guest:          d["guest"] == "1",
-		Quantity:       d["quantity"] == "1",
-		Stock:          d["stock"] == "1",
-		New:            d["new"] == "1",
-		Items:          items,
-		Min:            min,
-		Redirect:       d["redirect"] == "1",
-		LastProducts:   las,
-		AdvancedSearch: d["advanced_search"] == "1",
-		Cache:          d["cache"] == "1",
-		GmapKey:        d["gmap_key"],
+		ShopSettings: ShopSettings{
+			Guest:          d["guest"] == "1",
+			Quantity:       d["quantity"] == "1",
+			Stock:          d["stock"] == "1",
+			New:            d["new"] == "1",
+			Items:          items,
+			Min:            min,
+			Redirect:       d["redirect"] == "1",
+			LastProducts:   las,
+			AdvancedSearch: d["advanced_search"] == "1",
+			Cache:          d["cache"] == "1",
+			GmapKey:        d["gmap_key"],
+		},
 	}
 }
 
@@ -151,9 +156,49 @@ func (s Contact) Validate(c context.Context) error {
 	return nil
 }
 
-func (s Settings) Save(c context.Context) error {
+func (s ShopSettings) Validate(c context.Context) error {
+	slog.LogAttrs(c, slog.LevelInfo, "validating a contact settings")
+
+	if err := validators.V.Struct(s); err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return fmt.Errorf("input_%s_invalid", low)
+	}
+
+	return nil
+}
+
+func (s Contact) Save(c context.Context) error {
 	l := slog.With(slog.String("name", s.Name))
-	l.LogAttrs(c, slog.LevelInfo, "trying to save the shop")
+	l.LogAttrs(c, slog.LevelInfo, "trying to save the contact shop")
+
+	now := time.Now()
+	_, err := db.Redis.HSet(context.Background(), "shop",
+		"logo", path.Join(conf.ImgProxy.Path, s.Logo),
+		"name", s.Name,
+		"address", s.Address,
+		"city", s.City,
+		"zipcode", s.Zipcode,
+		"phone", s.Phone,
+		"email", s.Email,
+		"logo", s.Logo,
+		"banner_1", s.Banner1,
+		"banner_2", s.Banner2,
+		"banner_3", s.Banner3,
+		"updated_at", now.Unix(),
+	).Result()
+
+	if err != nil {
+		l.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
+		return errors.New("error_http_general")
+	}
+
+	return nil
+}
+
+func (s ShopSettings) Save(c context.Context) error {
+	slog.LogAttrs(c, slog.LevelInfo, "trying to save the shop")
 
 	guest := "0"
 	if s.Guest {
@@ -192,14 +237,6 @@ func (s Settings) Save(c context.Context) error {
 
 	now := time.Now()
 	_, err := db.Redis.HSet(context.Background(), "shop",
-		"logo", path.Join(conf.ImgProxy.Path, s.Logo),
-		"name", s.Name,
-		"address", s.Address,
-		"city", s.City,
-		"zipcode", s.Zipcode,
-		"phone", s.Phone,
-		"email", s.Email,
-		"logo", s.Logo,
 		"guest", guest,
 		"quantity", quantity,
 		"stock", stock,
@@ -211,14 +248,11 @@ func (s Settings) Save(c context.Context) error {
 		"advanced_search", asearch,
 		"cache", cache,
 		"gmap_key", s.GmapKey,
-		"banner_1", s.Banner1,
-		"banner_2", s.Banner2,
-		"banner_3", s.Banner3,
 		"updated_at", now.Unix(),
 	).Result()
 
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
+		slog.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
 		return errors.New("error_http_general")
 	}
 

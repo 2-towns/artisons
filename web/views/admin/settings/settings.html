@@ -5,231 +5,237 @@
 <div class="grid settings-grid">
 	<div>
 		<div class="card card-separator">
-			<div class="box">
-				<div class="form-row" id="items-row">
-					<label class="input-label" for="items">
-						{{translate .Lang "text_settings_items"}}
-					</label>
-					<input
-						   id="items"
-						   name="items"
-						   class="input input-full"
-						   type="number"
-						   value="{{if .Data.Items }}{{.Data.Items}}{{end}}" />
-					<small class="input-help">{{translate .Lang "text_settings_itemssub"}}</small>
-					<div id="items-error"></div>
+			<form hx-post="/admin/shop-settings.html" hx-target="#alert-shop">
+
+				<div class="box">
+					<div class="form-row" id="items-row">
+						<label class="input-label" for="items">
+							{{translate .Lang "text_settings_items"}}
+						</label>
+						<input
+							   id="items"
+							   name="items"
+							   class="input input-full"
+							   type="number"
+							   value="{{if .Data.ShopSettings.Items }}{{.Data.ShopSettings.Items}}{{end}}" />
+						<small class="input-help">{{translate .Lang "text_settings_itemssub"}}</small>
+						<div id="items-error"></div>
+					</div>
+
+					<div class="form-row" id="min-row">
+						<label class="input-label" for="min">
+							{{translate .Lang "text_settings_min"}}
+						</label>
+						<input
+							   id="min"
+							   name="min"
+							   class="input input-full"
+							   type="number"
+							   value="{{if .Data.ShopSettings.Min }}{{.Data.ShopSettings.Min}}{{end}}" />
+						<small class="input-help">{{translate .Lang "text_settings_minsub"}}</small>
+						<div id="min-error"></div>
+					</div>
+
+					<div class="form-row" id="last-row">
+						<label class="input-label" for="last">
+							{{translate .Lang "text_settings_last"}}
+						</label>
+						<input
+							   id="last"
+							   name="last"
+							   class="input input-full"
+							   type="number"
+							   value="{{if .Data.ShopSettings.LastProducts }}{{.Data.ShopSettings.LastProducts}}{{end}}" />
+						<small class="input-help">{{translate .Lang "text_settings_lastsub"}}</small>
+						<div id="last-error"></div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="active-row">
+						<div>
+							<label class="switch-label" for="active">
+								{{translate .Lang "text_settings_active"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_activesub"}}</small>
+							<div id="active-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="active"
+									   name="active"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.Active}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="guest-row">
+						<div>
+							<label class="switch-label" for="guest">
+								{{translate .Lang "text_settings_guest"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_guestsub"}}</small>
+							<div id="guest-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="guest"
+									   name="guest"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.Guest}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="stock-row">
+						<div>
+							<label class="switch-label" for="stock">
+								{{translate .Lang "text_settings_stock"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_stocksub"}}</small>
+							<div id="stock-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="stock"
+									   name="stock"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.Stock}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="quantity-row">
+						<div>
+							<label class="switch-label" for="quantity">
+								{{translate .Lang "text_settings_quantity"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_quantitysub"}}</small>
+							<div id="quantity-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="quantity"
+									   name="quantity"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.Quantity}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="new-row">
+						<div>
+							<label class="switch-label" for="new">
+								{{translate .Lang "text_settings_new"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_newsub"}}</small>
+							<div id="new-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="new"
+									   name="new"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.New}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="redirect-row">
+						<div>
+							<label class="switch-label" for="redirect">
+								{{translate .Lang "text_settings_redirect"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_redirectsub"}}</small>
+							<div id="redirect-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="redirect"
+									   name="redirect"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.Redirect}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="advanced-row">
+						<div>
+							<label class="switch-label" for="advanced">
+								{{translate .Lang "text_settings_advanced"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_advancedsub"}}</small>
+							<div id="advanced-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="advanced"
+									   name="advanced"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.AdvancedSearch}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="cache-row">
+						<div>
+							<label class="switch-label" for="cache">
+								{{translate .Lang "text_settings_cache"}}
+							</label>
+
+							<small class="input-help">{{translate .Lang "text_settings_cachesub"}}</small>
+							<div id="cache-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="cache"
+									   name="cache"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.Cache}}checked{{end}} />
+							</label>
+						</div>
+					</div>
 				</div>
 
-				<div class="form-row" id="min-row">
-					<label class="input-label" for="min">
-						{{translate .Lang "text_settings_min"}}
-					</label>
-					<input
-						   id="min"
-						   name="min"
-						   class="input input-full"
-						   type="number"
-						   value="{{if .Data.Min }}{{.Data.Min}}{{end}}" />
-					<small class="input-help">{{translate .Lang "text_settings_minsub"}}</small>
-					<div id="min-error"></div>
+				<div class="row row-end card-footer box">
+					<button class="button button-primary">
+						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+						{{translate .Lang "text_general_send"}}
+					</button>
 				</div>
 
-				<div class="form-row" id="last-row">
-					<label class="input-label" for="last">
-						{{translate .Lang "text_settings_last"}}
-					</label>
-					<input
-						   id="last"
-						   name="last"
-						   class="input input-full"
-						   type="number"
-						   value="{{if .Data.LastProducts }}{{.Data.LastProducts}}{{end}}" />
-					<small class="input-help">{{translate .Lang "text_settings_lastsub"}}</small>
-					<div id="last-error"></div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="active-row">
-					<div>
-						<label class="switch-label" for="active">
-							{{translate .Lang "text_settings_active"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_activesub"}}</small>
-						<div id="active-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="active"
-								   name="active"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.Active}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="guest-row">
-					<div>
-						<label class="switch-label" for="guest">
-							{{translate .Lang "text_settings_guest"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_guestsub"}}</small>
-						<div id="guest-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="guest"
-								   name="guest"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.Guest}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="stock-row">
-					<div>
-						<label class="switch-label" for="stock">
-							{{translate .Lang "text_settings_stock"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_stocksub"}}</small>
-						<div id="stock-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="stock"
-								   name="stock"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.Stock}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="quantity-row">
-					<div>
-						<label class="switch-label" for="quantity">
-							{{translate .Lang "text_settings_quantity"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_quantitysub"}}</small>
-						<div id="quantity-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="quantity"
-								   name="quantity"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.Quantity}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="new-row">
-					<div>
-						<label class="switch-label" for="new">
-							{{translate .Lang "text_settings_new"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_newsub"}}</small>
-						<div id="new-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="new"
-								   name="new"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.New}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="redirect-row">
-					<div>
-						<label class="switch-label" for="redirect">
-							{{translate .Lang "text_settings_redirect"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_redirectsub"}}</small>
-						<div id="redirect-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="redirect"
-								   name="redirect"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.Redirect}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="advanced-row">
-					<div>
-						<label class="switch-label" for="advanced">
-							{{translate .Lang "text_settings_advanced"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_advancedsub"}}</small>
-						<div id="advanced-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="advanced"
-								   name="advanced"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.AdvancedSearch}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-
-				<div class="form-row row row-align row-between" id="cache-row">
-					<div>
-						<label class="switch-label" for="cache">
-							{{translate .Lang "text_settings_cache"}}
-						</label>
-
-						<small class="input-help">{{translate .Lang "text_settings_cachesub"}}</small>
-						<div id="cache-error"></div>
-					</div>
-					<div>
-						<label class="">
-							<input
-								   id="cache"
-								   name="cache"
-								   class="switch"
-								   type="checkbox"
-								   {{if .Data.Cache}}checked{{end}} />
-						</label>
-					</div>
-				</div>
-			</div>
-
-			<div class="row row-end card-footer box">
-				<button class="button button-primary">
-					<div id="spinner" class="htmx-indicator htmx-spinner"></div>
-
-					{{translate .Lang "text_general_send"}}
-				</button>
-			</div>
+			</form>
 		</div>
 
-		<div class="card flex">
+		<div id="alert-shop"></div>
+
+		<div class="card card-separator flex">
 			<div class="card-subheader box">Account</div>
 
-			<form>
+			<form hx-post="/admin/contact-settings.html" hx-target="#alert-contact" enctype="multipart/form-data">
 				<div class="box">
 					<div class="form-row" id="name-row">
 						<label class="input-label" for="name">
@@ -240,7 +246,7 @@
 							   name="name"
 							   required
 							   class="input input-full"
-							   value="{{if .Data.Name }}{{.Data.Name}}{{end}}" />
+							   value="{{if .Data.Contact.Name }}{{.Data.Contact.Name}}{{end}}" />
 						<div id="name-error"></div>
 					</div>
 
@@ -253,7 +259,7 @@
 							   name="address"
 							   required
 							   class="input input-full"
-							   value="{{if .Data.Address }}{{.Data.Address}}{{end}}" />
+							   value="{{if .Data.Contact.Address }}{{.Data.Contact.Address}}{{end}}" />
 						<div id="address-error"></div>
 					</div>
 
@@ -266,7 +272,7 @@
 							   name="city"
 							   required
 							   class="input input-full"
-							   value="{{if .Data.City }}{{.Data.City}}{{end}}" />
+							   value="{{if .Data.Contact.City }}{{.Data.Contact.City}}{{end}}" />
 						<div id="city-error"></div>
 					</div>
 
@@ -279,7 +285,7 @@
 							   name="zipcode"
 							   required
 							   class="input input-full"
-							   value="{{if .Data.Zipcode }}{{.Data.Zipcode}}{{end}}" />
+							   value="{{if .Data.Contact.Zipcode }}{{.Data.Contact.Zipcode}}{{end}}" />
 						<div id="zipcode-error"></div>
 					</div>
 
@@ -293,7 +299,7 @@
 							   type="email"
 							   required
 							   class="input input-full"
-							   value="{{if .Data.Email }}{{.Data.Email}}{{end}}" />
+							   value="{{if .Data.Contact.Email }}{{.Data.Contact.Email}}{{end}}" />
 						<div id="email-error"></div>
 					</div>
 
@@ -305,7 +311,7 @@
 							   id="phone"
 							   name="phone"
 							   class="input input-full"
-							   value="{{if .Data.Phone }}{{.Data.Phone}}{{end}}" />
+							   value="{{if .Data.Contact.Phone }}{{.Data.Contact.Phone}}{{end}}" />
 						<div id="phone-error"></div>
 					</div>
 
@@ -319,17 +325,17 @@
 							   class="input-file input-full"
 							   type="file"
 							   accept="image/png, image/jpeg, image/jpg"
-							   {{if.Data.Logo }}{{else}}required{{end}} />
+							   {{if.Data.Contact.Logo }}{{else}}required{{end}} />
 
 						<small class="input-help">
 							{{translate .Lang "text_images_sub"}}
 						</small>
 
-						{{if .Data.Logo}}
+						{{if .Data.Contact.Logo}}
 
 						<small class="input-link">
-							<a href="{{.Data.Logo}}" target="_blank" class="link">
-								{{.Data.Logo}}
+							<a href="{{.Data.Contact.Logo}}" target="_blank" class="link">
+								{{.Data.Contact.Logo}}
 							</a>
 						</small>
 
@@ -343,7 +349,7 @@
 							{{translate .Lang "text_general_banner"}} 1
 						</label>
 
-						{{if .Data.Banner1}}
+						{{if .Data.Contact.Banner1}}
 
 						<input
 							   id="banner_1_delete"
@@ -361,7 +367,7 @@
 								   type="file"
 								   accept="image/png, image/jpeg, image/jpg" />
 
-							{{if .Data.Banner1}}
+							{{if .Data.Contact.Banner1}}
 
 							<label for="banner_1_delete" class="input-label input-group-label">
 								<a class="button input-group-button">
@@ -376,11 +382,11 @@
 							{{translate .Lang "text_images_sub"}}
 						</small>
 
-						{{if .Data.Banner1}}
+						{{if .Data.Contact.Banner1}}
 
 						<small class="input-link">
-							<a href="{{.Data.Banner1}}" target="_blank" class="link">
-								{{.Data.Banner1}}
+							<a href="{{.Data.Contact.Banner1}}" target="_blank" class="link">
+								{{.Data.Contact.Banner1}}
 							</a>
 						</small>
 
@@ -394,7 +400,7 @@
 							{{translate .Lang "text_general_banner"}} 2
 						</label>
 
-						{{if .Data.Banner2}}
+						{{if .Data.Contact.Banner2}}
 
 						<input
 							   id="banner_2_delete"
@@ -412,7 +418,7 @@
 								   type="file"
 								   accept="image/png, image/jpeg, image/jpg" />
 
-							{{if .Data.Banner2}}
+							{{if .Data.Contact.Banner2}}
 
 							<label for="banner_2_delete" class="input-label input-group-label">
 								<a class="button input-group-button">
@@ -427,11 +433,11 @@
 							{{translate .Lang "text_images_sub"}}
 						</small>
 
-						{{if .Data.Banner2}}
+						{{if .Data.Contact.Banner2}}
 
 						<small class="input-link">
-							<a href="{{.Data.Banner2}}" target="_blank" class="link">
-								{{.Data.Banner2}}
+							<a href="{{.Data.Contact.Banner2}}" target="_blank" class="link">
+								{{.Data.Contact.Banner2}}
 							</a>
 						</small>
 
@@ -445,7 +451,7 @@
 							{{translate .Lang "text_general_banner"}} 3
 						</label>
 
-						{{if .Data.Banner3}}
+						{{if .Data.Contact.Banner3}}
 
 						<input
 							   id="banner_3_delete"
@@ -463,7 +469,7 @@
 								   type="file"
 								   accept="image/png, image/jpeg, image/jpg" />
 
-							{{if .Data.Banner3}}
+							{{if .Data.Contact.Banner3}}
 
 							<label for="banner_3_delete" class="input-label input-group-label">
 								<a class="button input-group-button">
@@ -478,11 +484,11 @@
 							{{translate .Lang "text_images_sub"}}
 						</small>
 
-						{{if .Data.Banner3}}
+						{{if .Data.Contact.Banner3}}
 
 						<small class="input-link">
-							<a href="{{.Data.Banner3}}" target="_blank" class="link">
-								{{.Data.Banner3}}
+							<a href="{{.Data.Contact.Banner3}}" target="_blank" class="link">
+								{{.Data.Contact.Banner3}}
 							</a>
 						</small>
 
@@ -496,11 +502,13 @@
 					<button class="button button-primary">
 						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-						{{translate .Lang "text_general_see"}}
+						{{translate .Lang "text_general_save"}}
 					</button>
 				</div>
 			</form>
 		</div>
+
+		<div id="alert-contact"></div>
 	</div>
 
 	<div class="">
@@ -547,7 +555,7 @@
 						   id="geokey"
 						   name="geokey"
 						   class="input input-full"
-						   value="{{if .Data.GmapKey }}{{.Data.GmapKey }}{{end}}" />
+						   value="{{if .Data.ShopSettings.GmapKey }}{{.Data.ShopSettings.GmapKey }}{{end}}" />
 					<div id="geokey-error"></div>
 				</div>
 			</div>

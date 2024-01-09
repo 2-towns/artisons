@@ -7,6 +7,10 @@
 	margin: 0;
 }
 
+.text-no-top {
+	margin-top: 0;
+}
+
 .text-no-bottom {
 	margin-bottom: 0;
 }

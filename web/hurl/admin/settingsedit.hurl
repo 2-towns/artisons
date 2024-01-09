@@ -25,15 +25,15 @@ HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/index.html"
 
-# Editing a product without name shows an error 
-POST {{host}}/admin/settings.html
+# Editing the contact settings without name shows an error 
+POST {{host}}/admin/contact-settings.html
 HX-Request: true
 [MultipartFormData]
-Name:
-Email: contact@supershop.com
-Address: 18 street mysupershop.com 
-City: Oran
-Zipcode: 31000
+name:
+email: contact@supershop.com
+address: 18 street mysupershop.com 
+city: Oran
+zipcode: 31000
 logo:file,image.jpg;
 HTTP 200
 [Asserts]
@@ -41,18 +41,138 @@ header "HX-Retarget" == "#name-error"
 header "HX-Reswap" == "innerHTML show:#name-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The name is invalid." 
 
-# Editing a product without email shows an error 
-POST {{host}}/admin/settings.html
+# Editing the contact settings without email shows an error 
+POST {{host}}/admin/contact-settings.html
 HX-Request: true
 [MultipartFormData]
-Name: My shop
-Email: 
-Address: 18 street mysupershop.com 
-City: Oran
-Zipcode: 31000
+name: My shop
+email: 
+address: 18 street mysupershop.com 
+city: Oran
+zipcode: 31000
 logo:file,image.jpg;
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#email-error" 
 header "HX-Reswap" == "innerHTML show:#email-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The email is invalid." 
+
+# Editing the contact settings with invalid email shows an error 
+POST {{host}}/admin/contact-settings.html
+HX-Request: true
+[MultipartFormData]
+name: My shop
+email: 
+address: 18 street mysupershop.com 
+city: Oran
+zipcode: 31000
+logo:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#email-error" 
+header "HX-Reswap" == "innerHTML show:#email-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The email is invalid." 
+
+# Editing the contact settings without email shows an error 
+POST {{host}}/admin/contact-settings.html
+HX-Request: true
+[MultipartFormData]
+name: My shop
+email: contact@shop.com
+address: 
+city: Oran
+zipcode: 31000
+logo:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#address-error" 
+header "HX-Reswap" == "innerHTML show:#address-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The address is invalid." 
+
+# Editing the contact settings without email shows an error 
+POST {{host}}/admin/contact-settings.html
+HX-Request: true
+[MultipartFormData]
+name: My shop
+email: contact@shop.com
+address: 18 street mysupershop.com 
+city: 
+zipcode: 31000
+logo:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#city-error" 
+header "HX-Reswap" == "innerHTML show:#city-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The city is invalid." 
+
+# Editing the contact settings without email shows an error 
+POST {{host}}/admin/contact-settings.html
+HX-Request: true
+[MultipartFormData]
+name: My shop
+email: contact@shop.com
+address: 18 street mysupershop.com 
+city: Oran
+zipcode: 
+logo:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#zipcode-error" 
+header "HX-Reswap" == "innerHTML show:#zipcode-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The zipcode is invalid." 
+
+# Editing the contact settings with correct data shows success
+POST {{host}}/admin/contact-settings.html
+HX-Request: true
+[MultipartFormData]
+name: My shop
+email: contact@shop.com
+address: 18 street mysupershop.com 
+city: Oran
+zipcode: 31000
+logo:file,image.jpg;
+HTTP 200
+[Asserts]
+xpath "normalize-space(//b[@class='alert-success-title alert-title']/text())" == "Success" 
+
+# Editing the shop settings with invalid items shows an error 
+POST {{host}}/admin/shop-settings.html
+HX-Request: true
+[FormParams]
+items: hello
+min: 10 
+last: 10 
+active: on
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#items-error" 
+header "HX-Reswap" == "innerHTML show:#items-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The items is invalid." 
+
+# Editing the shop settings with invalid min shows an error 
+POST {{host}}/admin/shop-settings.html
+HX-Request: true
+[FormParams]
+items: 10
+min: hello
+last: 10 
+active: on
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#min-error" 
+header "HX-Reswap" == "innerHTML show:#min-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The min is invalid." 
+
+# Editing the shop settings with invalid last shows an error 
+POST {{host}}/admin/shop-settings.html
+HX-Request: true
+[FormParams]
+items: 10
+min: 10
+last: hello 
+active: on
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#last-error" 
+header "HX-Reswap" == "innerHTML show:#last-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The last quantity is invalid." 

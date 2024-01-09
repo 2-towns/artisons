@@ -8,7 +8,7 @@ import (
 )
 
 var ra faker.RealAddress = faker.GetRealAddress()
-var shop Settings = Settings{
+var shop Contact = Contact{
 	Logo:    "../web/images/123/1",
 	Banner1: "../web/images/123/1",
 	Name:    faker.Name(),
@@ -36,8 +36,8 @@ func TestSaveReturnErrorWhenAddressIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_street_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_street_invalid'", err)
+	if err == nil || err.Error() != "input_address_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_address_invalid'", err)
 	}
 }
 
@@ -60,17 +60,6 @@ func TestSaveReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
 	err := s.Validate(ctx)
 	if err == nil || err.Error() != "input_zipcode_invalid" {
 		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_zipcode_invalid'", err)
-	}
-}
-
-func TestSaveReturnErrorWhenLogoIsEmpty(t *testing.T) {
-	s := shop
-	s.Logo = ""
-
-	ctx := tests.Context()
-	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_logo_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_logo_invalid'", err)
 	}
 }
 

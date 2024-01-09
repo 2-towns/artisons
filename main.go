@@ -45,7 +45,8 @@ func adminRouter() http.Handler {
 	r.Post("/products/{id}/delete.html", admin.DeleteProduct)
 	r.Post("/orders/{id}/status.html", admin.UpdateOrderStatus)
 	r.Post("/orders/{id}/note.html", admin.AddOrderNote)
-	r.Post("/settings.html", admin.EditSettings)
+	r.Post("/contact-settings.html", admin.EditContactSettings)
+	r.Post("/shop-settings.html", admin.EditShopSettings)
 
 	return r
 }
