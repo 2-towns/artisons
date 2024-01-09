@@ -32,7 +32,8 @@ HX-Request: true
 note:
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#note-error" 
+header "HX-Reswap" == "innerHTML show:#note-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The note is required." 
 
 # Add a note shows success 

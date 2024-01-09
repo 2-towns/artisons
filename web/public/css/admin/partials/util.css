@@ -81,6 +81,10 @@
 	display: none;
 }
 
+.grid {
+	display: grid;
+}
+
 @media (max-width: 800px) {
 	.column-mobile {
 		flex-direction: column;

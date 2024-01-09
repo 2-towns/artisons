@@ -32,7 +32,8 @@ HX-Request: true
 status:
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#status-error" 
+header "HX-Reswap" == "innerHTML show:#status-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid." 
 
 # Editing an order with invalid status shows an error 
@@ -42,7 +43,8 @@ HX-Request: true
 status: hello
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#status-error" 
+header "HX-Reswap" == "innerHTML show:#status-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid." 
 
 # Editing an order with status shows success 

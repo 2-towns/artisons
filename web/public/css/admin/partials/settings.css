@@ -14,3 +14,14 @@
 	background-color: var(--background-color);
 	font-weight: bold;
 }
+
+.settings-grid {
+	grid-template-columns: 2fr 1fr;
+	gap: var(--spacing);
+}
+
+@media (max-width: 800px) {
+	.settings-grid {
+		grid-template-columns: 1fr;
+	}
+}

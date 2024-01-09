@@ -39,7 +39,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#price-error" 
+header "HX-Reswap" == "innerHTML show:#price-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The price is invalid." 
 
 # Editing a product with an invalid price shows an error 
@@ -56,7 +57,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#price-error" 
+header "HX-Reswap" == "innerHTML show:#price-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The price is invalid." 
 
 # Editing a product without title shows an error 
@@ -73,7 +75,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#title-error" 
+header "HX-Reswap" == "innerHTML show:#title-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The title is invalid." 
 
 # Editing a product without description shows an error 
@@ -90,7 +93,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#description-error" 
+header "HX-Reswap" == "innerHTML show:#description-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The description is invalid." 
 
 # Editing a product with bad sku shows an error 
@@ -107,7 +111,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#sku-error" 
+header "HX-Reswap" == "innerHTML show:#sku-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The sku is invalid." 
 
 # Editing a product without quantity shows an error 
@@ -124,7 +129,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#quantity-error" 
+header "HX-Reswap" == "innerHTML show:#quantity-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The quantity is invalid." 
 
 # Editing a product with bad quantity shows an error 
@@ -141,7 +147,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#quantity-error" 
+header "HX-Reswap" == "innerHTML show:#quantity-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The quantity is invalid." 
 
 # Editing a product without status shows an error 
@@ -158,7 +165,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#status-error" 
+header "HX-Reswap" == "innerHTML show:#status-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid." 
 
 # Editing a product with bad status shows an error 
@@ -175,7 +183,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#status-error" 
+header "HX-Reswap" == "innerHTML show:#status-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid." 
 
 # Editing a product with bad weight shows an error 
@@ -193,7 +202,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#weight-error" 
+header "HX-Reswap" == "innerHTML show:#weight-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The weight is invalid." 
 
 # Editing a product with bad discount shows an error 
@@ -211,7 +221,8 @@ tags: winter cold
 image_1:file,image.jpg;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#discount-error" 
+header "HX-Reswap" == "innerHTML show:#discount-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The discount is invalid." 
 
 # Editing a product with a bad picture shows an error 
@@ -228,7 +239,8 @@ tags: winter cold
 image_1:file,image.txt;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#image-error" 
+header "HX-Reswap" == "innerHTML show:#image-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The image is invalid." 
 
 # Editing a product with a bad image shows an error 
@@ -246,7 +258,8 @@ image_1:file,image.jpg;
 image_2:file,image.txt;
 HTTP 200
 [Asserts]
-xpath "//div[@class='form-error']" exists 
+header "HX-Retarget" == "#image-error" 
+header "HX-Reswap" == "innerHTML show:#image-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The image is invalid." 
 
 # Editing a product with correct data works

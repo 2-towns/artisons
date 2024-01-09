@@ -2,67 +2,64 @@ package shops
 
 import (
 	"gifthub/tests"
-	"gifthub/users"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
 )
 
 var ra faker.RealAddress = faker.GetRealAddress()
-var shop Shop = Shop{
-	Logo: "../web/images/123/1",
-	Address: users.Address{
-		Lastname:      faker.Name(),
-		Firstname:     faker.Name(),
-		Street:        ra.Address,
-		City:          ra.City,
-		Complementary: ra.Address,
-		Zipcode:       ra.PostalCode,
-		Phone:         faker.Phonenumber(),
-	},
+var shop Settings = Settings{
+	Logo:    "../web/images/123/1",
+	Banner1: "../web/images/123/1",
+	Name:    faker.Name(),
+	Email:   faker.Email(),
+	Address: ra.Address,
+	City:    ra.City,
+	Zipcode: ra.PostalCode,
+	Phone:   faker.Phonenumber(),
 }
 
-func TestSaveReturnErrorWhenFirstnameIsEmpty(t *testing.T) {
+func TestSaveReturnErrorWhenNameIsEmpty(t *testing.T) {
 	s := shop
-	s.Address.Firstname = ""
+	s.Name = ""
 
 	ctx := tests.Context()
-	err := s.Save(ctx)
-	if err == nil || err.Error() != "input_firstname_required" {
-		t.Fatalf("s.Save(ctx, a) = '%v', want 'input_firstname_required'", err)
+	err := s.Validate(ctx)
+	if err == nil || err.Error() != "input_name_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_name_invalid'", err)
 	}
 }
 
-func TestSaveReturnErrorWhenStreetIsEmpty(t *testing.T) {
+func TestSaveReturnErrorWhenAddressIsEmpty(t *testing.T) {
 	s := shop
-	s.Address.Street = ""
+	s.Address = ""
 
 	ctx := tests.Context()
-	err := s.Save(ctx)
-	if err == nil || err.Error() != "input_street_required" {
-		t.Fatalf("s.Save(ctx, a) = '%v', want 'input_street_required'", err)
+	err := s.Validate(ctx)
+	if err == nil || err.Error() != "input_street_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_street_invalid'", err)
 	}
 }
 
 func TestSaveReturnErrorWhenCityIsEmpty(t *testing.T) {
 	s := shop
-	s.Address.City = ""
+	s.City = ""
 
 	ctx := tests.Context()
-	err := s.Save(ctx)
-	if err == nil || err.Error() != "input_city_required" {
-		t.Fatalf("s.Save(ctx, a) = '%v', want 'input_city_required'", err)
+	err := s.Validate(ctx)
+	if err == nil || err.Error() != "input_city_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_city_invalid'", err)
 	}
 }
 
 func TestSaveReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
 	s := shop
-	s.Address.Zipcode = ""
+	s.Zipcode = ""
 
 	ctx := tests.Context()
-	err := s.Save(ctx)
-	if err == nil || err.Error() != "input_zipcode_required" {
-		t.Fatalf("s.Save(ctx, a) = '%v', want 'input_zipcode_required'", err)
+	err := s.Validate(ctx)
+	if err == nil || err.Error() != "input_zipcode_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_zipcode_invalid'", err)
 	}
 }
 
@@ -71,44 +68,30 @@ func TestSaveReturnErrorWhenLogoIsEmpty(t *testing.T) {
 	s.Logo = ""
 
 	ctx := tests.Context()
-	err := s.Save(ctx)
-	if err == nil || err.Error() != "input_logo_required" {
-		t.Fatalf("s.Save(ctx, a) = '%v', want 'input_logo_required'", err)
+	err := s.Validate(ctx)
+	if err == nil || err.Error() != "input_logo_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_logo_invalid'", err)
 	}
 }
 
-func TestGetReturnShopInfoErrorWhenSuccess(t *testing.T) {
+func TestSaveReturnErrorWhenEmailIsEmpty(t *testing.T) {
+	s := shop
+	s.Email = ""
+
 	ctx := tests.Context()
-	shop, err := Get(ctx)
-	if err != nil {
-		t.Fatalf("Get(ctx) = %v, want nil", err)
+	err := s.Validate(ctx)
+	if err == nil || err.Error() != "input_email_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_email_invalid'", err)
 	}
+}
 
-	if shop.Logo == "" {
-		t.Fatalf("shop.Logo = '%v', want not empty", err)
-	}
+func TestSaveReturnErrorWhenEmailIsInvalid(t *testing.T) {
+	s := shop
+	s.Email = "hello"
 
-	if shop.Address.City == "" {
-		t.Fatalf("shop.Address.City = '%v', want not empty", err)
-	}
-
-	if shop.Address.Firstname == "" {
-		t.Fatalf("shop.Address.Firstname = '%v', want not empty", err)
-	}
-
-	if shop.Address.Lastname != "None" {
-		t.Fatalf("shop.Address.Lastname = '%v', want not empty", err)
-	}
-
-	if shop.Address.Phone == "" {
-		t.Fatalf("shop.Address.Phone = '%v', want not empty", err)
-	}
-
-	if shop.Address.Street == "" {
-		t.Fatalf("shop.Address.Street = '%v', want not empty", err)
-	}
-
-	if shop.Address.Zipcode == "" {
-		t.Fatalf("shop.Address.Zipcode = '%v', want not empty", err)
+	ctx := tests.Context()
+	err := s.Validate(ctx)
+	if err == nil || err.Error() != "input_email_invalid" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_email_invalid'", err)
 	}
 }

@@ -12,14 +12,14 @@ func shop(ctx context.Context, pipe redis.Pipeliner) {
 
 	pipe.HSet(ctx, "shop",
 		"logo", "../web/images/logo",
-		"slug", "manger-de-l-ail-c-est-bon-pour-la-santé",
-		"address_firstname", "Arnaud",
-		"address_lastname", "None",
-		"address_city", "Oran",
-		"address_street", "Hay Yasmine",
-		"address_complementary", "Hay Salam",
-		"address_zipcode", "31244",
-		"address_phone", "0559682532",
+		"active", "1",
+		"guest", "1",
+		"stock", "1",
+		"name", "My Shop",
+		"city", "Oran",
+		"address", "Hay Yasmine",
+		"zipcode", "31244",
+		"phone", "0559682532",
 		"updated_at", now.Unix(),
 	)
 }

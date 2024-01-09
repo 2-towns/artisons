@@ -2,9 +2,8 @@
 
 <div id="alert"></div>
 
-<div class="row row-gap row-start">
+<div class="grid settings-grid">
 	<div>
-
 		<div class="card card-separator">
 			<div class="box">
 				<div class="form-row" id="items-row">
@@ -241,7 +240,6 @@
 							   name="name"
 							   required
 							   class="input input-full"
-							   required
 							   value="{{if .Data.Name }}{{.Data.Name}}{{end}}" />
 						<div id="name-error"></div>
 					</div>
@@ -255,7 +253,6 @@
 							   name="address"
 							   required
 							   class="input input-full"
-							   required
 							   value="{{if .Data.Address }}{{.Data.Address}}{{end}}" />
 						<div id="address-error"></div>
 					</div>
@@ -269,7 +266,6 @@
 							   name="city"
 							   required
 							   class="input input-full"
-							   required
 							   value="{{if .Data.City }}{{.Data.City}}{{end}}" />
 						<div id="city-error"></div>
 					</div>
@@ -283,7 +279,6 @@
 							   name="zipcode"
 							   required
 							   class="input input-full"
-							   required
 							   value="{{if .Data.Zipcode }}{{.Data.Zipcode}}{{end}}" />
 						<div id="zipcode-error"></div>
 					</div>
@@ -316,7 +311,7 @@
 
 					<div class="form-row" id="logo-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "text_general_image"}} 1
+							{{translate .Lang "text_general_logo"}}
 						</label>
 						<input
 							   id="logo"
@@ -342,15 +337,167 @@
 
 						<div id="logo-error"></div>
 					</div>
-				</div>
-				<div class="card-footer box">
-					<div class="form row row-end row-gap">
-						<button class="button button-primary">
-							<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-							{{translate .Lang "text_general_send"}}
-						</button>
+					<div class="form-row" id="banner_1-row">
+						<label for="logo" class="input-label">
+							{{translate .Lang "text_general_banner"}} 1
+						</label>
+
+						{{if .Data.Banner1}}
+
+						<input
+							   id="banner_1_delete"
+							   type="checkbox"
+							   class="hide"
+							   name="banner_1_delete" />
+
+						{{end}}
+
+						<div class="input-group row">
+							<input
+								   id="banner_1"
+								   name="banner_1"
+								   class="input-file fill"
+								   type="file"
+								   accept="image/png, image/jpeg, image/jpg" />
+
+							{{if .Data.Banner1}}
+
+							<label for="banner_1_delete" class="input-label input-group-label">
+								<a class="button input-group-button">
+									<span class="button-icon"> {{template "close.svg"}} </span>
+								</a>
+							</label>
+
+							{{end}}
+						</div>
+
+						<small class="input-help">
+							{{translate .Lang "text_images_sub"}}
+						</small>
+
+						{{if .Data.Banner1}}
+
+						<small class="input-link">
+							<a href="{{.Data.Banner1}}" target="_blank" class="link">
+								{{.Data.Banner1}}
+							</a>
+						</small>
+
+						{{end}}
+
+						<div id="banner_1-error"></div>
 					</div>
+
+					<div class="form-row" id="banner_2-row">
+						<label for="logo" class="input-label">
+							{{translate .Lang "text_general_banner"}} 2
+						</label>
+
+						{{if .Data.Banner2}}
+
+						<input
+							   id="banner_2_delete"
+							   type="checkbox"
+							   class="hide"
+							   name="banner_2_delete" />
+
+						{{end}}
+
+						<div class="input-group row">
+							<input
+								   id="banner_2"
+								   name="banner_2"
+								   class="input-file fill"
+								   type="file"
+								   accept="image/png, image/jpeg, image/jpg" />
+
+							{{if .Data.Banner2}}
+
+							<label for="banner_2_delete" class="input-label input-group-label">
+								<a class="button input-group-button">
+									<span class="button-icon"> {{template "close.svg"}} </span>
+								</a>
+							</label>
+
+							{{end}}
+						</div>
+
+						<small class="input-help">
+							{{translate .Lang "text_images_sub"}}
+						</small>
+
+						{{if .Data.Banner2}}
+
+						<small class="input-link">
+							<a href="{{.Data.Banner2}}" target="_blank" class="link">
+								{{.Data.Banner2}}
+							</a>
+						</small>
+
+						{{end}}
+
+						<div id="banner_2-error"></div>
+					</div>
+
+					<div class="form-row" id="banner_3-row">
+						<label for="logo" class="input-label">
+							{{translate .Lang "text_general_banner"}} 3
+						</label>
+
+						{{if .Data.Banner3}}
+
+						<input
+							   id="banner_3_delete"
+							   type="checkbox"
+							   class="hide"
+							   name="banner_3_delete" />
+
+						{{end}}
+
+						<div class="input-group row">
+							<input
+								   id="banner_3"
+								   name="banner_3"
+								   class="input-file fill"
+								   type="file"
+								   accept="image/png, image/jpeg, image/jpg" />
+
+							{{if .Data.Banner3}}
+
+							<label for="banner_3_delete" class="input-label input-group-label">
+								<a class="button input-group-button">
+									<span class="button-icon"> {{template "close.svg"}} </span>
+								</a>
+							</label>
+
+							{{end}}
+						</div>
+
+						<small class="input-help">
+							{{translate .Lang "text_images_sub"}}
+						</small>
+
+						{{if .Data.Banner3}}
+
+						<small class="input-link">
+							<a href="{{.Data.Banner3}}" target="_blank" class="link">
+								{{.Data.Banner3}}
+							</a>
+						</small>
+
+						{{end}}
+
+						<div id="banner_3-error"></div>
+					</div>
+				</div>
+
+				<div class="card-footer box row row-end">
+					<button class="button button-primary">
+						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+						{{translate .Lang "text_general_see"}}
+					</button>
 				</div>
 			</form>
 		</div>
@@ -364,9 +511,9 @@
 			</div>
 
 			<div class="card-footer box">
-				<div class="form row row-between row-gap">
-					<a href="/admin/products.html">
-						{{translate .Lang "text_general_back"}}
+				<div class="form row row-end">
+					<a class="button button-primary" href="/admin/products.html">
+						{{translate .Lang "text_general_see"}}
 					</a>
 				</div>
 			</div>
@@ -379,9 +526,9 @@
 			</div>
 
 			<div class="card-footer box">
-				<div class="form row row-between row-gap">
-					<a href="/admin/products.html">
-						{{translate .Lang "text_general_back"}}
+				<div class="row row-end row-gap">
+					<a class="button button-primary" href="/admin/products.html">
+						{{translate .Lang "text_general_see"}}
 					</a>
 				</div>
 			</div>
@@ -389,12 +536,12 @@
 
 		<div class="card card-separator ">
 			<div class="box">
-				<h2 class="card-title">Geolocation</h2>
-				<p class="input-help">fdsfsdfds</p>
+				<h2 class="card-title">{{translate .Lang "text_general_geolocation"}}</h2>
+				<p class="input-help">{{translate .Lang "text_geolocation_sub"}}</p>
 
 				<div class="form-row" id="geokey-row">
 					<label class="input-label" for="geokey">
-						{{translate .Lang "text_settings_geokey"}}
+						{{translate .Lang "text_general_key"}}
 					</label>
 					<input
 						   id="geokey"
@@ -406,7 +553,7 @@
 			</div>
 
 			<div class="card-footer box">
-				<div class="form row row-end row-gap">
+				<div class="row row-end row-gap">
 					<button class="button button-primary">
 						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
