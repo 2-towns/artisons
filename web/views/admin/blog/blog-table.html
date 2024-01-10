@@ -1,0 +1,92 @@
+<div class="table-responsive">
+	<div id="table">
+		<table class="table">
+			<thead class="thead">
+				<tr class="tr">
+					<th class="th">{{translate .Lang "text_general_id"}}</th>
+					<th class="th">{{translate .Lang "text_general_title"}}</th>
+					<th class="th">{{translate .Lang "text_general_status"}}</th>
+					<th class="th">{{translate .Lang "text_general_updatedat"}}</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody class="tbody">
+				{{ if .Empty }}
+				<tr class="tr">
+					<td colspan="9" class="text-center box td">
+						{{translate .Lang "text_general_empty"}}
+					</td>
+				</tr>
+				{{else}}
+				<!-- -->
+
+				{{ range .Articles}}
+				<tr class="tr">
+					<td class="secondary table-td-id box td">{{.ID}}</td>
+					<td class="box td" hx-disable>{{.Title}}</td>
+					<td class="box td">
+						<div class="row row-align row-gap">
+							{{ if eq .Status "online"}}
+
+							<span class="table-badge table-badge-success"></span>
+							{{translate $.Lang "text_general_online"}}
+
+							{{else}}
+
+							<span class="table-badge table-badge-danger"></span>
+							{{translate $.Lang "text_general_offline"}}
+
+							{{end}}
+						</div>
+					</td>
+					<td class="box td">{{date .UpdatedAt}}</td>
+					<td class="box td">
+						<div class="row row-align row-gap">
+							<a
+							   href="/admin/blog/{{.ID}}/edit.html"
+							   class="button table-button">
+								<span class="button-icon"> {{template "edit.svg"}} </span>
+							</a>
+
+							<label for="destroy-{{.ID}}" class="table-label">
+								<input
+									   type="checkbox"
+									   id="destroy-{{.ID}}"
+									   class="input table-destroy-checkbox input-checkbox" />
+
+								<a class="button table-button table-confirm-button">
+									<span class="button-icon"> {{template "trash.svg"}} </span>
+								</a>
+
+								<a
+								   hx-post="/admin/blog/{{.ID}}/delete.html"
+								   hx-include="[name='query'], [name='page']"
+								   hx-target="#table"
+								   class="button table-button table-delete-confirm-button">
+									<div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+									<span class="htmx-hide"> {{template "trash.svg"}} </span>
+
+									<span class="table-destroy-confirmation">
+										{{template "question-mark.svg"}}
+									</span>
+								</a>
+							</label>
+						</div>
+					</td>
+				</tr>
+				{{end}}
+
+				{{end}}
+			</tbody>
+		</table>
+
+		<div id="blog-destroy-htmx"></div>
+
+		{{if .Pagination.Total }}
+
+		{{template "pagination.html" .Pagination}}
+
+		{{end}}
+	</div>
+</div>

@@ -33,9 +33,12 @@ func adminRouter() http.Handler {
 
 	r.Get("/index.html", admin.Dashboard)
 	r.Get("/products.html", admin.Products)
-	r.Get("/orders.html", admin.Orders)
 	r.Get("/products/add.html", admin.AddProductForm)
 	r.Get("/products/{id}/edit.html", admin.EditProductForm)
+	r.Get("/blog.html", admin.Blog)
+	r.Get("/blog/add.html", admin.AddBlogForm)
+	r.Get("/blog/{id}/edit.html", admin.EditBlogForm)
+	r.Get("/orders.html", admin.Orders)
 	r.Get("/orders/{id}/edit.html", admin.EditOrderForm)
 	r.Get("/settings.html", admin.SettingsForm)
 
@@ -43,6 +46,9 @@ func adminRouter() http.Handler {
 	r.Post("/products/add.html", admin.AddProduct)
 	r.Post("/products/{id}/edit.html", admin.EditProduct)
 	r.Post("/products/{id}/delete.html", admin.DeleteProduct)
+	r.Post("/blog/add.html", admin.AddBlog)
+	r.Post("/blog/{id}/edit.html", admin.EditBlog)
+	r.Post("/blog/{id}/delete.html", admin.DeleteBlog)
 	r.Post("/orders/{id}/status.html", admin.UpdateOrderStatus)
 	r.Post("/orders/{id}/note.html", admin.AddOrderNote)
 	r.Post("/contact-settings.html", admin.EditContactSettings)

@@ -56,6 +56,11 @@ func main() {
 				log.Fatalln()
 			}
 
+			err = db.BlogIndex(ctx)
+			if err != nil {
+				log.Fatalln()
+			}
+
 			slog.LogAttrs(ctx, slog.LevelInfo, "migration successful")
 		}
 

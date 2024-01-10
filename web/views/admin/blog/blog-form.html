@@ -1,0 +1,104 @@
+{{if .ID}} {{end}}
+<form
+	  hx-post="{{if .ID }}/admin/blog/{{.ID}}/edit.html{{else}}/admin/blog/add.html{{end}}"
+	  enctype="multipart/form-data">
+	<div class="form box">
+		<div class="form-row" id="title-row">
+			<label class="input-label" for="title">
+				{{translate .Lang "text_general_title"}}
+			</label>
+
+			<input
+				   id="title"
+				   name="title"
+				   required
+				   class="input input-full"
+				   required
+				   value="{{if .Data.Title }}{{.Data.Title}}{{end}}" />
+
+			<small class="input-help">
+				{{translate .Lang "text_general_titlesub"}}
+			</small>
+
+			<div id="title-error"></div>
+		</div>
+
+		<div class="form-row" id="description-row">
+			<label class="input-label" id="description">
+				{{translate .Lang "text_general_description"}}
+			</label>
+
+			<textarea
+					  id="description"
+					  rows="5"
+					  name="description"
+					  required
+					  class="input textarea input-full">{{if .Data.Description}}{{.Data.Description}}{{end}}</textarea>
+			<div id="description-error"></div>
+		</div>
+
+		<div class="form-row" id="status-row">
+			<label class="input-label" for="status">
+				{{translate .Lang "text_general_status"}}
+			</label>
+
+			<select id="status" name="status" class="input select input-full">
+				<option value="online" {{if eq .Data.Status "online" }}selected{{end}}>
+					{{translate .Lang "text_general_online"}}
+				</option>
+
+				<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
+					{{translate .Lang "text_general_offline"}}
+				</option>
+			</select>
+
+			<div id="status-error"></div>
+		</div>
+
+		<div class="form-row" id="image-row">
+			<label for="image" class="input-label">
+				{{translate .Lang "text_general_image"}}
+			</label>
+
+			<input
+				   id="image"
+				   name="image"
+				   class="input-file input-full"
+				   type="file"
+				   accept="image/png, image/jpeg, image/jpg"
+				   {{if.ID}}{{else}}required{{end}} />
+
+			<small class="input-help">
+				{{translate .Lang "text_images_sub"}}
+			</small>
+
+			{{if .Data.Image}}
+
+			<small class="input-link">
+				<a href="{{.Data.Image}}" target="_blank" class="link">
+					{{.Data.Image}}
+				</a>
+			</small>
+
+			{{end}}
+
+			<div id="image-error"></div>
+		</div>
+
+
+		<div id="alert"></div>
+	</div>
+
+	<div class="card-footer box">
+		<div class="form row row-between row-gap">
+			<a href="/admin/blog.html" class="button row row-align fill">
+				{{translate .Lang "text_general_back"}}
+			</a>
+			<button class="button button-primary fill">
+				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+				{{translate .Lang "text_general_send"}}
+			</button>
+		</div>
+	</div>
+</form>

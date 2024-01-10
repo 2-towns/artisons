@@ -1,0 +1,35 @@
+{{define "content"}}
+<div hx-ext="alert, input">
+	<div id="alert">
+		{{if .Flash }}
+
+		{{template "alert-success.html" .}}
+
+		{{end}}
+	</div>
+
+	<article class="card" id="blog">
+		<div class="row row-align row-gap row-between box">
+			<div>
+				<h3 class="card-title">{{translate .Lang "text_general_list"}}</h3>
+			</div>
+			<div>
+				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+				<input
+					   type="search"
+					   class="input"
+					   hx-get="/admin/blog.html?page={{.Pagination.Page}}"
+					   hx-trigger="input changed delay:500ms, search"
+					   hx-target="#table"
+					   hx-indicator="#spinner"
+					   hx-swap="outerHTML"
+					   name="q"
+					   placeholder='{{translate .Lang "text_general_blogsearchplaceholder"}}' />
+				<div id="search-error"></div>
+			</div>
+		</div>
+		{{template "blog-table.html" .}}
+	</article>
+</div>
+{{end}}

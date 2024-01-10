@@ -335,7 +335,7 @@ func Find(c context.Context, pid string) (Product, error) {
 
 	if exists, err := db.Redis.Exists(ctx, "product:"+pid).Result(); exists == 0 || err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the product")
-		return Product{}, errors.New("product_not_found")
+		return Product{}, errors.New("error_http_productnotfound")
 	}
 
 	data, err := db.Redis.HGetAll(ctx, "product:"+pid).Result()

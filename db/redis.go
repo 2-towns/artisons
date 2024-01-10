@@ -19,6 +19,7 @@ var Redis = redis.NewClient(&redis.Options{
 })
 var ProductIdx = "product-idx"
 var OrderIdx = "order-idx"
+var BlogIdx = "blog-idx"
 
 func ProductIndex(ctx context.Context) error {
 	_, err := Redis.Do(
@@ -82,6 +83,37 @@ func OrderIndex(ctx context.Context) error {
 
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot make order migration", slog.String("error", err.Error()))
+	}
+
+	return err
+}
+
+func BlogIndex(ctx context.Context) error {
+	_, err := Redis.Do(
+		ctx,
+		"FT.DROPINDEX",
+		BlogIdx,
+	).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot make remove the previous blog index", slog.String("error", err.Error()))
+	}
+
+	_, err = Redis.Do(
+		ctx,
+		"FT.CREATE", BlogIdx,
+		"ON", "HASH",
+		"PREFIX", "1", "blog:",
+		"SCHEMA",
+		"id", "TAG",
+		"status", "TAG",
+		"title", "TEXT",
+		"description", "TEXT",
+		"created_at", "NUMERIC", "SORTABLE",
+		"updated_at", "NUMERIC", "SORTABLE",
+	).Result()
+
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot make blog migration", slog.String("error", err.Error()))
 	}
 
 	return err

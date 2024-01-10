@@ -30,6 +30,9 @@ web/images/*
 # blog sub folder
 web/images/blog/*
 !web/images/blog/.gitkeep
+!web/images/blog/1.jpeg
+!web/images/blog/2.jpeg
+!web/images/blog/3.jpeg
 
 # products sub folder
 web/images/products/*

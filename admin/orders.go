@@ -87,7 +87,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 
 	flash := ""
 	c, err := r.Cookie(cookies.FlashMessage)
-	if err != nil && c != nil {
+	if err == nil && c != nil {
 		flash = c.Value
 	}
 
