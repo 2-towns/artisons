@@ -1,0 +1,42 @@
+* {
+	font-family: Gabarito;
+	box-sizing: border-box;
+}
+
+
+:root {
+	--bg-light: #FFF;
+	--gray-light: #ccc;
+	--gray-dark: #b6b6b6;
+	--border-radius-1: 5px;
+	--border-radius-2: 8px;
+
+}
+
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem 2rem;
+}
+
+select {
+	border: 2px solid var(--gray-light);
+	border-radius: var(--border-radius-2);
+	padding: 5px 0px;
+	text-align: center;
+}
+
+select:focus {
+	outline: none;
+	border: 2px solid --gray-dark;
+}
+
+select:hover {
+	border: 2px solid --gray-dark;
+}
+
+option {
+	background-color: var(--gray-light);
+	border-radius: var(--border-radius-1);
+}
