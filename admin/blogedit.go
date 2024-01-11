@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"fmt"
 	"gifthub/blogs"
 	"gifthub/conf"
 	"gifthub/http/contexts"
@@ -34,6 +35,8 @@ func init() {
 		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
 		conf.WorkingSpace + "web/views/admin/icons/article.svg",
 		conf.WorkingSpace + "web/views/admin/icons/close.svg",
+		conf.WorkingSpace + "web/views/admin/blog/blog-head.html",
+		conf.WorkingSpace + "web/views/admin/blog/blog-scripts.html",
 		conf.WorkingSpace + "web/views/admin/blog/blog-add.html",
 		conf.WorkingSpace + "web/views/admin/blog/blog-form.html",
 	}...)
@@ -71,6 +74,9 @@ func EditBlogForm(w http.ResponseWriter, r *http.Request) {
 		id,
 		p,
 	}
+
+	policy := fmt.Sprintf("default-src 'self' https://unpkg.com/easymde/dist/easymde.min.js https://unpkg.com/easymde/dist/easymde.min.css https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.eot  https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff2?v=4.7.0  https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff2?v=4.7.0 https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.ttf?v=4.7.0  https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff?v=4.7.0;")
+	w.Header().Set("Content-Security-Policy", policy)
 
 	if err := blogEditTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))

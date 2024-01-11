@@ -31,6 +31,8 @@ func init() {
 		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
 		conf.WorkingSpace + "web/views/admin/icons/article.svg",
 		conf.WorkingSpace + "web/views/admin/icons/close.svg",
+		conf.WorkingSpace + "web/views/admin/blog/blog-head.html",
+		conf.WorkingSpace + "web/views/admin/blog/blog-scripts.html",
 		conf.WorkingSpace + "web/views/admin/blog/blog-add.html",
 		conf.WorkingSpace + "web/views/admin/blog/blog-form.html",
 	}...)
