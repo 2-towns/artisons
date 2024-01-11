@@ -36,8 +36,8 @@ xpath "//script[@id='pageviews']" exists
 xpath "//script[@id='bounce-rates']" exists
 xpath "//script[@id='orders']" exists
 xpath "//script[@id='orders-counts']" exists
-xpath "//script[@src='/public/vendor/admin/chartist.js']" exists
-xpath "//script[@src='/public/vendor/admin/chartist-plugin-tooltip.js']" exists
+xpath "//script[@src='/public/js/admin/chartist.js']" exists
+xpath "//script[@src='/public/js/admin/chartist-plugin-tooltip.js']" exists
 xpath "//input[@id='days'][@value='7']" exists
 
 # Change the pagination
@@ -46,8 +46,8 @@ HX-Request: true
 HTTP 200
 [Asserts]
 xpath "//select[@name='days'][@hx-get='/admin']" not exists
-xpath "//script[@src='/public/vendor/admin/chartist.js']" not exists
-xpath "//script[@src='/public/vendor/admin/chartist-plugin-tooltip.js']" not exists
+xpath "//script[@src='/public/js/admin/chartist.js']" not exists
+xpath "//script[@src='/public/js/admin/chartist-plugin-tooltip.js']" not exists
 xpath "//script[@id='visits']" exists
 xpath "//script[@id='unique-visits']" exists
 xpath "//script[@id='pageviews']" exists
