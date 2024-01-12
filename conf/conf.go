@@ -4,6 +4,8 @@ package conf
 import (
 	"os"
 	"time"
+
+	"golang.org/x/text/language"
 )
 
 var ImgProxy = struct {
@@ -124,8 +126,8 @@ const TagMaxDepth = 3
 // ServerAddr is the server start poi
 const ServerAddr = ":8080"
 
-// Disable robotx
-const Debug = false
+// Disable robots
+const Debug = true
 
 // DashboardItems give the numbers of items for most XX statistics
 const DashboardMostItems = 5
@@ -159,3 +161,8 @@ func Pagination(page int) (int, int) {
 	}
 	return page * ItemsPerPage, page*ItemsPerPage + ItemsPerPage
 }
+
+// DefaultLocale is the default language applied
+var DefaultLocale = language.English
+
+var LocalesSupported = []language.Tag{language.English}

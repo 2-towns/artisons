@@ -4,26 +4,25 @@ import (
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
-	"gifthub/orders"
+	"gifthub/locales"
 	"gifthub/templates"
 	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"golang.org/x/text/language"
 )
 
-var ordersNoteAddStatusTpl *template.Template
+var localesTpl *template.Template
 
 func init() {
 	var err error
 
-	ordersNoteAddStatusTpl, err = templates.Build("orders-add-note-success.html").ParseFiles(
+	localesTpl, err = templates.Build("locales-success.html").ParseFiles(
 		append(templates.AdminSuccess,
-			conf.WorkingSpace+"web/views/admin/orders/orders-add-note-success.html",
-			conf.WorkingSpace+"web/views/admin/orders/orders-notes.html",
+			conf.WorkingSpace+"web/views/admin/locales/locales-success.html",
+			conf.WorkingSpace+"web/views/admin/locales/locales.html",
 		)...,
 	)
 
@@ -32,7 +31,7 @@ func init() {
 	}
 }
 
-func AddOrderNote(w http.ResponseWriter, r *http.Request) {
+func EditLocale(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := r.ParseForm(); err != nil {
@@ -41,35 +40,39 @@ func AddOrderNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oid := chi.URLParam(r, "id")
-	note := r.FormValue("note")
+	v := locales.Value{
+		Locale: r.FormValue("locale"),
+		Key:    r.FormValue("key"),
+		Value:  r.FormValue("value"),
+	}
 
-	err := orders.AddNote(ctx, oid, note)
+	err := v.Validate(ctx)
 	if err != nil {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
-	id := chi.URLParam(r, "id")
-	o, err := orders.Find(ctx, id)
+	err = v.Save(ctx)
 	if err != nil {
-		httperrors.Page(w, ctx, err.Error(), 400)
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	data := struct {
-		Flash string
-		Lang  language.Tag
-		Data  orders.Order
+		Flash   string
+		Lang    language.Tag
+		Locales []language.Tag
 	}{
-		"text_general_ordersnoteadded",
+		"text_general_localesupdated",
 		lang,
-		o,
+		conf.LocalesSupported,
 	}
 
-	if err := ordersNoteAddStatusTpl.Execute(w, &data); err != nil {
+	w.Header().Set("HX-Reswap", "outerHTML show:#alert:top")
+
+	if err := localesTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }

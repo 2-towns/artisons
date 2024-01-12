@@ -53,6 +53,7 @@ func adminRouter() http.Handler {
 	r.Post("/orders/{id}/note.html", admin.AddOrderNote)
 	r.Post("/contact-settings.html", admin.EditContactSettings)
 	r.Post("/shop-settings.html", admin.EditShopSettings)
+	r.Post("/locale.html", admin.EditLocale)
 
 	return r
 }
@@ -97,3 +98,6 @@ func main() {
 
 	http.ListenAndServe(conf.ServerAddr, router)
 }
+
+// fix url image
+// Change the blog editor to display paragraph

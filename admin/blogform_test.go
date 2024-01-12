@@ -11,6 +11,7 @@ var article = map[string][]string{
 	"description": {"My great description"},
 	"status":      {"online"},
 	"image":       {"1.jpeg"},
+	"lang":        {"abc"},
 }
 
 func TestProcessBlogFormReturnsErrorWhenTitleInvalid(t *testing.T) {
@@ -61,6 +62,40 @@ func TestProcessBlogtFormReturnsErrorWhenStatusIsInvalid(t *testing.T) {
 
 	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_status_invalid" {
 		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_status_invalid'`, err.Error())
+	}
+}
+
+func TestProcessBlogtFormReturnsErrorWhenLangIsEmpty(t *testing.T) {
+	c := tests.Context()
+
+	a := make(map[string][]string)
+	for k, val := range article {
+		a[k] = val
+	}
+
+	a["lang"] = []string{""}
+
+	f := multipart.Form{Value: a}
+
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_lang_invalid" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_lang_invalid'`, err.Error())
+	}
+}
+
+func TestProcessBlogtFormReturnsErrorWhenLangIsInvalid(t *testing.T) {
+	c := tests.Context()
+
+	a := make(map[string][]string)
+	for k, val := range article {
+		a[k] = val
+	}
+
+	a["lang"] = []string{"!!!"}
+
+	f := multipart.Form{Value: a}
+
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_lang_invalid" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_lang_invalid'`, err.Error())
 	}
 }
 

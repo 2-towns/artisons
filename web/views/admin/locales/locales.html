@@ -1,0 +1,63 @@
+<div id="locales" class="card card-separator">
+    <div class="box">
+        <h2 class="card-title">{{translate .Lang "text_general_translations"}}</h2>
+        <p class="input-help">{{translate .Lang "text_translations_message"}}</p>
+    </div>
+
+    <form hx-post="/admin/locale.html" hx-target="#locales">
+        <div class="box">
+            <div class="form-row" id="locale-row">
+                <label class="input-label" for="locale">
+                    {{translate .Lang "text_general_locale"}}
+                </label>
+
+                <select class="input input-full select" name="locale" required>
+                    {{range .Locales}}
+                    <option value="{{.}}">{{.}}</option>
+                    {{end}}
+                </select>
+
+                <div id="locale-error"></div>
+            </div>
+
+            <div class="form-row" id="key-row">
+                <label for="key" class="input-label" required>
+                    {{translate .Lang "text_general_key"}}
+                </label>
+
+                <input
+                       id="key"
+                       name="key"
+                       class="input input-full" />
+
+                <small class="input-help">
+                    {{translate .Lang "text_locales_keysub"}}
+                </small>
+
+                <div id="key-error"></div>
+            </div>
+
+
+            <div class="form-row" id="value-row">
+                <label for="value" class="input-label" required>
+                    {{translate .Lang "text_general_value"}}
+                </label>
+
+                <input
+                       id="value"
+                       name="value"
+                       class="input input-full" />
+
+                <div id="value-error"></div>
+            </div>
+        </div>
+
+        <div class="card-footer box">
+            <div class="row row-end row-gap">
+                <button class="button button-primary">
+                    {{translate .Lang "text_general_send"}}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

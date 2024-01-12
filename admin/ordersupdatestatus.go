@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
 	"gifthub/orders"
@@ -20,10 +19,7 @@ var ordersUpdateStatusTpl *template.Template
 func init() {
 	var err error
 
-	ordersUpdateStatusTpl, err = templates.Build("alert-success.html").ParseFiles(
-		conf.WorkingSpace+"web/views/admin/icons/success.svg",
-		conf.WorkingSpace+"web/views/admin/alert-success.html",
-	)
+	ordersUpdateStatusTpl, err = templates.Build("alert-success.html").ParseFiles(templates.AdminSuccess...)
 
 	if err != nil {
 		log.Panicln(err)

@@ -49,6 +49,33 @@ type Image struct {
 	Value string
 }
 
+var AdminTable = []string{
+	conf.WorkingSpace + "web/views/admin/icons/arrow-right.svg",
+	conf.WorkingSpace + "web/views/admin/icons/arrow-left.svg",
+	conf.WorkingSpace + "web/views/admin/icons/trash.svg",
+	conf.WorkingSpace + "web/views/admin/icons/edit.svg",
+	conf.WorkingSpace + "web/views/admin/icons/question-mark.svg",
+	conf.WorkingSpace + "web/views/admin/icons/success.svg",
+	conf.WorkingSpace + "web/views/admin/pagination.html",
+}
+
+var AdminUI = []string{
+	conf.WorkingSpace + "web/views/admin/base.html",
+	conf.WorkingSpace + "web/views/admin/ui.html",
+	conf.WorkingSpace + "web/views/admin/icons/home.svg",
+	conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
+	conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
+	conf.WorkingSpace + "web/views/admin/icons/settings.svg",
+	conf.WorkingSpace + "web/views/admin/icons/article.svg",
+}
+
+var AdminSuccess = []string{
+	conf.WorkingSpace + "web/views/admin/icons/success.svg",
+	conf.WorkingSpace + "web/views/admin/alert-success.html",
+}
+
+var AdminList = append(AdminUI, AdminSuccess...)
+
 func Build(name string) *template.Template {
 	return template.New(name).Funcs(template.FuncMap{
 		"translate":   locales.Translate,

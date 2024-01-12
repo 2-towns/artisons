@@ -249,15 +249,6 @@ func (p Product) Save(ctx context.Context) error {
 
 	l := slog.With(slog.String("id", p.ID))
 
-	// score, err := db.Redis.ZScore(ctx, "products", p.ID).Result()
-	// if err != nil {
-	// 	l.LogAttrs(ctx, slog.LevelError, "cannot verify product existence", slog.String("error", err.Error()))
-	// }
-
-	// if score == 0 {
-	// 	l.LogAttrs(ctx, slog.LevelInfo, "the product is new")
-	// }
-
 	key := "product:" + p.ID
 	title := db.Escape(p.Title)
 
@@ -304,13 +295,6 @@ func (p Product) Save(ctx context.Context) error {
 		} else if p.Image4 != "" {
 			pipe.HSet(ctx, key, "image_4", p.Image4)
 		}
-
-		// if score == 0 {
-		// 	pipe.ZAdd(ctx, "products", redis.Z{
-		// 		Score:  float64(time.Now().Unix()),
-		// 		Member: p.ID,
-		// 	})
-		// }
 
 		return nil
 	}); err != nil {

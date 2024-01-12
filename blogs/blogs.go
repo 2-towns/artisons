@@ -26,6 +26,7 @@ type Article struct {
 	Slug        string
 	Description string `validate:"required"`
 	Status      string `redis:"status" validate:"oneof=online offline"`
+	Lang        string `validate:"required,bcp47_language_tag"`
 
 	// The image path
 	Image string
@@ -41,10 +42,11 @@ type SearchResults struct {
 
 type Query struct {
 	Keywords string
+	Lang     string
 }
 
 func (p Article) Validate(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "validating a product")
+	slog.LogAttrs(c, slog.LevelInfo, "validating a article")
 
 	if err := validators.V.Struct(p); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
@@ -52,6 +54,8 @@ func (p Article) Validate(c context.Context) error {
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("input_%s_invalid", low)
 	}
+
+	slog.LogAttrs(c, slog.LevelInfo, "article validated")
 
 	return nil
 }
@@ -65,18 +69,13 @@ func NextID(ctx context.Context) (int64, error) {
 		return 0, errors.New("error_http_general")
 	}
 
+	slog.LogAttrs(ctx, slog.LevelInfo, "next id generated", slog.Int64("id", id))
+
 	return id, nil
 }
 
 func (a Article) Save(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "creating a blog article")
-
-	if err := validators.V.Struct(a); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
-		field := err.(validator.ValidationErrors)[0]
-		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_required", low)
-	}
 
 	ctx := context.Background()
 	slug := stringutil.Slugify(a.Title)
@@ -88,6 +87,7 @@ func (a Article) Save(c context.Context) error {
 			"description", a.Description,
 			"image", a.Image,
 			"slug", slug,
+			"lang", a.Lang,
 			"status", a.Status,
 			"created_at", time.Now().Unix(),
 			"updated_at", time.Now().Unix(),
@@ -117,13 +117,13 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 
 	createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("created_at", data["created_at"]))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the created at", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("created_at", data["created_at"]))
 		return Article{}, errors.New("input_created_at_invalid")
 	}
 
 	updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("updated_at", data["updated_at"]))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the updated at", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("updated_at", data["updated_at"]))
 		return Article{}, errors.New("input_updated_at_invalid")
 	}
 
@@ -136,6 +136,7 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 		Slug:        data["slug"],
 		Status:      data["status"],
 		Image:       image,
+		Lang:        data["lang"],
 		CreatedAt:   time.Unix(createdAt, 0),
 		UpdatedAt:   time.Unix(updatedAt, 0),
 	}
@@ -151,6 +152,10 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	if q.Keywords != "" {
 		k := db.Escape(q.Keywords)
 		qs += fmt.Sprintf("(@title:'*%s*')|(@description:'*%s*')|(@id:'{%s})'", k, k, k)
+	}
+
+	if q.Lang != "" {
+		qs += fmt.Sprintf("(@lang:'{%s})'", q.Lang)
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
@@ -175,9 +180,6 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 
 	res := cmds.(map[interface{}]interface{})
 	total := res["total_results"].(int64)
-
-	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", total))
-
 	results := res["results"].([]interface{})
 	articles := []Article{}
 
@@ -194,6 +196,8 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 
 		articles = append(articles, product)
 	}
+
+	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", total))
 
 	return SearchResults{
 		Total:    total,
@@ -224,6 +228,8 @@ func Delete(c context.Context, id int64) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot delete the data", slog.String("error", err.Error()))
 		return errors.New("error_http_general")
 	}
+
+	l.LogAttrs(c, slog.LevelInfo, "the article is deleted successfuly")
 
 	return nil
 }
@@ -259,80 +265,3 @@ func Find(c context.Context, id int64) (Article, error) {
 
 	return a, err
 }
-
-// func List(c context.Context, page int) ([]Article, error) {
-// 	l := slog.With(slog.Int("page", page))
-// 	l.LogAttrs(c, slog.LevelInfo, "listing blog articles")
-
-// 	start := int64(page * conf.ItemsPerPage)
-// 	end := start + conf.ItemsPerPage
-// 	ctx := context.Background()
-
-// 	ids, err := db.Redis.ZRange(ctx, "articles", start, end).Result()
-// 	if err != nil {
-// 		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-// 		return []Article{}, errors.New("error_http_general")
-// 	}
-
-// 	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-// 		for _, value := range ids {
-// 			rdb.HGetAll(ctx, "blog:"+value)
-// 		}
-
-// 		return nil
-// 	})
-
-// 	if err != nil {
-// 		l.LogAttrs(c, slog.LevelError, "cannot get the articles", slog.String("error", err.Error()))
-// 		return []Article{}, errors.New("error_http_general")
-// 	}
-
-// 	articles := []Article{}
-
-// 	for _, cmd := range cmds {
-// 		key := fmt.Sprintf("%s", cmd.Args()[1])
-
-// 		if cmd.Err() != nil {
-// 			slog.LogAttrs(c, slog.LevelError, "cannot get the article", slog.String("key", key), slog.String("error", err.Error()))
-// 			continue
-// 		}
-
-// 		data := cmd.(*redis.MapStringStringCmd).Val()
-
-// 		id, err := strconv.ParseInt(data["id"], 10, 64)
-// 		if err != nil {
-// 			slog.LogAttrs(c, slog.LevelError, "cannot parse the id", slog.String("id", data["id"]), slog.String("error", err.Error()))
-// 			continue
-// 		}
-
-// 		createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
-// 		if err != nil {
-// 			l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("created_at", data["created_at"]))
-// 			continue
-// 		}
-
-// 		updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
-// 		if err != nil {
-// 			l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("updated_at", data["updated_at"]))
-// 			continue
-// 		}
-
-// 		image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
-
-// 		a := Article{
-// 			ID:          id,
-// 			Title:       data["title"],
-// 			Description: data["description"],
-// 			Slug:        data["slug"],
-// 			Image:       image,
-// 			CreatedAt:   createdAt,
-// 			UpdatedAt:   updatedAt,
-// 		}
-
-// 		articles = append(articles, a)
-// 	}
-
-// 	slog.LogAttrs(c, slog.LevelInfo, "blog article list done", slog.Int("length", len(articles)))
-
-// 	return articles, nil
-// }

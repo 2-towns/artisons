@@ -23,11 +23,7 @@ var settingsAlertTpl *template.Template
 func init() {
 	var err error
 
-	settingsAlertTpl, err = templates.Build("alert-success.html").ParseFiles(
-		conf.WorkingSpace+"web/views/admin/icons/close.svg",
-		conf.WorkingSpace+"web/views/admin/icons/success.svg",
-		conf.WorkingSpace+"web/views/admin/alert-success.html",
-	)
+	settingsAlertTpl, err = templates.Build("alert-success.html").ParseFiles(templates.AdminSuccess...)
 
 	if err != nil {
 		log.Panicln(err)
@@ -118,7 +114,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		rid,
 	}
 
-	w.Header().Set("HX-Reswap", "innerHTML show:#alert-shop:top")
+	w.Header().Set("HX-Reswap", "outerHTML show:#alert-shop:top")
 
 	if err := settingsAlertTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))

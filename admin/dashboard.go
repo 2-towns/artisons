@@ -26,20 +26,13 @@ func init() {
 		conf.WorkingSpace + "web/views/admin/dashboard/table-top-values.html",
 		conf.WorkingSpace + "web/views/admin/dashboard/table-most-values.html",
 		conf.WorkingSpace + "web/views/admin/icons/anchor.svg",
-		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
-		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
-		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
-		conf.WorkingSpace + "web/views/admin/icons/article.svg",
 	}
 
-	dashboardTpl, err = templates.Build("base.html").ParseFiles(append([]string{
-		conf.WorkingSpace + "web/views/admin/base.html",
-		conf.WorkingSpace + "web/views/admin/ui.html",
-		conf.WorkingSpace + "web/views/admin/icons/home.svg",
-		conf.WorkingSpace + "web/views/admin/dashboard/dashboard-actions.html",
-		conf.WorkingSpace + "web/views/admin/dashboard/dashboard-head.html",
-		conf.WorkingSpace + "web/views/admin/dashboard/dashboard-scripts.html",
-	}, files...)...)
+	dashboardTpl, err = templates.Build("base.html").ParseFiles(append(templates.AdminUI,
+		append(files,
+			conf.WorkingSpace+"web/views/admin/dashboard/dashboard-actions.html",
+			conf.WorkingSpace+"web/views/admin/dashboard/dashboard-head.html",
+			conf.WorkingSpace+"web/views/admin/dashboard/dashboard-scripts.html")...)...)
 
 	if err != nil {
 		log.Panicln(err)

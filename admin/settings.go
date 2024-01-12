@@ -19,16 +19,11 @@ func init() {
 	var err error
 
 	settingsTpl, err = templates.Build("base.html").ParseFiles(
-		conf.WorkingSpace+"web/views/admin/base.html",
-		conf.WorkingSpace+"web/views/admin/ui.html",
-		conf.WorkingSpace+"web/views/admin/icons/home.svg",
-		conf.WorkingSpace+"web/views/admin/icons/close.svg",
-		conf.WorkingSpace+"web/views/admin/icons/building-store.svg",
-		conf.WorkingSpace+"web/views/admin/icons/receipt.svg",
-		conf.WorkingSpace+"web/views/admin/icons/settings.svg",
-		conf.WorkingSpace+"web/views/admin/icons/article.svg",
-		conf.WorkingSpace+"web/views/admin/settings/settings.html",
-	)
+		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/icons/close.svg",
+			conf.WorkingSpace+"web/views/admin/locales/locales.html",
+			conf.WorkingSpace+"web/views/admin/settings/settings.html",
+		)...)
 
 	if err != nil {
 		log.Panicln(err)
@@ -40,13 +35,15 @@ func SettingsForm(w http.ResponseWriter, r *http.Request) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	data := struct {
-		Lang language.Tag
-		Page string
-		Data shops.Settings
+		Lang    language.Tag
+		Page    string
+		Data    shops.Settings
+		Locales []language.Tag
 	}{
 		lang,
 		"settings",
 		shops.Data,
+		conf.LocalesSupported,
 	}
 
 	if err := settingsTpl.Execute(w, &data); err != nil {

@@ -21,21 +21,12 @@ var ordersEditTpl *template.Template
 func init() {
 	var err error
 
-	ordersEditTpl, err = templates.Build("base.html").ParseFiles([]string{
-		conf.WorkingSpace + "web/views/admin/base.html",
-		conf.WorkingSpace + "web/views/admin/ui.html",
-		conf.WorkingSpace + "web/views/admin/icons/home.svg",
-		conf.WorkingSpace + "web/views/admin/icons/close.svg",
-		conf.WorkingSpace + "web/views/admin/icons/anchor.svg",
-		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
-		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
-		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
-		conf.WorkingSpace + "web/views/admin/icons/article.svg",
-		conf.WorkingSpace + "web/views/admin/icons/close.svg",
-		conf.WorkingSpace + "web/views/admin/alert-success.html",
-		conf.WorkingSpace + "web/views/admin/orders/orders-edit.html",
-		conf.WorkingSpace + "web/views/admin/orders/orders-notes.html",
-	}...)
+	ordersEditTpl, err = templates.Build("base.html").ParseFiles(
+		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/icons/anchor.svg",
+			conf.WorkingSpace+"web/views/admin/orders/orders-edit.html",
+			conf.WorkingSpace+"web/views/admin/orders/orders-notes.html",
+		)...)
 
 	if err != nil {
 		log.Panicln(err)

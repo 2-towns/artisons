@@ -6,6 +6,7 @@ import (
 	"gifthub/db"
 
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/text/language"
 )
 
 func del(ctx context.Context, pipe redis.Pipeliner, pattern string) {
@@ -112,6 +113,8 @@ func Run() error {
 	tag(ctx, pipe)
 
 	stats(ctx, pipe)
+
+	locale(ctx, pipe, language.English, "test", "coucou")
 
 	_, err = pipe.Exec(ctx)
 

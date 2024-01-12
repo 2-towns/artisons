@@ -18,28 +18,30 @@ import (
 )
 
 var blogAddTpl *template.Template
+var blogCspPolicy = ""
 
 func init() {
 	var err error
 
-	blogAddTpl, err = templates.Build("base.html").ParseFiles([]string{
-		conf.WorkingSpace + "web/views/admin/base.html",
-		conf.WorkingSpace + "web/views/admin/ui.html",
-		conf.WorkingSpace + "web/views/admin/icons/home.svg",
-		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
-		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
-		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
-		conf.WorkingSpace + "web/views/admin/icons/article.svg",
-		conf.WorkingSpace + "web/views/admin/icons/close.svg",
-		conf.WorkingSpace + "web/views/admin/blog/blog-head.html",
-		conf.WorkingSpace + "web/views/admin/blog/blog-scripts.html",
-		conf.WorkingSpace + "web/views/admin/blog/blog-add.html",
-		conf.WorkingSpace + "web/views/admin/blog/blog-form.html",
-	}...)
+	blogAddTpl, err = templates.Build("base.html").ParseFiles(
+		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/blog/blog-head.html",
+			conf.WorkingSpace+"web/views/admin/blog/blog-scripts.html",
+			conf.WorkingSpace+"web/views/admin/blog/blog-add.html",
+			conf.WorkingSpace+"web/views/admin/blog/blog-form.html",
+		)...)
 
 	if err != nil {
 		log.Panicln(err)
 	}
+
+	blogCspPolicy = "default-src 'self'"
+	blogCspPolicy += " https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css"
+	blogCspPolicy += " https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.eot"
+	blogCspPolicy += " https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff2"
+	blogCspPolicy += " https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.ttf"
+	blogCspPolicy += " https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.svg"
+	blogCspPolicy += " https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff"
 }
 
 func AddBlogForm(w http.ResponseWriter, r *http.Request) {
@@ -47,16 +49,20 @@ func AddBlogForm(w http.ResponseWriter, r *http.Request) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	data := struct {
-		Lang language.Tag
-		Page string
-		ID   string
-		Data blogs.Article
+		Lang    language.Tag
+		Page    string
+		ID      string
+		Data    blogs.Article
+		Locales []language.Tag
 	}{
 		lang,
 		"blog",
 		"",
 		blogs.Article{},
+		conf.LocalesSupported,
 	}
+
+	w.Header().Set("Content-Security-Policy", blogCspPolicy)
 
 	if err := blogAddTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))

@@ -8,7 +8,6 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
-	"gifthub/locales"
 	"gifthub/notifications/mails"
 	"gifthub/string/stringutil"
 	"gifthub/tracking"
@@ -495,7 +494,7 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 		rdb.Set(ctx, "auth:"+sid, uid, conf.SessionDuration)
 		rdb.HSet(ctx, fmt.Sprintf("auth:%s:session", sid), "device", device)
 		// @todo get the lang from the browser and match with the ones on the server
-		rdb.HSet(ctx, fmt.Sprintf("user:%d", uid), "lang", locales.Default.String())
+		rdb.HSet(ctx, fmt.Sprintf("user:%d", uid), "lang", conf.DefaultLocale.String())
 		rdb.SAdd(ctx, fmt.Sprintf("user:%d:sessions", uid), sid)
 		rdb.HSet(ctx, fmt.Sprintf("user:%d", uid),
 			"id", uid,

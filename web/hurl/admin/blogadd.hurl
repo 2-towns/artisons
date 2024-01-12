@@ -30,6 +30,7 @@ POST {{host}}/admin/blog/add.html
 HX-Request: true
 [MultipartFormData]
 title: 
+lang: en
 description: 100 % coton pour les couleurs unies
 status: online
 image_1:file,image.jpg;
@@ -44,6 +45,7 @@ POST {{host}}/admin/blog/add.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description:
 status: online
 image_1:file,image.jpg;
@@ -58,6 +60,7 @@ POST {{host}}/admin/blog/add.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: 
 image_1:file,image.jpg;
@@ -72,6 +75,7 @@ POST {{host}}/admin/blog/add.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: hello
 image_1:file,image.jpg;
@@ -81,11 +85,42 @@ header "HX-Retarget" == "#status-error"
 header "HX-Reswap" == "innerHTML show:#status-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid."
 
+# Adding an article without lang shows an error 
+POST {{host}}/admin/blog/add.html
+HX-Request: true
+[MultipartFormData]
+title: Great article
+lang: 
+description: Great description
+status: online
+image_1:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#lang-error" 
+header "HX-Reswap" == "innerHTML show:#lang-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The lang is invalid." 
+
+# Adding an article with bad lang shows an error 
+POST {{host}}/admin/blog/add.html
+HX-Request: true
+[MultipartFormData]
+title: Great article
+lang: !!!
+description: Great description
+status: online
+image_1:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#lang-error" 
+header "HX-Reswap" == "innerHTML show:#lang-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The lang is invalid."
+
 # Adding an article without file shows an error 
 POST {{host}}/admin/blog/add.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: online
 HTTP 200
@@ -99,6 +134,7 @@ POST {{host}}/admin/blog/add.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: online
 image:file,image.txt;
@@ -113,6 +149,7 @@ POST {{host}}/admin/blog/add.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: online
 image:file,image.jpg;

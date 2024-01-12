@@ -20,6 +20,7 @@ var Redis = redis.NewClient(&redis.Options{
 var ProductIdx = "product-idx"
 var OrderIdx = "order-idx"
 var BlogIdx = "blog-idx"
+var LocaleIdx = "locale-idx"
 
 func ProductIndex(ctx context.Context) error {
 	_, err := Redis.Do(
@@ -106,6 +107,7 @@ func BlogIndex(ctx context.Context) error {
 		"SCHEMA",
 		"id", "TAG",
 		"status", "TAG",
+		"lang", "TAG",
 		"title", "TEXT",
 		"description", "TEXT",
 		"created_at", "NUMERIC", "SORTABLE",

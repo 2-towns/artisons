@@ -92,7 +92,7 @@ h2 {
 
 .page-simple {
 	border-top: 2px solid var(--primary);
-	height: 100%;
+	height: calc(100vh - 2px);
 }
 
 .page-simple-message {

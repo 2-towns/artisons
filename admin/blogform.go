@@ -5,6 +5,7 @@ import (
 	"errors"
 	"gifthub/blogs"
 	"gifthub/http/httpext"
+	"log"
 	"log/slog"
 	"mime/multipart"
 	"strconv"
@@ -28,11 +29,19 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 		status = form.Value["status"][0]
 	}
 
+	lang := ""
+	if len(form.Value["lang"]) > 0 {
+		lang = form.Value["lang"][0]
+	}
+
 	a := blogs.Article{
 		Title:       title,
 		Description: description,
 		Status:      status,
+		Lang:        lang,
 	}
+
+	log.Println(a)
 
 	if exists {
 		id, err := strconv.ParseInt(id, 10, 64)

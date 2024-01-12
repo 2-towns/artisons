@@ -13,48 +13,71 @@ var article Article = Article{
 	Description: "On attend une réponse des pays musulmans.",
 	Image:       path.Join(conf.WorkingSpace, "web", "tmp", "hello"),
 	Status:      "online",
+	Lang:        "en",
 }
 
-func TestSaveReturnsErrorWhenTitleIsEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	a := article
 	a.Title = ""
 
-	if err := a.Save(c); err == nil || err.Error() != "input_title_required" {
-		t.Fatalf(`a.Save(c) = %v, want "input_title_required"`, err.Error())
+	if err := a.Validate(c); err == nil || err.Error() != "input_title_invalid" {
+		t.Fatalf(`a.Validate(c) = %v, want "input_title_invalid"`, err.Error())
 	}
 }
 
-func TestSaveReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
+func TestValidReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	a := article
 	a.Description = ""
 
-	if err := a.Save(c); err == nil || err.Error() != "input_description_required" {
-		t.Fatalf(`a.Save(c) = %v, want "input_description_required"`, err.Error())
+	if err := a.Validate(c); err == nil || err.Error() != "input_description_invalid" {
+		t.Fatalf(`a.Validate(c) = %v, want "input_description_invalid"`, err.Error())
 	}
 }
 
-// func TestSaveReturnsErrorWhenImageIsEmpty(t *testing.T) {
+func TestValidReturnsErrorWhenLangIsEmpty(t *testing.T) {
+	c := tests.Context()
+
+	a := article
+	a.Lang = ""
+
+	if err := a.Validate(c); err == nil || err.Error() != "input_lang_invalid" {
+		t.Fatalf(`a.Validate(c) = %v, want "input_lang_invalid"`, err.Error())
+	}
+}
+
+func TestValidReturnsErrorWhenLangIsInvalid(t *testing.T) {
+	c := tests.Context()
+
+	a := article
+	a.Lang = "!!!"
+
+	if err := a.Validate(c); err == nil || err.Error() != "input_lang_invalid" {
+		t.Fatalf(`a.Validate(c) = %v, want "input_lang_invalid"`, err.Error())
+	}
+}
+
+// func TestValidateReturnsErrorWhenImageIsEmpty(t *testing.T) {
 // 	c := tests.Context()
 
 // 	a := article
 // 	a.Image = ""
 
-// 	if err := a.Save(c); err == nil || err.Error() != "input_image_required" {
-// 		t.Fatalf(`a.Save(c) = %v, want "input_image_required"`, err.Error())
+// 	if err := a.Validate(c); err == nil || err.Error() != "input_image_invalid" {
+// 		t.Fatalf(`a.Validate(c) = %v, want "input_image_invalid"`, err.Error())
 // 	}
 // }
 
-func TestSaveReturnsNilWhenSuccess(t *testing.T) {
+func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	os.Create(path.Join(conf.WorkingSpace, "web", "tmp", "hello"))
 
-	if err := article.Save(c); err != nil {
-		t.Fatalf(`a.Save(c) = %v, want nil`, err.Error())
+	if err := article.Validate(c); err != nil {
+		t.Fatalf(`a.Validate(c) = %v, want nil`, err.Error())
 	}
 }
 

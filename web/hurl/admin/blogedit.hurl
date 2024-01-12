@@ -30,6 +30,7 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: 
+lang: en
 description: 100 % coton pour les couleurs unies
 status: online
 image_1:file,image.jpg;
@@ -44,6 +45,7 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description:
 status: online
 image_1:file,image.jpg;
@@ -58,6 +60,7 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: 
 image_1:file,image.jpg;
@@ -72,6 +75,7 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: hello
 image_1:file,image.jpg;
@@ -81,11 +85,42 @@ header "HX-Retarget" == "#status-error"
 header "HX-Reswap" == "innerHTML show:#status-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid."
 
+# Editing an article without lang shows an error 
+POST {{host}}/admin/blog/2/edit.html
+HX-Request: true
+[MultipartFormData]
+title: Great article
+lang: 
+description: Great description
+status: online
+image_1:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#lang-error" 
+header "HX-Reswap" == "innerHTML show:#lang-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The lang is invalid." 
+
+# Editing an article with bad lang shows an error 
+POST {{host}}/admin/blog/2/edit.html
+HX-Request: true
+[MultipartFormData]
+title: Great article
+lang: !!!
+description: Great description
+status: online
+image_1:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#lang-error" 
+header "HX-Reswap" == "innerHTML show:#lang-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The lang is invalid."
+
 # Editing an article with a bad picture shows an error 
 POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: online
 image:file,image.txt;
@@ -100,6 +135,7 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
+lang: en
 description: Great description
 status: online
 image:file,image.jpg;

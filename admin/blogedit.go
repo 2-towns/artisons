@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"fmt"
 	"gifthub/blogs"
 	"gifthub/conf"
 	"gifthub/http/contexts"
@@ -25,25 +24,18 @@ var blogEditTpl *template.Template
 func init() {
 	var err error
 
-	blogEditTpl, err = templates.Build("base.html").ParseFiles([]string{
-		conf.WorkingSpace + "web/views/admin/base.html",
-		conf.WorkingSpace + "web/views/admin/ui.html",
-		conf.WorkingSpace + "web/views/admin/icons/home.svg",
-		conf.WorkingSpace + "web/views/admin/icons/close.svg",
-		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
-		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
-		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
-		conf.WorkingSpace + "web/views/admin/icons/article.svg",
-		conf.WorkingSpace + "web/views/admin/icons/close.svg",
-		conf.WorkingSpace + "web/views/admin/blog/blog-head.html",
-		conf.WorkingSpace + "web/views/admin/blog/blog-scripts.html",
-		conf.WorkingSpace + "web/views/admin/blog/blog-add.html",
-		conf.WorkingSpace + "web/views/admin/blog/blog-form.html",
-	}...)
+	blogEditTpl, err = templates.Build("base.html").ParseFiles(
+		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/blog/blog-head.html",
+			conf.WorkingSpace+"web/views/admin/blog/blog-scripts.html",
+			conf.WorkingSpace+"web/views/admin/blog/blog-add.html",
+			conf.WorkingSpace+"web/views/admin/blog/blog-form.html",
+		)...)
 
 	if err != nil {
 		log.Panicln(err)
 	}
+
 }
 
 func EditBlogForm(w http.ResponseWriter, r *http.Request) {
@@ -64,19 +56,20 @@ func EditBlogForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		Lang language.Tag
-		Page string
-		ID   string
-		Data blogs.Article
+		Lang    language.Tag
+		Page    string
+		ID      string
+		Data    blogs.Article
+		Locales []language.Tag
 	}{
 		lang,
 		"blog",
 		id,
 		p,
+		conf.LocalesSupported,
 	}
 
-	policy := fmt.Sprintf("default-src 'self' https://unpkg.com/easymde/dist/easymde.min.js https://unpkg.com/easymde/dist/easymde.min.css https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.eot  https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff2?v=4.7.0  https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff2?v=4.7.0 https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.ttf?v=4.7.0  https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff?v=4.7.0;")
-	w.Header().Set("Content-Security-Policy", policy)
+	w.Header().Set("Content-Security-Policy", blogCspPolicy)
 
 	if err := blogEditTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))

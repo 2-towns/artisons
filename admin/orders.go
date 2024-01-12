@@ -22,26 +22,14 @@ var ordersHxTpl *template.Template
 func init() {
 	var err error
 
-	files := []string{
-		conf.WorkingSpace + "web/views/admin/icons/arrow-right.svg",
-		conf.WorkingSpace + "web/views/admin/icons/arrow-left.svg",
-		conf.WorkingSpace + "web/views/admin/icons/trash.svg",
-		conf.WorkingSpace + "web/views/admin/icons/edit.svg",
-		conf.WorkingSpace + "web/views/admin/icons/success.svg",
-		conf.WorkingSpace + "web/views/admin/orders/orders-table.html",
-		conf.WorkingSpace + "web/views/admin/pagination.html",
-	}
+	files := append(templates.AdminTable,
+		conf.WorkingSpace+"web/views/admin/orders/orders-table.html",
+	)
 
-	ordersTpl, err = templates.Build("base.html").ParseFiles(append(files, []string{
-		conf.WorkingSpace + "web/views/admin/base.html",
-		conf.WorkingSpace + "web/views/admin/ui.html",
-		conf.WorkingSpace + "web/views/admin/icons/home.svg",
-		conf.WorkingSpace + "web/views/admin/icons/building-store.svg",
-		conf.WorkingSpace + "web/views/admin/icons/receipt.svg",
-		conf.WorkingSpace + "web/views/admin/icons/settings.svg",
-		conf.WorkingSpace + "web/views/admin/icons/article.svg",
-		conf.WorkingSpace + "web/views/admin/orders/orders.html",
-	}...)...)
+	ordersTpl, err = templates.Build("base.html").ParseFiles(
+		append(files, append(templates.AdminList,
+			conf.WorkingSpace+"web/views/admin/orders/orders.html")...,
+		)...)
 
 	if err != nil {
 		log.Panicln(err)

@@ -529,18 +529,20 @@
 
 		<div class="card card-separator ">
 			<div class="box">
-				<h2 class="card-title">{{translate .Lang "text_general_translations"}}</h2>
-				<p class="input-help">{{translate .Lang "text_translations_message"}}</p>
+				<h2 class="card-title">{{translate .Lang "text_general_productoptions"}}</h2>
+				<p class="input-help">{{translate .Lang "text_product_options"}}</p>
 			</div>
 
 			<div class="card-footer box">
-				<div class="row row-end row-gap">
+				<div class="form row row-end">
 					<a class="button button-primary" href="/admin/products.html">
 						{{translate .Lang "text_general_see"}}
 					</a>
 				</div>
 			</div>
 		</div>
+
+		{{template "locales.html" .}}
 
 		<div class="card card-separator ">
 			<div class="box">

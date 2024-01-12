@@ -410,31 +410,40 @@ func Find(c context.Context, oid string) (Order, error) {
 		return Order{}, errors.New("error_http_general")
 	}
 
-	if _, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
 		for _, id := range ids {
 			key := "order:" + oid + ":note:" + id
-			n, err := db.Redis.HGetAll(ctx, key).Result()
-			if err != nil {
-				l.LogAttrs(c, slog.LevelError, "cannot get the order note", slog.String("error", err.Error()), slog.String("id", id))
-				continue
-			}
-
-			createdAt, err := strconv.ParseInt(n["created_at"], 10, 64)
-			if err != nil {
-				l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.String("id", id), slog.String("created_at", n["created_at"]))
-				continue
-			}
-
-			o.Notes = append(o.Notes, Note{
-				Note:      n["note"],
-				CreatedAt: time.Unix(createdAt, 0),
-			})
+			rdb.HGetAll(ctx, key)
 		}
 
 		return nil
-	}); err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot get the order notes", slog.String("error", err.Error()))
-		return Order{}, errors.New("error_http_general")
+	})
+
+	if err != nil {
+		slog.LogAttrs(c, slog.LevelError, "cannot get the order notes", slog.String("error", err.Error()))
+		return o, errors.New("error_http_general")
+	}
+
+	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot get the tag links", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
+		val := cmd.(*redis.MapStringStringCmd).Val()
+
+		createdAt, err := strconv.ParseInt(val["created_at"], 10, 64)
+		if err != nil {
+			l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.String("created_at", val["created_at"]))
+			continue
+		}
+
+		o.Notes = append(o.Notes, Note{
+			Note:      val["note"],
+			CreatedAt: time.Unix(createdAt, 0),
+		})
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "got the order with notes", slog.Int("notes", len(o.Notes)))

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/locales"
 	"gifthub/string/stringutil"
 	"time"
 
@@ -40,7 +39,7 @@ func user(ctx context.Context, pipe redis.Pipeliner, sid string, alive bool) {
 		Score:  float64(now.Unix()),
 		Member: id,
 	})
-	pipe.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", locales.Default.String())
+	pipe.HSet(ctx, fmt.Sprintf("user:%d", id), "lang", conf.DefaultLocale.String())
 
 	if alive {
 		pipe.Set(ctx, "auth:"+sid, id, conf.SessionDuration)
