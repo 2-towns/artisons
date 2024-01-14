@@ -5,4 +5,5 @@
 	background-size: 16px 12px;
 	appearance: none;
 	padding-right: calc(var(--spacing) * 3);
+	height: 44px;
 }

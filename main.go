@@ -7,6 +7,7 @@ import (
 	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/httperrors"
+	"gifthub/http/router"
 	"gifthub/http/security"
 	"gifthub/http/seo"
 	"gifthub/locales"
@@ -41,6 +42,9 @@ func adminRouter() http.Handler {
 	r.Get("/orders.html", admin.Orders)
 	r.Get("/orders/{id}/edit.html", admin.EditOrderForm)
 	r.Get("/settings.html", admin.SettingsForm)
+	r.Get("/products.html", admin.Products)
+	r.Get("/seo.html", admin.Seo)
+	r.Get("/seo/{id}/edit.html", admin.EditSeoForm)
 
 	r.Post("/demo.html", stats.Demo)
 	r.Post("/products/add.html", admin.AddProduct)
@@ -54,6 +58,7 @@ func adminRouter() http.Handler {
 	r.Post("/contact-settings.html", admin.EditContactSettings)
 	r.Post("/shop-settings.html", admin.EditShopSettings)
 	r.Post("/locale.html", admin.EditLocale)
+	r.Post("/seo/{id}/edit.html", admin.EditSeo)
 
 	return r
 }
@@ -69,34 +74,32 @@ func main() {
 		Options: httplog.Options{},
 	}
 
-	router := chi.NewRouter()
-
 	// router.Use(middleware.RequestID)
-	router.Use(middleware.RealIP)
-	router.Use(httplog.RequestLogger(&l))
-	router.Use(locales.Middleware)
-	router.Use(security.Csrf)
-	router.Use(security.Headers)
-	router.Use(users.Middleware)
-	router.Use(stats.Middleware)
+	router.R.Use(middleware.RealIP)
+	router.R.Use(httplog.RequestLogger(&l))
+	router.R.Use(locales.Middleware)
+	router.R.Use(security.Csrf)
+	router.R.Use(security.Headers)
+	router.R.Use(users.Middleware)
+	router.R.Use(stats.Middleware)
 
 	if conf.Debug {
-		router.Use(seo.BlockRobots)
+		router.R.Use(seo.BlockRobots)
 	}
 
 	fs := http.FileServer(http.Dir("web/public"))
-	router.Handle("/public/*", http.StripPrefix("/public/", fs))
+	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
 
-	router.Get("/", pages.Home)
-	router.Get("/auth/index.html", login.Form)
-	router.Post("/auth/otp.html", login.Otp)
-	router.Post("/auth/login.html", login.Login)
+	router.R.Get("/", pages.Home)
+	router.R.Get("/auth/index.html", login.Form)
+	router.R.Post("/auth/otp.html", login.Otp)
+	router.R.Post("/auth/login.html", login.Login)
 
-	router.Mount("/admin", adminRouter())
+	router.R.Mount("/admin", adminRouter())
 
 	slog.LogAttrs(context.Background(), slog.LevelInfo, "starting server on addr", slog.String("addr", conf.ServerAddr))
 
-	http.ListenAndServe(conf.ServerAddr, router)
+	http.ListenAndServe(conf.ServerAddr, router.R)
 }
 
 // fix url image

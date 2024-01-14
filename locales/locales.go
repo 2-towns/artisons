@@ -15,16 +15,14 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
 type Value struct {
-	Locale string `validate:"required,bcp47_language_tag"`
-	Key    string `validate:"required"`
-	Value  string `validate:"required"`
+	Key   string `validate:"required"`
+	Value string `validate:"required"`
 }
 
 var UILocale map[string]map[string]string
@@ -32,41 +30,15 @@ var UILocale map[string]map[string]string
 func init() {
 	ctx := context.Background()
 
-	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		for _, locale := range conf.LocalesSupported {
-			key := "locale:" + locale.String()
-			rdb.HGetAll(ctx, key)
-		}
-
-		return nil
-	})
+	val, err := db.Redis.HGetAll(ctx, "locale").Result()
 
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the locales", slog.String("error", err.Error()))
 		log.Panicln((err))
 	}
 
-	for _, cmd := range cmds {
-		key := fmt.Sprintf("%s", cmd.Args()[1])
-
-		if cmd.Err() != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot get the tag links", slog.String("key", key), slog.String("error", err.Error()))
-			continue
-		}
-
-		l := strings.Replace(key, "locale:", "", 1)
-		tag, err := language.Parse(l)
-
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the language tag", slog.String("tag", l), slog.String("error", err.Error()))
-			log.Panicln((err))
-		}
-
-		val := cmd.(*redis.MapStringStringCmd).Val()
-
-		for k, v := range val {
-			message.SetString(tag, k, v)
-		}
+	for k, v := range val {
+		message.SetString(conf.DefaultLocale, k, v)
 	}
 }
 
@@ -140,22 +112,14 @@ func (v Value) Save(ctx context.Context) error {
 	l := slog.With(slog.String("key", v.Key))
 	l.LogAttrs(ctx, slog.LevelInfo, "saving a translation")
 
-	key := "locale:" + v.Locale
-
-	tag, err := language.Parse(v.Locale)
-	if err != nil {
-		l.LogAttrs(ctx, slog.LevelError, "cannot parse the locale", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
-	}
-
-	if _, err := db.Redis.HSet(ctx, key,
+	if _, err := db.Redis.HSet(ctx, "locale",
 		db.Escape(v.Key), db.Escape(v.Value),
 	).Result(); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot store the translation", slog.String("error", err.Error()))
 		return errors.New("error_http_general")
 	}
 
-	message.SetString(tag, v.Key, v.Value)
+	message.SetString(conf.DefaultLocale, v.Key, v.Value)
 
 	l.LogAttrs(ctx, slog.LevelInfo, "translation saved and updated")
 

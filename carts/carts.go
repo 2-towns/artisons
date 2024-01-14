@@ -13,8 +13,6 @@ import (
 	"gifthub/tracking"
 	"log/slog"
 	"strconv"
-
-	"github.com/redis/go-redis/v9"
 )
 
 type Cart struct {
@@ -188,11 +186,7 @@ func RefreshCID(c context.Context, s string, uid int64) (string, error) {
 	l.LogAttrs(c, slog.LevelInfo, "refreshing cart")
 
 	ctx := context.Background()
-	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.Set(ctx, "cart:"+cid+":user", uid, conf.CartDuration)
-
-		return nil
-	}); err != nil {
+	if _, err := db.Redis.Set(ctx, "cart:"+cid+":user", uid, conf.CartDuration).Result(); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot refresh the cart", slog.String("err", err.Error()))
 		return "", errors.New("error_http_general")
 	}

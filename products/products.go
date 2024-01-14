@@ -192,7 +192,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 
 	updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 	if err != nil {
-		slog.Error("cannot parse the product updatede at", slog.String("updated_at", data["updated_at"]))
+		slog.Error("cannot parse the product updated at", slog.String("updated_at", data["updated_at"]))
 		return Product{}, errors.New("input_updated_at_invalid")
 	}
 
@@ -251,53 +251,52 @@ func (p Product) Save(ctx context.Context) error {
 
 	key := "product:" + p.ID
 	title := db.Escape(p.Title)
+	now := time.Now().Unix()
 
-	if _, err := db.Redis.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		pipe.HSet(ctx, key,
-			"id", p.ID,
-			"sku", db.Escape(p.Sku),
-			"title", title,
-			"slug", stringutil.Slugify(title),
-			"description", db.Escape(p.Title),
-			"currency", p.Currency,
-			"price", p.Price,
-			"quantity", p.Quantity,
-			"status", p.Status,
-			"weight", p.Weight,
-			"mid", p.MID,
-			"tags", db.Escape(strings.Join(p.Tags, ";")),
-			// "links", db.Escape(strings.Join(p.Links, ";")),
-			// "meta", db.Escape(SerializeMeta(ctx, p.Meta, ";")),
-			"created_at", time.Now().Unix(),
-			"updated_at", time.Now().Unix(),
-		)
+	var values []interface{}
+	values = append(values,
+		"id", p.ID,
+		"sku", db.Escape(p.Sku),
+		"title", title,
+		"slug", stringutil.Slugify(title),
+		"description", db.Escape(p.Title),
+		"currency", p.Currency,
+		"price", p.Price,
+		"quantity", p.Quantity,
+		"status", p.Status,
+		"weight", p.Weight,
+		"mid", p.MID,
+		"tags", db.Escape(strings.Join(p.Tags, ";")),
+		// "links", db.Escape(strings.Join(p.Links, ";")),
+		// "meta", db.Escape(SerializeMeta(ctx, p.Meta, ";")),
+		"created_at", now,
+		"updated_at", now,
+	)
+	if p.Image1 == "-" {
+		values = append(values, "image_1", "")
+	} else if p.Image1 != "" {
+		values = append(values, "image_1", p.Image1)
+	}
 
-		if p.Image1 == "-" {
-			pipe.HSet(ctx, key, "image_1", "")
-		} else if p.Image1 != "" {
-			pipe.HSet(ctx, key, "image_1", p.Image1)
-		}
+	if p.Image2 == "-" {
+		values = append(values, "image_2", "")
+	} else if p.Image2 != "" {
+		values = append(values, "image_2", p.Image2)
+	}
 
-		if p.Image2 == "-" {
-			pipe.HSet(ctx, key, "image_2", "")
-		} else if p.Image2 != "" {
-			pipe.HSet(ctx, key, "image_2", p.Image2)
-		}
+	if p.Image3 == "-" {
+		values = append(values, "image_3", "")
+	} else if p.Image3 != "" {
+		values = append(values, "image_3", p.Image3)
+	}
 
-		if p.Image3 == "-" {
-			pipe.HSet(ctx, key, "image_3", "")
-		} else if p.Image3 != "" {
-			pipe.HSet(ctx, key, "image_3", p.Image3)
-		}
+	if p.Image4 == "-" {
+		values = append(values, "image_4", "")
+	} else if p.Image4 != "" {
+		values = append(values, "image_4", p.Image4)
+	}
 
-		if p.Image4 == "-" {
-			pipe.HSet(ctx, key, "image_4", "")
-		} else if p.Image4 != "" {
-			pipe.HSet(ctx, key, "image_4", p.Image4)
-		}
-
-		return nil
-	}); err != nil {
+	if _, err := db.Redis.HSet(ctx, key, values).Result(); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot store the product", slog.String("error", err.Error()))
 		return err
 	}

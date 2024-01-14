@@ -1,0 +1,53 @@
+<div class="table-responsive">
+    <div id="table">
+        <table class="table">
+            <thead class="thead">
+                <tr class="tr">
+                    <th class="th">{{translate .Lang "text_general_key"}}</th>
+                    <th class="th">{{translate .Lang "text_general_title"}}</th>
+                    <th class="th">{{translate .Lang "text_general_url"}}</th>
+                    <th class="th">{{translate .Lang "text_general_updatedat"}}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                {{ if .Empty }}
+                <tr class="tr">
+                    <td colspan="9" class="text-center box td">
+                        {{translate .Lang "text_general_empty"}}
+                    </td>
+                </tr>
+                {{else}}
+                <!-- -->
+
+                {{ range .Content}}
+                <tr class="tr">
+                    <td class="secondary table-td-id box td">{{.Key}}</td>
+                    <td class="box td" hx-disable>{{.Title}}</td>
+                    <td class="box td" hx-disable>{{.URL}}</td>
+                    <td class="box td">{{date .UpdatedAt}}</td>
+                    <td class="box td">
+                        <div class="row row-align row-gap">
+                            <a
+                               href="/admin/seo/{{.Key}}/edit.html"
+                               class="button table-button">
+                                <span class="button-icon"> {{template "edit.svg"}} </span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {{end}}
+
+                {{end}}
+            </tbody>
+        </table>
+
+        <div id="blog-destroy-htmx"></div>
+
+        {{if .Pagination.Total }}
+
+        {{template "pagination.html" .Pagination}}
+
+        {{end}}
+    </div>
+</div>

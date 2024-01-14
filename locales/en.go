@@ -7,6 +7,9 @@ import (
 )
 
 func LoadEn() {
+	message.SetString(language.English, "", "")
+	message.SetString(language.English, "the data is not found", "The data is not found.")
+
 	message.SetString(language.English, "dynamic_status_created", "Created")
 	message.SetString(language.English, "dynamic_status_processing", "Processing")
 	message.SetString(language.English, "dynamic_status_delivering", "Delivering")
@@ -40,6 +43,7 @@ func LoadEn() {
 	message.SetString(language.English, "error_http_blognotfound", "Oops..the article is not found.")
 	message.SetString(language.English, "error_http_csrf", "The request is invalid. This will be reported.")
 	message.SetString(language.English, "error_http_general", "Something went wrong, please try again later. Your request id is %s.")
+	message.SetString(language.English, "error_http_keynotfound", "The keys is not found.")
 	message.SetString(language.English, "error_http_notfound", "The page is not found or not accessible anymore.")
 	message.SetString(language.English, "error_http_page", "Oops..You just found an error page.")
 	message.SetString(language.English, "error_http_productnotfound", "Oops..the product is not found.")

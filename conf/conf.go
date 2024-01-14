@@ -79,9 +79,6 @@ const OtpAttempts = 3
 // It should be used only for testing purpose.
 const OtpDemo = true
 
-// Cachebuster is used to bypass the assets cache
-var Cachebuster = time.Now().Unix()
-
 // AppURL is the application root URL
 const AppURL = "http://localhost:8080"
 
@@ -164,5 +161,3 @@ func Pagination(page int) (int, int) {
 
 // DefaultLocale is the default language applied
 var DefaultLocale = language.English
-
-var LocalesSupported = []language.Tag{language.English}

@@ -56,17 +56,15 @@ func EditBlogForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		Lang    language.Tag
-		Page    string
-		ID      string
-		Data    blogs.Article
-		Locales []language.Tag
+		Lang language.Tag
+		Page string
+		ID   string
+		Data blogs.Article
 	}{
 		lang,
 		"blog",
 		id,
 		p,
-		conf.LocalesSupported,
 	}
 
 	w.Header().Set("Content-Security-Policy", blogCspPolicy)

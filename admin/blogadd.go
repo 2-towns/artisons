@@ -49,17 +49,15 @@ func AddBlogForm(w http.ResponseWriter, r *http.Request) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	data := struct {
-		Lang    language.Tag
-		Page    string
-		ID      string
-		Data    blogs.Article
-		Locales []language.Tag
+		Lang language.Tag
+		Page string
+		ID   string
+		Data blogs.Article
 	}{
 		lang,
 		"blog",
 		"",
 		blogs.Article{},
-		conf.LocalesSupported,
 	}
 
 	w.Header().Set("Content-Security-Policy", blogCspPolicy)

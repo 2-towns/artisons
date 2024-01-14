@@ -14,12 +14,7 @@ import (
 )
 
 func product(ctx context.Context, pipe redis.Pipeliner, title, description, pid, sku string) {
-	filenames := []string{}
-	n := rand.Intn(3) + 1
-
-	for i := 0; i < n; i++ {
-		filenames = append(filenames, fmt.Sprintf("%d%s", time.Now().UnixNano(), ".jpg"))
-	}
+	now := time.Now().Unix()
 
 	pipe.HSet(ctx, "product:"+pid,
 		"id", pid,
@@ -38,8 +33,8 @@ func product(ctx context.Context, pipe redis.Pipeliner, title, description, pid,
 		"image_2", fmt.Sprintf("%s%s", pid, ".jpeg"),
 		"links", "",
 		"meta", products.SerializeMeta(ctx, map[string]string{"color": "blue"}, ";"),
-		"created_at", time.Now().Unix(),
-		"updated_at", time.Now().Unix(),
+		"created_at", now,
+		"updated_at", now,
 	)
 
 	pipe.ZAdd(ctx, "products", redis.Z{

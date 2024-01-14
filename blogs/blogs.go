@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/redis/go-redis/v9"
 )
 
 type Article struct {
@@ -79,26 +78,18 @@ func (a Article) Save(c context.Context) error {
 
 	ctx := context.Background()
 	slug := stringutil.Slugify(a.Title)
-	now := time.Now()
+	now := time.Now().Unix()
 
-	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, fmt.Sprintf("blog:%d", a.ID), "id", a.ID,
-			"title", a.Title,
-			"description", a.Description,
-			"image", a.Image,
-			"slug", slug,
-			"lang", a.Lang,
-			"status", a.Status,
-			"created_at", time.Now().Unix(),
-			"updated_at", time.Now().Unix(),
-		)
-		rdb.ZAdd(ctx, "blog", redis.Z{
-			Score:  float64(now.Unix()),
-			Member: a.ID,
-		})
-
-		return nil
-	}); err != nil {
+	if _, err := db.Redis.HSet(ctx, fmt.Sprintf("blog:%d", a.ID), "id", a.ID,
+		"title", a.Title,
+		"description", a.Description,
+		"image", a.Image,
+		"slug", slug,
+		"lang", a.Lang,
+		"status", a.Status,
+		"created_at", now,
+		"updated_at", now,
+	).Result(); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
 		return errors.New("error_http_general")
 	}
@@ -211,22 +202,16 @@ func Delete(c context.Context, id int64) error {
 
 	ctx := context.Background()
 
-	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
-
-		err := os.Remove(image)
-		if err != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot remove the temporary file", slog.String("file", image), slog.String("error", err.Error()))
-			return err
-		}
-
-		rdb.Del(ctx, fmt.Sprintf("blog:%d", id))
-		rdb.ZRem(ctx, "blog", id)
-
-		return nil
-	}); err != nil {
+	if _, err := db.Redis.Del(ctx, fmt.Sprintf("blog:%d", id)).Result(); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot delete the data", slog.String("error", err.Error()))
 		return errors.New("error_http_general")
+	}
+
+	image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
+	err := os.Remove(image)
+	if err != nil {
+		slog.LogAttrs(c, slog.LevelWarn, "cannot remove the image", slog.String("file", image), slog.String("error", err.Error()))
+		return nil
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the article is deleted successfuly")

@@ -41,9 +41,8 @@ func EditLocale(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := locales.Value{
-		Locale: r.FormValue("locale"),
-		Key:    r.FormValue("key"),
-		Value:  r.FormValue("value"),
+		Key:   r.FormValue("key"),
+		Value: r.FormValue("value"),
 	}
 
 	err := v.Validate(ctx)
@@ -61,13 +60,11 @@ func EditLocale(w http.ResponseWriter, r *http.Request) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	data := struct {
-		Flash   string
-		Lang    language.Tag
-		Locales []language.Tag
+		Flash string
+		Lang  language.Tag
 	}{
 		"text_general_localesupdated",
 		lang,
-		conf.LocalesSupported,
 	}
 
 	w.Header().Set("HX-Reswap", "outerHTML show:#alert:top")

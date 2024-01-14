@@ -5,7 +5,6 @@ import (
 	"errors"
 	"gifthub/blogs"
 	"gifthub/http/httpext"
-	"log"
 	"log/slog"
 	"mime/multipart"
 	"strconv"
@@ -40,8 +39,6 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 		Status:      status,
 		Lang:        lang,
 	}
-
-	log.Println(a)
 
 	if exists {
 		id, err := strconv.ParseInt(id, 10, 64)

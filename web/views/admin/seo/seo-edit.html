@@ -1,0 +1,95 @@
+{{define "content"}}
+
+<article class="card" hx-ext="alert, input">
+    <div class="row row-align box card-header">
+        <div>
+            <h3 class="card-title">{{translate .Lang "text_general_edit"}}</h3>
+        </div>
+    </div>
+
+    <form hx-post="/admin/seo/{{.ID}}/edit.html">
+        <div class="form box">
+            <div class="form-row" id="key-row">
+                <label class="input-label" for="key">
+                    {{translate .Lang "text_general_key"}}
+                </label>
+
+                <input
+                       id="key"
+                       disabled
+                       class="input input-full"
+                       value="{{.Data.Key}}" />
+
+                <div id="key-error"></div>
+            </div>
+
+            <div class="form-row" id="title-row">
+                <label class="input-label" for="title">
+                    {{translate .Lang "text_general_title"}}
+                </label>
+
+                <input
+                       id="title"
+                       name="title"
+                       class="input input-full"
+                       required
+                       value="{{.Data.Title}}" />
+
+                <small class="input-help">
+                    {{translate .Lang "text_general_titlesub"}}
+                </small>
+
+                <div id="title-error"></div>
+            </div>
+
+            <div class="form-row" id="description-row">
+                <label class="input-label" id="description">
+                    {{translate .Lang "text_general_description"}}
+                </label>
+
+                <input
+                       id="description"
+                       name="description"
+                       class="input input-full"
+                       required
+                       value="{{.Data.Description}}" />
+
+                <div id="description-error"></div>
+            </div>
+
+            <div class="form-row" id="url-row">
+                <label class="input-label" for="url">
+                    {{translate .Lang "text_products_url"}}
+                </label>
+
+                <input
+                       id="url"
+                       name="url"
+                       class="input input-full"
+                       value="{{.Data.URL}}" />
+
+                <small class="input-help">
+                    {{translate .Lang "text_products_url"}}
+                </small>
+
+                <div id="url-error"></div>
+            </div>
+
+        </div>
+
+        <div class="card-footer box">
+            <div class="form row row-between row-gap">
+                <a href="/admin/seo.html" class="button row row-align fill">
+                    {{translate .Lang "text_general_back"}}
+                </a>
+                <button class="button button-primary fill">
+                    <div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+                    {{translate .Lang "text_general_send"}}
+                </button>
+            </div>
+        </div>
+    </form>
+</article>
+
+{{end}}

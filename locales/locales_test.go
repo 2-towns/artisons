@@ -6,9 +6,8 @@ import (
 )
 
 var value = Value{
-	Locale: "en",
-	Key:    "test",
-	Value:  "coucou",
+	Key:   "test",
+	Value: "coucou",
 }
 
 func TestValidateReturnsErrorWhenKeyIsEmpty(t *testing.T) {
@@ -30,28 +29,6 @@ func TestValidateReturnsErrorWhenValueIsEmpty(t *testing.T) {
 
 	if err := v.Validate(c); err == nil || err.Error() != "input_value_invalid" {
 		t.Fatalf(`v.Validate(c) = %v, want not "input_value_invalid"`, err.Error())
-	}
-}
-
-func TestValidateReturnsErrorWhenLocaleIsEmpty(t *testing.T) {
-	c := tests.Context()
-
-	v := value
-	v.Locale = ""
-
-	if err := v.Validate(c); err == nil || err.Error() != "input_locale_invalid" {
-		t.Fatalf(`v.Validate(c) = %v, want not "input_locale_invalid"`, err.Error())
-	}
-}
-
-func TestValidateReturnsErrorWhenLocaleIsInvalid(t *testing.T) {
-	c := tests.Context()
-
-	v := value
-	v.Locale = "!!!"
-
-	if err := v.Validate(c); err == nil || err.Error() != "input_locale_invalid" {
-		t.Fatalf(`v.Validate(c) = %v, want not "input_locale_invalid"`, err.Error())
 	}
 }
 

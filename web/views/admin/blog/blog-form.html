@@ -3,20 +3,6 @@
 	  hx-post="{{if .ID }}/admin/blog/{{.ID}}/edit.html{{else}}/admin/blog/add.html{{end}}"
 	  enctype="multipart/form-data">
 	<div class="form box">
-		<div class="form-row" id="lang-row">
-			<label class="input-label" for="lang">
-				{{translate .Lang "text_general_lang"}}
-			</label>
-
-			<select class="input input-full select" name="lang" required>
-				{{range .Locales}}
-				<option value="{{.}}">{{.}}</option>
-				{{end}}
-			</select>
-
-			<div id="lang-error"></div>
-		</div>
-
 		<div class="form-row" id="title-row">
 			<label class="input-label" for="title">
 				{{translate .Lang "text_general_title"}}

@@ -6,20 +6,6 @@
 
     <form hx-post="/admin/locale.html" hx-target="#locales">
         <div class="box">
-            <div class="form-row" id="locale-row">
-                <label class="input-label" for="locale">
-                    {{translate .Lang "text_general_locale"}}
-                </label>
-
-                <select class="input input-full select" name="locale" required>
-                    {{range .Locales}}
-                    <option value="{{.}}">{{.}}</option>
-                    {{end}}
-                </select>
-
-                <div id="locale-error"></div>
-            </div>
-
             <div class="form-row" id="key-row">
                 <label for="key" class="input-label" required>
                     {{translate .Lang "text_general_key"}}

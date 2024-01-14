@@ -194,9 +194,9 @@ func (o Order) Save(c context.Context) (string, error) {
 	}
 
 	o = o.WithTotal()
-
 	now := time.Now()
 	ctx := context.Background()
+
 	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, "order:"+oid,
 			"id", oid,

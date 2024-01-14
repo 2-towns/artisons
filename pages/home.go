@@ -21,8 +21,9 @@ var tpl *template.Template
 func init() {
 	var err error
 
-	tpl, err = templates.Build("base.html").ParseFiles([]string{
-		"web/views/base.html", "web/views/home.html",
+	tpl, err = templates.Build("home.html").ParseFiles([]string{
+		"web/views/base.html",
+		"web/views/home.html",
 	}...)
 
 	if err != nil {
@@ -56,6 +57,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		lang,
 		p,
 	}
+	log.Println("fdfdsd!!!!!!!!!!!!!!!!!!")
 
 	tpl.Execute(w, &data)
 }

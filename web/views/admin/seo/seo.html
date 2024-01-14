@@ -1,0 +1,22 @@
+{{define "content"}}
+<div hx-ext="alert, input">
+    <div id="alert">
+        {{if .Flash }}
+
+        {{template "alert-success.html" .}}
+
+        {{end}}
+    </div>
+
+    <article class="card" id="blog">
+        <div class="row row-align row-gap row-between box">
+            <div>
+                <h3 class="card-title">{{translate .Lang "text_general_seo"}}</h3>
+            </div>
+            <div>
+            </div>
+        </div>
+        {{template "seo-table.html" .}}
+    </article>
+</div>
+{{end}}

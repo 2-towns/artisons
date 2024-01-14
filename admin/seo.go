@@ -1,11 +1,10 @@
 package admin
 
 import (
-	"gifthub/blogs"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
-	"gifthub/http/httperrors"
+	"gifthub/http/seo"
 	"gifthub/templates"
 	"html/template"
 	"log"
@@ -16,34 +15,33 @@ import (
 	"golang.org/x/text/language"
 )
 
-var blogTpl *template.Template
-var blogHxTpl *template.Template
+var seoTpl *template.Template
+var seoHxTpl *template.Template
 
 func init() {
 	var err error
 
 	files := append(templates.AdminTable,
-		conf.WorkingSpace+"web/views/admin/blog/blog-table.html",
+		conf.WorkingSpace+"web/views/admin/seo/seo-table.html",
 	)
 
-	blogTpl, err = templates.Build("base.html").ParseFiles(
+	seoTpl, err = templates.Build("base.html").ParseFiles(
 		append(files, append(templates.AdminList,
-			conf.WorkingSpace+"web/views/admin/blog/blog-actions.html",
-			conf.WorkingSpace+"web/views/admin/blog/blog.html",
+			conf.WorkingSpace+"web/views/admin/seo/seo.html",
 		)...)...)
 
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	blogHxTpl, err = templates.Build("blog-table.html").ParseFiles(files...)
+	seoHxTpl, err = templates.Build("seo-table.html").ParseFiles(files...)
 
 	if err != nil {
 		log.Panicln(err)
 	}
 }
 
-func Blog(w http.ResponseWriter, r *http.Request) {
+func Seo(w http.ResponseWriter, r *http.Request) {
 	var page int = 1
 
 	ppage := r.URL.Query().Get("page")
@@ -53,54 +51,42 @@ func Blog(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	q := r.URL.Query().Get("q")
-	query := blogs.Query{}
-	if q != "" {
-		query.Keywords = q
-	}
-
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	offset := (page - 1) * conf.ItemsPerPage
 	num := offset + conf.ItemsPerPage
 
-	res, err := blogs.Search(ctx, query, offset, num)
-	if err != nil {
-		httperrors.Catch(w, ctx, err.Error(), 500)
-		return
-	}
-
-	pag := templates.Paginate(page, len(res.Articles), int(res.Total))
-	pag.URL = "/admin/blog.html"
+	res := seo.List(ctx, offset, num)
+	pag := templates.Paginate(page, len(res.Content), int(res.Total))
+	pag.URL = "/admin/seo.html"
 	pag.Lang = lang
 
 	flash := ""
 	c, err := r.Cookie(cookies.FlashMessage)
 	if err == nil && c != nil {
-		log.Println("coucou")
 		flash = c.Value
 	}
 
 	data := struct {
 		Lang       language.Tag
 		Page       string
-		Articles   []blogs.Article
+		Content    []seo.Content
 		Empty      bool
 		Pagination templates.Pagination
 		Flash      string
 	}{
 		lang,
-		"blog",
-		res.Articles,
-		len(res.Articles) == 0,
+		"seo",
+		res.Content,
+		len(res.Content) == 0,
 		pag,
 		flash,
 	}
 
 	isHX, _ := ctx.Value(contexts.HX).(bool)
-	var t *template.Template = blogTpl
+	var t *template.Template = seoTpl
 	if isHX {
-		t = blogHxTpl
+		t = seoHxTpl
 	}
 
 	if err = t.Execute(w, &data); err != nil {

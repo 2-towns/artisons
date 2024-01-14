@@ -4,6 +4,7 @@ package populate
 import (
 	"context"
 	"gifthub/db"
+	"gifthub/http/seo"
 
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
@@ -115,6 +116,13 @@ func Run() error {
 	stats(ctx, pipe)
 
 	locale(ctx, pipe, language.English, "test", "coucou")
+
+	url(ctx, pipe, seo.Content{
+		Key:         "home",
+		URL:         "/",
+		Title:       "Welcome",
+		Description: "Very nice home page",
+	})
 
 	_, err = pipe.Exec(ctx)
 

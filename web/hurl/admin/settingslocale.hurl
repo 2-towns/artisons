@@ -25,37 +25,10 @@ HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/index.html"
 
-# Editing a locale without locale shows an error 
-POST {{host}}/admin/locale.html
-HX-Request: true
-[FormParams]
-locale:
-key: hip
-value: hop
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#locale-error" 
-header "HX-Reswap" == "innerHTML show:#locale-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The locale is invalid." 
-
-# Editing a locale with a bad locale shows an error 
-POST {{host}}/admin/locale.html
-HX-Request: true
-[FormParams]
-locale: !!!
-key: hip
-value: hop
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#locale-error" 
-header "HX-Reswap" == "innerHTML show:#locale-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The locale is invalid." 
-
 # Editing a locale without key shows an error 
 POST {{host}}/admin/locale.html
 HX-Request: true
 [FormParams]
-locale: en
 key: 
 value: hop
 HTTP 200
@@ -68,7 +41,6 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The key is invali
 POST {{host}}/admin/locale.html
 HX-Request: true
 [FormParams]
-locale: en
 key: hip
 value: 
 HTTP 200
@@ -81,7 +53,6 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The value is inva
 POST {{host}}/admin/locale.html
 HX-Request: true
 [FormParams]
-locale: en
 key: hip
 value: hop
 HTTP 200

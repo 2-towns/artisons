@@ -8,5 +8,5 @@ import (
 )
 
 func locale(ctx context.Context, pipe redis.Pipeliner, tag language.Tag, key, value string) {
-	pipe.HSet(ctx, "locale:"+tag.String(), key, value)
+	pipe.HSet(ctx, "locale", key, value)
 }

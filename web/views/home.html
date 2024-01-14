@@ -4,28 +4,7 @@
 <!---->
 
 <main class="container">
-  <div class="grid grid--products">
-    <!---->
-    {{ range $key, $value := .Products }}
-    <div>
-      <p class="text-center">
-        <img src="{{ $value.Image }}" height="300" alt="{{$value.Title}}" />
-      </p>
-
-      <p class="text-center">
-        {{ $value.Title }}
-        <br />
-        <b>{{ $value.Price }} EUR</b>
-      </p>
-
-      <div class="grid">
-        <a href="{{index $.T " url_product_details" }}/{{$value.Slug}}.html" role="button">{{index $.T "detail"}}</a>
-      </div>
-
-      <!---->
-    </div>
-    {{ end }}
-  </div>
+  coucou
 </main>
 <!---->
 {{end}}

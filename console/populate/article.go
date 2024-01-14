@@ -27,9 +27,4 @@ func article(ctx context.Context, pipe redis.Pipeliner, id int64, online bool) {
 		"updated_at", now.Unix(),
 		"created_at", now.Unix(),
 	)
-
-	pipe.ZAdd(ctx, "blog", redis.Z{
-		Score:  float64(now.Unix()),
-		Member: id,
-	})
 }

@@ -35,15 +35,13 @@ func SettingsForm(w http.ResponseWriter, r *http.Request) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	data := struct {
-		Lang    language.Tag
-		Page    string
-		Data    shops.Settings
-		Locales []language.Tag
+		Lang language.Tag
+		Page string
+		Data shops.Settings
 	}{
 		lang,
 		"settings",
 		shops.Data,
-		conf.LocalesSupported,
 	}
 
 	if err := settingsTpl.Execute(w, &data); err != nil {
