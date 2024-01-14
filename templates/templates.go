@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gifthub/cache"
 	"gifthub/conf"
+	"gifthub/http/seo"
 	"gifthub/images"
 	"gifthub/locales"
 	"html/template"
@@ -99,6 +100,15 @@ func Build(name string) *template.Template {
 				Height:      height,
 				Cachebuster: cachebuster.Unix(),
 			})
+		},
+		"metatitle": func(key string) string {
+			return seo.URLs[key].Title
+		},
+		"metadescription": func(key string) string {
+			return seo.URLs[key].Description
+		},
+		"url": func(key string) string {
+			return seo.URLs[key].URL
 		},
 	})
 }

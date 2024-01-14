@@ -120,8 +120,15 @@ func Run() error {
 	url(ctx, pipe, seo.Content{
 		Key:         "home",
 		URL:         "/",
-		Title:       "Welcome",
-		Description: "Very nice home page",
+		Title:       "Home page",
+		Description: "You can access to multiple products.",
+	})
+
+	url(ctx, pipe, seo.Content{
+		Key:         "shop",
+		URL:         "/shop.html",
+		Title:       "Shop page",
+		Description: "You can access to multiple products.",
 	})
 
 	_, err = pipe.Exec(ctx)
