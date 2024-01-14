@@ -1,5 +1,5 @@
 * {
-	font-family: Gabarito;
+	font-family: 'Gabarito', sans-serif;
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -31,6 +31,10 @@ a:visited {
 	padding: 48px 0px;
 	width: 80%;
 	margin: auto;
+}
+
+main {
+	margin-bottom: 2rem;
 }
 
 select {
@@ -129,4 +133,88 @@ option {
 
 .see-all-link {
 	font-weight: 100;
+}
+
+.highlighted-selling-cards {
+	margin: auto;
+	margin-top: 1.5rem;
+	display: flex;
+	align-items: flex-start;
+	gap: .75rem;
+	overflow-x: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--gray) var(--gray-light);
+}
+
+.highlighted-selling-cards::-webkit-scrollbar {
+	height: 0.6rem;
+	border-radius: var(--border-radius-2);
+	background: white;
+
+}
+
+.highlighted-selling-cards::-webkit-scrollbar-thumb {
+	background: var(--gray);
+	border-radius: var(--border-radius-2);
+	border: 2px solid white;
+}
+
+.highlighted-selling-card {
+	display: flex;
+	width: 9.9375rem;
+	padding-bottom: 1rem;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: .5rem;
+	border-radius: var(--border-radius-2);
+	background: var(--Bg-Light-2, #F4F4F4);
+
+}
+
+.highlighted-selling-card-info {
+	display: flex;
+	padding: 0 .375rem;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: .5rem;
+	align-self: stretch;
+}
+
+.highlighted-selling-card-img {
+	border-radius: var(--border-radius-2);
+	height: 13.75rem;
+	align-self: stretch;
+}
+
+.highlighted-selling-card-title {
+	overflow: hidden;
+	color: var(--Black-100, #272727);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: 'Montserrat', sans-serif;
+	font-size: .75rem;
+	font-style: normal;
+	font-weight: 450;
+}
+
+.bottom-nav {
+	position: fixed;
+	/* Fixe le menu en bas de la fenêtre */
+	bottom: 0;
+	/* Aligné en bas */
+	left: 0;
+	/* Étend le menu sur toute la largeur à partir du bord gauche */
+	width: 100%;
+	/* Assure que le menu s'étend sur toute la largeur */
+	background-color: #ffffff;
+	/* Couleur de fond du menu */
+	box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+	/* Ombre légère pour donner de la profondeur */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 4rem;
+	/* Hauteur du menu */
+	z-index: 5;
+	/* Assure que le menu reste au-dessus des autres éléments de la page */
 }
