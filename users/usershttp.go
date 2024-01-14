@@ -19,25 +19,25 @@ func findBySessionID(c context.Context, sid string) (User, error) {
 
 	if sid == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the session id")
-		return User{}, errors.New("error_http_unauthorized")
+		return User{}, errors.New("your are not authorized to process this request")
 	}
 
 	id, err := db.Redis.Get(c, "auth:"+sid).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the auth id from redis", slog.String("error", err.Error()))
-		return User{}, errors.New("error_http_unauthorized")
+		return User{}, errors.New("your are not authorized to process this request")
 	}
 
 	m, err := db.Redis.HGetAll(c, "user:"+id).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the session from redis", slog.String("error", err.Error()))
-		return User{}, errors.New("error_http_unauthorized")
+		return User{}, errors.New("your are not authorized to process this request")
 	}
 
 	m["sid"] = sid
 	u, err := parseUser(c, m)
 	if err != nil {
-		return User{}, errors.New("error_http_unauthorized")
+		return User{}, errors.New("your are not authorized to process this request")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "user found", slog.Int64("user_id", u.ID))
@@ -132,7 +132,7 @@ func AdminOnly(next http.Handler) http.Handler {
 
 		if user.Role != "admin" {
 			slog.LogAttrs(ctx, slog.LevelInfo, "the user is not admin", slog.Int64("id", user.ID))
-			httperrors.Catch(w, ctx, "error_http_unauthorized", 401)
+			httperrors.Catch(w, ctx, "your are not authorized to process this request", 401)
 			return
 		}
 

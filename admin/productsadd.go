@@ -47,7 +47,7 @@ func AddProductForm(w http.ResponseWriter, r *http.Request) {
 		Images  []string
 	}{
 		lang,
-		"products",
+		"Products",
 		"",
 		products.Product{},
 		"",
@@ -64,7 +64,7 @@ func AddProduct(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseMultipartForm(conf.MaxUploadSize); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -84,7 +84,7 @@ func AddProduct(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     cookies.FlashMessage,
-		Value:    "text_products_addsuccess",
+		Value:    "The data has been saved successfully.",
 		MaxAge:   int(time.Minute.Seconds()),
 		Path:     "/",
 		HttpOnly: true,

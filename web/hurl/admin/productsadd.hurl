@@ -41,7 +41,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#price-error" 
 header "HX-Reswap" == "innerHTML show:#price-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The price is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with an invalid price shows an error 
 POST {{host}}/admin/products/add.html
@@ -59,7 +59,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#price-error" 
 header "HX-Reswap" == "innerHTML show:#price-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The price is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product without title shows an error 
 POST {{host}}/admin/products/add.html
@@ -77,7 +77,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#title-error" 
 header "HX-Reswap" == "innerHTML show:#title-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The title is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product without description shows an error 
 POST {{host}}/admin/products/add.html
@@ -95,7 +95,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#description-error" 
 header "HX-Reswap" == "innerHTML show:#description-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The description is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with bad sku shows an error 
 POST {{host}}/admin/products/add.html
@@ -113,7 +113,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#sku-error" 
 header "HX-Reswap" == "innerHTML show:#sku-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The sku is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product without quantity shows an error 
 POST {{host}}/admin/products/add.html
@@ -131,7 +131,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#quantity-error" 
 header "HX-Reswap" == "innerHTML show:#quantity-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The quantity is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with bad quantity shows an error 
 POST {{host}}/admin/products/add.html
@@ -149,7 +149,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#quantity-error" 
 header "HX-Reswap" == "innerHTML show:#quantity-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The quantity is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product without status shows an error 
 POST {{host}}/admin/products/add.html
@@ -167,7 +167,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#status-error" 
 header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with bad status shows an error 
 POST {{host}}/admin/products/add.html
@@ -185,7 +185,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#status-error" 
 header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with bad weight shows an error 
 POST {{host}}/admin/products/add.html
@@ -204,7 +204,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#weight-error" 
 header "HX-Reswap" == "innerHTML show:#weight-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The weight is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with bad discount shows an error 
 POST {{host}}/admin/products/add.html
@@ -223,7 +223,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#discount-error" 
 header "HX-Reswap" == "innerHTML show:#discount-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The discount is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product without file shows an error 
 POST {{host}}/admin/products/add.html
@@ -238,9 +238,9 @@ status: online
 tags: winter cold
 HTTP 200
 [Asserts]
-header "HX-Retarget" == "#image-error" 
-header "HX-Reswap" == "innerHTML show:#image-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The image is required." 
+header "HX-Retarget" == "#image_1-error" 
+header "HX-Reswap" == "innerHTML show:#image_1-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with a bad picture shows an error 
 POST {{host}}/admin/products/add.html
@@ -256,9 +256,9 @@ tags: winter cold
 image_1:file,image.txt;
 HTTP 200
 [Asserts]
-header "HX-Retarget" == "#image-error" 
-header "HX-Reswap" == "innerHTML show:#image-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The image is invalid." 
+header "HX-Retarget" == "#image_1-error" 
+header "HX-Reswap" == "innerHTML show:#image_1-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with a bad image shows an error 
 POST {{host}}/admin/products/add.html
@@ -275,9 +275,9 @@ image_1:file,image.jpg;
 image_2:file,image.txt;
 HTTP 200
 [Asserts]
-header "HX-Retarget" == "#image-error" 
-header "HX-Reswap" == "innerHTML show:#image-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The image is invalid." 
+header "HX-Retarget" == "#image_2-error" 
+header "HX-Reswap" == "innerHTML show:#image_2-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with correct data works
 POST {{host}}/admin/products/add.html

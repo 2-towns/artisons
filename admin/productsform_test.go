@@ -23,8 +23,8 @@ func TestProcessProductFormReturnsErrorWhenPriceIsEmpty(t *testing.T) {
 
 	f := multipart.Form{Value: value}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_price_invalid" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_price_invalid'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:price" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:price'`, err.Error())
 	}
 }
 
@@ -39,8 +39,8 @@ func TestProcessProductFormReturnsErrorWhenQuantityIsEmpty(t *testing.T) {
 	v["price"] = []string{"12.4"}
 	f := multipart.Form{Value: v}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_quantity_invalid" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_quantity_invalid'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:quantity" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:quantity'`, err.Error())
 	}
 }
 
@@ -56,8 +56,8 @@ func TestProcessProductFormReturnsErrorWhenPriceIsInvalid(t *testing.T) {
 	v["quantity"] = []string{"1"}
 	f := multipart.Form{Value: v}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_price_invalid" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_price_invalid'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:price" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:price'`, err.Error())
 	}
 }
 
@@ -73,8 +73,8 @@ func TestProcessProductFormReturnsErrorWhenQuantityIsInvalid(t *testing.T) {
 	v["quantity"] = []string{"hello"}
 	f := multipart.Form{Value: v}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_quantity_invalid" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_quantity_invalid'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:quantity" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:quantity'`, err.Error())
 	}
 }
 
@@ -91,8 +91,8 @@ func TestProcessProductFormReturnsErrorWhenDiscountIsInvalid(t *testing.T) {
 	v["discount"] = []string{"hello"}
 	f := multipart.Form{Value: v}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_discount_invalid" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_discount_invalid'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:discount" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:discount'`, err.Error())
 	}
 }
 
@@ -109,8 +109,8 @@ func TestProcessProductFormReturnsErrorWhenWeightIsInvalid(t *testing.T) {
 	v["weight"] = []string{"hello"}
 	f := multipart.Form{Value: v}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_weight_invalid" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_weight_invalid'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:weight" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:weight'`, err.Error())
 	}
 }
 
@@ -126,8 +126,8 @@ func TestProcessProductFormReturnsErrorWhenAFieldIsInvalid(t *testing.T) {
 	v["quantity"] = []string{"1"}
 	f := multipart.Form{Value: v}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_title_invalid" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_title_invalid'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:title" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:title'`, err.Error())
 	}
 }
 
@@ -148,8 +148,8 @@ func TestProcessProductFormReturnsErrorWhenNotPicture(t *testing.T) {
 
 	f := multipart.Form{Value: v}
 
-	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input_image_1_required" {
-		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input_image_1_required'`, err.Error())
+	if _, err := processProductFrom(c, f, ""); err == nil || err.Error() != "input:image_1" {
+		t.Fatalf(`processProductFrom(c, f, "") = _, %v, want _, 'input:image_1'`, err.Error())
 	}
 }
 

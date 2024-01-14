@@ -3,10 +3,10 @@
         <table class="table">
             <thead class="thead">
                 <tr class="tr">
-                    <th class="th">{{translate .Lang "text_general_key"}}</th>
-                    <th class="th">{{translate .Lang "text_general_title"}}</th>
+                    <th class="th">{{translate .Lang "Key"}}</th>
+                    <th class="th">{{translate .Lang "Title"}}</th>
                     <th class="th">{{translate .Lang "text_general_url"}}</th>
-                    <th class="th">{{translate .Lang "text_general_updatedat"}}</th>
+                    <th class="th">{{translate .Lang "Updated at"}}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -14,7 +14,7 @@
                 {{ if .Empty }}
                 <tr class="tr">
                     <td colspan="9" class="text-center box td">
-                        {{translate .Lang "text_general_empty"}}
+                        {{translate .Lang "No results found."}}
                     </td>
                 </tr>
                 {{else}}

@@ -101,14 +101,26 @@ func Build(name string) *template.Template {
 				Cachebuster: cachebuster.Unix(),
 			})
 		},
-		"metatitle": func(key string) string {
-			return seo.URLs[key].Title
+		"metatitle": func(key string, id string) string {
+			if id == "" {
+				return seo.URLs[key].Title
+			}
+
+			return strings.Replace(seo.URLs[key].Title, "{{key}}", id, 1)
 		},
-		"metadescription": func(key string) string {
-			return seo.URLs[key].Description
+		"metadescription": func(key string, id string) string {
+			if id == "" {
+				return seo.URLs[key].Description
+			}
+
+			return strings.Replace(seo.URLs[key].Description, "{{key}}", id, 1)
 		},
-		"url": func(key string) string {
-			return seo.URLs[key].URL
+		"url": func(key string, id string) string {
+			if id == "" {
+				return seo.URLs[key].URL
+			}
+
+			return strings.Replace(seo.URLs[key].URL, "{{id}}", id, 1)
 		},
 	})
 }

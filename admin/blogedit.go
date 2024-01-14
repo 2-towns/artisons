@@ -46,12 +46,12 @@ func EditBlogForm(w http.ResponseWriter, r *http.Request) {
 	iid, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
-		httperrors.Page(w, ctx, "error_http_blognotfound", 404)
+		httperrors.Page(w, ctx, "oops the data is not found", 404)
 	}
 
 	p, err := blogs.Find(ctx, iid)
 	if err != nil {
-		httperrors.Page(w, ctx, "error_http_blognotfound", 404)
+		httperrors.Page(w, ctx, "oops the data is not found", 404)
 		return
 	}
 
@@ -62,7 +62,7 @@ func EditBlogForm(w http.ResponseWriter, r *http.Request) {
 		Data blogs.Article
 	}{
 		lang,
-		"blog",
+		"Blog",
 		id,
 		p,
 	}
@@ -79,7 +79,7 @@ func EditBlog(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseMultipartForm(conf.MaxUploadSize); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -99,7 +99,7 @@ func EditBlog(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     cookies.FlashMessage,
-		Value:    "text_blog_editsuccess",
+		Value:    "The data has been saved successfully.",
 		MaxAge:   int(time.Minute.Seconds()),
 		Path:     "/",
 		HttpOnly: true,

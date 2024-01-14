@@ -38,7 +38,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#title-error" 
 header "HX-Reswap" == "innerHTML show:#title-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The title is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article without description shows an error 
 POST {{host}}/admin/blog/add.html
@@ -53,7 +53,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#description-error" 
 header "HX-Reswap" == "innerHTML show:#description-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The description is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article without status shows an error 
 POST {{host}}/admin/blog/add.html
@@ -68,7 +68,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#status-error" 
 header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article with bad status shows an error 
 POST {{host}}/admin/blog/add.html
@@ -83,7 +83,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#status-error" 
 header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The status is invalid."
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid."
 
 # Adding an article without lang shows an error 
 POST {{host}}/admin/blog/add.html
@@ -98,7 +98,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#lang-error" 
 header "HX-Reswap" == "innerHTML show:#lang-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The lang is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article with bad lang shows an error 
 POST {{host}}/admin/blog/add.html
@@ -113,7 +113,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#lang-error" 
 header "HX-Reswap" == "innerHTML show:#lang-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The lang is invalid."
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid."
 
 # Adding an article without file shows an error 
 POST {{host}}/admin/blog/add.html
@@ -127,7 +127,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image-error" 
 header "HX-Reswap" == "innerHTML show:#image-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The image is required." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article with a bad picture shows an error 
 POST {{host}}/admin/blog/add.html
@@ -142,7 +142,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image-error" 
 header "HX-Reswap" == "innerHTML show:#image-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The image is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article with correct data works
 POST {{host}}/admin/blog/add.html

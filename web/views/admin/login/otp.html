@@ -1,8 +1,11 @@
 <article id="otp" class="card box">
-	<h2 class="text-center">{{translate .Lang "text_otp_sub"}}</h2>
+	<h2 class="text-center">{{translate .Lang "Check your inbox"}}</h2>
 
 	<p class="text-center page-simple-message">
-		{{translate .Lang "text_otp_message" .Email}}
+		{{translate .Lang "We've sent you an otp code to %s." .Email}}
+		{{translate
+		.Lang
+		"Please click the link to confirm your address or enter the otp code below."}}
 	</p>
 
 	<form hx-post="/auth/login.html">
@@ -74,11 +77,11 @@
 			   hx-get="/auth/index.html"
 			   hx-target=" #otp"
 			   hx-swap="outerHTML">
-				{{translate .Lang "text_general_cancel"}}
+				{{translate .Lang "Cancel"}}
 			</a>
 			<button class="button button-full button-primary fill">
 				<div class="htmx-indicator htmx-spinner"></div>
-				{{translate .Lang "text_general_verify"}}
+				{{translate .Lang "Verify"}}
 			</button>
 		</div>
 

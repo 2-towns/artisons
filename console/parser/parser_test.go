@@ -20,8 +20,8 @@ func TestImportReturnsErrorWhenHeadersAreMissing(t *testing.T) {
 	csv := lines{h}
 
 	count, err := Import(csv, conf.DefaultMID)
-	if err == nil || count != 0 || err.Error() != "error_csv_fileinvalid" {
-		t.Fatalf(`Import = %d, %v, want 0, 'error_csv_fileinvalid'`, count, err)
+	if err == nil || count != 0 || err.Error() != "the csv is invalid" {
+		t.Fatalf(`Import = %d, %v, want 0, 'the csv is invalid'`, count, err)
 	}
 }
 
@@ -34,8 +34,8 @@ func TestImportReturnsErrorWhenFirstCellIsInvalid(t *testing.T) {
 	csv := lines{h}
 
 	count, err := Import(csv, conf.DefaultMID)
-	if err == nil || count != 0 || err.Error() != "error_csv_fileinvalid" {
-		t.Fatalf(`Import = %d, %v, want 0, 'error_csv_fileinvalid'`, count, err)
+	if err == nil || count != 0 || err.Error() != "the csv is invalid" {
+		t.Fatalf(`Import = %d, %v, want 0, 'the csv is invalid'`, count, err)
 	}
 }
 

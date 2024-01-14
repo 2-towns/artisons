@@ -36,7 +36,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -47,7 +47,6 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		Cache:          r.FormValue("cache") == "on",
 		Guest:          r.FormValue("guest") == "on",
 		Quantity:       r.FormValue("quantity") == "on",
-		Stock:          r.FormValue("stock") == "on",
 		New:            r.FormValue("new") == "on",
 		Redirect:       r.FormValue("redirect") == "on",
 	}
@@ -57,7 +56,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		val, err := strconv.ParseInt(items, 10, 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the items value", slog.String("items", items))
-			httperrors.HXCatch(w, ctx, "input_items_invalid")
+			httperrors.HXCatch(w, ctx, "input:items")
 			return
 		}
 
@@ -69,7 +68,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		val, err := strconv.ParseInt(min, 10, 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the min value", slog.String("min", min))
-			httperrors.HXCatch(w, ctx, "input_min_invalid")
+			httperrors.HXCatch(w, ctx, "input:min")
 			return
 		}
 
@@ -81,7 +80,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		val, err := strconv.ParseInt(last, 10, 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot use the last value", slog.String("last", last))
-			httperrors.HXCatch(w, ctx, "input_last_invalid")
+			httperrors.HXCatch(w, ctx, "input:last")
 			return
 		}
 
@@ -109,7 +108,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		Lang  language.Tag
 		RID   string
 	}{
-		"text_settings_editsuccess",
+		"The data has been saved successfully.",
 		lang,
 		rid,
 	}
@@ -127,7 +126,7 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseMultipartForm(conf.MaxUploadSize); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -157,14 +156,14 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 
 	if files["logo"] == nil && shops.Data.Logo == "" {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the logo is required")
-		httperrors.HXCatch(w, ctx, "input_logo_required")
+		httperrors.HXCatch(w, ctx, "input:logo")
 		return
 	}
 
 	images, err := httpext.Upload(ctx, files)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot update the files", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -208,7 +207,7 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 		Lang  language.Tag
 		RID   string
 	}{
-		"text_settings_editsuccess",
+		"The data has been saved successfully.",
 		lang,
 		rid,
 	}

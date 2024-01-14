@@ -35,7 +35,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#key-error" 
 header "HX-Reswap" == "innerHTML show:#key-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The key is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing a locale without value shows an error 
 POST {{host}}/admin/locale.html
@@ -47,7 +47,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#value-error" 
 header "HX-Reswap" == "innerHTML show:#value-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The value is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing with correct data shows success
 POST {{host}}/admin/locale.html

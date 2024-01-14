@@ -3,17 +3,17 @@
 <main class="page-simple row row-align row-center text-center">
 	<div class="mini-container box">
 		<h1>{{.Code}}</h1>
-		<h2>{{translate .Lang "error_http_page" }}</h2>
+		<h2>{{translate .Lang "oops you just found an error page" }}</h2>
 		<p class="subtitle">
 			{{translate .Lang .Message}}
 
-			{{translate .Lang "error_http_requestid" .RID}}
+			{{translate .Lang "the request id is %s" .RID}}
 		</p>
 
 		<a href="/admin/index.html" class="button btn-primary">
 			<span class="button-icon"> {{template "back.svg"}} </span>
 
-			{{translate .Lang "text_error_button" }}
+			{{translate .Lang "Take me home" }}
 		</a>
 	</div>
 </main>

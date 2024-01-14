@@ -22,8 +22,8 @@ func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	a := article
 	a.Title = ""
 
-	if err := a.Validate(c); err == nil || err.Error() != "input_title_invalid" {
-		t.Fatalf(`a.Validate(c) = %v, want "input_title_invalid"`, err.Error())
+	if err := a.Validate(c); err == nil || err.Error() != "input:title" {
+		t.Fatalf(`a.Validate(c) = %v, want "input:title"`, err.Error())
 	}
 }
 
@@ -33,8 +33,8 @@ func TestValidReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	a := article
 	a.Description = ""
 
-	if err := a.Validate(c); err == nil || err.Error() != "input_description_invalid" {
-		t.Fatalf(`a.Validate(c) = %v, want "input_description_invalid"`, err.Error())
+	if err := a.Validate(c); err == nil || err.Error() != "input:description" {
+		t.Fatalf(`a.Validate(c) = %v, want "input:description"`, err.Error())
 	}
 }
 
@@ -44,8 +44,8 @@ func TestValidReturnsErrorWhenLangIsEmpty(t *testing.T) {
 	a := article
 	a.Lang = ""
 
-	if err := a.Validate(c); err == nil || err.Error() != "input_lang_invalid" {
-		t.Fatalf(`a.Validate(c) = %v, want "input_lang_invalid"`, err.Error())
+	if err := a.Validate(c); err == nil || err.Error() != "input:lang" {
+		t.Fatalf(`a.Validate(c) = %v, want "input:lang"`, err.Error())
 	}
 }
 
@@ -55,8 +55,8 @@ func TestValidReturnsErrorWhenLangIsInvalid(t *testing.T) {
 	a := article
 	a.Lang = "!!!"
 
-	if err := a.Validate(c); err == nil || err.Error() != "input_lang_invalid" {
-		t.Fatalf(`a.Validate(c) = %v, want "input_lang_invalid"`, err.Error())
+	if err := a.Validate(c); err == nil || err.Error() != "input:lang" {
+		t.Fatalf(`a.Validate(c) = %v, want "input:lang"`, err.Error())
 	}
 }
 
@@ -66,8 +66,8 @@ func TestValidReturnsErrorWhenLangIsInvalid(t *testing.T) {
 // 	a := article
 // 	a.Image = ""
 
-// 	if err := a.Validate(c); err == nil || err.Error() != "input_image_invalid" {
-// 		t.Fatalf(`a.Validate(c) = %v, want "input_image_invalid"`, err.Error())
+// 	if err := a.Validate(c); err == nil || err.Error() != "input:image" {
+// 		t.Fatalf(`a.Validate(c) = %v, want "input:image"`, err.Error())
 // 	}
 // }
 
@@ -182,8 +182,8 @@ func TestDeleteReturnNilSuccess(t *testing.T) {
 
 func TestFindReturnsErrorWhenIdsMissing(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, 0); err == nil || err.Error() != "input_id_required" {
-		t.Fatalf(`Find(c,"") = %v, want "input_id_required"`, err.Error())
+	if _, err := Find(c, 0); err == nil || err.Error() != "input:id" {
+		t.Fatalf(`Find(c,"") = %v, want "input:id"`, err.Error())
 	}
 }
 

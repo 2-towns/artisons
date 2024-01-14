@@ -3,13 +3,13 @@
 		<table class="table">
 			<thead class="thead">
 				<tr class="tr">
-					<th class="th">{{translate .Lang "text_general_id"}}</th>
-					<th class="th">{{translate .Lang "text_general_total"}}</th>
-					<th class="th">{{translate .Lang "text_general_status"}}</th>
-					<th class="th">{{translate .Lang "text_general_delivery"}}</th>
-					<th class="th">{{translate .Lang "text_general_payment"}}</th>
-					<th class="th">{{translate .Lang "text_general_city"}}</th>
-					<th class="th">{{translate .Lang "text_general_updatedat"}}</th>
+					<th class="th">{{translate .Lang "ID"}}</th>
+					<th class="th">{{translate .Lang "Total"}}</th>
+					<th class="th">{{translate .Lang "Status"}}</th>
+					<th class="th">{{translate .Lang "Delivery"}}</th>
+					<th class="th">{{translate .Lang "Payment"}}</th>
+					<th class="th">{{translate .Lang "City"}}</th>
+					<th class="th">{{translate .Lang "Updated at"}}</th>
 					<th class="th"></th>
 				</tr>
 			</thead>
@@ -17,7 +17,7 @@
 				{{ if .Empty }}
 				<tr class="tr">
 					<td colspan="9" class="td text-center box">
-						{{translate .Lang "text_general_empty"}}
+						{{translate .Lang "No results found."}}
 					</td>
 				</tr>
 				{{else}}
@@ -27,12 +27,12 @@
 				<tr class="tr">
 					<td class="secondary table-td-id box td">{{.ID}}</td>
 					<td class="box td">{{twodigits .Total}} {{$.Currency}}</td>
-					<td class="box td">{{translate $.Lang "dynamic_status_" .Status}}</td>
+					<td class="box td">{{translate $.Lang .Status}}</td>
 					<td class="box td">
-						{{translate $.Lang "dynamic_delivery_" .Delivery}}
+						{{translate $.Lang .Delivery}}
 					</td>
 					<td class="box td">
-						{{translate $.Lang "dynamic_payment_" .Payment}}
+						{{translate $.Lang .Payment}}
 					</td>
 					<td class="box td">{{.Address.City}}</td>
 					<td class="box td">{{date .UpdatedAt}}</td>

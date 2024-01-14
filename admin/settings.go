@@ -40,7 +40,7 @@ func SettingsForm(w http.ResponseWriter, r *http.Request) {
 		Data shops.Settings
 	}{
 		lang,
-		"settings",
+		"Settings",
 		shops.Data,
 	}
 

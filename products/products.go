@@ -153,13 +153,13 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 	price, err := strconv.ParseFloat(data["price"], 32)
 	if err != nil {
 		slog.Error("cannot parse the product price", slog.String("price", data["price"]))
-		return Product{}, errors.New("input_price_invalid")
+		return Product{}, errors.New("input:price")
 	}
 
 	quantity, err := strconv.ParseInt(data["quantity"], 10, 32)
 	if err != nil {
 		slog.Error("cannot parse the product quantity", slog.String("quantity", data["quantity"]))
-		return Product{}, errors.New("input_quantity_invalid")
+		return Product{}, errors.New("input:quantity")
 	}
 
 	var weight float64
@@ -168,7 +168,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		v, err := strconv.ParseFloat(data["weight"], 32)
 		if err != nil {
 			slog.Error("cannot parse the product weight", slog.String("weight", data["weight"]))
-			return Product{}, errors.New("input_weight_invalid")
+			return Product{}, errors.New("input:weight")
 		}
 
 		weight = v
@@ -178,7 +178,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		v, err := strconv.ParseFloat(data["discount"], 32)
 		if err != nil {
 			slog.Error("cannot parse the product discount", slog.String("discount", data["discount"]))
-			return Product{}, errors.New("input_discount_invalid")
+			return Product{}, errors.New("input:discount")
 		}
 
 		weight = v
@@ -187,13 +187,13 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 	createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
 	if err != nil {
 		slog.Error("cannot parse the product created at", slog.String("created_at", data["created_at"]))
-		return Product{}, errors.New("input_created_at_invalid")
+		return Product{}, errors.New("input:created_at")
 	}
 
 	updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 	if err != nil {
 		slog.Error("cannot parse the product updated at", slog.String("updated_at", data["updated_at"]))
-		return Product{}, errors.New("input_updated_at_invalid")
+		return Product{}, errors.New("input:updated_at")
 	}
 
 	return Product{
@@ -227,12 +227,12 @@ func (p Product) Validate(c context.Context) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the product", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_invalid", low)
+		return fmt.Errorf("input:%s", low)
 	}
 
 	if !conf.IsCurrencySupported(p.Currency) {
 		slog.Info("cannot use an unsupported currency", slog.String("currency", p.Currency))
-		return errors.New("input_currency_invalid")
+		return errors.New("input:currency")
 	}
 
 	return nil
@@ -244,7 +244,7 @@ func (p Product) Validate(c context.Context) error {
 func (p Product) Save(ctx context.Context) error {
 	if p.ID == "" {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot continue with empty pid")
-		return errors.New("input_pid_required")
+		return errors.New("input:pid")
 	}
 
 	l := slog.With(slog.String("id", p.ID))
@@ -311,14 +311,14 @@ func Find(c context.Context, pid string) (Product, error) {
 
 	if pid == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty product id")
-		return Product{}, errors.New("input_id_required")
+		return Product{}, errors.New("input:id")
 	}
 
 	ctx := context.Background()
 
 	if exists, err := db.Redis.Exists(ctx, "product:"+pid).Result(); exists == 0 || err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the product")
-		return Product{}, errors.New("error_http_productnotfound")
+		return Product{}, errors.New("oops the data is not found")
 	}
 
 	data, err := db.Redis.HGetAll(ctx, "product:"+pid).Result()
@@ -552,7 +552,7 @@ func Delete(ctx context.Context, pid string) error {
 
 	if pid == "" {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the pid cannot be empty")
-		return errors.New("input_id_invalid")
+		return errors.New("input:id")
 	}
 
 	if _, err := db.Redis.Del(ctx, "product:"+pid).Result(); err != nil {

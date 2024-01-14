@@ -10,7 +10,7 @@ POST {{host}}/otp
 email: hello@world.com
 HTTP 400
 [Asserts]
-body contains "The request is invalid. This will be reported."
+body contains "Your are not authorized to access to this page. This will be reported."
 
 # Displays an inline error when the email is not valid
 POST {{host}}/auth/otp.html
@@ -19,7 +19,7 @@ HX-Request: true
 email: arnaud@yandex.com
 HTTP 200
 [Asserts]
-body contains "<div class=\"form-error\">The email is invalid.</div>"
+body contains "<div class=\"form-error\">The data is invalid.</div>"
 
 # Display otp form when the correct email is used
 POST {{host}}/auth/otp.html

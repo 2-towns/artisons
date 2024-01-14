@@ -46,7 +46,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	p, err := getProducts(ctx)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the products", slog.String("error", err.Error()))
-		httperrors.Page(w, r.Context(), "error_http_general", 400)
+		httperrors.Page(w, r.Context(), "something went wrong", 400)
 		return
 	}
 
@@ -57,7 +57,6 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		lang,
 		p,
 	}
-	log.Println("fdfdsd!!!!!!!!!!!!!!!!!!")
 
 	tpl.Execute(w, &data)
 }

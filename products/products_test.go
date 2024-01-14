@@ -92,8 +92,8 @@ func TestValidateReturnsErrorWhenSkuIsInvalid(t *testing.T) {
 	p := product
 	p.Sku = "!!!"
 
-	if err := p.Validate(c); err == nil || err.Error() != "input_sku_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input_sku_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input:sku" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:sku"`, err.Error())
 	}
 }
 
@@ -103,8 +103,8 @@ func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	p := product
 	p.Title = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "input_title_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input_title_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input:title" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:title"`, err.Error())
 	}
 }
 
@@ -114,8 +114,8 @@ func TestValidateReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	p := product
 	p.Description = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "input_description_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input_description_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input:description" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:description"`, err.Error())
 	}
 }
 
@@ -125,8 +125,8 @@ func TestValidateReturnsErrorWhenCurrencyIsEmpty(t *testing.T) {
 	p := product
 	p.Currency = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "input_currency_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input_currency_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input:currency" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:currency"`, err.Error())
 	}
 }
 
@@ -136,8 +136,8 @@ func TestValidateReturnsErrorWhenCurrencyIsNotSupported(t *testing.T) {
 	p := product
 	p.Currency = "ABC"
 
-	if err := p.Validate(c); err == nil || err.Error() != "input_currency_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input_currency_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input:currency" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:currency"`, err.Error())
 	}
 }
 
@@ -147,8 +147,8 @@ func TestValidateReturnsErrorWhenStatusIsEmpty(t *testing.T) {
 	p := product
 	p.Status = ""
 
-	if err := p.Validate(c); err == nil || err.Error() != "input_status_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input_status_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input:status" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:status"`, err.Error())
 	}
 }
 
@@ -158,8 +158,8 @@ func TestValidateReturnsErrorWhenStatusIsNotSupported(t *testing.T) {
 	p := product
 	p.Status = "ABC"
 
-	if err := p.Validate(c); err == nil || err.Error() != "input_status_invalid" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input_status_invalid"`, err.Error())
+	if err := p.Validate(c); err == nil || err.Error() != "input:status" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:status"`, err.Error())
 	}
 }
 
@@ -183,21 +183,21 @@ func TestSaveReturnsErrorWhenPidIsEmpty(t *testing.T) {
 	c := tests.Context()
 	p := Product{ID: ""}
 	if err := p.Save(c); err == nil {
-		t.Fatalf(`p.Save(c) = %v, want "input_pid_required"`, err.Error())
+		t.Fatalf(`p.Save(c) = %v, want "input:pid"`, err.Error())
 	}
 }
 
 func TestFindReturnsErrorWhenPidIsMissing(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, ""); err == nil || err.Error() != "input_id_required" {
-		t.Fatalf(`Find(c,"") = %v, want "input_id_required"`, err.Error())
+	if _, err := Find(c, ""); err == nil || err.Error() != "input:id" {
+		t.Fatalf(`Find(c,"") = %v, want "input:id"`, err.Error())
 	}
 }
 
 func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, ""); err == nil || err.Error() != "input_id_required" {
-		t.Fatalf(`Find(c, "") = %v, want "input_id_required"`, err.Error())
+	if _, err := Find(c, ""); err == nil || err.Error() != "input:id" {
+		t.Fatalf(`Find(c, "") = %v, want "input:id"`, err.Error())
 	}
 }
 
@@ -514,7 +514,7 @@ func TestCountReturnPositiveWhenSuccess(t *testing.T) {
 
 func TestDeleteReturnsErrorWhenIdIsEmpty(t *testing.T) {
 	c := tests.Context()
-	if err := Delete(c, ""); err == nil || err.Error() != "input_id_invalid" {
-		t.Fatalf(`Delete(c, "") = %s want "input_id_invalid"`, err.Error())
+	if err := Delete(c, ""); err == nil || err.Error() != "input:id" {
+		t.Fatalf(`Delete(c, "") = %s want "input:id"`, err.Error())
 	}
 }

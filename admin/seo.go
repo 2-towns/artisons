@@ -76,7 +76,7 @@ func Seo(w http.ResponseWriter, r *http.Request) {
 		Flash      string
 	}{
 		lang,
-		"seo",
+		"SEO",
 		res.Content,
 		len(res.Content) == 0,
 		pag,

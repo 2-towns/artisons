@@ -9,13 +9,13 @@
 			   class="stats-header-item stats-orders-selected"
 			   id="orders-anchor">
 				<b class="card-subheader stats-card-subheader">
-					{{translate .Lang "text_statistics_totalearning"}}
+					{{translate .Lang "Total earning"}}
 				</b>
 				<b class="stats-big-number">{{(index .Data 3).Sum}} {{.Currency}}</b>
 			</a>
 			<a href="#" class="stats-header-item" id="orders-counts-anchor">
 				<b class="card-subheader">
-					{{translate .Lang "text_statistics_totalorders"}}
+					{{translate .Lang "Total orders"}}
 				</b>
 				<b class="stats-big-number">{{(index .Data 4).Sum}}</b>
 			</a>
@@ -29,13 +29,13 @@
 	<div class="stats-grid">
 		<article class="card">
 			<h3 class="box card-title">
-				{{translate .Lang "text_products_mostsold"}}
+				{{translate .Lang "Most products sold"}}
 			</h3>
 			{{template "table-most-values.html" .Products}}
 		</article>
 		<article class="card">
 			<h3 class="box card-title">
-				{{translate .Lang "text_products_mostshared"}}
+				{{translate .Lang "Most products shared"}}
 			</h3>
 			{{template "table-top-values.html" .ProductsShared}}
 		</article>
@@ -44,19 +44,19 @@
 	<article class="card fill box">
 		<div class="row row-center stats-header-multiple">
 			<a href="#" class="stats-selected stats-header-item" id="visits-anchor">
-				<b class="card-subheader">{{translate .Lang "text_statistics_visits"}}</b>
+				<b class="card-subheader">{{translate .Lang "Total visits"}}</b>
 				<b class="stats-big-number">{{(index .Data 0).Sum}}</b>
 			</a>
 			<a href="#" class="stats-header-item" id="unique-visits-anchor">
-				<b class="card-subheader">{{translate .Lang "text_statistics_unique"}}</b>
+				<b class="card-subheader">{{translate .Lang "Unique visitors"}}</b>
 				<b class="stats-big-number">{{(index .Data 1).Sum}}</b>
 			</a>
 			<a href="#" class="stats-header-item" id="pageviews-anchor">
-				<b class="card-subheader">{{translate .Lang "text_general_pageviews"}}</b>
+				<b class="card-subheader">{{translate .Lang "Page views"}}</b>
 				<b class="stats-big-number">{{(index .Data 2).Sum}}</b>
 			</a>
 			<a href="#" class="stats-header-item" id="bounce-rates-anchor">
-				<b class="card-subheader">{{translate .Lang "text_statistics_bouncerate"}}</b>
+				<b class="card-subheader">{{translate .Lang "Bounce rate"}}</b>
 				<b class="stats-big-number">{{(index .Data 5).Sum}}</b>
 			</a>
 		</div>
@@ -68,13 +68,13 @@
 	<div class="stats-grid">
 		<article class="card">
 			<h3 class="box card-title">
-				{{translate .Lang "text_products_mostvisited"}}
+				{{translate .Lang "Most visited pages"}}
 			</h3>
 			{{template "table-most-values.html" .Visits}}
 		</article>
 		<article class="card">
 			<h3 class="box card-title">
-				{{translate .Lang "text_statistics_topreferers"}}
+				{{translate .Lang "Top referers"}}
 			</h3>
 			{{template "table-top-values.html" .Referers}}
 		</article>
@@ -82,13 +82,13 @@
 	<div class="stats-grid">
 		<article class="card">
 			<h3 class="box card-title">
-				{{translate .Lang "text_statistics_topbrowsers"}}
+				{{translate .Lang "Top browsers"}}
 			</h3>
 			{{template "table-top-values.html" .Browsers}}
 		</article>
 		<article class="card">
 			<h3 class="box card-title">
-				{{translate .Lang "text_statistics_topsystems"}}
+				{{translate .Lang "Top systems"}}
 			</h3>
 			{{template "table-top-values.html" .Systems}}
 		</article>

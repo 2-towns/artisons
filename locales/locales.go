@@ -100,7 +100,7 @@ func (v Value) Validate(c context.Context) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the translation", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_invalid", low)
+		return fmt.Errorf("input:%s", low)
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "translation validated")
@@ -116,7 +116,7 @@ func (v Value) Save(ctx context.Context) error {
 		db.Escape(v.Key), db.Escape(v.Value),
 	).Result(); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot store the translation", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	message.SetString(conf.DefaultLocale, v.Key, v.Value)

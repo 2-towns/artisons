@@ -6,7 +6,7 @@
 			<div class="row row-align">
 				{{template "success.svg" .}}
 				<div>
-					<b class="alert-title">{{translate .Lang "text_general_success"}}</b>
+					<b class="alert-title">{{translate .Lang "Success"}}</b>
 					<p>{{translate .Lang .Flash}}</p>
 				</div>
 			</div>
@@ -17,7 +17,7 @@
 	<article class="card" id="orders">
 		<div class="row row-align row-gap row-between box">
 			<div>
-				<h3 class="card-title">{{translate .Lang "text_general_list"}}</h3>
+				<h3 class="card-title">{{translate .Lang "List"}}</h3>
 			</div>
 			<div>
 				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
@@ -31,7 +31,7 @@
 					   hx-indicator="#spinner"
 					   hx-swap="outerHTML"
 					   name="q"
-					   placeholder='{{translate .Lang "text_general_orderssearchplaceholder"}}' />
+					   placeholder='{{translate .Lang "id status delivery or Payment"}}' />
 				<div id="search-error"></div>
 			</div>
 		</div>

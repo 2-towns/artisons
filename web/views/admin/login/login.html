@@ -1,16 +1,16 @@
 {{define "content"}}
 
 <article id="article" class="card box">
-	<h2 class="text-center">{{translate .Lang "text_login_sub"}}</h2>
+	<h2 class="text-center">{{translate .Lang "Login to your account"}}</h2>
 
 	<p class="text-center page-simple-message">
-		{{translate .Lang "text_login_signinsub"}}
+		{{translate .Lang "Please enter your email to receive a code and connect to the application."}}
 	</p>
 
 	<form hx-post="/auth/otp.html" hx-target="#article" hx-swap="outerHTML">
 		<div id="email-row" class="form-row-single">
 			<label class="input-label" for="email">
-				{{translate .Lang "text_general_email"}}
+				{{translate .Lang "Email"}}
 			</label>
 			<input
 				   id="email"
@@ -22,7 +22,7 @@
 		</div>
 		<button class="button button-full button-primary">
 			<div class="htmx-indicator htmx-spinner"></div>
-			{{translate .Lang "text_login_signin"}}
+			{{translate .Lang "Sign in"}}
 		</button>
 	</form>
 

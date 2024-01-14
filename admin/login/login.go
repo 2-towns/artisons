@@ -101,7 +101,7 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 
 	email := r.FormValue("email")
 	if !users.IsAdmin(ctx, email) {
-		httperrors.InputMessage(w, ctx, "input_email_notadmin")
+		httperrors.InputMessage(w, ctx, "input:email")
 		return
 	}
 

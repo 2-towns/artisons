@@ -52,7 +52,7 @@ func init() {
 }
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
-	Page(w, r.Context(), "error_http_notfound", 404)
+	Page(w, r.Context(), "the page is not found or not accessible anymore", 404)
 }
 
 func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
@@ -61,9 +61,9 @@ func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	data := struct {
 		Lang    language.Tag
 		Message string
-	}{lang, msg}
+	}{lang, "the data is invalid"}
 
-	key := strings.Split(msg, "_")[1]
+	key := strings.Split(msg, ":")[1]
 
 	w.Header().Set("HX-Retarget", fmt.Sprintf("#%s-error", key))
 	w.Header().Set("HX-Reswap", fmt.Sprintf("innerHTML show:#%s-row:top", key))
@@ -85,11 +85,11 @@ func Catch(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	}
 }
 
-// Catch an ajax error. If the error starts with "input_", the error
+// Catch an ajax error. If the error starts with "input:", the error
 // is related to an wrong input value, so this input will be updated.
 // Otherwise an alert will be displayed.
 func HXCatch(w http.ResponseWriter, ctx context.Context, msg string) {
-	if strings.HasPrefix(msg, "input_") {
+	if strings.HasPrefix(msg, "input:") {
 		InputMessage(w, ctx, msg)
 	} else {
 		Alert(w, ctx, msg)

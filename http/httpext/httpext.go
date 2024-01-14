@@ -42,7 +42,7 @@ func ProcessFiles(ctx context.Context, files map[string][]*multipart.FileHeader,
 		ct := img.Header["Content-Type"][0]
 		if !slices.Contains(conf.ImagesAllowed, ct) {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot use an image in a unknown extension", slog.String("contentType", ct))
-			return map[string]*multipart.FileHeader{}, fmt.Errorf("input_%s_invalid", name)
+			return map[string]*multipart.FileHeader{}, fmt.Errorf("input:%s", name)
 		}
 
 		headers[name] = img
@@ -61,7 +61,7 @@ func Upload(ctx context.Context, headers map[string]*multipart.FileHeader) (map[
 		file, err := h.Open()
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot open the image")
-			return map[string]string{}, errors.New("input_images_invalid")
+			return map[string]string{}, errors.New("input:images")
 		}
 
 		defer file.Close()

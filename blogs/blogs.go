@@ -51,7 +51,7 @@ func (p Article) Validate(c context.Context) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_invalid", low)
+		return fmt.Errorf("input:%s", low)
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "article validated")
@@ -65,7 +65,7 @@ func NextID(ctx context.Context) (int64, error) {
 	id, err := db.Redis.Incr(ctx, "blog_next_id").Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
-		return 0, errors.New("error_http_general")
+		return 0, errors.New("something went wrong")
 	}
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "next id generated", slog.Int64("id", id))
@@ -91,7 +91,7 @@ func (a Article) Save(c context.Context) error {
 		"updated_at", now,
 	).Result(); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "blog article created", slog.Int64("id", a.ID))
@@ -103,19 +103,19 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 	id, err := strconv.ParseInt(data["id"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", data["id"]), slog.String("error", err.Error()))
-		return Article{}, errors.New("input_id_invalid")
+		return Article{}, errors.New("input:id")
 	}
 
 	createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the created at", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("created_at", data["created_at"]))
-		return Article{}, errors.New("input_created_at_invalid")
+		return Article{}, errors.New("input:created_at")
 	}
 
 	updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the updated at", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("updated_at", data["updated_at"]))
-		return Article{}, errors.New("input_updated_at_invalid")
+		return Article{}, errors.New("input:updated_at")
 	}
 
 	image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
@@ -204,7 +204,7 @@ func Delete(c context.Context, id int64) error {
 
 	if _, err := db.Redis.Del(ctx, fmt.Sprintf("blog:%d", id)).Result(); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot delete the data", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
@@ -226,14 +226,14 @@ func Find(c context.Context, id int64) (Article, error) {
 
 	if id == 0 {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty article id")
-		return Article{}, errors.New("input_id_required")
+		return Article{}, errors.New("input:id")
 	}
 
 	ctx := context.Background()
 
 	if exists, err := db.Redis.Exists(ctx, fmt.Sprintf("blog:%d", id)).Result(); exists == 0 || err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the blog")
-		return Article{}, errors.New("error_http_blognotfound")
+		return Article{}, errors.New("oops the data is not found")
 	}
 
 	data, err := db.Redis.HGetAll(ctx, fmt.Sprintf("blog:%d", id)).Result()

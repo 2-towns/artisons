@@ -75,7 +75,7 @@ func Otp(c context.Context, email string) (string, error) {
 
 	if err := validators.V.Var(email, "required,email"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the email", slog.String("error", err.Error()))
-		return "", errors.New("input_email_invalid")
+		return "", errors.New("input:email")
 	}
 
 	ctx := context.Background()
@@ -83,12 +83,12 @@ func Otp(c context.Context, email string) (string, error) {
 	ttl, err := db.Redis.TTL(ctx, email+":otp").Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot get the ttl", slog.String("error", err.Error()))
-		return "", errors.New("error_http_general")
+		return "", errors.New("something went wrong")
 	}
 
 	if conf.OtpDuration-ttl < conf.OtpInterval {
 		l.LogAttrs(c, slog.LevelInfo, "the ttl exceed the otp interval", slog.Duration("ttl", ttl))
-		return "", errors.New("error_otp_interval")
+		return "", errors.New("you need to wait before asking another otp")
 	}
 
 	otp := rand.Intn(999999-100000) + 100000
@@ -96,7 +96,7 @@ func Otp(c context.Context, email string) (string, error) {
 	glue, err := stringutil.Random()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot generate the glue", slog.String("error", err.Error()))
-		return "", errors.New("error_http_general")
+		return "", errors.New("something went wrong")
 	}
 
 	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -106,7 +106,7 @@ func Otp(c context.Context, email string) (string, error) {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return "", errors.New("error_http_general")
+		return "", errors.New("something went wrong")
 	}
 
 	go func() {
@@ -136,7 +136,7 @@ func (u User) Delete(c context.Context) error {
 	ids, err := db.Redis.SMembers(ctx, fmt.Sprintf("user:%d:sessions", u.ID)).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot retrieve the session id list", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	key := fmt.Sprintf("user:%d", u.ID)
@@ -159,7 +159,7 @@ func (u User) Delete(c context.Context) error {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	l.LogAttrs(c, slog.LevelWarn, "the user is deleted")
@@ -173,25 +173,25 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 
 	if m["id"] == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot continue with empty id")
-		return User{}, errors.New("error_http_general")
+		return User{}, errors.New("something went wrong")
 	}
 
 	id, err := strconv.ParseInt(m["id"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the id", slog.String("error", err.Error()))
-		return User{}, errors.New("error_http_general")
+		return User{}, errors.New("something went wrong")
 	}
 
 	createdAt, err := strconv.ParseInt(m["created_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the created_at", slog.String("created_at", m["created_at"]), slog.String("error", err.Error()))
-		return User{}, errors.New("error_http_general")
+		return User{}, errors.New("something went wrong")
 	}
 
 	updatedAt, err := strconv.ParseInt(m["updated_at"], 10, 64)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot parse the updated_at", slog.String("updated_at", m["updated_at"]), slog.String("error", err.Error()))
-		return User{}, errors.New("error_http_general")
+		return User{}, errors.New("something went wrong")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "the user is parsed", slog.String("sid", m["sid"]))
@@ -239,7 +239,7 @@ func List(c context.Context, page int) ([]User, error) {
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the user list", slog.String("error", err.Error()))
-		return users, errors.New("error_http_general")
+		return users, errors.New("something went wrong")
 	}
 
 	for _, cmd := range cmds {
@@ -274,12 +274,12 @@ func (u User) SaveAddress(c context.Context, a Address) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_required", low)
+		return fmt.Errorf("input:%s", low)
 	}
 
 	if u.ID == 0 {
 		slog.LogAttrs(c, slog.LevelInfo, "cannot validate the user id while it is empty")
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	ctx := context.Background()
@@ -293,7 +293,7 @@ func (u User) SaveAddress(c context.Context, a Address) error {
 		"street", a.Street,
 	).Result(); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot store the user", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "the address is saved")
@@ -311,7 +311,7 @@ func (u User) Sessions(c context.Context) ([]Session, error) {
 	ids, err := db.Redis.SMembers(ctx, fmt.Sprintf("user:%d:sessions", u.ID)).Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the session ids", slog.String("error", err.Error()))
-		return sessions, errors.New("error_http_general")
+		return sessions, errors.New("something went wrong")
 	}
 
 	pipe := db.Redis.Pipeline()
@@ -323,7 +323,7 @@ func (u User) Sessions(c context.Context) ([]Session, error) {
 	ttls, err := pipe.Exec(ctx)
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the session details", slog.String("error", err.Error()))
-		return sessions, errors.New("error_http_general")
+		return sessions, errors.New("something went wrong")
 	}
 
 	for _, id := range ids {
@@ -333,7 +333,7 @@ func (u User) Sessions(c context.Context) ([]Session, error) {
 	scmds, err := pipe.Exec(ctx)
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the sessions", slog.String("error", err.Error()))
-		return sessions, errors.New("error_http_general")
+		return sessions, errors.New("something went wrong")
 	}
 
 	for index, cmd := range ttls {
@@ -399,17 +399,17 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 
 	if otp == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the otp code")
-		return "", errors.New("input_otp_required")
+		return "", errors.New("input:otp")
 	}
 
 	if device == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the device")
-		return "", errors.New("error_login_device")
+		return "", errors.New("your are not authorized to access to this page")
 	}
 
 	if glue == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the glue")
-		return "", errors.New("error_http_unauthorized")
+		return "", errors.New("your are not authorized to process this request")
 	}
 
 	ctx := context.Background()
@@ -417,13 +417,13 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 	email, err := db.Redis.Get(ctx, "otp:"+glue).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot find the glue", slog.String("error", err.Error()))
-		return "", errors.New("error_http_unauthorized")
+		return "", errors.New("your are not authorized to process this request")
 	}
 
 	val, err := db.Redis.Get(ctx, email+":otp").Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the existing otp", slog.String("error", err.Error()))
-		return "", errors.New("error_http_unauthorized")
+		return "", errors.New("your are not authorized to process this request")
 	}
 
 	if val != otp && !(conf.OtpDemo && otp == "111111") {
@@ -432,7 +432,7 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 		cnt, err := db.Redis.Incr(ctx, email+":otp:attempts").Result()
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot increment the otp attempt", slog.String("error", err.Error()))
-			return "", errors.New("error_http_general")
+			return "", errors.New("something went wrong")
 		}
 
 		if cnt >= conf.OtpAttempts {
@@ -444,20 +444,20 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 				return nil
 			}); err != nil {
 				l.LogAttrs(c, slog.LevelError, "cannot destory the otp", slog.String("error", err.Error()))
-				return "", errors.New("error_http_general")
+				return "", errors.New("something went wrong")
 			}
 
 			l.LogAttrs(c, slog.LevelInfo, "max attempts reached", slog.Int64("attempts", cnt))
-			return "", errors.New("error_otp_locked")
+			return "", errors.New("you reached the max tentatives")
 		}
 
-		return "", errors.New("error_otp_mismatch")
+		return "", errors.New("the OTP does not match")
 	}
 
 	eid, err := db.Redis.Get(ctx, email+":id").Result()
 	if err != nil && err.Error() != "redis: nil" {
 		l.LogAttrs(c, slog.LevelError, "cannot verify id existence", slog.String("error", err.Error()))
-		return "", errors.New("error_http_general")
+		return "", errors.New("something went wrong")
 	}
 
 	var uid int64
@@ -467,20 +467,20 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
-			return "", errors.New("error_http_general")
+			return "", errors.New("something went wrong")
 		}
 	} else {
 		uid, err = strconv.ParseInt(eid, 10, 64)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the uid", slog.String("user_id", eid), slog.String("error", err.Error()))
-			return "", errors.New("error_http_general")
+			return "", errors.New("something went wrong")
 		}
 	}
 
 	sid, err := stringutil.Random()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot generated the session id", slog.String("error", err.Error()))
-		return "", errors.New("error_http_general")
+		return "", errors.New("something went wrong")
 	}
 
 	now := time.Now()
@@ -510,7 +510,7 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("sid", sid), slog.Int64("user_id", uid), slog.String("error", err.Error()))
-		return "", errors.New("error_http_general")
+		return "", errors.New("something went wrong")
 	}
 
 	data := map[string]string{
@@ -535,14 +535,14 @@ func Logout(c context.Context, sid string) error {
 
 	if sid == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the session id")
-		return errors.New("error_http_unauthorized")
+		return errors.New("your are not authorized to process this request")
 	}
 
 	ctx := context.Background()
 	uid, err := db.Redis.Get(ctx, "auth:"+sid).Result()
 	if err != nil || uid == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the session id")
-		return errors.New("error_http_unauthorized")
+		return errors.New("your are not authorized to process this request")
 	}
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -552,7 +552,7 @@ func Logout(c context.Context, sid string) error {
 		return nil
 	}); err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	data := map[string]string{
@@ -573,19 +573,19 @@ func Get(c context.Context, id int64) (User, error) {
 
 	if id == 0 {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate the user id")
-		return User{}, errors.New("error_session_notfound")
+		return User{}, errors.New("the user is not found")
 	}
 
 	ctx := context.Background()
 	data, err := db.Redis.HGetAll(ctx, fmt.Sprintf("user:%d", id)).Result()
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot get the user from redis", slog.String("error", err.Error()))
-		return User{}, errors.New("error_http_general")
+		return User{}, errors.New("something went wrong")
 	}
 
 	if data["id"] == "" {
 		l.LogAttrs(c, slog.LevelInfo, "cannot find the user")
-		return User{}, errors.New("error_session_notfound")
+		return User{}, errors.New("the user is not found")
 	}
 
 	u, err := parseUser(c, data)

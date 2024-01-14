@@ -71,8 +71,8 @@ func TestGetReturnsErrorWhenCidIsNotExisting(t *testing.T) {
 	ctx = context.WithValue(ctx, contexts.Cart, "text")
 
 	c, err := Get(ctx)
-	if c.ID != "" || len(c.Products) != 0 || err == nil || err.Error() != "error_cart_notfound" {
-		t.Fatalf(`Get(ctx) = %v, %v, want Cart{}, 'error_cart_notfound'`, c, err)
+	if c.ID != "" || len(c.Products) != 0 || err == nil || err.Error() != "the session is expired" {
+		t.Fatalf(`Get(ctx) = %v, %v, want Cart{}, 'the session is expired'`, c, err)
 	}
 }
 
@@ -85,7 +85,7 @@ func TestUpdateDeliveryReturnsNilWhenSuccess(t *testing.T) {
 
 func TestUpdateDeliveryWhenDeliveryIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "error_http_unauthorized" {
+	if err := cart.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "your are not authorized to process this request" {
 		t.Fatalf("cart.UpdateDelivery(ctx,'toto') = %v, want unauthorized", err)
 	}
 }
@@ -99,7 +99,7 @@ func TestUpdatePaymentReturnsNilWhenSuccess(t *testing.T) {
 
 func TestUpdatePaymentReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "error_http_unauthorized" {
+	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "your are not authorized to process this request" {
 		t.Fatalf("cart.UpdatePayment(ctx, 'toto') = %v, want 'unauthorized'", err)
 	}
 }

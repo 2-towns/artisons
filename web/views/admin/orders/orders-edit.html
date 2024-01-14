@@ -8,7 +8,7 @@
 			<article class="card card-separator">
 				<div class="card-header box">
 					<h3 class="card-title">
-						{{translate .Lang "text_general_products"}}
+						{{translate .Lang "Products"}}
 					</h3>
 				</div>
 				<div>
@@ -45,21 +45,21 @@
 				<div>
 					<div class="card-header box">
 						<h3 class="card-title">
-							{{translate .Lang "text_general_info"}}
+							{{translate .Lang "info"}}
 						</h3>
 					</div>
 
 					<div>
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_id"}}
+								{{translate .Lang "ID"}}
 							</b>
 							<p class="secondary text-group-message">{{.Data.ID}}</p>
 						</div>
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_total"}}
+								{{translate .Lang "Total"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Total}} {{.Currency}}
@@ -68,25 +68,25 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_delivery"}}
+								{{translate .Lang "Delivery"}}
 							</b>
 							<p class="secondary text-group-message">
-								{{translate .Lang "dynamic_delivery_" .Data.Delivery}}
+								{{translate .Lang .Data.Delivery}}
 							</p>
 						</div>
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_payment"}}
+								{{translate .Lang "Payment"}}
 							</b>
 							<p class="secondary text-group-message">
-								{{translate .Lang "dynamic_payment_" .Data.Payment}}
+								{{translate .Lang .Data.Payment}}
 							</p>
 						</div>
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_name"}}
+								{{translate .Lang "Name"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.Firstname}} {{.Data.Address.Lastname}}
@@ -95,7 +95,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_address"}}
+								{{translate .Lang "Address"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.Street}} {{.Data.Address.Complementary}}
@@ -104,7 +104,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_city"}}
+								{{translate .Lang "City"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.City}} {{.Data.Address.Zipcode}}
@@ -113,7 +113,7 @@
 
 						<div class="text-group box list-item">
 							<b class="text-group-title">
-								{{translate .Lang "text_general_phone"}}
+								{{translate .Lang "Phone"}}
 							</b>
 							<p class="secondary text-group-message">
 								{{.Data.Address.Phone}}
@@ -123,7 +123,7 @@
 				</div>
 				<div class="card-footer box row row-start">
 					<a href="/admin/orders.html" class="button row row-align">
-						{{translate .Lang "text_general_back"}}
+						{{translate .Lang "Back"}}
 					</a>
 				</div>
 			</article>
@@ -135,21 +135,23 @@
 					  hx-target="#alert">
 					<div class="box">
 						<h3 class="card-title">
-							{{translate .Lang "text_general_status"}}
+							{{translate .Lang "Status"}}
 						</h3>
 
 						<p class="secondary">
-							{{translate .Lang "text_products_statussub"}}
+							{{translate
+							.Lang
+							"Changing the order status will trigger automatic action like notifying the customer."}}
 						</p>
 
 						<select id="status" name="status" class="input select input-full">
 							{{if eq .Data.Status "created" }}
 							<option value="created" selected>
-								{{translate .Lang "text_general_created"}}
+								{{translate .Lang "created"}}
 							</option>
 							{{else}}
 							<option value="created">
-								{{translate .Lang "text_general_created"}}
+								{{translate .Lang "created"}}
 							</option>
 							{{end}}
 
@@ -157,11 +159,11 @@
 
 							{{if eq .Data.Status "processing" }}
 							<option value="processing" selected>
-								{{translate .Lang "text_orders_processing"}}
+								{{translate .Lang "processing"}}
 							</option>
 							{{else}}
 							<option value="processing">
-								{{translate .Lang "text_orders_processing"}}
+								{{translate .Lang "processing"}}
 							</option>
 							{{end}}
 
@@ -169,11 +171,11 @@
 
 							{{if eq .Data.Status "delivering" }}
 							<option value="delivering" selected>
-								{{translate .Lang "text_general_delivering"}}
+								{{translate .Lang "Delivering"}}
 							</option>
 							{{else}}
 							<option value="delivering">
-								{{translate .Lang "text_general_delivering"}}
+								{{translate .Lang "Delivering"}}
 							</option>
 							{{end}}
 
@@ -181,11 +183,11 @@
 
 							{{if eq .Data.Status "delivered" }}
 							<option value="delivered" selected>
-								{{translate .Lang "text_general_delivered"}}
+								{{translate .Lang "delivered"}}
 							</option>
 							{{else}}
 							<option value="delivered">
-								{{translate .Lang "text_general_delivered"}}
+								{{translate .Lang "delivered"}}
 							</option>
 							{{end}}
 
@@ -193,11 +195,11 @@
 
 							{{if eq .Data.Status "canceled" }}
 							<option value="canceled" selected>
-								{{translate .Lang "text_general_canceled"}}
+								{{translate .Lang "canceled"}}
 							</option>
 							{{else}}
 							<option value="canceled">
-								{{translate .Lang "text_general_canceled"}}
+								{{translate .Lang "canceled"}}
 							</option>
 							{{end}}
 						</select>
@@ -207,7 +209,7 @@
 						<button class="button button-primary">
 							<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-							{{translate .Lang "text_general_save"}}
+							{{translate .Lang "Save"}}
 						</button>
 					</div>
 				</form>
@@ -216,7 +218,7 @@
 			<article class="card">
 				<div class="card-header box">
 					<h3 class="card-title">
-						{{translate .Lang "text_general_notes"}}
+						{{translate .Lang "Notes"}}
 					</h3>
 				</div>
 

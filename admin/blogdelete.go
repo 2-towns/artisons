@@ -16,7 +16,7 @@ func DeleteBlog(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -25,7 +25,7 @@ func DeleteBlog(w http.ResponseWriter, r *http.Request) {
 	iid, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
-		httperrors.Page(w, ctx, "error_http_blognotfound", 404)
+		httperrors.Page(w, ctx, "oops the data is not found", 404)
 	}
 
 	err = blogs.Delete(ctx, iid)

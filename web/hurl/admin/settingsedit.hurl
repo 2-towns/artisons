@@ -39,7 +39,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#name-error" 
 header "HX-Reswap" == "innerHTML show:#name-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The name is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the contact settings without email shows an error 
 POST {{host}}/admin/contact-settings.html
@@ -55,7 +55,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#email-error" 
 header "HX-Reswap" == "innerHTML show:#email-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The email is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the contact settings with invalid email shows an error 
 POST {{host}}/admin/contact-settings.html
@@ -71,7 +71,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#email-error" 
 header "HX-Reswap" == "innerHTML show:#email-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The email is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the contact settings without email shows an error 
 POST {{host}}/admin/contact-settings.html
@@ -87,7 +87,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#address-error" 
 header "HX-Reswap" == "innerHTML show:#address-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The address is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the contact settings without email shows an error 
 POST {{host}}/admin/contact-settings.html
@@ -103,7 +103,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#city-error" 
 header "HX-Reswap" == "innerHTML show:#city-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The city is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the contact settings without email shows an error 
 POST {{host}}/admin/contact-settings.html
@@ -119,7 +119,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#zipcode-error" 
 header "HX-Reswap" == "innerHTML show:#zipcode-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The zipcode is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the contact settings with correct data shows success
 POST {{host}}/admin/contact-settings.html
@@ -147,7 +147,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#items-error" 
 header "HX-Reswap" == "innerHTML show:#items-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The items is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the shop settings with invalid min shows an error 
 POST {{host}}/admin/shop-settings.html
@@ -161,7 +161,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#min-error" 
 header "HX-Reswap" == "innerHTML show:#min-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The min is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the shop settings with invalid last shows an error 
 POST {{host}}/admin/shop-settings.html
@@ -175,4 +175,4 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#last-error" 
 header "HX-Reswap" == "innerHTML show:#last-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The last quantity is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 

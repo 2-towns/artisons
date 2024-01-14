@@ -12,9 +12,9 @@
 			hx-swap="outerHTML"
 			hx-indicator="#spinner"
 			hx-get="/admin/index.html">
-		<option value="7">{{translate .Lang "text_statistics_7days"}}</option>
-		<option value="14">{{translate .Lang "text_statistics_14days"}}</option>
-		<option value="30">{{translate .Lang "text_statistics_30days"}}</option>
+		<option value="7">{{translate .Lang "Last 7 days"}}</option>
+		<option value="14">{{translate .Lang "Last 14 days"}}</option>
+		<option value="30">{{translate .Lang "Last 30 days"}}</option>
 	</select>
 
 	<a
@@ -25,11 +25,11 @@
 	   class="button button-primary">
 		{{if .Demo }}
 		<!---->
-		{{translate .Lang "text_demo_disable"}}
+		{{translate .Lang "Disable demo"}}
 		<!---->
 		{{else}}
 		<!---->
-		{{translate .Lang "text_demo_activate"}}
+		{{translate .Lang "Activate demo"}}
 		<!---->
 		{{end}}
 	</a>

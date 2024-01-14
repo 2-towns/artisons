@@ -16,8 +16,8 @@ func TestValidateReturnsErrorWhenKeyIsEmpty(t *testing.T) {
 	v := value
 	v.Key = ""
 
-	if err := v.Validate(c); err == nil || err.Error() != "input_key_invalid" {
-		t.Fatalf(`v.Validate(c) = %v, want not "input_key_invalid"`, err.Error())
+	if err := v.Validate(c); err == nil || err.Error() != "input:key" {
+		t.Fatalf(`v.Validate(c) = %v, want not "input:key"`, err.Error())
 	}
 }
 
@@ -27,8 +27,8 @@ func TestValidateReturnsErrorWhenValueIsEmpty(t *testing.T) {
 	v := value
 	v.Value = ""
 
-	if err := v.Validate(c); err == nil || err.Error() != "input_value_invalid" {
-		t.Fatalf(`v.Validate(c) = %v, want not "input_value_invalid"`, err.Error())
+	if err := v.Validate(c); err == nil || err.Error() != "input:value" {
+		t.Fatalf(`v.Validate(c) = %v, want not "input:value"`, err.Error())
 	}
 }
 

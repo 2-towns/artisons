@@ -5,7 +5,7 @@
 	<div class="form box">
 		<div class="form-row" id="title-row">
 			<label class="input-label" for="title">
-				{{translate .Lang "text_general_title"}}
+				{{translate .Lang "Title"}}
 			</label>
 
 			<input
@@ -17,7 +17,7 @@
 				   value="{{if .Data.Title }}{{.Data.Title}}{{end}}" />
 
 			<small class="input-help">
-				{{translate .Lang "text_general_titlesub"}}
+				{{translate .Lang "The product URL will be generated from this title."}}
 			</small>
 
 			<div id="title-error"></div>
@@ -25,7 +25,7 @@
 
 		<div class="form-row" id="description-row">
 			<label class="input-label" id="description">
-				{{translate .Lang "text_general_description"}}
+				{{translate .Lang "Description"}}
 			</label>
 			<textarea
 					  id="description"
@@ -38,7 +38,7 @@
 
 		<div class="form-row" id="status-row">
 			<label class="input-label" for="status">
-				{{translate .Lang "text_general_status"}}
+				{{translate .Lang "Status"}}
 			</label>
 
 			<select id="status" name="status" class="input select input-full">
@@ -47,7 +47,7 @@
 				</option>
 
 				<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
-					{{translate .Lang "text_general_offline"}}
+					{{translate .Lang "Offline"}}
 				</option>
 			</select>
 
@@ -56,7 +56,7 @@
 
 		<div class="form-row" id="image-row">
 			<label for="image" class="input-label">
-				{{translate .Lang "text_general_image"}}
+				{{translate .Lang "Image"}}
 			</label>
 
 			<input
@@ -68,7 +68,7 @@
 				   {{if.ID}}{{else}}required{{end}} />
 
 			<small class="input-help">
-				{{translate .Lang "text_images_sub"}}
+				{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
 			</small>
 
 			{{if .Data.Image}}
@@ -91,12 +91,12 @@
 	<div class="card-footer box">
 		<div class="form row row-between row-gap">
 			<a href="/admin/blog.html" class="button row row-align fill">
-				{{translate .Lang "text_general_back"}}
+				{{translate .Lang "Back"}}
 			</a>
 			<button class="button button-primary fill">
 				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-				{{translate .Lang "text_general_send"}}
+				{{translate .Lang "Save"}}
 			</button>
 		</div>
 	</div>

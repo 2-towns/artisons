@@ -39,7 +39,7 @@ func EditSeoForm(w http.ResponseWriter, r *http.Request) {
 
 	c, err := seo.Find(ctx, id)
 	if err != nil {
-		httperrors.Page(w, ctx, "error_http_productnotfound", 404)
+		httperrors.Page(w, ctx, "oops the data is not found", 404)
 		return
 	}
 
@@ -50,7 +50,7 @@ func EditSeoForm(w http.ResponseWriter, r *http.Request) {
 		Data seo.Content
 	}{
 		lang,
-		"seo",
+		"SEO",
 		id,
 		c,
 	}
@@ -65,7 +65,7 @@ func EditSeo(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 

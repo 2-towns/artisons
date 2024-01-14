@@ -89,7 +89,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 		Flash      string
 	}{
 		lang,
-		"orders",
+		"Orders",
 		res.Orders,
 		len(res.Orders) == 0,
 		conf.Currency,

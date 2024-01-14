@@ -44,7 +44,7 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 		id, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", form.Value["id"][0]), slog.String("error", err.Error()))
-			return blogs.Article{}, errors.New("input_id_invalid")
+			return blogs.Article{}, errors.New("input:id")
 		}
 		a.ID = id
 	} else {
@@ -67,13 +67,13 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 
 	if files["image"] == nil && !exists {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the image is required")
-		return blogs.Article{}, errors.New("input_image_required")
+		return blogs.Article{}, errors.New("input:image")
 	}
 
 	images, err := httpext.Upload(ctx, files)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot update the files", slog.String("error", err.Error()))
-		return blogs.Article{}, errors.New("error_http_general")
+		return blogs.Article{}, errors.New("something went wrong")
 	}
 
 	if images["image"] != "" {

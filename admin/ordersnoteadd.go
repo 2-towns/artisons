@@ -37,7 +37,7 @@ func AddOrderNote(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -64,7 +64,7 @@ func AddOrderNote(w http.ResponseWriter, r *http.Request) {
 		Lang  language.Tag
 		Data  orders.Order
 	}{
-		"text_general_ordersnoteadded",
+		"The data has been saved successfully.",
 		lang,
 		o,
 	}

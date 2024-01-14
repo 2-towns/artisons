@@ -26,8 +26,8 @@ func TestProcessBlogFormReturnsErrorWhenTitleInvalid(t *testing.T) {
 
 	f := multipart.Form{Value: a}
 
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_title_invalid" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_title_invalid'`, err.Error())
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:title" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:title'`, err.Error())
 	}
 }
 
@@ -43,8 +43,8 @@ func TestProcessBlogtFormReturnsErrorWhenDescriptionIsInvalid(t *testing.T) {
 
 	f := multipart.Form{Value: a}
 
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_description_invalid" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_description_invalid'`, err.Error())
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:description" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:description'`, err.Error())
 	}
 }
 
@@ -60,8 +60,8 @@ func TestProcessBlogtFormReturnsErrorWhenStatusIsInvalid(t *testing.T) {
 
 	f := multipart.Form{Value: a}
 
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_status_invalid" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_status_invalid'`, err.Error())
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:status" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:status'`, err.Error())
 	}
 }
 
@@ -77,8 +77,8 @@ func TestProcessBlogtFormReturnsErrorWhenLangIsEmpty(t *testing.T) {
 
 	f := multipart.Form{Value: a}
 
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_lang_invalid" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_lang_invalid'`, err.Error())
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:lang" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:lang'`, err.Error())
 	}
 }
 
@@ -94,8 +94,8 @@ func TestProcessBlogtFormReturnsErrorWhenLangIsInvalid(t *testing.T) {
 
 	f := multipart.Form{Value: a}
 
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_lang_invalid" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_lang_invalid'`, err.Error())
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:lang" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:lang'`, err.Error())
 	}
 }
 
@@ -111,7 +111,7 @@ func TestProcessBlogtFormReturnsErrorWhenImageIsInvalid(t *testing.T) {
 
 	f := multipart.Form{Value: a}
 
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input_image_required" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input_image_required'`, err.Error())
+	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:image" {
+		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:image'`, err.Error())
 	}
 }

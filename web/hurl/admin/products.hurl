@@ -66,7 +66,7 @@ HX-Request: true
 HTTP 200
 [Asserts]
 body not contains "No results found." 
-xpath "string((//td)[1])" == "PDT2"
+xpath "//td[text()='PDT2']" exists
 xpath "//a[@href='/admin/products/PDT2/edit.html']" exists
 xpath "//a[@hx-post='/admin/products/PDT2/delete.html']" exists
 

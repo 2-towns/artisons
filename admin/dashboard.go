@@ -71,13 +71,13 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	mvs, err := stats.MostValues(ctx, days)
 	if err != nil {
-		httperrors.Catch(w, ctx, "error_http_general", 500)
+		httperrors.Catch(w, ctx, "something went wrong", 500)
 		return
 	}
 
 	all, err := stats.GetAll(ctx, days)
 	if err != nil {
-		httperrors.Catch(w, ctx, "error_http_general", 500)
+		httperrors.Catch(w, ctx, "something went wrong", 500)
 		return
 	}
 
@@ -99,7 +99,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		Currency       string
 	}{
 		lang,
-		"dashboard",
+		"Dashboard",
 		all,
 		days,
 		table{

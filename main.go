@@ -15,10 +15,8 @@ import (
 	"gifthub/pages"
 	"gifthub/stats"
 	"gifthub/users"
-	"log"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -68,7 +66,7 @@ func main() {
 	logs.Init()
 	security.LoadCsp()
 	cache.Busting()
-	log.Println(time.Now().Unix())
+
 	l := httplog.Logger{
 		Logger:  slog.Default(),
 		Options: httplog.Options{},

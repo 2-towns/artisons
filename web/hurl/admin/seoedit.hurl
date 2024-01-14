@@ -36,7 +36,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#title-error" 
 header "HX-Reswap" == "innerHTML show:#title-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The title is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the seo without description shows an error 
 POST {{host}}/admin/seo/home/edit.html
@@ -49,7 +49,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#description-error" 
 header "HX-Reswap" == "innerHTML show:#description-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The description is invalid." 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the seo without url shows an error 
 POST {{host}}/admin/seo/home/edit.html
@@ -62,7 +62,7 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#url-error" 
 header "HX-Reswap" == "innerHTML show:#url-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "input_url_invalid" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the seo with correct data works
 POST {{host}}/admin/seo/home/edit.html

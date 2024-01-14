@@ -54,8 +54,8 @@ func TestValidateReturnsErrorWhenKeyIsEmpty(t *testing.T) {
 	c := content
 	c.Key = ""
 
-	if err := c.Validate(ctx); err == nil || err.Error() != "input_key_invalid" {
-		t.Fatalf(`c.Validate(ctx) = %v, want not "input_key_invalid"`, err.Error())
+	if err := c.Validate(ctx); err == nil || err.Error() != "input:key" {
+		t.Fatalf(`c.Validate(ctx) = %v, want not "input:key"`, err.Error())
 	}
 }
 
@@ -65,8 +65,8 @@ func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	c := content
 	c.Title = ""
 
-	if err := c.Validate(ctx); err == nil || err.Error() != "input_title_invalid" {
-		t.Fatalf(`c.Validate(ctx) = %v, want not "input_title_invalid"`, err.Error())
+	if err := c.Validate(ctx); err == nil || err.Error() != "input:title" {
+		t.Fatalf(`c.Validate(ctx) = %v, want not "input:title"`, err.Error())
 	}
 }
 
@@ -76,8 +76,8 @@ func TestValidateReturnsErrorWhenURLIsEmpty(t *testing.T) {
 	c := content
 	c.URL = ""
 
-	if err := c.Validate(ctx); err == nil || err.Error() != "input_url_invalid" {
-		t.Fatalf(`c.Validate(ctx) = %v, want not "input_url_invalid"`, err.Error())
+	if err := c.Validate(ctx); err == nil || err.Error() != "input:url" {
+		t.Fatalf(`c.Validate(ctx) = %v, want not "input:url"`, err.Error())
 	}
 }
 

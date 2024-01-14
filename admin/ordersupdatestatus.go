@@ -31,7 +31,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 
 	if err := r.ParseForm(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "error_http_general")
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
@@ -50,7 +50,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 		Flash string
 		Lang  language.Tag
 	}{
-		"text_general_ordersstatusupdated",
+		"The data has been saved successfully.",
 		lang,
 	}
 

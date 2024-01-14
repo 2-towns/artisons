@@ -77,7 +77,6 @@ func Blog(w http.ResponseWriter, r *http.Request) {
 	flash := ""
 	c, err := r.Cookie(cookies.FlashMessage)
 	if err == nil && c != nil {
-		log.Println("coucou")
 		flash = c.Value
 	}
 
@@ -90,7 +89,7 @@ func Blog(w http.ResponseWriter, r *http.Request) {
 		Flash      string
 	}{
 		lang,
-		"blog",
+		"Blog",
 		res.Articles,
 		len(res.Articles) == 0,
 		pag,

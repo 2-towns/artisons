@@ -13,7 +13,7 @@ func Csrf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" && r.Header.Get("HX-Request") != "true" {
 			slog.Info(r.Method + " " + r.Header.Get("HX-Request"))
-			httperrors.Page(w, r.Context(), "error_http_csrf", 400)
+			httperrors.Page(w, r.Context(), "your are not authorized to process this request", 400)
 			return
 		}
 

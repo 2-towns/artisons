@@ -90,7 +90,7 @@ func Products(w http.ResponseWriter, r *http.Request) {
 		Flash      string
 	}{
 		lang,
-		"products",
+		"Products",
 		res.Products,
 		len(res.Products) == 0,
 		conf.Currency,

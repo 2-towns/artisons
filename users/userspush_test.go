@@ -14,8 +14,8 @@ func TestAddWPTokenReturnsNilWhenSuccess(t *testing.T) {
 
 func TestAddWPTokenReturnsErrorWhenTokenIsEmpty(t *testing.T) {
 	ctx := tests.Context()
-	if err := user.AddWPToken(ctx, ""); err == nil || err.Error() != "input_wptoken_required" {
-		t.Fatalf("user.AddWPToken('') = %v, want input_wptoken_required", err)
+	if err := user.AddWPToken(ctx, ""); err == nil || err.Error() != "input:wptoken" {
+		t.Fatalf("user.AddWPToken('') = %v, want input:wptoken", err)
 	}
 }
 
@@ -28,7 +28,7 @@ func TestATestDeleteWPTokenReturnsNilWhenSuccess(t *testing.T) {
 
 func TestATestDeleteWPTokenReturnsErrorWhenTokenIsEmpty(t *testing.T) {
 	ctx := tests.Context()
-	if err := user.DeleteWPToken(ctx, ""); err == nil || err.Error() != "error_http_unauthorized" {
+	if err := user.DeleteWPToken(ctx, ""); err == nil || err.Error() != "your are not authorized to process this request" {
 		t.Fatalf("u.DeleteWPToken('') = %v, want unauthorized", err)
 	}
 }

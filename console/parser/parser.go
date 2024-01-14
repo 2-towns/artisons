@@ -60,14 +60,14 @@ func getUrlExtension(raw string) (string, error) {
 	position := strings.LastIndex(u.Path, ".")
 	if position == -1 {
 		slog.Info("cannot proceed the image without extension", slog.String("url", raw))
-		return "", errors.New(printer.Sprintf("error_csv_imageextensionmissing", raw))
+		return "", errors.New(printer.Sprintf("the image extension is missing in %s", raw))
 	}
 
 	extension := strings.ToLower(u.Path[position+1 : len(u.Path)])
 
 	if !strings.Contains(products.ImageExtensions, extension) {
 		slog.Info("cannot proceed the unsupported image extension", slog.String("url", raw))
-		return "", errors.New(printer.Sprintf("error_csv_imageextensionnotsupported", extension))
+		return "", errors.New(printer.Sprintf("the image extension %s is not supported", extension))
 	}
 
 	slog.Info("file extension detected", slog.String("extension", extension))
@@ -102,7 +102,7 @@ func downloadFile(url string) (string, error) {
 	id, err := stringutil.Random()
 	if err != nil {
 		slog.Error("cannot generated the id", slog.String("error", err.Error()))
-		return "", errors.New(printer.Sprintf("error_http_general"))
+		return "", errors.New(printer.Sprintf("something went wrong"))
 	}
 
 	extension, err := getUrlExtension(url)
@@ -138,7 +138,7 @@ func copyFile(src string) (string, error) {
 	extension := strings.Replace(filepath.Ext(src), ".", "", 1)
 	if !strings.Contains(products.ImageExtensions, extension) {
 		slog.Info("cannot support the extension", slog.String("extension", extension))
-		return "", errors.New(printer.Sprintf("error_csv_imageextensionnotsupported", extension))
+		return "", errors.New(printer.Sprintf("the image extension %s is not supported", extension))
 	}
 
 	stat, err := os.Stat(src)
@@ -162,7 +162,7 @@ func copyFile(src string) (string, error) {
 	id, err := stringutil.Random()
 	if err != nil {
 		slog.Error("cannot generated the id", slog.String("error", err.Error()), slog.String("src", src))
-		return "", errors.New(printer.Sprintf("error_http_general"))
+		return "", errors.New(printer.Sprintf("something went wrong"))
 	}
 
 	filename := fmt.Sprintf("%s.%s", id, extension)
@@ -192,25 +192,25 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 	if len(line) < requiredFields {
 		slog.Info("cannot parse the csv", slog.Int("length", len(line)), slog.Int("required", requiredFields))
-		return products.Product{}, errors.New(printer.Sprintf("error_csv_fileinvalid"))
+		return products.Product{}, errors.New(printer.Sprintf("the csv is invalid"))
 	}
 
 	price, priceErr := strconv.ParseFloat(line[iprice], 32)
 	if priceErr != nil {
 		slog.Error("cannot parse the price", slog.Float64("price", price), slog.String("error", priceErr.Error()))
-		return products.Product{}, errors.New(printer.Sprintf("input_price_invalid", "price"))
+		return products.Product{}, errors.New(printer.Sprintf("input:price", "price"))
 	}
 
 	quantity, quantityErr := strconv.ParseInt(line[iquantity], 10, 32)
 	if quantityErr != nil {
 		slog.Error("cannot parse the quantity", slog.Int64("quantity", quantity), slog.String("error", quantityErr.Error()))
-		return products.Product{}, errors.New(printer.Sprintf("input_quantity_invalid", "quantity"))
+		return products.Product{}, errors.New(printer.Sprintf("input:quantity", "quantity"))
 	}
 
 	images := strings.Split(line[iimages], ";")
 	if len(images) == 0 {
 		slog.Info("cannot parse the empty images")
-		return products.Product{}, errors.New("input_image_1_required")
+		return products.Product{}, errors.New("input:image_1")
 	}
 
 	var iids []string
@@ -218,7 +218,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 		iid, err := getFile(v)
 		if err != nil {
 			slog.Error("cannot get the file", slog.String("error", err.Error()))
-			return products.Product{}, errors.New(printer.Sprintf("input_image_%d_invalid", index))
+			return products.Product{}, errors.New(printer.Sprintf("input:image_%d", index))
 		}
 
 		iids = append(iids, iid)
@@ -226,7 +226,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 	if len(iids) != len(images) {
 		slog.Info("cannot parse the images", slog.Int("length", len(iids)), slog.Int("images", len(images)))
-		return products.Product{}, errors.New(printer.Sprintf("input_images_invalid", "images"))
+		return products.Product{}, errors.New(printer.Sprintf("input:images", "images"))
 	}
 
 	length := len(line)
@@ -237,7 +237,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 		if weightErr != nil {
 			slog.Error("cannot parse the weight", slog.String("weight", line[iweight]), slog.String("error", weightErr.Error()))
-			return products.Product{}, errors.New(printer.Sprintf("input_weight_invalid", "weight"))
+			return products.Product{}, errors.New(printer.Sprintf("input:weight", "weight"))
 		} else {
 			weight = w
 		}
@@ -261,7 +261,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 			parts := strings.Split(v, optionSeparator)
 			if len(parts) != 2 {
 				slog.Info("cannot parse the option", slog.Int("index", j), slog.String("option", v))
-				return products.Product{}, errors.New(printer.Sprintf("input_options_invalid", "options"))
+				return products.Product{}, errors.New(printer.Sprintf("input:options", "options"))
 			}
 
 			k := strings.ReplaceAll(parts[0], "\"", "")
@@ -272,7 +272,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 
 		if len(o) != len(options) {
 			slog.Info("cannot parse the options", slog.Int("length", len(o)), slog.Int("options", len(options)))
-			return products.Product{}, errors.New(printer.Sprintf("input_options_invalid", "options"))
+			return products.Product{}, errors.New(printer.Sprintf("input:options", "options"))
 		}
 	}
 
@@ -310,13 +310,13 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 	v, err := db.Redis.HGet(ctx, key, "images").Result()
 	if err != nil {
 		l.Error("cannot store the product", slog.String("error", err.Error()))
-		return errors.New(printer.Sprintf("error_http_general"))
+		return errors.New(printer.Sprintf("something went wrong"))
 	}
 
 	img, err := strconv.Atoi(v)
 	if err != nil {
 		l.Error("cannot convert the index", slog.String("index", v), slog.String("error", err.Error()))
-		return errors.New(printer.Sprintf("error_http_general"))
+		return errors.New(printer.Sprintf("something went wrong"))
 	}
 
 	for i := 0; i < img; i++ {
@@ -324,7 +324,7 @@ func deletePreviousImages(ctx context.Context, pid string) error {
 
 		if err := os.Rename(v, p); err != nil {
 			l.Error("cannot remove the image", slog.String("path", p), slog.String("error", err.Error()))
-			return errors.New(printer.Sprintf("error_http_general"))
+			return errors.New(printer.Sprintf("something went wrong"))
 		}
 	}
 
@@ -342,7 +342,7 @@ func createImages(product products.Product) error {
 		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image1)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
-			return errors.New(printer.Sprintf("error_http_general"))
+			return errors.New(printer.Sprintf("something went wrong"))
 		}
 	}
 
@@ -351,7 +351,7 @@ func createImages(product products.Product) error {
 		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image2)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
-			return errors.New(printer.Sprintf("error_http_general"))
+			return errors.New(printer.Sprintf("something went wrong"))
 		}
 	}
 
@@ -360,7 +360,7 @@ func createImages(product products.Product) error {
 		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image3)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
-			return errors.New(printer.Sprintf("error_http_general"))
+			return errors.New(printer.Sprintf("something went wrong"))
 		}
 	}
 	if product.Image4 != "" {
@@ -368,7 +368,7 @@ func createImages(product products.Product) error {
 		old := path.Join(conf.WorkingSpace, "web", "tmp", product.Image4)
 		if err := os.Rename(old, p); err != nil {
 			l.Error("cannot move the file", slog.String("old", old), slog.String("new", p), slog.String("error", err.Error()))
-			return errors.New(printer.Sprintf("error_http_general"))
+			return errors.New(printer.Sprintf("something went wrong"))
 		}
 	}
 
@@ -512,12 +512,12 @@ func Import(data [][]string, mid string) (int, error) {
 		if i == 0 {
 			if len(line) < requiredFields {
 				slog.Info("cannot parse the csv line", slog.Int("index", i), slog.Int("len", len(line)), slog.Int("required", requiredFields))
-				return 0, errors.New(printer.Sprintf("error_csv_fileinvalid"))
+				return 0, errors.New(printer.Sprintf("the csv is invalid"))
 			}
 
 			if line[0] != "sku" {
 				slog.Info("cannot parse the sku empty", slog.Int("index", i))
-				return 0, errors.New(printer.Sprintf("error_csv_fileinvalid"))
+				return 0, errors.New(printer.Sprintf("the csv is invalid"))
 			}
 
 			continue

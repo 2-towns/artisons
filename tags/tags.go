@@ -30,12 +30,12 @@ func (t Tag) Save(c context.Context) error {
 
 	if err := validators.V.Var(t.Name, "alpha"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate name", slog.String("name", t.Name), slog.String("error", err.Error()))
-		return errors.New("input_tagname_invalid")
+		return errors.New("input:tagname")
 	}
 
 	if err := validators.V.Var(t.Label, "required"); err != nil {
 		l.LogAttrs(c, slog.LevelInfo, "cannot validate label", slog.String("label", t.Label), slog.String("error", err.Error()))
-		return errors.New("input_taglabel_invalid")
+		return errors.New("input:taglabel")
 	}
 
 	if slices.Contains(conf.Languages, t.Name) {
@@ -61,7 +61,7 @@ func (t Tag) Save(c context.Context) error {
 
 	}); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "tag saved successfully")
@@ -77,19 +77,19 @@ func (t Tag) Link(c context.Context, tag string, score float64) error {
 
 	if tag == "" {
 		slog.LogAttrs(c, slog.LevelInfo, "cannot continue with empty tag")
-		return errors.New("input_name_required")
+		return errors.New("input:name")
 	}
 
 	if score == 0 {
 		slog.LogAttrs(c, slog.LevelInfo, "cannot continue with zero score")
-		return errors.New("input_score_required")
+		return errors.New("input:score")
 	}
 
 	ctx := context.Background()
 	exists, err := db.Redis.HExists(ctx, "tag", tag).Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot retrieve the target tag", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	if !exists {
@@ -102,7 +102,7 @@ func (t Tag) Link(c context.Context, tag string, score float64) error {
 	}).Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot link the tag", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "tag linked successfully")
@@ -116,7 +116,7 @@ func List(c context.Context) ([]Tag, error) {
 	hashes, err := db.Redis.HGetAll(context.Background(), "tag").Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return []Tag{}, errors.New("error_http_general")
+		return []Tag{}, errors.New("something went wrong")
 	}
 
 	tags := []Tag{}
@@ -139,13 +139,13 @@ func (t Tag) WithLinks(c context.Context) (Tag, error) {
 	links, err := db.Redis.ZRange(context.Background(), "tag:"+t.Name, 0, -1).Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return t, errors.New("error_http_general")
+		return t, errors.New("something went wrong")
 	}
 
 	hashes, err := db.Redis.HGetAll(context.Background(), "tag").Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return t, errors.New("error_http_general")
+		return t, errors.New("something went wrong")
 	}
 
 	tag := Tag{
@@ -171,7 +171,7 @@ func (t Tag) RemoveLink(c context.Context, tag string) error {
 	_, err := db.Redis.ZRem(context.Background(), "tag:"+t.Name, tag).Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot link the tag", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	l.LogAttrs(c, slog.LevelInfo, "tag removed successfully")
@@ -221,7 +221,7 @@ func Root(c context.Context, limit int) ([]Tag, error) {
 	hashes, err := db.Redis.HGetAll(ctx, "tag").Result()
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return []Tag{}, errors.New("error_http_general")
+		return []Tag{}, errors.New("something went wrong")
 	}
 
 	labels := map[string]string{}
@@ -237,7 +237,7 @@ func Root(c context.Context, limit int) ([]Tag, error) {
 
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot get the tag links", slog.String("error", err.Error()))
-		return []Tag{}, errors.New("error_http_general")
+		return []Tag{}, errors.New("something went wrong")
 	}
 
 	links := map[string][]string{}

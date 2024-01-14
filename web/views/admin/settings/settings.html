@@ -10,7 +10,7 @@
 				<div class="box">
 					<div class="form-row" id="items-row">
 						<label class="input-label" for="items">
-							{{translate .Lang "text_settings_items"}}
+							{{translate .Lang "Products per page"}}
 						</label>
 						<input
 							   id="items"
@@ -18,13 +18,15 @@
 							   class="input input-full"
 							   type="number"
 							   value="{{if .Data.ShopSettings.Items }}{{.Data.ShopSettings.Items}}{{end}}" />
-						<small class="input-help">{{translate .Lang "text_settings_itemssub"}}</small>
+						<small class="input-help">
+							{{translate .Lang "Indicate how many products are displayed on the pages."}}
+						</small>
 						<div id="items-error"></div>
 					</div>
 
 					<div class="form-row" id="min-row">
 						<label class="input-label" for="min">
-							{{translate .Lang "text_settings_min"}}
+							{{translate .Lang "Minimum purchase amount"}}
 						</label>
 						<input
 							   id="min"
@@ -32,13 +34,23 @@
 							   class="input input-full"
 							   type="number"
 							   value="{{if .Data.ShopSettings.Min }}{{.Data.ShopSettings.Min}}{{end}}" />
-						<small class="input-help">{{translate .Lang "text_settings_minsub"}}</small>
+						<small class="input-help">
+							{{translate
+							.Lang
+							"Indicates the minimum amount that must be in the shopping cart to submit an order."}}
+							{{translate
+							.Lang
+							"If the amount is not reached, your customer can not complete their purchase." }}
+							{{translate
+							.Lang
+							"If you do not want to activate this feature, enter '0' in the field."}}
+						</small>
 						<div id="min-error"></div>
 					</div>
 
 					<div class="form-row" id="last-row">
 						<label class="input-label" for="last">
-							{{translate .Lang "text_settings_last"}}
+							{{translate .Lang "Last quantity"}}
 						</label>
 						<input
 							   id="last"
@@ -46,17 +58,24 @@
 							   class="input input-full"
 							   type="number"
 							   value="{{if .Data.ShopSettings.LastProducts }}{{.Data.ShopSettings.LastProducts}}{{end}}" />
-						<small class="input-help">{{translate .Lang "text_settings_lastsub"}}</small>
+						<small class="input-help">
+							{{translate .Lang "Last You can display an alert when a stock of your products gets low."}}
+							{{translate .Lang "This option is particularly useful for promoting purchases."}}
+						</small>
 						<div id="last-error"></div>
 					</div>
 
 					<div class="form-row row row-align row-between" id="active-row">
 						<div>
 							<label class="switch-label" for="active">
-								{{translate .Lang "text_settings_active"}}
+								{{translate .Lang "Enable shop"}}
 							</label>
 
-							<small class="input-help">{{translate .Lang "text_settings_activesub"}}</small>
+							<small class="input-help">
+								{{translate .Lang "Choose to make your shop active after you have made changes."}}
+								{{translate .Lang
+								"Use it when you need to performe a maintenance on your shop."}}
+							</small>
 							<div id="active-error"></div>
 						</div>
 						<div>
@@ -74,10 +93,12 @@
 					<div class="form-row row row-align row-between" id="guest-row">
 						<div>
 							<label class="switch-label" for="guest">
-								{{translate .Lang "text_settings_guest"}}
+								{{translate .Lang "Enable guest checkout"}}
 							</label>
 
-							<small class="input-help">{{translate .Lang "text_settings_guestsub"}}</small>
+							<small class="input-help">{
+								{translate .Lang "Allow orders to be made by non-registered users."}}
+							</small>
 							<div id="guest-error"></div>
 						</div>
 						<div>
@@ -92,34 +113,18 @@
 						</div>
 					</div>
 
-					<div class="form-row row row-align row-between" id="stock-row">
-						<div>
-							<label class="switch-label" for="stock">
-								{{translate .Lang "text_settings_stock"}}
-							</label>
-
-							<small class="input-help">{{translate .Lang "text_settings_stocksub"}}</small>
-							<div id="stock-error"></div>
-						</div>
-						<div>
-							<label class="">
-								<input
-									   id="stock"
-									   name="stock"
-									   class="switch"
-									   type="checkbox"
-									   {{if .Data.ShopSettings.Stock}}checked{{end}} />
-							</label>
-						</div>
-					</div>
-
 					<div class="form-row row row-align row-between" id="quantity-row">
 						<div>
 							<label class="switch-label" for="quantity">
-								{{translate .Lang "text_settings_quantity"}}
+								{{translate .Lang "Display available quantities on product page"}}
 							</label>
 
-							<small class="input-help">{{translate .Lang "text_settings_quantitysub"}}</small>
+							<small class="input-help">
+								{{translate
+								.Lang
+								"If enabled, your visitors can see the quantities of each object available in stock."
+								}}
+							</small>
 							<div id="quantity-error"></div>
 						</div>
 						<div>
@@ -137,10 +142,14 @@
 					<div class="form-row row row-align row-between" id="new-row">
 						<div>
 							<label class="switch-label" for="new">
-								{{translate .Lang "text_settings_new"}}
+								{{translate .Lang "Number of days for new products"}}
 							</label>
 
-							<small class="input-help">{{translate .Lang "text_settings_newsub"}}</small>
+							<small class="input-help">
+								{{translate
+								.Lang
+								"Define how many days the product will be considered as 'new'"}}
+							</small>
 							<div id="new-error"></div>
 						</div>
 						<div>
@@ -158,10 +167,14 @@
 					<div class="form-row row row-align row-between" id="redirect-row">
 						<div>
 							<label class="switch-label" for="redirect">
-								{{translate .Lang "text_settings_redirect"}}
+								{{translate .Lang "Redirect after adding product"}}
 							</label>
 
-							<small class="input-help">{{translate .Lang "text_settings_redirectsub"}}</small>
+							<small class="input-help">
+								{{translate
+								.Lang "Redirect the client to the cart page after adding a product to the cart."
+								}}
+							</small>
 							<div id="redirect-error"></div>
 						</div>
 						<div>
@@ -179,10 +192,14 @@
 					<div class="form-row row row-align row-between" id="advanced-row">
 						<div>
 							<label class="switch-label" for="advanced">
-								{{translate .Lang "text_settings_advanced"}}
+								{{translate .Lang "Advanced search"}}
 							</label>
 
-							<small class="input-help">{{translate .Lang "text_settings_advancedsub"}}</small>
+							<small class="input-help">
+								{{translate
+								.Lang
+								"Enable the advanced search allowing the user to select multiple criteria."}}
+							</small>
 							<div id="advanced-error"></div>
 						</div>
 						<div>
@@ -200,10 +217,14 @@
 					<div class="form-row row row-align row-between" id="cache-row">
 						<div>
 							<label class="switch-label" for="cache">
-								{{translate .Lang "text_settings_cache"}}
+								{{translate .Lang "Enable cache"}}
 							</label>
 
-							<small class="input-help">{{translate .Lang "text_settings_cachesub"}}</small>
+							<small class="input-help">
+								{{translate
+								.Lang
+								"Cache the response into Redis to accelerate the page loading."}}
+							</small>
 							<div id="cache-error"></div>
 						</div>
 						<div>
@@ -223,7 +244,7 @@
 					<button class="button button-primary">
 						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-						{{translate .Lang "text_general_send"}}
+						{{translate .Lang "Save"}}
 					</button>
 				</div>
 
@@ -239,7 +260,7 @@
 				<div class="box">
 					<div class="form-row" id="name-row">
 						<label class="input-label" for="name">
-							{{translate .Lang "text_general_name"}}
+							{{translate .Lang "Name"}}
 						</label>
 						<input
 							   id="name"
@@ -252,7 +273,7 @@
 
 					<div class="form-row" id="address-row">
 						<label class="input-label" for="address">
-							{{translate .Lang "text_general_address"}}
+							{{translate .Lang "Address"}}
 						</label>
 						<input
 							   id="address"
@@ -265,7 +286,7 @@
 
 					<div class="form-row" id="city-row">
 						<label class="input-label" for="city">
-							{{translate .Lang "text_general_city"}}
+							{{translate .Lang "City"}}
 						</label>
 						<input
 							   id="city"
@@ -278,7 +299,7 @@
 
 					<div class="form-row" id="zipcode-row">
 						<label class="input-label" for="zipcode">
-							{{translate .Lang "text_general_zipcode"}}
+							{{translate .Lang "zipcode"}}
 						</label>
 						<input
 							   id="zipcode"
@@ -291,7 +312,7 @@
 
 					<div class="form-row" id="email-row">
 						<label class="input-label" for="email">
-							{{translate .Lang "text_general_email"}}
+							{{translate .Lang "Email"}}
 						</label>
 						<input
 							   id="email"
@@ -305,7 +326,7 @@
 
 					<div class="form-row" id="phone-row">
 						<label class="input-label" for="phone">
-							{{translate .Lang "text_general_phone"}}
+							{{translate .Lang "Phone"}}
 						</label>
 						<input
 							   id="phone"
@@ -317,7 +338,7 @@
 
 					<div class="form-row" id="logo-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "text_general_logo"}}
+							{{translate .Lang "Logo"}}
 						</label>
 						<input
 							   id="logo"
@@ -328,7 +349,7 @@
 							   {{if.Data.Contact.Logo }}{{else}}required{{end}} />
 
 						<small class="input-help">
-							{{translate .Lang "text_images_sub"}}
+							{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
 						</small>
 
 						{{if .Data.Contact.Logo}}
@@ -346,7 +367,7 @@
 
 					<div class="form-row" id="banner_1-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "text_general_banner"}} 1
+							{{translate .Lang "Banner"}} 1
 						</label>
 
 						{{if .Data.Contact.Banner1}}
@@ -379,7 +400,7 @@
 						</div>
 
 						<small class="input-help">
-							{{translate .Lang "text_images_sub"}}
+							{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
 						</small>
 
 						{{if .Data.Contact.Banner1}}
@@ -397,7 +418,7 @@
 
 					<div class="form-row" id="banner_2-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "text_general_banner"}} 2
+							{{translate .Lang "Banner"}} 2
 						</label>
 
 						{{if .Data.Contact.Banner2}}
@@ -430,7 +451,7 @@
 						</div>
 
 						<small class="input-help">
-							{{translate .Lang "text_images_sub"}}
+							{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
 						</small>
 
 						{{if .Data.Contact.Banner2}}
@@ -448,7 +469,7 @@
 
 					<div class="form-row" id="banner_3-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "text_general_banner"}} 3
+							{{translate .Lang "Banner"}} 3
 						</label>
 
 						{{if .Data.Contact.Banner3}}
@@ -481,7 +502,7 @@
 						</div>
 
 						<small class="input-help">
-							{{translate .Lang "text_images_sub"}}
+							{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
 						</small>
 
 						{{if .Data.Contact.Banner3}}
@@ -502,7 +523,7 @@
 					<button class="button button-primary">
 						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-						{{translate .Lang "text_general_save"}}
+						{{translate .Lang "Save"}}
 					</button>
 				</div>
 			</form>
@@ -514,21 +535,6 @@
 	<div class="">
 		<div class="card card-separator ">
 			<div class="box">
-				<h2 class="card-title">{{translate .Lang "text_general_seo"}}</h2>
-				<p class="input-help">{{translate .Lang "text_seo_message"}}</p>
-			</div>
-
-			<div class="card-footer box">
-				<div class="form row row-end">
-					<a class="button button-primary" href="/admin/products.html">
-						{{translate .Lang "text_general_see"}}
-					</a>
-				</div>
-			</div>
-		</div>
-
-		<div class="card card-separator ">
-			<div class="box">
 				<h2 class="card-title">{{translate .Lang "text_general_productoptions"}}</h2>
 				<p class="input-help">{{translate .Lang "text_product_options"}}</p>
 			</div>
@@ -536,7 +542,7 @@
 			<div class="card-footer box">
 				<div class="form row row-end">
 					<a class="button button-primary" href="/admin/products.html">
-						{{translate .Lang "text_general_see"}}
+						{{translate .Lang "See"}}
 					</a>
 				</div>
 			</div>
@@ -546,12 +552,16 @@
 
 		<div class="card card-separator ">
 			<div class="box">
-				<h2 class="card-title">{{translate .Lang "text_general_geolocation"}}</h2>
-				<p class="input-help">{{translate .Lang "text_geolocation_sub"}}</p>
+				<h2 class="card-title">{{translate .Lang "Geolocation"}}</h2>
+				<p class="input-help">
+					{{translate
+					.Lang
+					"Add your Google Map API key to enable to geolocation for the customers."}}
+				</p>
 
 				<div class="form-row" id="geokey-row">
 					<label class="input-label" for="geokey">
-						{{translate .Lang "text_general_key"}}
+						{{translate .Lang "Key"}}
 					</label>
 					<input
 						   id="geokey"
@@ -567,7 +577,7 @@
 					<button class="button button-primary">
 						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-						{{translate .Lang "text_general_send"}}
+						{{translate .Lang "Save"}}
 					</button>
 				</div>
 			</div>

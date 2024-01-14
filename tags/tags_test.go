@@ -18,8 +18,8 @@ func TestSaveReturnsErrorWhenEmptyWhenTheTagIsEmpty(t *testing.T) {
 	ta := tag
 	ta.Name = ""
 
-	if err := ta.Save(c); err == nil || err.Error() != "input_tagname_invalid" {
-		t.Fatalf(`ta.Save(c) = %v, want 'input_tagname_invalid'`, err.Error())
+	if err := ta.Save(c); err == nil || err.Error() != "input:tagname" {
+		t.Fatalf(`ta.Save(c) = %v, want 'input:tagname'`, err.Error())
 	}
 }
 
@@ -29,8 +29,8 @@ func TestSaveReturnsErrorWhenEmptyWhenTheTagIsNotAlpha(t *testing.T) {
 	ta := tag
 	ta.Name = "test1"
 
-	if err := ta.Save(c); err == nil || err.Error() != "input_tagname_invalid" {
-		t.Fatalf(`ta.Save(c) = %v, want 'input_tagname_invalid'`, err.Error())
+	if err := ta.Save(c); err == nil || err.Error() != "input:tagname" {
+		t.Fatalf(`ta.Save(c) = %v, want 'input:tagname'`, err.Error())
 	}
 }
 
@@ -40,8 +40,8 @@ func TestSaveReturnsErrorWhenEmptyLabel(t *testing.T) {
 	ta := tag
 	ta.Label = ""
 
-	if err := ta.Save(c); err == nil || err.Error() != "input_taglabel_invalid" {
-		t.Fatalf(`ta.Save(c) = %v, want 'input_taglabel_invalid'`, err.Error())
+	if err := ta.Save(c); err == nil || err.Error() != "input:taglabel" {
+		t.Fatalf(`ta.Save(c) = %v, want 'input:taglabel'`, err.Error())
 	}
 }
 
@@ -60,23 +60,23 @@ func TestSaveReturnsNilWhenEmptyWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	if err := tag.Save(c); err != nil {
-		t.Fatalf(`tag.Save(c) = %v, want 'input_tagname_invalid'`, err)
+		t.Fatalf(`tag.Save(c) = %v, want 'input:tagname'`, err)
 	}
 }
 
 func TestLinkReturnsNilWhenTagIsEmpty(t *testing.T) {
 	c := tests.Context()
 
-	if err := tag.Link(c, "", 1); err == nil || err.Error() != "input_name_required" {
-		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'input_name_required'`, err.Error())
+	if err := tag.Link(c, "", 1); err == nil || err.Error() != "input:name" {
+		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'input:name'`, err.Error())
 	}
 }
 
 func TestLinkReturnsErrorWhenScoreIsZero(t *testing.T) {
 	c := tests.Context()
 
-	if err := tag.Link(c, "", 1); err == nil || err.Error() != "input_name_required" {
-		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'input_name_required'`, err.Error())
+	if err := tag.Link(c, "", 1); err == nil || err.Error() != "input:name" {
+		t.Fatalf(`tag.Link(c, "", 1) = %v, want 'input:name'`, err.Error())
 	}
 }
 

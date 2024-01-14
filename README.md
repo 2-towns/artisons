@@ -161,15 +161,9 @@ Les classes doivent définir des fonctionnalités et non des utilitaires. Les di
 
 ### Messages
 
-Les messages doivent être prévus pour la traduction. Les erreurs contiennent les clés de traduction qui sont ensuite traduites dans les controlleurs. Les clés sont constituées de trois parties:
+Les messages doivent être prévus pour la traduction. 
 
-- Le type de message
-- La fonctionnalité
-- La description de l'erreur
-
-Example: `error_http_csrf`, `input_firstname_required`, `url_product_details`
-
-Il est important de garder cette convention de nommage et de garder les clés triées par order alphabétique. Les clés commençant par `input_` sont utilisées pour afficher des erreurs `inline`.
+Les clés commençant par `input:` sont utilisées pour afficher des erreurs `inline`.
 
 ### CSP
 

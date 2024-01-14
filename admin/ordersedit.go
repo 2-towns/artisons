@@ -58,7 +58,7 @@ func EditOrderForm(w http.ResponseWriter, r *http.Request) {
 		Currency string
 	}{
 		lang,
-		"orders",
+		"Orders",
 		id,
 		o,
 		conf.Currency,

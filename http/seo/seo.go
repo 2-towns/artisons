@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/router"
 	"gifthub/validators"
@@ -95,17 +94,15 @@ func init() {
 			continue
 		}
 
-		if val["lang"] == conf.DefaultLocale.String() {
-			k := val["key"]
-			c := URLs[k]
-			c.Key = k
-			c.Title = val["title"]
-			c.URL = val["url"]
-			c.Description = val["description"]
-			c.CreatedAt = time.Unix(createdAt, 0)
-			c.UpdatedAt = time.Unix(updatedAt, 0)
-			URLs[k] = c
-		}
+		k := val["key"]
+		c := URLs[k]
+		c.Key = k
+		c.Title = val["title"]
+		c.URL = val["url"]
+		c.Description = val["description"]
+		c.CreatedAt = time.Unix(createdAt, 0)
+		c.UpdatedAt = time.Unix(updatedAt, 0)
+		URLs[k] = c
 
 	}
 }
@@ -117,7 +114,7 @@ func (c Content) Validate(ctx context.Context) error {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the translation", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_invalid", low)
+		return fmt.Errorf("input:%s", low)
 	}
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "seo validated")
@@ -143,14 +140,12 @@ func (c Content) Save(ctx context.Context) error {
 		)
 
 		for _, route := range routes {
-			log.Println("router Pattern" + route.Pattern)
-			log.Println("prv.URL" + prv.URL)
 			if route.Pattern == prv.URL {
 
 				handler, ok := route.Handlers["GET"].(http.HandlerFunc)
 				if !ok {
 					slog.LogAttrs(ctx, slog.LevelError, "cannot make type asserting for the handler", slog.String("url", prv.URL))
-					return errors.New("error_http_general")
+					return errors.New("something went wrong")
 				}
 
 				router.R.Get(prv.URL, http.NotFound)
@@ -165,7 +160,7 @@ func (c Content) Save(ctx context.Context) error {
 		return nil
 	}); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot store the seo", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	c.UpdatedAt = now
@@ -182,7 +177,7 @@ func Find(ctx context.Context, key string) (Content, error) {
 
 	if key == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty seo id")
-		return Content{}, errors.New("input_id_required")
+		return Content{}, errors.New("input:id")
 	}
 
 	c := URLs[key]

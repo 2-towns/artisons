@@ -40,9 +40,6 @@ type ShopSettings struct {
 	// Show quantity in product page
 	Quantity bool
 
-	// Enable the stock managment
-	Stock bool
-
 	// Number of days during which the product is considered 'new'
 	New bool
 
@@ -130,7 +127,6 @@ func init() {
 		ShopSettings: ShopSettings{
 			Guest:          d["guest"] == "1",
 			Quantity:       d["quantity"] == "1",
-			Stock:          d["stock"] == "1",
 			New:            d["new"] == "1",
 			Items:          items,
 			Min:            min,
@@ -150,7 +146,7 @@ func (s Contact) Validate(c context.Context) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_invalid", low)
+		return fmt.Errorf("input:%s", low)
 	}
 
 	return nil
@@ -163,7 +159,7 @@ func (s ShopSettings) Validate(c context.Context) error {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input_%s_invalid", low)
+		return fmt.Errorf("input:%s", low)
 	}
 
 	return nil
@@ -191,7 +187,7 @@ func (s Contact) Save(c context.Context) error {
 
 	if err != nil {
 		l.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	return nil
@@ -208,11 +204,6 @@ func (s ShopSettings) Save(c context.Context) error {
 	quantity := "0"
 	if s.Quantity {
 		quantity = "1"
-	}
-
-	stock := "0"
-	if s.Stock {
-		stock = "1"
 	}
 
 	new := "0"
@@ -239,7 +230,6 @@ func (s ShopSettings) Save(c context.Context) error {
 	_, err := db.Redis.HSet(context.Background(), "shop",
 		"guest", guest,
 		"quantity", quantity,
-		"stock", stock,
 		"new", new,
 		"items", fmt.Sprintf("%d", s.Items),
 		"min", fmt.Sprintf("%d", s.Min),
@@ -253,7 +243,7 @@ func (s ShopSettings) Save(c context.Context) error {
 
 	if err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
-		return errors.New("error_http_general")
+		return errors.New("something went wrong")
 	}
 
 	return nil

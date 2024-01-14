@@ -25,8 +25,8 @@ func TestSaveReturnErrorWhenNameIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_name_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_name_invalid'", err)
+	if err == nil || err.Error() != "input:name" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:name'", err)
 	}
 }
 
@@ -36,8 +36,8 @@ func TestSaveReturnErrorWhenAddressIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_address_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_address_invalid'", err)
+	if err == nil || err.Error() != "input:address" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:address'", err)
 	}
 }
 
@@ -47,8 +47,8 @@ func TestSaveReturnErrorWhenCityIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_city_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_city_invalid'", err)
+	if err == nil || err.Error() != "input:city" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:city'", err)
 	}
 }
 
@@ -58,8 +58,8 @@ func TestSaveReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_zipcode_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_zipcode_invalid'", err)
+	if err == nil || err.Error() != "input:zipcode" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:zipcode'", err)
 	}
 }
 
@@ -69,8 +69,8 @@ func TestSaveReturnErrorWhenEmailIsEmpty(t *testing.T) {
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_email_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_email_invalid'", err)
+	if err == nil || err.Error() != "input:email" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:email'", err)
 	}
 }
 
@@ -80,7 +80,7 @@ func TestSaveReturnErrorWhenEmailIsInvalid(t *testing.T) {
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input_email_invalid" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input_email_invalid'", err)
+	if err == nil || err.Error() != "input:email" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:email'", err)
 	}
 }

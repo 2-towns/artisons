@@ -16,24 +16,24 @@ import (
 func processProductFrom(ctx context.Context, form multipart.Form, id string) (products.Product, error) {
 	if len(form.Value["price"]) == 0 || form.Value["price"][0] == "" {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the empty price")
-		return products.Product{}, errors.New("input_price_invalid")
+		return products.Product{}, errors.New("input:price")
 	}
 
 	if len(form.Value["quantity"]) == 0 || form.Value["quantity"][0] == "" {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the empty quantity")
-		return products.Product{}, errors.New("input_quantity_invalid")
+		return products.Product{}, errors.New("input:quantity")
 	}
 
 	price, err := strconv.ParseFloat(form.Value["price"][0], 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the price", slog.String("price", form.Value["price"][0]), slog.String("error", err.Error()))
-		return products.Product{}, errors.New("input_price_invalid")
+		return products.Product{}, errors.New("input:price")
 	}
 
 	quantity, err := strconv.ParseInt(form.Value["quantity"][0], 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the quantity", slog.String("quantity", form.Value["quantity"][0]), slog.String("error", err.Error()))
-		return products.Product{}, errors.New("input_quantity_invalid")
+		return products.Product{}, errors.New("input:quantity")
 	}
 
 	var discount float64 = 0
@@ -41,7 +41,7 @@ func processProductFrom(ctx context.Context, form multipart.Form, id string) (pr
 		val, err := strconv.ParseFloat(form.Value["discount"][0], 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the discount", slog.String("discount", form.Value["discount"][0]), slog.String("error", err.Error()))
-			return products.Product{}, errors.New("input_discount_invalid")
+			return products.Product{}, errors.New("input:discount")
 		}
 		discount = val
 	}
@@ -51,7 +51,7 @@ func processProductFrom(ctx context.Context, form multipart.Form, id string) (pr
 		val, err := strconv.ParseFloat(form.Value["weight"][0], 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the weight", slog.String("weight", form.Value["weight"][0]), slog.String("error", err.Error()))
-			return products.Product{}, errors.New("input_weight_invalid")
+			return products.Product{}, errors.New("input:weight")
 		}
 		weight = val
 	}
@@ -67,7 +67,7 @@ func processProductFrom(ctx context.Context, form multipart.Form, id string) (pr
 		pid, err = stringutil.Random()
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot generated the product id", slog.String("error", err.Error()))
-			return products.Product{}, errors.New("error_http_general")
+			return products.Product{}, errors.New("something went wrong")
 		}
 	}
 
@@ -117,13 +117,13 @@ func processProductFrom(ctx context.Context, form multipart.Form, id string) (pr
 
 	if files["image_1"] == nil && !exists {
 		slog.LogAttrs(ctx, slog.LevelInfo, "at least one image is required")
-		return products.Product{}, errors.New("input_image_1_required")
+		return products.Product{}, errors.New("input:image_1")
 	}
 
 	images, err := httpext.Upload(ctx, files)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot update the files", slog.String("error", err.Error()))
-		return products.Product{}, errors.New("error_http_general")
+		return products.Product{}, errors.New("something went wrong")
 	}
 
 	if images["image_1"] != "" {
