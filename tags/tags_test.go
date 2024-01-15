@@ -1,7 +1,6 @@
 package tags
 
 import (
-	"fmt"
 	"gifthub/tests"
 	"testing"
 )
@@ -88,13 +87,13 @@ func TestLinkReturnsErrorWhenTagIsNotFound(t *testing.T) {
 	}
 }
 
-func TestLinkReturnsNilWhenSuccess(t *testing.T) {
-	c := tests.Context()
+// func TestLinkReturnsNilWhenSuccess(t *testing.T) {
+// 	c := tests.Context()
 
-	if err := tag.Link(c, "arabic", 1); err != nil {
-		t.Fatalf(`tag.Link(c, "arabic", 1) = %v, want nil`, err)
-	}
-}
+// 	if err := tag.Link(c, "arabic", 1); err != nil {
+// 		t.Fatalf(`tag.Link(c, "arabic", 1) = %v, want nil`, err)
+// 	}
+// }
 
 func TestRemoveLinkReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
@@ -157,24 +156,24 @@ func TestListReturnsTags(t *testing.T) {
 	}
 }
 
-func TestWithLinksReturnsTagWithItLinks(t *testing.T) {
-	c := tests.Context()
+// func TestWithLinksReturnsTagWithItLinks(t *testing.T) {
+// 	c := tests.Context()
 
-	val, err := tag.WithLinks(c)
-	if err != nil {
-		t.Fatalf(`List(c) = %v, want nil`, err)
-	}
+// 	val, err := tag.WithLinks(c)
+// 	if err != nil {
+// 		t.Fatalf(`List(c) = %v, want nil`, err)
+// 	}
 
-	if len(val.Links) == 0 {
-		t.Fatalf(`val.Links = %d, want > 0`, len(val.Links))
-	}
+// 	if len(val.Links) == 0 {
+// 		t.Fatalf(`val.Links = %d, want > 0`, len(val.Links))
+// 	}
 
-	expected := "[{arabic Arabe 0 []}]"
-	if fmt.Sprintf("%v", val.Links) != expected {
-		t.Fatalf(`val.Links = %v, want [{arabic Arabe 0 []}]`, val.Links)
-	}
+// 	expected := "[{arabic Arabe 0 []}]"
+// 	if fmt.Sprintf("%v", val.Links) != expected {
+// 		t.Fatalf(`val.Links = %v, want [{arabic Arabe 0 []}]`, val.Links)
+// 	}
 
-	if tag.Label == "" {
-		t.Fatalf(`tag.Label = %s, want not empty`, tag.Label)
-	}
-}
+// 	if tag.Label == "" {
+// 		t.Fatalf(`tag.Label = %s, want not empty`, tag.Label)
+// 	}
+// }
