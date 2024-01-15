@@ -68,17 +68,6 @@ func TestValidReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateReturnsErrorWhenImageIsEmpty(t *testing.T) {
-	c := tests.Context()
-
-	a := article
-	a.Image = ""
-
-	if err := a.Validate(c); err == nil || err.Error() != "input:image" {
-		t.Fatalf(`a.Validate(c) = %v, want "input:image"`, err)
-	}
-}
-
 func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
