@@ -2,6 +2,7 @@ package orders
 
 import (
 	"gifthub/conf"
+	"gifthub/db"
 	"gifthub/products"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
@@ -9,9 +10,44 @@ import (
 	"testing"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
+
+func init() {
+	ctx := tests.Context()
+	now := time.Now()
+	createdAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
+	updatedAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
+
+	db.Redis.HSet(ctx, "order:ORD1",
+		"id", "ORD1",
+		"uid", 99,
+		"delivery", "home",
+		"payment", "card",
+		"payment_status", "payment_progress",
+		"status", "created",
+		"total", "100.5",
+		"type", "order",
+		"address_lastname", "Arnaud",
+		"address_firstname", "Arnaud",
+		"address_city", "Lille",
+		"address_street", "Rue du moulin",
+		"address_complementary", "Appartement C",
+		"address_zipcode", "59000",
+		"address_phone", "3345668832",
+		"updated_at", updatedAt.Unix(),
+		"created_at", createdAt.Unix(),
+	)
+
+	db.Redis.HSet(ctx, "order:ORD1:products", "PDT1", 1).Result()
+
+	db.Redis.ZAdd(ctx, "user:ORD1:orders", redis.Z{
+		Score:  float64(now.Unix()),
+		Member: "ORD1",
+	}).Result()
+}
 
 var order Order = Order{
 	ID:       "ORD1",

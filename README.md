@@ -12,6 +12,8 @@ docker run -p 6379:6379 -p 8001:8001 -v data:/data redis/redis-stack:latest
 
 Installer aussi [Redis Insight](https://redis.com/redis-enterprise/redis-insight) pour explorer facilement les données.
 
+Installer `redis-cli` (ou alors utiliser celui fourni par Docker).
+
 # Lancement
 
 # HURL
@@ -52,16 +54,22 @@ Démarrer le serveur imgproxy:
 Pour peupler les données, lancer la commande suivante:
 
 ```
-go run console/console.go populate
+redis-cli -h localhost -p 6379 < populate.redis
 ```
 
-Afin de pouvoir utiliser la recherche, il faut lancer le script de migration après chaque peuplement:
+Afin de pouvoir utiliser la recherche, il faut lancer le script de migration:
 
 ```
-go run console/console.go migrate
+redis-cli -h localhost -p 6379 < migrate.redis
 ```
 
 L'admin est accessible à l'adresse suivante: `/admin/index.html`. Un compte utilisateur admin existe avec l'adresse suivante: `hello@world.com`. L'OTP est affiché dans les traces du serveur.
+
+Pour préparer l'environnement pour les tests fonctionnels, il faut lancer: 
+
+```
+redis-cli -h localhost -p 6379 < hurl.redis
+```
 
 ## Tester
 

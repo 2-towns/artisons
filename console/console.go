@@ -7,7 +7,6 @@ import (
 	"flag"
 	"gifthub/conf"
 	"gifthub/console/parser"
-	"gifthub/console/populate"
 	"gifthub/db"
 	"gifthub/logs"
 	"gifthub/notifications/mails"
@@ -20,7 +19,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/jedib0t/go-pretty/v6/table"
 	"golang.org/x/text/message"
 )
 
@@ -91,16 +89,6 @@ func main() {
 			}
 
 			slog.LogAttrs(ctx, slog.LevelInfo, "import successful", slog.Int("lines", lines))
-		}
-
-	case "populate":
-		{
-			err := populate.Run()
-
-			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot populate", slog.String("error", err.Error()))
-				log.Fatal()
-			}
 		}
 
 	case "orderstatus":
@@ -183,28 +171,28 @@ func main() {
 			slog.LogAttrs(ctx, slog.LevelInfo, "note added to the order")
 		}
 
-	case "userlist":
-		{
-			page := flag.Int("page", 0, "The page used in pagination")
+	// case "userlist":
+	// 	{
+	// 		page := flag.Int("page", 0, "The page used in pagination")
 
-			flag.Parse()
+	// 		flag.Parse()
 
-			u, err := users.List(ctx, *page)
-			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot list the users", slog.Int("page", *page), slog.String("error", err.Error()))
-				log.Fatalln()
-			}
+	// 		u, err := users.List(ctx, *page)
+	// 		if err != nil {
+	// 			slog.LogAttrs(ctx, slog.LevelError, "cannot list the users", slog.Int("page", *page), slog.String("error", err.Error()))
+	// 			log.Fatalln()
+	// 		}
 
-			t := table.NewWriter()
-			t.SetOutputMirror(os.Stdout)
-			t.AppendHeader(table.Row{"ID", "Email", "Updated at"})
+	// 		t := table.NewWriter()
+	// 		t.SetOutputMirror(os.Stdout)
+	// 		t.AppendHeader(table.Row{"ID", "Email", "Updated at"})
 
-			for _, user := range u {
-				t.AppendRow([]interface{}{user.ID, user.Email, user.UpdatedAt})
-			}
+	// 		for _, user := range u {
+	// 			t.AppendRow([]interface{}{user.ID, user.Email, user.UpdatedAt})
+	// 		}
 
-			t.Render()
-		}
+	// 		t.Render()
+	// 	}
 
 	case "productdetail":
 		{

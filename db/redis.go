@@ -166,7 +166,7 @@ func Escape(value string) string {
 		"~": "\\~",
 	}
 
-	s := value
+	s := strings.Trim(value, " ")
 
 	for key, v := range replacements {
 		s = strings.ReplaceAll(s, key, v)

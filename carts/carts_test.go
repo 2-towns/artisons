@@ -2,21 +2,35 @@ package carts
 
 import (
 	"context"
+	"gifthub/conf"
+	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"testing"
 )
 
-var cart Cart = Cart{ID: "CAR1"}
+func init() {
+	ctx := tests.Context()
+
+	db.Redis.HSet(ctx, "cart:99", "cid", "CAR99")
+	db.Redis.Set(ctx, "cart:99:user", 99, conf.CartDuration)
+
+	db.Redis.HSet(ctx, "product:PDT97",
+		"id", "PDT97",
+		"status", "online",
+	)
+}
+
+var cart Cart = Cart{ID: "99"}
 
 func TestAddReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
+	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
 	quantity := 1
 
-	if err := Add(ctx, "PDT1", quantity); err != nil {
-		t.Fatalf(`Add(ctx, "PDT1", quantity), %v, want nil, error`, err)
+	if err := Add(ctx, "PDT97", quantity); err != nil {
+		t.Fatalf(`Add(ctx, "PDT97", quantity), %v, want nil, error`, err)
 	}
 }
 
@@ -58,7 +72,7 @@ func TestRefreshCIDReturnsCidWhenCidExisting(t *testing.T) {
 
 func TestGetReturnsCartWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
+	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
 
 	c, err := Get(ctx)
 	if c.ID == "" || err != nil {

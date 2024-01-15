@@ -143,6 +143,7 @@ func Paginate(page int, loaded int, total int) Pagination {
 	items = append(items, page)
 
 	maxp := total / conf.ItemsPerPage
+
 	if total%conf.ItemsPerPage > 0 {
 		maxp++
 	}

@@ -25,7 +25,6 @@ type Article struct {
 	Slug        string
 	Description string `validate:"required"`
 	Status      string `redis:"status" validate:"oneof=online offline"`
-	Lang        string `validate:"required,bcp47_language_tag"`
 
 	// The image path
 	Image string
@@ -85,7 +84,6 @@ func (a Article) Save(c context.Context) error {
 		"description", a.Description,
 		"image", a.Image,
 		"slug", slug,
-		"lang", a.Lang,
 		"status", a.Status,
 		"created_at", now,
 		"updated_at", now,
@@ -127,7 +125,6 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 		Slug:        data["slug"],
 		Status:      data["status"],
 		Image:       image,
-		Lang:        data["lang"],
 		CreatedAt:   time.Unix(createdAt, 0),
 		UpdatedAt:   time.Unix(updatedAt, 0),
 	}
@@ -181,7 +178,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 
 		product, err := parse(c, data)
 		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product", slog.Any("product", data), slog.String("error", err.Error()))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the blog", slog.Any("blog", data), slog.String("error", err.Error()))
 			continue
 		}
 

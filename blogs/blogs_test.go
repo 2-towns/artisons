@@ -2,18 +2,48 @@ package blogs
 
 import (
 	"gifthub/conf"
+	"gifthub/db"
 	"gifthub/tests"
 	"os"
 	"path"
 	"testing"
+	"time"
 )
 
 var article Article = Article{
-	Title:       "La palestine doit être sauvée",
-	Description: "On attend une réponse des pays musulmans.",
+	Title:       "Mangez de l'ail !",
+	Description: "C'est un antiseptique.",
 	Image:       path.Join(conf.WorkingSpace, "web", "tmp", "hello"),
 	Status:      "online",
-	Lang:        "en",
+}
+
+func init() {
+	ctx := tests.Context()
+	now := time.Now()
+
+	db.Redis.HSet(ctx, "blog:99",
+		"id", "99",
+		"title", article.Title,
+		"status", article.Status,
+		"lang", conf.DefaultLocale.String(),
+		"description", article.Description,
+		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
+		"online", "1",
+		"updated_at", now.Unix(),
+		"created_at", now.Unix(),
+	)
+
+	db.Redis.HSet(ctx, "blog:98",
+		"id", "98",
+		"title", article.Title,
+		"status", article.Status,
+		"lang", conf.DefaultLocale.String(),
+		"description", article.Description,
+		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
+		"online", "1",
+		"updated_at", now.Unix(),
+		"created_at", now.Unix(),
+	)
 }
 
 func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
@@ -42,7 +72,6 @@ func TestValidReturnsErrorWhenLangIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	a := article
-	a.Lang = ""
 
 	if err := a.Validate(c); err == nil || err.Error() != "input:lang" {
 		t.Fatalf(`a.Validate(c) = %v, want "input:lang"`, err.Error())
@@ -53,7 +82,6 @@ func TestValidReturnsErrorWhenLangIsInvalid(t *testing.T) {
 	c := tests.Context()
 
 	a := article
-	a.Lang = "!!!"
 
 	if err := a.Validate(c); err == nil || err.Error() != "input:lang" {
 		t.Fatalf(`a.Validate(c) = %v, want "input:lang"`, err.Error())
@@ -115,7 +143,7 @@ func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 
 func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 	c := tests.Context()
-	a, err := Search(c, Query{Keywords: "Manger de l'ail"}, 0, 10)
+	a, err := Search(c, Query{Keywords: "Mangez de l'ail"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: "Manger de l'ail"}) = %v, want nil`, err.Error())
 	}
@@ -128,8 +156,8 @@ func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(a.Articles))
 	}
 
-	if a.Articles[0].ID == 0 {
-		t.Fatalf(`p[0].ID = %d, want > 0`, a.Articles[0].ID)
+	if a.Articles[0].ID == 99 {
+		t.Fatalf(`p[0].ID = %d, want = 99`, a.Articles[0].ID)
 	}
 }
 
@@ -172,11 +200,11 @@ func TestSearchReturnsNoArticleWhenCriteriaDoNotMatch(t *testing.T) {
 func TestDeleteReturnNilSuccess(t *testing.T) {
 	c := tests.Context()
 
-	image := path.Join(conf.ImgProxy.Path, "blog", "3")
+	image := path.Join(conf.ImgProxy.Path, "blog", "98")
 	os.Create(image)
 
-	if err := Delete(c, 3); err != nil {
-		t.Fatalf(`a.Delete(c, 3) = %v, want nil`, err.Error())
+	if err := Delete(c, 98); err != nil {
+		t.Fatalf(`a.Delete(c, 98) = %v, want nil`, err.Error())
 	}
 }
 
@@ -189,9 +217,9 @@ func TestFindReturnsErrorWhenIdsMissing(t *testing.T) {
 
 func TestFindReturnsArticleWhenSuccess(t *testing.T) {
 	c := tests.Context()
-	p, err := Find(c, 1)
+	p, err := Find(c, 99)
 	if err != nil {
-		t.Fatalf(`Find(c, "PDT1") = %v, want nil`, err.Error())
+		t.Fatalf(`Find(c, "99") = %v, want nil`, err.Error())
 	}
 
 	if p.Title == "" {

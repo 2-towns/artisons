@@ -3,6 +3,7 @@ package admin
 import (
 	"gifthub/blogs"
 	"gifthub/conf"
+	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
 	"gifthub/http/httperrors"
@@ -56,7 +57,7 @@ func Blog(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 	query := blogs.Query{}
 	if q != "" {
-		query.Keywords = q
+		query.Keywords = db.Escape(q)
 	}
 
 	ctx := r.Context()

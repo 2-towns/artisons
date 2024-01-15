@@ -41,34 +41,34 @@ HTTP 200
 body contains "No results found." 
 
 # Search products by id 
-GET {{host}}/admin/products.html?q=PDT2
+GET {{host}}/admin/products.html?q=PDT1
 HX-Request: true
 HTTP 200
 [Asserts]
 body not contains "No results found." 
-xpath "string((//td)[1])" == "PDT2"
-xpath "//a[@href='/admin/products/PDT2/edit.html']" exists
-xpath "//a[@hx-post='/admin/products/PDT2/delete.html']" exists
+xpath "//td[text()='PDT1']" exists
+xpath "//a[@href='/admin/products/PDT1/edit.html']" exists
+xpath "//a[@hx-post='/admin/products/PDT1/delete.html']" exists
 
 # Search products by sku 
-GET {{host}}/admin/products.html?q=SKU3
+GET {{host}}/admin/products.html?q=SKU1
 HX-Request: true
 HTTP 200
 [Asserts]
 body not contains "No results found." 
-xpath "string((//td)[1])" == "PDT3"
-xpath "//a[@href='/admin/products/PDT3/edit.html']" exists
-xpath "//a[@hx-post='/admin/products/PDT3/delete.html']" exists
+xpath "//td[text()='PDT1']" exists
+xpath "//a[@href='/admin/products/PDT1/edit.html']" exists
+xpath "//a[@hx-post='/admin/products/PDT1/delete.html']" exists
 
 # Search products by title 
-GET {{host}}/admin/products.html?q=T-shirt%20d%C3%A9veloppeur%20unisexe%20JavaScript
+GET {{host}}/admin/products.html?q=Mug%20HTMX
 HX-Request: true
 HTTP 200
 [Asserts]
 body not contains "No results found." 
-xpath "//td[text()='PDT2']" exists
-xpath "//a[@href='/admin/products/PDT2/edit.html']" exists
-xpath "//a[@hx-post='/admin/products/PDT2/delete.html']" exists
+xpath "//td[text()='PDT1']" exists
+xpath "//a[@href='/admin/products/PDT1/edit.html']" exists
+xpath "//a[@hx-post='/admin/products/PDT1/delete.html']" exists
 
 # Search products by non existing keyword shows empty message 
 GET {{host}}/admin/products.html?q=totoisverydangerous

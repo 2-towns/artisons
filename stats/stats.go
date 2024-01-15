@@ -3,6 +3,7 @@ package stats
 import (
 	"cmp"
 	"context"
+	"errors"
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
@@ -10,6 +11,7 @@ import (
 	"gifthub/http/referer"
 	"gifthub/string/stringutil"
 	"log/slog"
+	"math/rand"
 	"slices"
 	"strconv"
 	"strings"
@@ -42,6 +44,56 @@ type VisitData struct {
 	Referer string
 }
 
+func generateDemoData(ctx context.Context) error {
+	pipe := db.Redis.Pipeline()
+	now := time.Now()
+	referers := []string{"Google", "Unknown", "Yandex", "DuckDuckGo"}
+	products := []string{"PDT1", "PDT2", "PDT3", "PDT4", "PDT5"}
+	browsers := []string{"Chrome", "Safari", "Firefox", "Edge"}
+	systems := []string{"Windows", "Android", "iOS", "Linux"}
+	urls := []string{"index.html", "/super-article-du-blog.html", "/PDT2-sweat-a-capuche-uniforme.html", "/cgv.html", "/panier.html", "/coucou.html"}
+
+	for i := 0; i < 30; i++ {
+		i := rand.Intn(30)
+		score := now.AddDate(0, 0, -i)
+		exists, err := db.Redis.Exists(ctx, "demo:stats:pageviews:"+score.Format("20060102")).Result()
+		if exists > 0 && err == nil {
+			slog.LogAttrs(ctx, slog.LevelInfo, "the demo stat exists")
+			continue
+		}
+
+		for count := 0; count < 10; count++ {
+
+			urli := rand.Intn(len(urls))
+			slug := urls[urli]
+			visits := rand.Intn(1000) + 100
+			amount := rand.Intn(5000) + 100
+			count := rand.Intn(10) + 1
+			uniques := rand.Intn(visits)
+			rrand := rand.Intn(len(referers))
+			brand := rand.Intn(len(browsers))
+			srand := rand.Intn(len(systems))
+			prand := rand.Intn(len(products))
+
+			pipe.ZIncrBy(ctx, "demo:stats:pageviews:"+score.Format("20060102"), 1, slug)
+			pipe.ZIncrBy(ctx, "demo:stats:products:most:"+score.Format("20060102"), 1, products[prand])
+			pipe.ZIncrBy(ctx, "demo:stats:products:shared:"+score.Format("20060102"), 1, products[prand])
+			pipe.ZIncrBy(ctx, "demo:stats:browsers:"+score.Format("20060102"), 1, browsers[brand])
+			pipe.ZIncrBy(ctx, "demo:stats:referers:"+score.Format("20060102"), 1, referers[rrand])
+			pipe.ZIncrBy(ctx, "demo:stats:systems:"+score.Format("20060102"), 1, systems[srand])
+			pipe.Set(ctx, "demo:stats:visits:"+score.Format("20060102"), visits, 0)
+			pipe.Set(ctx, "demo:stats:orders:revenues:"+score.Format("20060102"), amount, 0)
+			pipe.Set(ctx, "demo:stats:orders:count:"+score.Format("20060102"), count, 0)
+			pipe.Set(ctx, "demo:stats:visits:unique:"+score.Format("20060102"), uniques, 0)
+			pipe.Set(ctx, "demo:stats:pageviews:all:"+score.Format("20060102"), visits*2, 0)
+		}
+	}
+
+	_, err := pipe.Exec(ctx)
+
+	return err
+}
+
 // MostValues returns the most values statistics.
 // The keys available are:
 // - stats:pageviews - the most visited pages
@@ -63,8 +115,14 @@ type VisitData struct {
 func MostValues(c context.Context, days int) ([][]MostValue, error) {
 	prefix := ""
 	demo, ok := c.Value(contexts.Demo).(bool)
+	values := [][]MostValue{}
+
 	if demo && ok {
 		prefix = "demo:"
+		if err := generateDemoData(c); err != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
+			return values, errors.New("something went wrong")
+		}
 	}
 
 	keys := []string{
@@ -103,7 +161,6 @@ func MostValues(c context.Context, days int) ([][]MostValue, error) {
 		return [][]MostValue{}, err
 	}
 
-	values := [][]MostValue{}
 	pids := []string{}
 
 	for _, cmd := range cmds {
@@ -206,10 +263,22 @@ func sum(array []int64) int64 {
 // Finalylly a bounce rate between the visits and the unique visits is calculated and added
 // in the same format than the other statistics.
 func GetAll(c context.Context, days int) (Data, error) {
+	values := Data{
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+		{Value: []int64{}},
+	}
 	prefix := ""
 	demo, ok := c.Value(contexts.Demo).(bool)
 	if demo && ok {
 		prefix = "demo:"
+		if err := generateDemoData(c); err != nil {
+			slog.LogAttrs(c, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
+			return values, errors.New("something went wrong")
+		}
 	}
 
 	l := slog.With(slog.Int("days", days), slog.Bool("demo", demo))
@@ -243,14 +312,6 @@ func GetAll(c context.Context, days int) (Data, error) {
 		return Data{}, err
 	}
 
-	values := Data{
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
-	}
 	row = 0
 
 	for i, cmd := range cmds {

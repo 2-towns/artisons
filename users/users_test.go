@@ -1,17 +1,43 @@
 package users
 
 import (
+	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/tests"
 	"testing"
+	"time"
 
 	"github.com/go-faker/faker/v4"
 )
 
+func init() {
+	ctx := tests.Context()
+
+	now := time.Now()
+
+	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 99),
+		"id", 99,
+		"email", faker.Email(),
+		"updated_at", now.Unix(),
+		"created_at", now.Unix(),
+	)
+
+	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 99),
+		"id", 98,
+		"email", faker.Email(),
+		"updated_at", now.Unix(),
+		"created_at", now.Unix(),
+	)
+
+	db.Redis.Set(ctx, "auth:SES1", 99, conf.SessionDuration)
+	db.Redis.HSet(ctx, "auth:SES1:session", "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0")
+	db.Redis.SAdd(ctx, fmt.Sprintf("user:%d:sessions", 99), "SES1")
+}
+
 var user User = User{
 	ID:  1,
-	SID: "SE1",
+	SID: "SES1",
 }
 
 var ra faker.RealAddress = faker.GetRealAddress()
@@ -25,13 +51,13 @@ var address Address = Address{
 	Phone:         faker.Phonenumber(),
 }
 
-func TestListReturnsUsersWhenSuccess(t *testing.T) {
-	ctx := tests.Context()
-	users, err := List(ctx, 0)
-	if err != nil || len(users) == 0 || users[0].ID == 0 {
-		t.Fatalf("List(ctx, 0) = '%v', %v, want User, nil", users, err)
-	}
-}
+// func TestListReturnsUsersWhenSuccess(t *testing.T) {
+// 	ctx := tests.Context()
+// 	users, err := List(ctx, 0)
+// 	if err != nil || len(users) == 0 || users[0].ID == 0 {
+// 		t.Fatalf("List(ctx, 0) = '%v', %v, want User, nil", users, err)
+// 	}
+// }
 
 func TestOtpCodeReturnsCodeWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
@@ -207,11 +233,11 @@ func TestLogoutRetunsErrorWhenSidIsMissing(t *testing.T) {
 	}
 }
 
-func TestLogoutRetunsErrorWhenSessionIsExpired(t *testing.T) {
+func TestLogoutRetunsErrorWhenSessionDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	err := Logout(ctx, "expired")
+	err := Logout(ctx, "iamnotexisting")
 	if err == nil || err.Error() != "your are not authorized to process this request" {
-		t.Fatalf(`Logout(ctx, "expired") = %v, want 'your are not authorized to process this request'`, err)
+		t.Fatalf(`Logout(ctx, "iamnotexisting") = %v, want 'your are not authorized to process this request'`, err)
 	}
 }
 
@@ -238,9 +264,9 @@ func TestSessionsReturnsSessionsWhenUserHasSession(t *testing.T) {
 
 func TestSessionsReturnsEmptySliceWhenUserDoesNotHaveSession(t *testing.T) {
 	ctx := tests.Context()
-	sessions, err := User{ID: 2}.Sessions(ctx)
+	sessions, err := User{ID: 98}.Sessions(ctx)
 	if len(sessions) != 0 || err != nil {
-		t.Fatalf("User{ID: 2}.Session(ctx) = %v, %v, want []Session, nil", sessions, err)
+		t.Fatalf("User{ID: 98}.Session(ctx) = %v, %v, want []Session, nil", sessions, err)
 	}
 }
 

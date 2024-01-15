@@ -50,7 +50,7 @@ xpath "string((//td)[1])" == "ORD1"
 xpath "//a[@href='/admin/orders/ORD1/edit.html']" exists
 
 # Search orders by status 
-GET {{host}}/admin/orders.html?q=Created
+GET {{host}}/admin/orders.html?q=created
 HX-Request: true
 HTTP 200
 [Asserts]

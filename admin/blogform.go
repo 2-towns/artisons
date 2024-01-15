@@ -28,16 +28,10 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 		status = form.Value["status"][0]
 	}
 
-	lang := ""
-	if len(form.Value["lang"]) > 0 {
-		lang = form.Value["lang"][0]
-	}
-
 	a := blogs.Article{
 		Title:       title,
 		Description: description,
 		Status:      status,
-		Lang:        lang,
 	}
 
 	if exists {

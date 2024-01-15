@@ -1,0 +1,10 @@
+SADD "admins" "hello@world.com" "lock@world.com"
+HSET "shop" logo "web/images/logo.jpg" active "1" guest "1" name "My Shop" city "Oran" address "Hay Yasmine" zipcode "31244" phone "0559682532" created_at 1705310389 updated_at 1705310389 
+HSET "home" key "home" title "Home Page" description "You can access to multiple products." url "/" created_at 1705310389 updated_at 1705310389 
+HSET "shop" key "shop" title "Shop Page" description "You can access to multiple products." url "/shop.html" created_at 1705310389 updated_at 1705310389 
+HSET "product:PDT1" title :"T-shirt Tester c’est douter"
+HSET "product:PDT2" title :"Mug Reste chez 127.0.0.1"
+HSET "product:PDT3" title :"Sticker Go Lang"
+HSET "product:PDT4" title :"Stylo HTMX"
+HSET "product:PDT5" title :"Gomme Python"
+

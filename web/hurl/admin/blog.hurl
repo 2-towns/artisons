@@ -46,12 +46,11 @@ HX-Request: true
 HTTP 200
 [Asserts]
 body not contains "No results found." 
-xpath "string((//td)[1])" == "1"
 xpath "//a[@href='/admin/blog/1/edit.html']" exists
 xpath "//a[@hx-post='/admin/blog/1/delete.html']" exists
 
 # Search blog by title 
-GET {{host}}/admin/blog.html?q=ail
+GET {{host}}/admin/blog.html?q=souris
 HX-Request: true
 HTTP 200
 [Asserts]

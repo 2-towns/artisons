@@ -348,7 +348,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	qs := "@status:{online} "
 
 	if q.Keywords != "" {
-		k := db.Escape(q.Keywords)
+		k := db.Escape( q.Keywords)
 		qs += fmt.Sprintf("(@title:'*%s*')|(@description:'*%s*')|(@sku:'{%s}')|(@id:'{%s})'", k, k, k, k)
 	}
 

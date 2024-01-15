@@ -148,7 +148,7 @@ func (u User) Delete(c context.Context) error {
 		}
 
 		rdb.HDel(ctx, "user", u.Email)
-		rdb.ZRem(ctx, "users", u.ID)
+		// rdb.ZRem(ctx, "users", u.ID)
 
 		for _, sid := range ids {
 			rdb.Del(ctx, "auth:"+sid+":session")
@@ -219,50 +219,50 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 }
 
 // List returns the users list in the application
-func List(c context.Context, page int) ([]User, error) {
-	l := slog.With(slog.Int("page", page))
-	l.LogAttrs(c, slog.LevelInfo, "listing the users")
+// func List(c context.Context, page int) ([]User, error) {
+// 	l := slog.With(slog.Int("page", page))
+// 	l.LogAttrs(c, slog.LevelInfo, "listing the users")
 
-	key := "users"
-	ctx := context.Background()
+// 	key := "users"
+// 	ctx := context.Background()
 
-	start, end := conf.Pagination(page)
-	users := []User{}
-	ids := db.Redis.ZRange(ctx, key, int64(start), int64(end)).Val()
-	pipe := db.Redis.Pipeline()
+// 	start, end := conf.Pagination(page)
+// 	users := []User{}
+// 	ids := db.Redis.ZRange(ctx, key, int64(start), int64(end)).Val()
+// 	pipe := db.Redis.Pipeline()
 
-	for _, v := range ids {
-		k := "user:" + v
-		pipe.HGetAll(ctx, k).Val()
-	}
+// 	for _, v := range ids {
+// 		k := "user:" + v
+// 		pipe.HGetAll(ctx, k).Val()
+// 	}
 
-	cmds, err := pipe.Exec(ctx)
-	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot get the user list", slog.String("error", err.Error()))
-		return users, errors.New("something went wrong")
-	}
+// 	cmds, err := pipe.Exec(ctx)
+// 	if err != nil {
+// 		l.LogAttrs(c, slog.LevelError, "cannot get the user list", slog.String("error", err.Error()))
+// 		return users, errors.New("something went wrong")
+// 	}
 
-	for _, cmd := range cmds {
-		key := fmt.Sprintf("%s", cmd.Args()[1])
+// 	for _, cmd := range cmds {
+// 		key := fmt.Sprintf("%s", cmd.Args()[1])
 
-		if cmd.Err() != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot get the user", slog.String("key", key), slog.String("error", err.Error()))
-			continue
-		}
+// 		if cmd.Err() != nil {
+// 			slog.LogAttrs(c, slog.LevelError, "cannot get the user", slog.String("key", key), slog.String("error", err.Error()))
+// 			continue
+// 		}
 
-		m := cmd.(*redis.MapStringStringCmd).Val()
-		user, err := parseUser(c, m)
-		if err != nil {
-			continue
-		}
+// 		m := cmd.(*redis.MapStringStringCmd).Val()
+// 		user, err := parseUser(c, m)
+// 		if err != nil {
+// 			continue
+// 		}
 
-		users = append(users, user)
-	}
+// 		users = append(users, user)
+// 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "got user list", slog.Int("users", len(users)))
+// 	l.LogAttrs(c, slog.LevelInfo, "got user list", slog.Int("users", len(users)))
 
-	return users, nil
-}
+// 	return users, nil
+// }
 
 // SaveAddress attachs an address to an user.
 // The data are stored with:

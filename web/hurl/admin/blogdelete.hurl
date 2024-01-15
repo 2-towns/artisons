@@ -31,7 +31,7 @@ HTTP 200
 [Asserts]
 body not contains "No results found." 
 [Captures]
-id: xpath "normalize-space((//td)[1])"
+id: xpath "normalize-space((//tr)[2]/td)"
 
 # Destroy the article
 POST {{host}}/admin/blog/{{id}}/delete.html
