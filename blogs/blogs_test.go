@@ -74,7 +74,7 @@ func TestValidateReturnsErrorWhenImageIsEmpty(t *testing.T) {
 	a := article
 	a.Image = ""
 
-	if err := a.Validate(c, "edit"); err == nil || err.Error() != "input:image" {
+	if err := a.Validate(c, "create"); err == nil || err.Error() != "input:image" {
 		t.Fatalf(`a.Validate(c) = %v, want "input:image"`, err)
 	}
 }
