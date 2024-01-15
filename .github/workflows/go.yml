@@ -34,7 +34,7 @@ jobs:
         with:
           go-version: "1.21.x"
       - name: Install redis  client
-        run: sudo apt install redis-cli
+        run: redis-cli ping
       - name: Install dependencies
         run: go get .
       - name: Create folder
