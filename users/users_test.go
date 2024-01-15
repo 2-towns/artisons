@@ -35,8 +35,8 @@ func init() {
 		"created_at", now.Unix(),
 	)
 
-	db.Redis.Set(ctx, "auth:SES1", user.ID, conf.SessionDuration)
-	db.Redis.HSet(ctx, "auth:SES1:session", "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0")
+	db.Redis.Set(ctx, "auth:"+user.SID, user.ID, conf.SessionDuration)
+	db.Redis.HSet(ctx, "auth:"+user.SID+":session", "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0")
 	db.Redis.SAdd(ctx, fmt.Sprintf("user:%d:sessions", user.ID), user.SID)
 }
 
