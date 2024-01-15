@@ -56,7 +56,7 @@ func parseRedisFile(ctx context.Context, file string) [][]interface{} {
 			}
 		}
 
-		if strings.Contains(line, "created_at") {
+		if strings.Contains(line, "created_at") && !strings.Contains(line, "FT.CREATE") {
 			args = append(args, "updated_at", time.Now().Unix())
 		}
 
@@ -113,6 +113,7 @@ func main() {
 	case "redis":
 		{
 			file := flag.String("file", "populate.redis", "The path to the populate file")
+
 			flag.Parse()
 
 			lines := parseRedisFile(ctx, *file)
@@ -123,9 +124,12 @@ func main() {
 			}
 
 			_, err := pipe.Exec(ctx)
+
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot populate", slog.String("error", err.Error()))
-				log.Fatal(err)
+				slog.LogAttrs(ctx, slog.LevelError, "got error when populatin", slog.String("error", err.Error()))
+				if err.Error() != "Unknown Index name" {
+					log.Fatal(err)
+				}
 			}
 		}
 
