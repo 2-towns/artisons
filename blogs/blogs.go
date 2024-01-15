@@ -53,7 +53,7 @@ func (p Article) Validate(c context.Context, mode string) error {
 		return fmt.Errorf("input:%s", low)
 	}
 
-	if mode == "edit" && p.Image == "" {
+	if mode == "create" && p.Image == "" {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the article image")
 		return errors.New("input:image")
 	}

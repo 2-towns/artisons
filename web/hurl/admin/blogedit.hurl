@@ -30,7 +30,6 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: 
-lang: en
 description: 100 % coton pour les couleurs unies
 status: online
 image_1:file,image.jpg;
@@ -45,7 +44,6 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
-lang: en
 description:
 status: online
 image_1:file,image.jpg;
@@ -60,7 +58,6 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
-lang: en
 description: Great description
 status: 
 image_1:file,image.jpg;
@@ -75,7 +72,6 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
-lang: en
 description: Great description
 status: hello
 image_1:file,image.jpg;
@@ -90,7 +86,6 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
-lang: en
 description: Great description
 status: online
 image:file,image.txt;
@@ -105,7 +100,6 @@ POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
-lang: en
 description: Great description
 status: online
 image:file,image.jpg;
