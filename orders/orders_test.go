@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/products"
@@ -17,15 +18,36 @@ import (
 	"golang.org/x/text/message"
 )
 
+var order Order = Order{
+	ID:       "ORD1",
+	UID:      99,
+	Delivery: "collect",
+	Payment:  "cash",
+	Quantities: map[string]int{
+		"PDT111": 1,
+	},
+	DeliveryCost: 5,
+	Address: users.Address{
+		Firstname:     "Arnaud",
+		Lastname:      "Arnaud",
+		City:          "Oran",
+		Street:        "Hay Yasmine",
+		Complementary: "Hay Salam",
+		Zipcode:       "31244",
+		Phone:         "0559682532",
+	},
+	CreatedAt: time.Unix(1699628645, 0),
+}
+
 func init() {
 	ctx := tests.Context()
 	now := time.Now()
 	createdAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
 	updatedAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
 
-	db.Redis.HSet(ctx, "order:ORD1",
-		"id", "ORD1",
-		"uid", 99,
+	db.Redis.HSet(ctx, "order:"+order.ID,
+		"id", order.ID,
+		"uid", order.UID,
 		"delivery", "home",
 		"payment", "card",
 		"payment_status", "payment_progress",
@@ -44,8 +66,8 @@ func init() {
 	)
 
 	db.Redis.HSet(ctx, "product:PDT111",
-		"id", "PDT1",
-		"sku", "SKU1",
+		"id", "PDT111",
+		"sku", "SKU111",
 		"title", db.Escape("T-shirt Tester c’est douter"),
 		"description", db.Escape("T-shirt développeur unisexe Tester c’est douter"),
 		"slug", stringutil.Slugify(db.Escape("T-shirt Tester c’est douter")),
@@ -63,34 +85,12 @@ func init() {
 		"updated_at", now.Unix(),
 	)
 
-	db.Redis.HSet(ctx, "order:ORD1:products", "PDT111", 1).Result()
-	db.Redis.HSet(ctx, "user:99", "email", "arnaud@yandex.com").Result()
-
-	db.Redis.ZAdd(ctx, "user:ORD1:orders", redis.Z{
+	db.Redis.HSet(ctx, "order:"+order.ID+":products", "PDT111", 1).Result()
+	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", order.UID), "email", "arnaud@yandex.com").Result()
+	db.Redis.ZAdd(ctx, "user:"+order.ID+" :orders", redis.Z{
 		Score:  float64(now.Unix()),
-		Member: "ORD1",
+		Member: order.ID,
 	}).Result()
-}
-
-var order Order = Order{
-	ID:       "ORD1",
-	UID:      1,
-	Delivery: "collect",
-	Payment:  "cash",
-	Quantities: map[string]int{
-		"PDT1": 1,
-	},
-	DeliveryCost: 5,
-	Address: users.Address{
-		Firstname:     "Arnaud",
-		Lastname:      "Arnaud",
-		City:          "Oran",
-		Street:        "Hay Yasmine",
-		Complementary: "Hay Salam",
-		Zipcode:       "31244",
-		Phone:         "0559682532",
-	},
-	CreatedAt: time.Unix(1699628645, 0),
 }
 
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {
@@ -224,16 +224,16 @@ func TestFindReturnsErrorWhenOrderIsNotFound(t *testing.T) {
 func TestAddNoteReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, "ORD1", "Ta commande, tu peux te la garder !"); err != nil {
-		t.Fatalf(`AddNote(ctx, "ORD1", "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
+	if err := AddNote(ctx, order.ID, "Ta commande, tu peux te la garder !"); err != nil {
+		t.Fatalf(`AddNote(ctx, order.ID, "Ta commande, tu peux te la garder !") = '%v', want nil`, err)
 	}
 }
 
 func TestAddNoteReturnsErrorWhenNoteIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, "ORD1", ""); err == nil || err.Error() != "input:note" {
-		t.Fatalf(`orders.AddNote(ctx, "ORD1", "") = '%s', want 'input:note'`, err.Error())
+	if err := AddNote(ctx, order.ID, ""); err == nil || err.Error() != "input:note" {
+		t.Fatalf(`orders.AddNote(ctx, order.ID, "") = '%s', want 'input:note'`, err.Error())
 	}
 }
 
@@ -293,15 +293,15 @@ func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 	expected := `Hi Arnaud,
 Woo hoo! Your order is on its way. Your order details can be found below.
 
-Order ID: ORD1
+Order ID: ` + order.ID + `
 Order date: Friday, November 11
 Order total: 105.50
 
-+-----------------------------+----------+-------+-------+-------------------------------------------------------+
-| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                  |
-+-----------------------------+----------+-------+-------+-------------------------------------------------------+
-| T-shirt Tester c’est douter |        1 | 100.5 | 100.5 | http://localhost/PDT1-t-shirt-tester-cest-douter.html |
-+-----------------------------+----------+-------+-------+-------------------------------------------------------+
++-----------------------------+----------+-------+-------+---------------------------------------------------------+
+| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                    |
++-----------------------------+----------+-------+-------+---------------------------------------------------------+
+| T-shirt Tester c’est douter |        1 | 100.5 | 100.5 | http://localhost/PDT111-t-shirt-tester-cest-douter.html |
++-----------------------------+----------+-------+-------+---------------------------------------------------------+
 
 See you around,
 The Customer Experience Team at gifthub shop`
