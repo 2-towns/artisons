@@ -64,6 +64,7 @@ func init() {
 	)
 
 	db.Redis.HSet(ctx, "order:ORD1:products", "PDT111", 1).Result()
+	db.Redis.HSet(ctx, "user:99", "email", "arnaud@yandex.com").Result()
 
 	db.Redis.ZAdd(ctx, "user:ORD1:orders", redis.Z{
 		Score:  float64(now.Unix()),
