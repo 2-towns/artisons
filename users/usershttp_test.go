@@ -14,10 +14,10 @@ import (
 
 func TestFindBySessionIDReturnsSessionWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	u, err := findBySessionID(ctx, "SES1")
+	u, err := findBySessionID(ctx, user.SID)
 
 	if err != nil || u.SID == "" || u.Email == "" {
-		t.Fatalf(`findBySessionID(ctx, "SES1") = %v, %v, want User, nil`, u, err)
+		t.Fatalf(`findBySessionID(ctx, user.SID) = %v, %v, want User, nil`, u, err)
 	}
 }
 
@@ -221,7 +221,7 @@ func TestMiddlewareRefreshesSessionIdWhenItExists(t *testing.T) {
 
 	cookie := &http.Cookie{
 		Name:     cookies.SessionID,
-		Value:    "SES1",
+		Value:    user.SID,
 		MaxAge:   int(conf.Cookie.MaxAge),
 		Path:     "/",
 		HttpOnly: true,
@@ -258,8 +258,8 @@ func TestMiddlewareRefreshesSessionIdWhenItExists(t *testing.T) {
 		t.Fatalf(`c.Name = %s, want %s`, c.Name, cookies.SessionID)
 	}
 
-	if c.Value != "SES1" {
-		t.Fatalf(`c.Value = %s, want 'SES1'`, c.Value)
+	if c.Value != user.SID {
+		t.Fatalf(`c.Value = %s, want '%s'`, c.Value, user.SID)
 	}
 
 	if c.Secure != conf.Cookie.Secure {
