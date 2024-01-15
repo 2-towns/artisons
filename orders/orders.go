@@ -152,7 +152,7 @@ func (o Order) Save(c context.Context) (string, error) {
 
 	if len(o.Quantities) == 0 {
 		l.LogAttrs(c, slog.LevelInfo, "the product list is empty")
-		return "", errors.New("The cart is empty.")
+		return "", errors.New("the cart is empty")
 	}
 
 	if err := validators.V.Struct(o.Address); err != nil {
@@ -176,7 +176,7 @@ func (o Order) Save(c context.Context) (string, error) {
 
 	if !products.Availables(c, pids) {
 		l.LogAttrs(c, slog.LevelInfo, "no product is available")
-		return "", errors.New("The cart is empty.")
+		return "", errors.New("the cart is empty")
 	}
 
 	oid, err := stringutil.Random()

@@ -61,7 +61,7 @@ xpath "//a[@href='/admin/products/PDT1/edit.html']" exists
 xpath "//a[@hx-post='/admin/products/PDT1/delete.html']" exists
 
 # Search products by title 
-GET {{host}}/admin/products.html?q=Mug%20HTMX
+GET {{host}}/admin/products.html?q=tester
 HX-Request: true
 HTTP 200
 [Asserts]

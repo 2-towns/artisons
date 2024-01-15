@@ -7,9 +7,11 @@ import (
 	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"gifthub/users"
+	"math/rand"
 	"testing"
 	"time"
 
+	"github.com/go-faker/faker/v4"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -41,7 +43,27 @@ func init() {
 		"created_at", createdAt.Unix(),
 	)
 
-	db.Redis.HSet(ctx, "order:ORD1:products", "PDT1", 1).Result()
+	db.Redis.HSet(ctx, "product:PDT111",
+		"id", "PDT1",
+		"sku", "SKU1",
+		"title", db.Escape("T-shirt Tester c’est douter"),
+		"description", db.Escape("T-shirt développeur unisexe Tester c’est douter"),
+		"slug", stringutil.Slugify(db.Escape("T-shirt Tester c’est douter")),
+		"currency", "EUR",
+		"price", 100.5,
+		"quantity", rand.Intn(10),
+		"status", "online",
+		"weight", rand.Float32(),
+		"mid", faker.Phonenumber(),
+		"tags", "clothes",
+		"image_1", "PDT1.jpeg",
+		"image_2", "PDT1.jpeg",
+		"links", "",
+		"created_at", now.Unix(),
+		"updated_at", now.Unix(),
+	)
+
+	db.Redis.HSet(ctx, "order:ORD1:products", "PDT111", 1).Result()
 
 	db.Redis.ZAdd(ctx, "user:ORD1:orders", redis.Z{
 		Score:  float64(now.Unix()),
@@ -132,8 +154,8 @@ func TestSaveReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 	o.Quantities = map[string]int{}
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "The cart is empty." {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'The cart is empty.'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "the cart is empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'the cart is empty'`, oid, err)
 	}
 }
 
@@ -142,8 +164,8 @@ func TestSaveReturnsErrorWhenProductsAreUnavailable(t *testing.T) {
 	o.Quantities = map[string]int{"toto12": 1}
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "The cart is empty." {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want "", 'The cart is empty.'`, oid, err)
+	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "the cart is empty" {
+		t.Fatalf(`o.Save(ctx) = '%s', %v, want "", 'the cart is empty'`, oid, err)
 	}
 }
 
@@ -274,11 +296,11 @@ Order ID: ORD1
 Order date: Friday, November 11
 Order total: 105.50
 
-+-----------------------------+----------+-------+-------+--------------------------------------------------------+
-| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                   |
-+-----------------------------+----------+-------+-------+--------------------------------------------------------+
-| T-shirt Tester c’est douter |        1 | 100.5 | 100.5 | http://localhost/PDT1-t-shirt-tester-c’est-douter.html |
-+-----------------------------+----------+-------+-------+--------------------------------------------------------+
++-----------------------------+----------+-------+-------+-------------------------------------------------------+
+| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                  |
++-----------------------------+----------+-------+-------+-------------------------------------------------------+
+| T-shirt Tester c’est douter |        1 | 100.5 | 100.5 | http://localhost/PDT1-t-shirt-tester-cest-douter.html |
++-----------------------------+----------+-------+-------+-------------------------------------------------------+
 
 See you around,
 The Customer Experience Team at gifthub shop`

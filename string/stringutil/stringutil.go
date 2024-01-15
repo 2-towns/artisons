@@ -4,8 +4,10 @@ package stringutil
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"gifthub/conf"
 	"io"
-	"strings"
+
+	"github.com/gosimple/slug"
 )
 
 // Random provides a random unique string
@@ -20,5 +22,5 @@ func Random() (string, error) {
 
 // Slugify returns the slug representation of a title
 func Slugify(title string) string {
-	return strings.ToLower(strings.ReplaceAll(title, " ", "-"))
+	return slug.MakeLang(title, conf.DefaultLocale.String())
 }
