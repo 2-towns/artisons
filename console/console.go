@@ -17,14 +17,54 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/text/message"
 )
 
-// var (
-// 	printer = message.NewPrinter(locales.Console)
-// )
+func parseRedisFile(ctx context.Context, file string) [][]interface{} {
+	f, err := os.ReadFile(file)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot open the file", slog.String("error", err.Error()))
+		log.Fatal(err)
+
+	}
+
+	cmds := strings.Split(string(f), "\n")
+	lines := [][]interface{}{}
+
+	for _, line := range cmds {
+		if line == "" {
+			continue
+		}
+
+		args := []interface{}{}
+
+		r := csv.NewReader(strings.NewReader(line))
+		r.Comma = ' '
+		fields, err := r.Read()
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "error when parsiling line", slog.String("line", line), slog.String("error", err.Error()))
+			log.Fatalln(err)
+		}
+
+		for _, val := range fields {
+			if val != "" {
+				args = append(args, val)
+			}
+		}
+
+		if strings.Contains(line, "created_at") {
+			args = append(args, "updated_at", time.Now().Unix())
+		}
+
+		lines = append(lines, args)
+	}
+
+	return lines
+}
 
 func main() {
 	logs.Init()
@@ -40,31 +80,10 @@ func main() {
 
 	switch command {
 
-	case "migrate":
-		{
-			ctx := context.Background()
-
-			err := db.ProductIndex(ctx)
-			if err != nil {
-				log.Fatalln()
-			}
-
-			err = db.OrderIndex(ctx)
-			if err != nil {
-				log.Fatalln()
-			}
-
-			err = db.BlogIndex(ctx)
-			if err != nil {
-				log.Fatalln()
-			}
-
-			slog.LogAttrs(ctx, slog.LevelInfo, "migration successful")
-		}
-
 	case "import":
 		{
 			file := flag.String("file", "./web/data/data.csv", "The path to the csv file")
+			flag.Parse()
 
 			f, err := os.Open(*file)
 			if err != nil {
@@ -89,6 +108,25 @@ func main() {
 			}
 
 			slog.LogAttrs(ctx, slog.LevelInfo, "import successful", slog.Int("lines", lines))
+		}
+
+	case "redis":
+		{
+			file := flag.String("file", "populate.redis", "The path to the populate file")
+			flag.Parse()
+
+			lines := parseRedisFile(ctx, *file)
+			pipe := db.Redis.Pipeline()
+
+			for _, line := range lines {
+				pipe.Do(ctx, line...).Result()
+			}
+
+			_, err := pipe.Exec(ctx)
+			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelError, "cannot populate", slog.String("error", err.Error()))
+				log.Fatal(err)
+			}
 		}
 
 	case "orderstatus":

@@ -303,7 +303,7 @@ func (u User) SaveAddress(c context.Context, a Address) error {
 
 // Sessions retrieve the active user sessions.
 func (u User) Sessions(c context.Context) ([]Session, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "listing the sessions")
+	slog.LogAttrs(c, slog.LevelInfo, "listing the sessions", slog.Int64("id", u.ID))
 
 	ctx := context.Background()
 	var sessions []Session

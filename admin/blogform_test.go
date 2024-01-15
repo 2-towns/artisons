@@ -65,40 +65,6 @@ func TestProcessBlogtFormReturnsErrorWhenStatusIsInvalid(t *testing.T) {
 	}
 }
 
-func TestProcessBlogtFormReturnsErrorWhenLangIsEmpty(t *testing.T) {
-	c := tests.Context()
-
-	a := make(map[string][]string)
-	for k, val := range article {
-		a[k] = val
-	}
-
-	a["lang"] = []string{""}
-
-	f := multipart.Form{Value: a}
-
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:lang" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:lang'`, err.Error())
-	}
-}
-
-func TestProcessBlogtFormReturnsErrorWhenLangIsInvalid(t *testing.T) {
-	c := tests.Context()
-
-	a := make(map[string][]string)
-	for k, val := range article {
-		a[k] = val
-	}
-
-	a["lang"] = []string{"!!!"}
-
-	f := multipart.Form{Value: a}
-
-	if _, err := processBlogFrom(c, f, ""); err == nil || err.Error() != "input:lang" {
-		t.Fatalf(`processBlogFrom(c, f, "") = _, %v, want _, 'input:lang'`, err.Error())
-	}
-}
-
 func TestProcessBlogtFormReturnsErrorWhenImageIsInvalid(t *testing.T) {
 	c := tests.Context()
 

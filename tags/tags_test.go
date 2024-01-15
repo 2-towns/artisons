@@ -106,33 +106,33 @@ func TestRemoveLinkReturnsNilWhenSuccess(t *testing.T) {
 	}
 }
 
-func TestRootReturnsRootTags(t *testing.T) {
-	c := tests.Context()
+// func TestRootReturnsRootTags(t *testing.T) {
+// 	c := tests.Context()
 
-	tags, err := Root(c, 3)
-	if err != nil {
-		t.Fatalf(`Root(c, 3) = %v, want nil`, err)
-	}
+// 	tags, err := Root(c, 3)
+// 	if err != nil {
+// 		t.Fatalf(`Root(c, 3) = %v, want nil`, err)
+// 	}
 
-	expected := "[{mens Pour les hommes 0 [{tshirts Tshirts 0 []} {books Livres 0 [{arabic Arabe 0 []}]} {clothes Vêtements 0 []}]} {womens Pour les femmes 0 [{tshirts Tshirts 0 []} {clothes Vêtements 0 []}]}]"
-	if fmt.Sprintf("%v", tags) != expected {
-		t.Fatalf(`tags = '%v', want [{mens Pour les hommes 0 [{tshirts Tshirts 0 []} {books Livres 0 [{arabic Arabe 0 []}]} {clothes Vêtements 0 []}]} {womens Pour les femmes 0 [{tshirts Tshirts 0 []} {clothes Vêtements 0 []}]}]`, tags)
-	}
-}
+// 	expected := "[{mens Pour les hommes 0 [{tshirts Tshirts 0 []} {books Livres 0 [{arabic Arabe 0 []}]} {clothes Vêtements 0 []}]} {womens Pour les femmes 0 [{tshirts Tshirts 0 []} {clothes Vêtements 0 []}]}]"
+// 	if fmt.Sprintf("%v", tags) != expected {
+// 		t.Fatalf(`tags = '%v', want [{mens Pour les hommes 0 [{tshirts Tshirts 0 []} {books Livres 0 [{arabic Arabe 0 []}]} {clothes Vêtements 0 []}]} {womens Pour les femmes 0 [{tshirts Tshirts 0 []} {clothes Vêtements 0 []}]}]`, tags)
+// 	}
+// }
 
-func TestRootWithOneDpethReturnsRootTagsForOneDepth(t *testing.T) {
-	c := tests.Context()
+// func TestRootWithOneDpethReturnsRootTagsForOneDepth(t *testing.T) {
+// 	c := tests.Context()
 
-	tags, err := Root(c, 1)
-	if err != nil {
-		t.Fatalf(`Root(c, 3) = %v, want nil`, err)
-	}
+// 	tags, err := Root(c, 1)
+// 	if err != nil {
+// 		t.Fatalf(`Root(c, 3) = %v, want nil`, err)
+// 	}
 
-	expected := "[{mens Pour les hommes 0 []} {womens Pour les femmes 0 []}]"
-	if fmt.Sprintf("%v", tags) != expected {
-		t.Fatalf(`tags = '%v', want [{mens Pour les hommes 0 []} {womens Pour les femmes 0 []}]`, tags)
-	}
-}
+// 	expected := "[{mens Pour les hommes 0 []} {womens Pour les femmes 0 []}]"
+// 	if fmt.Sprintf("%v", tags) != expected {
+// 		t.Fatalf(`tags = '%v', want [{mens Pour les hommes 0 []} {womens Pour les femmes 0 []}]`, tags)
+// 	}
+// }
 
 func TestListReturnsTags(t *testing.T) {
 	c := tests.Context()

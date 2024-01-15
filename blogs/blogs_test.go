@@ -52,7 +52,7 @@ func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
 	a := article
 	a.Title = ""
 
-	if err := a.Validate(c); err == nil || err.Error() != "input:title" {
+	if err := a.Validate(c, "create"); err == nil || err.Error() != "input:title" {
 		t.Fatalf(`a.Validate(c) = %v, want "input:title"`, err.Error())
 	}
 }
@@ -63,48 +63,28 @@ func TestValidReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 	a := article
 	a.Description = ""
 
-	if err := a.Validate(c); err == nil || err.Error() != "input:description" {
+	if err := a.Validate(c, "create"); err == nil || err.Error() != "input:description" {
 		t.Fatalf(`a.Validate(c) = %v, want "input:description"`, err.Error())
 	}
 }
 
-func TestValidReturnsErrorWhenLangIsEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenImageIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	a := article
+	a.Image = ""
 
-	if err := a.Validate(c); err == nil || err.Error() != "input:lang" {
-		t.Fatalf(`a.Validate(c) = %v, want "input:lang"`, err.Error())
+	if err := a.Validate(c, "edit"); err == nil || err.Error() != "input:image" {
+		t.Fatalf(`a.Validate(c) = %v, want "input:image"`, err)
 	}
 }
-
-func TestValidReturnsErrorWhenLangIsInvalid(t *testing.T) {
-	c := tests.Context()
-
-	a := article
-
-	if err := a.Validate(c); err == nil || err.Error() != "input:lang" {
-		t.Fatalf(`a.Validate(c) = %v, want "input:lang"`, err.Error())
-	}
-}
-
-// func TestValidateReturnsErrorWhenImageIsEmpty(t *testing.T) {
-// 	c := tests.Context()
-
-// 	a := article
-// 	a.Image = ""
-
-// 	if err := a.Validate(c); err == nil || err.Error() != "input:image" {
-// 		t.Fatalf(`a.Validate(c) = %v, want "input:image"`, err.Error())
-// 	}
-// }
 
 func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	os.Create(path.Join(conf.WorkingSpace, "web", "tmp", "hello"))
 
-	if err := article.Validate(c); err != nil {
+	if err := article.Validate(c, "create"); err != nil {
 		t.Fatalf(`a.Validate(c) = %v, want nil`, err.Error())
 	}
 }

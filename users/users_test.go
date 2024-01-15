@@ -11,33 +11,33 @@ import (
 	"github.com/go-faker/faker/v4"
 )
 
+var user User = User{
+	ID:  99,
+	SID: "SES99",
+}
+
 func init() {
 	ctx := tests.Context()
 
 	now := time.Now()
 
-	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 99),
-		"id", 99,
+	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", user.ID),
+		"id", user.ID,
 		"email", faker.Email(),
 		"updated_at", now.Unix(),
 		"created_at", now.Unix(),
 	)
 
-	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 99),
+	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 98),
 		"id", 98,
 		"email", faker.Email(),
 		"updated_at", now.Unix(),
 		"created_at", now.Unix(),
 	)
 
-	db.Redis.Set(ctx, "auth:SES1", 99, conf.SessionDuration)
+	db.Redis.Set(ctx, "auth:SES1", user.ID, conf.SessionDuration)
 	db.Redis.HSet(ctx, "auth:SES1:session", "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0")
-	db.Redis.SAdd(ctx, fmt.Sprintf("user:%d:sessions", 99), "SES1")
-}
-
-var user User = User{
-	ID:  1,
-	SID: "SES1",
+	db.Redis.SAdd(ctx, fmt.Sprintf("user:%d:sessions", user.ID), user.SID)
 }
 
 var ra faker.RealAddress = faker.GetRealAddress()

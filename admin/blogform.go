@@ -33,6 +33,7 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 		Description: description,
 		Status:      status,
 	}
+	mode := "create"
 
 	if exists {
 		id, err := strconv.ParseInt(id, 10, 64)
@@ -41,6 +42,7 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 			return blogs.Article{}, errors.New("input:id")
 		}
 		a.ID = id
+		mode = "edit"
 	} else {
 		id, err := blogs.NextID(ctx)
 		if err != nil {
@@ -49,7 +51,7 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 		a.ID = id
 	}
 
-	err := a.Validate(ctx)
+	err := a.Validate(ctx, mode)
 	if err != nil {
 		return blogs.Article{}, err
 	}

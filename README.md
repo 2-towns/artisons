@@ -54,13 +54,13 @@ Démarrer le serveur imgproxy:
 Pour peupler les données, lancer la commande suivante:
 
 ```
-redis-cli -h localhost -p 6379 < populate.redis
+go run console/console.go -file populate.redis redis
 ```
 
 Afin de pouvoir utiliser la recherche, il faut lancer le script de migration:
 
 ```
-redis-cli -h localhost -p 6379 < migrate.redis
+go run console/console.go -file migrate.redis redis
 ```
 
 L'admin est accessible à l'adresse suivante: `/admin/index.html`. Un compte utilisateur admin existe avec l'adresse suivante: `hello@world.com`. L'OTP est affiché dans les traces du serveur.
@@ -68,7 +68,7 @@ L'admin est accessible à l'adresse suivante: `/admin/index.html`. Un compte uti
 Pour préparer l'environnement pour les tests fonctionnels, il faut lancer: 
 
 ```
-redis-cli -h localhost -p 6379 < hurl.redis
+go run console/console.go -file hurl.redis redis
 ```
 
 ## Tester

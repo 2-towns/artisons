@@ -15,7 +15,7 @@ jobs:
         image: redis/redis-stack-server
         # Set health checks to wait until redis has started
         options: >-
-          --health-cmd "redis-cli ping && redis-cli -h localhost -p 6379 < populate.redis"
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -37,16 +37,17 @@ jobs:
         run: go get .
       - name: Create folder
         run: mkdir -p ./web/images/articles
-      - name: Add Redis indexes 
-        run: redis-cli -h localhost -p 6379 < migrate.redis
+      - name: Populating data
+        run: |
+          go run console/console.go -file populate.redis redis
+          go run console/console.go -file migrate.redis redis
+          go run console/console.go -file hurl.redis redis
+      - name: Run migration
+        run: go run console/console.go migrate
       - name: Build
         run: go build -v ./...
       - name: Run the unit tests
         run: go test -v ./...
-      - name: Prepare functional test data 
-        run: |
-          redis-cli -h localhost -p 6379 < populate.redis
-          redis-cli -h localhost -p 6379 < hurl.redis
       - name: Install HURL
         shell: bash
         run: |

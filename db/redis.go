@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"gifthub/conf"
-	"log/slog"
+	"log"
 	"strings"
 
 	"github.com/redis/go-redis/v9"
@@ -21,105 +21,6 @@ var ProductIdx = "product-idx"
 var OrderIdx = "order-idx"
 var BlogIdx = "blog-idx"
 var LocaleIdx = "locale-idx"
-
-func ProductIndex(ctx context.Context) error {
-	_, err := Redis.Do(
-		ctx,
-		"FT.DROPINDEX",
-		ProductIdx,
-	).Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot make remove the previous product index", slog.String("error", err.Error()))
-	}
-
-	_, err = Redis.Do(
-		ctx,
-		"FT.CREATE", ProductIdx,
-		"ON", "HASH",
-		"PREFIX", "1", "product:",
-		"SCHEMA",
-		"id", "TAG",
-		"title", "TEXT",
-		"sku", "TAG",
-		"description", "TEXT",
-		"price", "NUMERIC", "SORTABLE",
-		"created_at", "NUMERIC", "SORTABLE",
-		"updated_at", "NUMERIC", "SORTABLE",
-		"tags", "TAG", "SEPARATOR", ";",
-		"status", "TAG",
-		"meta", "TAG", "SEPARATOR", ";",
-	).Result()
-
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot make product migration", slog.String("error", err.Error()))
-	}
-
-	return err
-}
-
-func OrderIndex(ctx context.Context) error {
-	_, err := Redis.Do(
-		ctx,
-		"FT.DROPINDEX",
-		OrderIdx,
-	).Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot make remove the previous order index", slog.String("error", err.Error()))
-	}
-
-	_, err = Redis.Do(
-		ctx,
-		"FT.CREATE", OrderIdx,
-		"ON", "HASH",
-		"PREFIX", "1", "order:",
-		"SCHEMA",
-		"id", "TAG",
-		"status", "TAG",
-		"delivery", "TAG",
-		"payment", "TAG",
-		"type", "TAG",
-		"created_at", "NUMERIC", "SORTABLE",
-		"updated_at", "NUMERIC", "SORTABLE",
-	).Result()
-
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot make order migration", slog.String("error", err.Error()))
-	}
-
-	return err
-}
-
-func BlogIndex(ctx context.Context) error {
-	_, err := Redis.Do(
-		ctx,
-		"FT.DROPINDEX",
-		BlogIdx,
-	).Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot make remove the previous blog index", slog.String("error", err.Error()))
-	}
-
-	_, err = Redis.Do(
-		ctx,
-		"FT.CREATE", BlogIdx,
-		"ON", "HASH",
-		"PREFIX", "1", "blog:",
-		"SCHEMA",
-		"id", "TAG",
-		"status", "TAG",
-		"lang", "TAG",
-		"title", "TEXT",
-		"description", "TEXT",
-		"created_at", "NUMERIC", "SORTABLE",
-		"updated_at", "NUMERIC", "SORTABLE",
-	).Result()
-
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot make blog migration", slog.String("error", err.Error()))
-	}
-
-	return err
-}
 
 // ConvertMap converts the redis search result to an map
 func ConvertMap(m map[interface{}]interface{}) map[string]string {
@@ -177,6 +78,15 @@ func Escape(value string) string {
 
 func Unescape(s string) string {
 	return strings.ReplaceAll(s, "\\", "")
+}
+
+func Run(ctx context.Context, args []interface{}) error {
+	log.Println(args)
+	r, err := Redis.Do(ctx, args...).Result()
+
+	log.Println(r)
+
+	return err
 }
 
 /*func SubscribeToExpireKeys() {
