@@ -43,7 +43,7 @@ type Query struct {
 	Lang     string
 }
 
-func (p Article) Validate(c context.Context, mode string) error {
+func (p Article) Validate(c context.Context) error {
 	slog.LogAttrs(c, slog.LevelInfo, "validating a article")
 
 	if err := validators.V.Struct(p); err != nil {
@@ -51,11 +51,6 @@ func (p Article) Validate(c context.Context, mode string) error {
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("input:%s", low)
-	}
-
-	if mode == "create" && p.Image == "" {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the article image")
-		return errors.New("input:image")
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "article validated")
