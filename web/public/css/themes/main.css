@@ -31,6 +31,10 @@ a:visited {
 	padding: 48px 0px;
 	width: 80%;
 	margin: auto;
+
+	.logo {
+		height: 64px;
+	}
 }
 
 main {
@@ -88,16 +92,14 @@ option {
 }
 
 
-.search-icon {
+.search-svg {
 	position: absolute;
 	left: .625rem;
 	top: 50%;
 	transform: translateY(-50%);
 
-	path {
-		fill: var(--gray-dark);
 
-	}
+
 }
 
 .categories-preview-container {
@@ -199,22 +201,57 @@ option {
 
 .bottom-nav {
 	position: fixed;
-	/* Fixe le menu en bas de la fenêtre */
 	bottom: 0;
-	/* Aligné en bas */
 	left: 0;
-	/* Étend le menu sur toute la largeur à partir du bord gauche */
 	width: 100%;
-	/* Assure que le menu s'étend sur toute la largeur */
 	background-color: #ffffff;
-	/* Couleur de fond du menu */
 	box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-	/* Ombre légère pour donner de la profondeur */
 	display: flex;
-	justify-content: center;
+	justify-content: space-around;
 	align-items: center;
 	height: 4rem;
-	/* Hauteur du menu */
 	z-index: 5;
-	/* Assure que le menu reste au-dessus des autres éléments de la page */
+}
+
+.nav-item.home-svg {
+	svg {
+
+
+		path {
+			stroke: gray;
+
+		}
+
+	}
+}
+
+.nav-item.categories-svg {
+	svg {
+		width: 26px;
+		height: 26px;
+
+		g {
+			path {
+				stroke-linecap: round;
+				stroke-linejoin: round;
+			}
+		}
+	}
+}
+
+.nav-item.basket-svg {
+	svg {
+		width: 24px;
+		height: 24px;
+
+		g {
+			path {
+				stroke: #272727;
+				stroke-opacity: 0.5;
+				stroke-width: 1;
+				stroke-linecap: round;
+				stroke-linejoin: round;
+			}
+		}
+	}
 }
