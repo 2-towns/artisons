@@ -36,7 +36,7 @@
                        value="{{.Data.Title}}" />
 
                 <small class="input-help">
-                    {{translate .Lang "The product URL will be generated from this title."}}
+                    {{translate .Lang "For the product page, use {{key}} to insert the product title."}}
                 </small>
 
                 <div id="title-error"></div>
@@ -54,12 +54,19 @@
                        required
                        value="{{.Data.Description}}" />
 
+                <small class="input-help">
+                    {{translate
+                    .Lang
+                    "For the product page, use {{key}} to insert the beginning of the product description."
+                    }}
+                </small>
+
                 <div id="description-error"></div>
             </div>
 
             <div class="form-row" id="url-row">
                 <label class="input-label" for="url">
-                    {{translate .Lang "text_products_url"}}
+                    {{translate .Lang "Url"}}
                 </label>
 
                 <input
@@ -69,7 +76,8 @@
                        value="{{.Data.URL}}" />
 
                 <small class="input-help">
-                    {{translate .Lang "text_products_url"}}
+                    {{translate .Lang
+                    "Be careful ! By changing this, the url will need to be reindexed by the search engines."}}
                 </small>
 
                 <div id="url-error"></div>

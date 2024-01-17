@@ -97,9 +97,9 @@ func init() {
 		k := val["key"]
 		c := URLs[k]
 		c.Key = k
-		c.Title = val["title"]
-		c.URL = val["url"]
-		c.Description = val["description"]
+		c.Title = db.Unescape(val["title"])
+		c.URL = db.Unescape(val["url"])
+		c.Description = db.Unescape(val["description"])
 		c.CreatedAt = time.Unix(createdAt, 0)
 		c.UpdatedAt = time.Unix(updatedAt, 0)
 		URLs[k] = c

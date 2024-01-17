@@ -91,7 +91,7 @@ func EditSeo(w http.ResponseWriter, r *http.Request) {
 
 	cookie := &http.Cookie{
 		Name:     cookies.FlashMessage,
-		Value:    "text_seo_editsuccess",
+		Value:    "The data has been saved successfully.",
 		MaxAge:   int(time.Minute.Seconds()),
 		Path:     "/",
 		HttpOnly: true,
