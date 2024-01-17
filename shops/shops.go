@@ -52,18 +52,17 @@ type ShopSettings struct {
 	// Redirect after  the product was added to the cart
 	Redirect bool
 
-	// Display last products when the quantity is under the amount.
-	// Set to zero to disable this feature.
-	LastProducts int
-
-	// AdvancedSearch enables the advanced search
-	AdvancedSearch bool
-
 	// Cache enables the advanced search
 	Cache bool
 
 	// Google map key used for geolocation api
 	GmapKey string
+
+	// Enable the Redis fuzzy search
+	FuzzySearch bool
+
+	// If true, the search will look for the exact match pattern by default
+	ExactMatchSearch bool
 }
 
 type Settings struct {
@@ -101,16 +100,6 @@ func init() {
 		}
 	}
 
-	var las int = 0
-	if d["milast_productsn"] != "" {
-		i, err := strconv.ParseInt(d["last_products"], 10, 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the last_products", slog.String("last_products", d["last_products"]), slog.String("error", err.Error()))
-		} else {
-			las = int(i)
-		}
-	}
-
 	Data = Settings{
 		Contact: Contact{
 			Name:    d["name"],
@@ -125,16 +114,16 @@ func init() {
 			Banner3: d["banner_3"],
 		},
 		ShopSettings: ShopSettings{
-			Guest:          d["guest"] == "1",
-			Quantity:       d["quantity"] == "1",
-			New:            d["new"] == "1",
-			Items:          items,
-			Min:            min,
-			Redirect:       d["redirect"] == "1",
-			LastProducts:   las,
-			AdvancedSearch: d["advanced_search"] == "1",
-			Cache:          d["cache"] == "1",
-			GmapKey:        d["gmap_key"],
+			Guest:            d["guest"] == "1",
+			Quantity:         d["quantity"] == "1",
+			New:              d["new"] == "1",
+			Items:            items,
+			Min:              min,
+			Redirect:         d["redirect"] == "1",
+			Cache:            d["cache"] == "1",
+			GmapKey:          d["gmap_key"],
+			FuzzySearch:      d["fuzzy_search"] == "1",
+			ExactMatchSearch: d["exact_match_search"] == "1",
 		},
 	}
 }
@@ -216,9 +205,14 @@ func (s ShopSettings) Save(c context.Context) error {
 		redirect = "1"
 	}
 
-	asearch := "0"
-	if s.AdvancedSearch {
-		asearch = "1"
+	fuzzySearch := "0"
+	if s.FuzzySearch {
+		fuzzySearch = "1"
+	}
+
+	exactMatchSearch := "0"
+	if s.ExactMatchSearch {
+		exactMatchSearch = "1"
 	}
 
 	cache := "0"
@@ -234,10 +228,10 @@ func (s ShopSettings) Save(c context.Context) error {
 		"items", fmt.Sprintf("%d", s.Items),
 		"min", fmt.Sprintf("%d", s.Min),
 		"redirect", redirect,
-		"last_products", fmt.Sprintf("%d", s.LastProducts),
-		"advanced_search", asearch,
 		"cache", cache,
 		"gmap_key", s.GmapKey,
+		"fuzzy_search", fuzzySearch,
+		"exact_match_search", exactMatchSearch,
 		"updated_at", now.Unix(),
 	).Result()
 

@@ -48,23 +48,6 @@
 						<div id="min-error"></div>
 					</div>
 
-					<div class="form-row" id="last-row">
-						<label class="input-label" for="last">
-							{{translate .Lang "Last quantity"}}
-						</label>
-						<input
-							   id="last"
-							   name="last"
-							   class="input input-full"
-							   type="number"
-							   value="{{if .Data.ShopSettings.LastProducts }}{{.Data.ShopSettings.LastProducts}}{{end}}" />
-						<small class="input-help">
-							{{translate .Lang "Last You can display an alert when a stock of your products gets low."}}
-							{{translate .Lang "This option is particularly useful for promoting purchases."}}
-						</small>
-						<div id="last-error"></div>
-					</div>
-
 					<div class="form-row row row-align row-between" id="active-row">
 						<div>
 							<label class="switch-label" for="active">
@@ -96,8 +79,8 @@
 								{{translate .Lang "Enable guest checkout"}}
 							</label>
 
-							<small class="input-help">{
-								{translate .Lang "Allow orders to be made by non-registered users."}}
+							<small class="input-help">
+								{{translate .Lang "Allow orders to be made by non-registered users."}}
 							</small>
 							<div id="guest-error"></div>
 						</div>
@@ -185,31 +168,6 @@
 									   class="switch"
 									   type="checkbox"
 									   {{if .Data.ShopSettings.Redirect}}checked{{end}} />
-							</label>
-						</div>
-					</div>
-
-					<div class="form-row row row-align row-between" id="advanced-row">
-						<div>
-							<label class="switch-label" for="advanced">
-								{{translate .Lang "Advanced search"}}
-							</label>
-
-							<small class="input-help">
-								{{translate
-								.Lang
-								"Enable the advanced search allowing the user to select multiple criteria."}}
-							</small>
-							<div id="advanced-error"></div>
-						</div>
-						<div>
-							<label class="">
-								<input
-									   id="advanced"
-									   name="advanced"
-									   class="switch"
-									   type="checkbox"
-									   {{if .Data.ShopSettings.AdvancedSearch}}checked{{end}} />
 							</label>
 						</div>
 					</div>

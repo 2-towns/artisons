@@ -41,14 +41,13 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s := shops.ShopSettings{
-		GmapKey:        r.FormValue("gmap_key"),
-		Active:         r.FormValue("active") == "on",
-		AdvancedSearch: r.FormValue("advanced_search") == "on",
-		Cache:          r.FormValue("cache") == "on",
-		Guest:          r.FormValue("guest") == "on",
-		Quantity:       r.FormValue("quantity") == "on",
-		New:            r.FormValue("new") == "on",
-		Redirect:       r.FormValue("redirect") == "on",
+		GmapKey:  r.FormValue("gmap_key"),
+		Active:   r.FormValue("active") == "on",
+		Cache:    r.FormValue("cache") == "on",
+		Guest:    r.FormValue("guest") == "on",
+		Quantity: r.FormValue("quantity") == "on",
+		New:      r.FormValue("new") == "on",
+		Redirect: r.FormValue("redirect") == "on",
 	}
 
 	items := r.FormValue("items")
@@ -73,18 +72,6 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s.Min = int(val)
-	}
-
-	last := r.FormValue("last_products")
-	if r.FormValue("min") != "" {
-		val, err := strconv.ParseInt(last, 10, 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot use the last value", slog.String("last", last))
-			httperrors.HXCatch(w, ctx, "input:last")
-			return
-		}
-
-		s.LastProducts = int(val)
 	}
 
 	err := s.Validate(ctx)
