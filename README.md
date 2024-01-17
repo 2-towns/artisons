@@ -132,7 +132,7 @@ Siroter un bon café.
 Les logs doivent être renseignés avec le package `slog`. Un contexte doit être passé pour connaître l'identifiant de la requête. Example:
 
 ```go
-func Add(c context.Context, cid, id string, quantity int64) error {
+func Add(c context.Context, cid, id string, quantity int) error {
     // ...
     l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
     // ...

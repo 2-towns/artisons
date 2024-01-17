@@ -63,6 +63,15 @@ type ShopSettings struct {
 
 	// If true, the search will look for the exact match pattern by default
 	ExactMatchSearch bool
+
+	// The brand color
+	Color string
+
+	// The default image width
+	ImageWidth int
+
+	// The default image height
+	ImageHeight int
 }
 
 type Settings struct {
@@ -100,6 +109,26 @@ func init() {
 		}
 	}
 
+	var width int = 0
+	if d["image_width"] != "" {
+		i, err := strconv.ParseInt(d["image_width"], 10, 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image_width", slog.String("image_width", d["image_width"]), slog.String("error", err.Error()))
+		} else {
+			width = int(i)
+		}
+	}
+
+	var height int = 0
+	if d["image_width"] != "" {
+		i, err := strconv.ParseInt(d["image_height"], 10, 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image_height", slog.String("image_height", d["image_width"]), slog.String("error", err.Error()))
+		} else {
+			height = int(i)
+		}
+	}
+
 	Data = Settings{
 		Contact: Contact{
 			Name:    d["name"],
@@ -124,6 +153,9 @@ func init() {
 			GmapKey:          d["gmap_key"],
 			FuzzySearch:      d["fuzzy_search"] == "1",
 			ExactMatchSearch: d["exact_match_search"] == "1",
+			Color:            d["color"],
+			ImageWidth:       width,
+			ImageHeight:      height,
 		},
 	}
 }
@@ -142,7 +174,7 @@ func (s Contact) Validate(c context.Context) error {
 }
 
 func (s ShopSettings) Validate(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "validating a contact settings")
+	slog.LogAttrs(c, slog.LevelInfo, "validating a shop settings")
 
 	if err := validators.V.Struct(s); err != nil {
 		slog.LogAttrs(c, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
@@ -232,6 +264,9 @@ func (s ShopSettings) Save(c context.Context) error {
 		"gmap_key", s.GmapKey,
 		"fuzzy_search", fuzzySearch,
 		"exact_match_search", exactMatchSearch,
+		"color", s.Color,
+		"image_width", s.ImageWidth,
+		"image_height", s.ImageHeight,
 		"updated_at", now.Unix(),
 	).Result()
 

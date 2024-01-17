@@ -40,7 +40,7 @@ func processBlogFrom(ctx context.Context, form multipart.Form, id string) (blogs
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", form.Value["id"][0]), slog.String("error", err.Error()))
 			return blogs.Article{}, errors.New("input:id")
 		}
-		a.ID = id
+		a.ID = int(id)
 	} else {
 		id, err := blogs.NextID(ctx)
 		if err != nil {

@@ -163,16 +163,32 @@ header "HX-Retarget" == "#min-error"
 header "HX-Reswap" == "innerHTML show:#min-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
-# Editing the shop settings with invalid last shows an error 
+# Editing the shop settings with invalid image width shows an error 
 POST {{host}}/admin/shop-settings.html
 HX-Request: true
 [FormParams]
 items: 10
 min: 10
-last: hello 
+last: 10 
 active: on
+image_width: hello
 HTTP 200
 [Asserts]
-header "HX-Retarget" == "#last-error" 
-header "HX-Reswap" == "innerHTML show:#last-row:top" 
+header "HX-Retarget" == "#image_width-error" 
+header "HX-Reswap" == "innerHTML show:#image_width-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
+
+# Editing the shop settings with invalid image height shows an error 
+POST {{host}}/admin/shop-settings.html
+HX-Request: true
+[FormParams]
+items: 10
+min: 10
+last: 10 
+active: on
+image_height: hello
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#image_height-error" 
+header "HX-Reswap" == "innerHTML show:#image_height-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 

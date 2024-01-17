@@ -5,7 +5,7 @@
 <div class="grid settings-grid">
 	<div>
 		<div class="card card-separator">
-			<form hx-post="/admin/shop-settings.html" hx-target="#alert-shop">
+			<form hx-post="/admin/shop-settings.html" hx-target="#alert">
 
 				<div class="box">
 					<div class="form-row" id="items-row">
@@ -46,6 +46,61 @@
 							"If you do not want to activate this feature, enter '0' in the field."}}
 						</small>
 						<div id="min-error"></div>
+					</div>
+
+					<div class="form-row" id="image_with-row">
+						<label class="input-label" for="min">
+							{{translate .Lang "Default image width"}}
+						</label>
+						<input
+							   id="image_with"
+							   name="image_with"
+							   class="input input-full"
+							   type="number"
+							   value="{{if .Data.ShopSettings.ImageWidth }}{{.Data.ShopSettings.ImageWidth}}{{end}}" />
+						<small class="input-help">
+							{{translate
+							.Lang
+							"If empty, the theme will try to optimize the image display."}}
+						</small>
+						<div id="image_with-error"></div>
+					</div>
+
+
+					<div class="form-row" id="image_height-row">
+						<label class="input-label" for="min">
+							{{translate .Lang "Default image width"}}
+						</label>
+						<input
+							   id="image_height"
+							   name="image_height"
+							   class="input input-full"
+							   type="number"
+							   value="{{if .Data.ShopSettings.ImageHeight }}{{.Data.ShopSettings.ImageHeight}}{{end}}" />
+						<small class="input-help">
+							{{translate
+							.Lang
+							"If empty, the theme will try to optimize the image display."}}
+						</small>
+						<div id="image_height-error"></div>
+					</div>
+
+					<div class="form-row" id="color-row">
+						<label class="input-label" for="min">
+							{{translate .Lang "Brand color"}}
+						</label>
+						<input
+							   id="color"
+							   name="color"
+							   class="input input-color"
+							   type="color"
+							   value="{{if .Data.ShopSettings.Color }}{{.Data.ShopSettings.Color}}{{end}}" />
+						<small class="input-help">
+							{{translate
+							.Lang
+							"Define your brand color used in the template."}}
+						</small>
+						<div id="color-error"></div>
 					</div>
 
 					<div class="form-row row row-align row-between" id="active-row">
@@ -172,6 +227,62 @@
 						</div>
 					</div>
 
+					<div class="form-row row row-align row-between" id="fuzzy_search-row">
+						<div>
+							<label class="switch-label" for="fuzzy_search">
+								{{translate .Lang "Enable by default the fuzzy search"}}
+							</label>
+
+							<small class="input-help">
+								{{translate
+								.Lang
+								"The fuzzy search will return the approximated sequences as product titles...etc"
+								}}
+							</small>
+							<div id="fuzzy_search-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="fuzzy_search"
+									   name="fuzzy_search"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.FuzzySearch}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
+					<div class="form-row row row-align row-between" id="exact_match_search-row">
+						<div>
+							<label class="switch-label" for="exact_match_search">
+								{{translate .Lang "Enable by default the exact match search"}}
+							</label>
+
+							<small class="input-help">
+								{{translate
+								.Lang
+								"The exact match value will look the specific keywords entered by the user."
+								}}
+								{{translate
+								.Lang
+								"The default search behaviour seaches for one the the keywords entered by the user."
+								}}
+							</small>
+							<div id="exact_match_search-error"></div>
+						</div>
+						<div>
+							<label class="">
+								<input
+									   id="exact_match_search"
+									   name="exact_match_search"
+									   class="switch"
+									   type="checkbox"
+									   {{if .Data.ShopSettings.ExactMatchSearch}}checked{{end}} />
+							</label>
+						</div>
+					</div>
+
 					<div class="form-row row row-align row-between" id="cache-row">
 						<div>
 							<label class="switch-label" for="cache">
@@ -196,6 +307,8 @@
 							</label>
 						</div>
 					</div>
+
+					<div id="alert-shop"></div>
 				</div>
 
 				<div class="row row-end card-footer box">
@@ -209,12 +322,46 @@
 			</form>
 		</div>
 
-		<div id="alert-shop"></div>
+		<div class="card card-separator ">
+			<div class="box">
+				<h2 class="card-title">{{translate .Lang "Geolocation"}}</h2>
+				<p class="input-help">
+					{{translate
+					.Lang
+					"Add your Google Map API key to enable to geolocation for the customers."}}
+				</p>
+
+				<div class="form-row" id="geokey-row">
+					<label class="input-label" for="geokey">
+						{{translate .Lang "Key"}}
+					</label>
+					<input
+						   id="geokey"
+						   name="geokey"
+						   class="input input-full"
+						   value="{{if .Data.ShopSettings.GmapKey }}{{.Data.ShopSettings.GmapKey }}{{end}}" />
+					<div id="geokey-error"></div>
+				</div>
+			</div>
+
+			<div class="card-footer box">
+				<div class="row row-end row-gap">
+					<button class="button button-primary">
+						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+						{{translate .Lang "Save"}}
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="">
 
 		<div class="card card-separator flex">
 			<div class="card-subheader box">Account</div>
 
-			<form hx-post="/admin/contact-settings.html" hx-target="#alert-contact" enctype="multipart/form-data">
+			<form hx-post="/admin/contact-settings.html" hx-target="#alert" enctype="multipart/form-data">
 				<div class="box">
 					<div class="form-row" id="name-row">
 						<label class="input-label" for="name">
@@ -475,6 +622,8 @@
 
 						<div id="banner_3-error"></div>
 					</div>
+
+					<div id="alert-contact"></div>
 				</div>
 
 				<div class="card-footer box row row-end">
@@ -487,59 +636,7 @@
 			</form>
 		</div>
 
-		<div id="alert-contact"></div>
-	</div>
 
-	<div class="">
-		<div class="card card-separator ">
-			<div class="box">
-				<h2 class="card-title">{{translate .Lang "text_general_productoptions"}}</h2>
-				<p class="input-help">{{translate .Lang "text_product_options"}}</p>
-			</div>
-
-			<div class="card-footer box">
-				<div class="form row row-end">
-					<a class="button button-primary" href="/admin/products.html">
-						{{translate .Lang "See"}}
-					</a>
-				</div>
-			</div>
-		</div>
-
-		{{template "locales.html" .}}
-
-		<div class="card card-separator ">
-			<div class="box">
-				<h2 class="card-title">{{translate .Lang "Geolocation"}}</h2>
-				<p class="input-help">
-					{{translate
-					.Lang
-					"Add your Google Map API key to enable to geolocation for the customers."}}
-				</p>
-
-				<div class="form-row" id="geokey-row">
-					<label class="input-label" for="geokey">
-						{{translate .Lang "Key"}}
-					</label>
-					<input
-						   id="geokey"
-						   name="geokey"
-						   class="input input-full"
-						   value="{{if .Data.ShopSettings.GmapKey }}{{.Data.ShopSettings.GmapKey }}{{end}}" />
-					<div id="geokey-error"></div>
-				</div>
-			</div>
-
-			<div class="card-footer box">
-				<div class="row row-end row-gap">
-					<button class="button button-primary">
-						<div id="spinner" class="htmx-indicator htmx-spinner"></div>
-
-						{{translate .Lang "Save"}}
-					</button>
-				</div>
-			</div>
-		</div>
 	</div>
 
 </div>

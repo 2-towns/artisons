@@ -32,28 +32,54 @@ func init() {
 
 func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 
 	if err := r.ParseForm(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
 	s := shops.ShopSettings{
-		GmapKey:  r.FormValue("gmap_key"),
-		Active:   r.FormValue("active") == "on",
-		Cache:    r.FormValue("cache") == "on",
-		Guest:    r.FormValue("guest") == "on",
-		Quantity: r.FormValue("quantity") == "on",
-		New:      r.FormValue("new") == "on",
-		Redirect: r.FormValue("redirect") == "on",
+		GmapKey:          r.FormValue("gmap_key"),
+		Color:            r.FormValue("color"),
+		Active:           r.FormValue("active") == "on",
+		Cache:            r.FormValue("cache") == "on",
+		Guest:            r.FormValue("guest") == "on",
+		Quantity:         r.FormValue("quantity") == "on",
+		New:              r.FormValue("new") == "on",
+		Redirect:         r.FormValue("redirect") == "on",
+		FuzzySearch:      r.FormValue("fuzzy_search") == "on",
+		ExactMatchSearch: r.FormValue("exact_match_search") == "on",
+	}
+
+	width := r.FormValue("image_width")
+	if width != "" {
+		val, err := strconv.ParseInt(r.FormValue("image_width"), 10, 64)
+		if err != nil {
+			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image width", slog.String("image_width", width), slog.String("error", err.Error()))
+			httperrors.HXCatch(w, ctx, "input:image_width")
+		}
+		s.ImageWidth = int(val)
+	}
+
+	height := r.FormValue("image_height")
+	if height != "" {
+		val, err := strconv.ParseInt(r.FormValue("image_height"), 10, 64)
+		if err != nil {
+			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image height", slog.String("image_height", height), slog.String("error", err.Error()))
+			httperrors.HXCatch(w, ctx, "input:image_height")
+		}
+		s.ImageHeight = int(val)
 	}
 
 	items := r.FormValue("items")
 	if r.FormValue("items") != "" {
 		val, err := strconv.ParseInt(items, 10, 64)
 		if err != nil {
+			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 			slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the items value", slog.String("items", items))
 			httperrors.HXCatch(w, ctx, "input:items")
 			return
@@ -66,6 +92,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("min") != "" {
 		val, err := strconv.ParseInt(min, 10, 64)
 		if err != nil {
+			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 			slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the min value", slog.String("min", min))
 			httperrors.HXCatch(w, ctx, "input:min")
 			return
@@ -76,6 +103,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 
 	err := s.Validate(ctx)
 	if err != nil {
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the shop", slog.String("error", err.Error()))
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
@@ -83,6 +111,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 
 	err = s.Save(ctx)
 	if err != nil {
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
@@ -100,7 +129,7 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 		rid,
 	}
 
-	w.Header().Set("HX-Reswap", "outerHTML show:#alert-shop:top")
+	w.Header().Set("HX-Reswap", "innerHTML show:#alert:top")
 
 	if err := settingsAlertTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
@@ -109,10 +138,10 @@ func EditShopSettings(w http.ResponseWriter, r *http.Request) {
 
 func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-contact")
 
 	if err := r.ParseMultipartForm(conf.MaxUploadSize); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-contact")
 		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
@@ -129,6 +158,7 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 	err := s.Validate(ctx)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the shop", slog.String("error", err.Error()))
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-contact")
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
@@ -137,6 +167,7 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 	files, err := httpext.ProcessFiles(ctx, form, []string{"logo", "banner_1", "banner_2", "banner_3"})
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the shop", slog.String("error", err.Error()))
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-contact")
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
@@ -150,6 +181,7 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 	images, err := httpext.Upload(ctx, files)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot update the files", slog.String("error", err.Error()))
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-contact")
 		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
@@ -182,6 +214,7 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 	err = s.Save(ctx)
 	if err != nil {
 		httpext.RollbackUpload(ctx, []string{s.Logo, s.Banner1, s.Banner2, s.Banner3})
+		ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-contact")
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
@@ -199,7 +232,7 @@ func EditContactSettings(w http.ResponseWriter, r *http.Request) {
 		rid,
 	}
 
-	w.Header().Set("HX-Reswap", "innerHTML show:#alert-contact:top")
+	w.Header().Set("HX-Reswap", "innerHTML show:#alert:top")
 
 	if err := settingsAlertTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))

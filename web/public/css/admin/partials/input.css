@@ -103,7 +103,7 @@
 	display: inline;
 }
 
-textarea.input-full,
+* textarea.input-full,
 input.input-full {
 	width: calc(100% - 2 * var(--spacing));
 }
@@ -126,4 +126,9 @@ select.input-full {
 .input-checkbox:checked~.input-group .button,
 .input-checkbox:checked~.input-link {
 	display: none;
+}
+
+.input-color {
+	display: block;
+	width: 70px;
 }

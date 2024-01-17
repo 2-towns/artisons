@@ -21,7 +21,6 @@ func init() {
 	settingsTpl, err = templates.Build("base.html").ParseFiles(
 		append(templates.AdminUI,
 			conf.WorkingSpace+"web/views/admin/icons/close.svg",
-			conf.WorkingSpace+"web/views/admin/locales/locales.html",
 			conf.WorkingSpace+"web/views/admin/settings/settings.html",
 		)...)
 

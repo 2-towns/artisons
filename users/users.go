@@ -30,10 +30,10 @@ type User struct {
 	SID string
 
 	Email     string
-	ID        int64
+	ID        int
 	Address   Address
-	CreatedAt int64
-	UpdatedAt int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	Otp       string
 	Lang      language.Tag
 
@@ -197,7 +197,7 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 	l.LogAttrs(c, slog.LevelInfo, "the user is parsed", slog.String("sid", m["sid"]))
 
 	return User{
-		ID:    id,
+		ID:    int(id),
 		SID:   m["sid"],
 		Email: m["email"],
 		Otp:   m["otp"],
@@ -211,58 +211,12 @@ func parseUser(c context.Context, m map[string]string) (User, error) {
 			City:          m["city"],
 			Phone:         m["phone"],
 		},
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+		CreatedAt: time.Unix(createdAt, 0),
+		UpdatedAt: time.Unix(updatedAt, 0),
 		Role:      m["role"],
 		Demo:      m["demo"] == "1",
 	}, nil
 }
-
-// List returns the users list in the application
-// func List(c context.Context, page int) ([]User, error) {
-// 	l := slog.With(slog.Int("page", page))
-// 	l.LogAttrs(c, slog.LevelInfo, "listing the users")
-
-// 	key := "users"
-// 	ctx := context.Background()
-
-// 	start, end := conf.Pagination(page)
-// 	users := []User{}
-// 	ids := db.Redis.ZRange(ctx, key, int64(start), int64(end)).Val()
-// 	pipe := db.Redis.Pipeline()
-
-// 	for _, v := range ids {
-// 		k := "user:" + v
-// 		pipe.HGetAll(ctx, k).Val()
-// 	}
-
-// 	cmds, err := pipe.Exec(ctx)
-// 	if err != nil {
-// 		l.LogAttrs(c, slog.LevelError, "cannot get the user list", slog.String("error", err.Error()))
-// 		return users, errors.New("something went wrong")
-// 	}
-
-// 	for _, cmd := range cmds {
-// 		key := fmt.Sprintf("%s", cmd.Args()[1])
-
-// 		if cmd.Err() != nil {
-// 			slog.LogAttrs(c, slog.LevelError, "cannot get the user", slog.String("key", key), slog.String("error", err.Error()))
-// 			continue
-// 		}
-
-// 		m := cmd.(*redis.MapStringStringCmd).Val()
-// 		user, err := parseUser(c, m)
-// 		if err != nil {
-// 			continue
-// 		}
-
-// 		users = append(users, user)
-// 	}
-
-// 	l.LogAttrs(c, slog.LevelInfo, "got user list", slog.Int("users", len(users)))
-
-// 	return users, nil
-// }
 
 // SaveAddress attachs an address to an user.
 // The data are stored with:
@@ -303,7 +257,7 @@ func (u User) SaveAddress(c context.Context, a Address) error {
 
 // Sessions retrieve the active user sessions.
 func (u User) Sessions(c context.Context) ([]Session, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "listing the sessions", slog.Int64("id", u.ID))
+	slog.LogAttrs(c, slog.LevelInfo, "listing the sessions", slog.Int("id", u.ID))
 
 	ctx := context.Background()
 	var sessions []Session
@@ -429,13 +383,13 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 	if val != otp && !(conf.OtpDemo && otp == "111111") {
 		l.LogAttrs(c, slog.LevelInfo, "the otp do not match", slog.String("val", val), slog.String("otp", otp))
 
-		cnt, err := db.Redis.Incr(ctx, email+":otp:attempts").Result()
+		attempts, err := db.Redis.Incr(ctx, email+":otp:attempts").Result()
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot increment the otp attempt", slog.String("error", err.Error()))
 			return "", errors.New("something went wrong")
 		}
 
-		if cnt >= conf.OtpAttempts {
+		if attempts >= conf.OtpAttempts {
 			if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 				rdb.Del(ctx, fmt.Sprintf("%s:otp", email))
 				rdb.Del(ctx, fmt.Sprintf("%s:otp:attempts", email))
@@ -447,7 +401,7 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 				return "", errors.New("something went wrong")
 			}
 
-			l.LogAttrs(c, slog.LevelInfo, "max attempts reached", slog.Int64("attempts", cnt))
+			l.LogAttrs(c, slog.LevelInfo, "max attempts reached", slog.Int64("attempts", attempts))
 			return "", errors.New("you reached the max tentatives")
 		}
 
@@ -460,21 +414,25 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 		return "", errors.New("something went wrong")
 	}
 
-	var uid int64
+	var uid int
 
 	if eid == "" {
-		uid, err = db.Redis.Incr(ctx, "user_next_id").Result()
+		val, err := db.Redis.Incr(ctx, "user_next_id").Result()
 
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
 			return "", errors.New("something went wrong")
 		}
+
+		uid = int(val)
 	} else {
-		uid, err = strconv.ParseInt(eid, 10, 64)
+		val, err := strconv.ParseInt(eid, 10, 64)
 		if err != nil {
 			l.LogAttrs(c, slog.LevelError, "cannot parse the uid", slog.String("user_id", eid), slog.String("error", err.Error()))
 			return "", errors.New("something went wrong")
 		}
+
+		uid = int(val)
 	}
 
 	sid, err := stringutil.Random()
@@ -509,7 +467,7 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 
 		return nil
 	}); err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("sid", sid), slog.Int64("user_id", uid), slog.String("error", err.Error()))
+		l.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("sid", sid), slog.Int("user_id", uid), slog.String("error", err.Error()))
 		return "", errors.New("something went wrong")
 	}
 
@@ -523,7 +481,7 @@ func Login(c context.Context, otp, glue, device string) (string, error) {
 		go tracking.Log(c, "login", data)
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "the login is successful", slog.String("device", device), slog.String("sid", sid), slog.Int64("user_id", uid))
+	l.LogAttrs(c, slog.LevelInfo, "the login is successful", slog.String("device", device), slog.String("sid", sid), slog.Int("user_id", uid))
 
 	return sid, nil
 }
@@ -567,8 +525,8 @@ func Logout(c context.Context, sid string) error {
 }
 
 // Get the user information from its id
-func Get(c context.Context, id int64) (User, error) {
-	l := slog.With(slog.Int64("user_id", id))
+func Get(c context.Context, id int) (User, error) {
+	l := slog.With(slog.Int("user_id", id))
 	l.LogAttrs(c, slog.LevelInfo, "trying to get the user")
 
 	if id == 0 {
@@ -612,7 +570,7 @@ func IsAdmin(c context.Context, email string) bool {
 }
 
 func (u User) ToggleDemo(c context.Context) (bool, error) {
-	l := slog.With(slog.Int64("uid", u.ID), slog.Bool("demo", u.Demo))
+	l := slog.With(slog.Int("uid", u.ID), slog.Bool("demo", u.Demo))
 	l.LogAttrs(c, slog.LevelInfo, "toggle demo mode")
 
 	v := "1"

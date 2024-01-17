@@ -22,7 +22,7 @@ func (h RequestIDHandler) Handle(ctx context.Context, r slog.Record) error {
 	}
 
 	if u, ok := ctx.Value(contexts.User).(users.User); ok {
-		r.Add("user_id", slog.Int64Value(u.ID))
+		r.Add("user_id", slog.IntValue(u.ID))
 	}
 
 	return h.Handler.Handle(ctx, r)

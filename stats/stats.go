@@ -32,9 +32,8 @@ type MostValue struct {
 }
 
 type Count struct {
-	Value []int64
-	Sum   int64
-	// Label string
+	Value []int
+	Sum   int
 }
 
 type Data []Count
@@ -236,8 +235,8 @@ func MostValues(c context.Context, days int) ([][]MostValue, error) {
 	return values, nil
 }
 
-func sum(array []int64) int64 {
-	var result int64 = 0
+func sum(array []int) int {
+	result := 0
 
 	for _, v := range array {
 		result += v
@@ -264,12 +263,12 @@ func sum(array []int64) int64 {
 // in the same format than the other statistics.
 func GetAll(c context.Context, days int) (Data, error) {
 	values := Data{
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
-		{Value: []int64{}},
+		{Value: []int{}},
+		{Value: []int{}},
+		{Value: []int{}},
+		{Value: []int{}},
+		{Value: []int{}},
+		{Value: []int{}},
 	}
 	prefix := ""
 	demo, ok := c.Value(contexts.Demo).(bool)
@@ -323,7 +322,7 @@ func GetAll(c context.Context, days int) (Data, error) {
 		s := cmd.(*redis.StringCmd).Val()
 
 		if s == "" {
-			values[row].Value = append([]int64{0}, values[row].Value...)
+			values[row].Value = append([]int{0}, values[row].Value...)
 			continue
 		}
 
@@ -331,10 +330,10 @@ func GetAll(c context.Context, days int) (Data, error) {
 
 		if err != nil {
 			slog.LogAttrs(c, slog.LevelError, "cannot convert the value to int", slog.String("value", s), slog.String("error", err.Error()))
-			values[row].Value = append([]int64{0}, values[row].Value...)
+			values[row].Value = append([]int{0}, values[row].Value...)
 		} else {
-			value := int64(f)
-			values[row].Value = append([]int64{value}, values[row].Value...)
+			value := int(f)
+			values[row].Value = append([]int{value}, values[row].Value...)
 		}
 	}
 
@@ -345,14 +344,14 @@ func GetAll(c context.Context, days int) (Data, error) {
 			values[len(keys)].Value = append(values[len(keys)].Value, 0)
 		} else {
 			p := float64(values[1].Value[i]) / float64(values[0].Value[i]) * 100
-			values[len(keys)].Value = append(values[len(keys)].Value, int64(p))
+			values[len(keys)].Value = append(values[len(keys)].Value, int(p))
 		}
 	}
 
 	if values[1].Sum == 0 {
 		values[len(keys)].Sum = 0
 	} else {
-		values[len(keys)].Sum = int64(float64(values[1].Sum) / float64(values[0].Sum) * 100)
+		values[len(keys)].Sum = int(float64(values[1].Sum) / float64(values[0].Sum) * 100)
 	}
 
 	slog.LogAttrs(c, slog.LevelInfo, "got statistics")

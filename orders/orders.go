@@ -30,7 +30,7 @@ import (
 )
 
 type SearchResults struct {
-	Total  int64
+	Total  int
 	Orders []Order
 }
 
@@ -40,7 +40,7 @@ type Order struct {
 	ID string
 
 	// The user ID
-	UID int64
+	UID int
 
 	// "collect" or "home"
 	Delivery string
@@ -189,7 +189,7 @@ func (o Order) Save(c context.Context) (string, error) {
 
 	o, err = o.WithProducts(c)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelWarn, "cannot get the products", slog.Int64("uid", o.UID))
+		l.LogAttrs(c, slog.LevelWarn, "cannot get the products", slog.Int("uid", o.UID))
 		return "", err
 	}
 
@@ -263,7 +263,7 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 
 	email, err := db.Redis.HGet(c, fmt.Sprintf("user:%d", o.UID), "email").Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelWarn, "cannot get the email", slog.Int64("uid", o.UID), slog.String("error", err.Error()))
+		l.LogAttrs(c, slog.LevelWarn, "cannot get the email", slog.Int("uid", o.UID), slog.String("error", err.Error()))
 		return "", err
 	}
 
@@ -523,7 +523,7 @@ func parse(c context.Context, m map[string]string) (Order, error) {
 
 	return Order{
 		ID:            m["id"],
-		UID:           uid,
+		UID:           int(uid),
 		Delivery:      m["delivery"],
 		PaymentStatus: m["payment_status"],
 		Payment:       m["payment"],
@@ -594,7 +594,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	}
 
 	return SearchResults{
-		Total:  total,
+		Total:  int(total),
 		Orders: orders,
 	}, nil
 }

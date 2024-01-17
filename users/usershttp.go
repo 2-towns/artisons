@@ -40,7 +40,7 @@ func findBySessionID(c context.Context, sid string) (User, error) {
 		return User{}, errors.New("your are not authorized to process this request")
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "user found", slog.Int64("user_id", u.ID))
+	l.LogAttrs(c, slog.LevelInfo, "user found", slog.Int("user_id", u.ID))
 
 	return u, err
 }
@@ -131,7 +131,7 @@ func AdminOnly(next http.Handler) http.Handler {
 		}
 
 		if user.Role != "admin" {
-			slog.LogAttrs(ctx, slog.LevelInfo, "the user is not admin", slog.Int64("id", user.ID))
+			slog.LogAttrs(ctx, slog.LevelInfo, "the user is not admin", slog.Int("id", user.ID))
 			httperrors.Catch(w, ctx, "your are not authorized to process this request", 401)
 			return
 		}

@@ -56,7 +56,7 @@ type Product struct {
 }
 
 type SearchResults struct {
-	Total    int64
+	Total    int
 	Products []Product
 }
 
@@ -433,12 +433,12 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	}
 
 	return SearchResults{
-		Total:    total,
+		Total:    int(total),
 		Products: products,
 	}, nil
 }
 
-func Count(c context.Context) (int64, error) {
+func Count(c context.Context) (int, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "counting products")
 
 	count, err := db.Redis.ZCount(c, "products", "-inf", "+inf").Result()
@@ -447,56 +447,8 @@ func Count(c context.Context) (int64, error) {
 		return 0, err
 	}
 
-	return count, nil
+	return int(count), nil
 }
-
-// func List(c context.Context, offset int) ([]Product, error) {
-// l := slog.With(slog.Int("page", offset))
-// l.LogAttrs(c, slog.LevelInfo, "listing products")
-
-// ctx := context.Background()
-// start := int64(offset * conf.ItemsPerPage)
-// end := int64(start + conf.ItemsPerPage)
-
-// pids, err := db.Redis.ZRevRange(ctx, "products", start, end).Result()
-// if err != nil {
-// 	l.LogAttrs(c, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
-// 	return []Product{}, err
-// }
-
-// pipe := db.Redis.Pipeline()
-// for _, pid := range pids {
-// 	pipe.HGetAll(ctx, "product:"+pid)
-// }
-
-// cmds, err := pipe.Exec(ctx)
-// if err != nil {
-// 	l.LogAttrs(c, slog.LevelError, "cannot get the product ids", slog.String("error", err.Error()))
-// 	return []Product{}, err
-// }
-
-// pds := []Product{}
-
-// for _, cmd := range cmds {
-// 	key := fmt.Sprintf("%s", cmd.Args()[1])
-
-// 	if cmd.Err() != nil {
-// 		slog.LogAttrs(c, slog.LevelError, "cannot get the product", slog.String("key", key), slog.String("error", err.Error()))
-// 		continue
-// 	}
-
-// 	m := cmd.(*redis.MapStringStringCmd).Val()
-// 	p, err := parse(ctx, m)
-// 	if err != nil {
-// 		l.LogAttrs(c, slog.LevelError, "cannot get the product ids", slog.String("error", err.Error()))
-// 		continue
-// 	}
-
-// 	pds = append(pds, p)
-// }
-
-// return pds, nil
-// }
 
 func (p Product) URL() string {
 	return conf.WebsiteURL + "/" + p.ID + "-" + p.Slug + ".html"

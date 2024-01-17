@@ -180,9 +180,9 @@ func (c Cart) UpdatePayment(co context.Context, p string) error {
 // RefreshCID refreshes a cart ID (CID).
 // If the CID does not exist, it will be created,
 // with an expiration time.
-func RefreshCID(c context.Context, s string, uid int64) (string, error) {
+func RefreshCID(c context.Context, s string, uid int) (string, error) {
 	cid := c.Value(contexts.Cart).(string)
-	l := slog.With(slog.String("cid", s), slog.Int64("uid", uid))
+	l := slog.With(slog.String("cid", s), slog.Int("uid", uid))
 	l.LogAttrs(c, slog.LevelInfo, "refreshing cart")
 
 	ctx := context.Background()

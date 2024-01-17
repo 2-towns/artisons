@@ -22,13 +22,13 @@ func DeleteBlog(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "id")
 
-	iid, err := strconv.ParseInt(id, 10, 64)
+	val, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
 		httperrors.Page(w, ctx, "oops the data is not found", 404)
 	}
 
-	err = blogs.Delete(ctx, iid)
+	err = blogs.Delete(ctx, int(val))
 	if err != nil {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return

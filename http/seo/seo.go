@@ -37,7 +37,7 @@ type Content struct {
 }
 
 type SearchResults struct {
-	Total   int64
+	Total   int
 	Content []Content
 }
 
@@ -195,7 +195,7 @@ func List(ctx context.Context, offset, num int) SearchResults {
 	n := math.Min(float64(num), float64(len(URLs)))
 
 	return SearchResults{
-		Total:   int64(len(URLs)),
-		Content: maps.Values(URLs)[int64(o):int64(n)],
+		Total:   len(URLs),
+		Content: maps.Values(URLs)[int(o):int(n)],
 	}
 }

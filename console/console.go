@@ -165,7 +165,7 @@ func main() {
 
 			sessions, err := user.Sessions(ctx)
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot get the session", slog.Int64("uid", user.ID), slog.String("error", err.Error()))
+				slog.LogAttrs(ctx, slog.LevelError, "cannot get the session", slog.Int("uid", user.ID), slog.String("error", err.Error()))
 				log.Fatal()
 			}
 

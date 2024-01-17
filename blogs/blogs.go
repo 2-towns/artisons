@@ -20,7 +20,7 @@ import (
 )
 
 type Article struct {
-	ID          int64
+	ID          int
 	Title       string `validate:"required"`
 	Slug        string
 	Description string `validate:"required"`
@@ -34,7 +34,7 @@ type Article struct {
 }
 
 type SearchResults struct {
-	Total    int64
+	Total    int
 	Articles []Article
 }
 
@@ -58,7 +58,7 @@ func (p Article) Validate(c context.Context) error {
 	return nil
 }
 
-func NextID(ctx context.Context) (int64, error) {
+func NextID(ctx context.Context) (int, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "getting the next article id")
 
 	id, err := db.Redis.Incr(ctx, "blog_next_id").Result()
@@ -69,7 +69,7 @@ func NextID(ctx context.Context) (int64, error) {
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "next id generated", slog.Int64("id", id))
 
-	return id, nil
+	return int(id), nil
 }
 
 func (a Article) Save(c context.Context) error {
@@ -92,7 +92,7 @@ func (a Article) Save(c context.Context) error {
 		return errors.New("something went wrong")
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "blog article created", slog.Int64("id", a.ID))
+	slog.LogAttrs(c, slog.LevelInfo, "blog article created", slog.Int("id", a.ID))
 
 	return nil
 }
@@ -119,7 +119,7 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 	image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
 
 	a := Article{
-		ID:          id,
+		ID:          int(id),
 		Title:       db.Unescape(data["title"]),
 		Description: db.Unescape(data["description"]),
 		Slug:        data["slug"],
@@ -184,13 +184,13 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", total))
 
 	return SearchResults{
-		Total:    total,
+		Total:    int(total),
 		Articles: articles,
 	}, nil
 }
 
-func Delete(c context.Context, id int64) error {
-	l := slog.With(slog.Int64("id", id))
+func Delete(c context.Context, id int) error {
+	l := slog.With(slog.Int("id", id))
 	l.LogAttrs(c, slog.LevelInfo, "deleting blog article")
 
 	ctx := context.Background()
@@ -213,8 +213,8 @@ func Delete(c context.Context, id int64) error {
 }
 
 // Find looks for a blog by its id
-func Find(c context.Context, id int64) (Article, error) {
-	l := slog.With(slog.Int64("id", id))
+func Find(c context.Context, id int) (Article, error) {
+	l := slog.With(slog.Int("id", id))
 	l.LogAttrs(c, slog.LevelInfo, "looking for article")
 
 	if id == 0 {

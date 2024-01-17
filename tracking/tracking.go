@@ -42,7 +42,7 @@ func Log(ctx context.Context, action string, data map[string]string) error {
 		fmt.Sprintf("lang:%s", lang),
 	}
 
-	uid, ok := ctx.Value(contexts.UserID).(int64)
+	uid, ok := ctx.Value(contexts.UserID).(int)
 	if ok && uid > 0 {
 		parts = append(parts, fmt.Sprintf("uid:%d", uid))
 	}
