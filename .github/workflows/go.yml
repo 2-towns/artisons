@@ -39,9 +39,9 @@ jobs:
         run: mkdir -p ./web/images/articles
       - name: Populating data
         run: |
-          go run console/console.go -file populate.redis redis
-          go run console/console.go -file migrate.redis redis
-          go run console/console.go -file hurl.redis redis
+          go run console/console.go -file web/redis/populate.redis redis
+          go run console/console.go -file web/redis/migrate.redis redis
+          go run console/console.go -file web/redis/hurl.redis redis
       - name: Run migration
         run: go run console/console.go migrate
       - name: Build
