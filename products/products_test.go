@@ -23,9 +23,9 @@ func init() {
 	db.Redis.HSet(ctx, "product:PDT1",
 		"id", "PDT1",
 		"sku", "SKU1",
-		"title", db.Escape("T-shirt Tester c’est douter"),
-		"description", db.Escape("T-shirt développeur unisexe Tester c’est douter"),
-		"slug", stringutil.Slugify(db.Escape("T-shirt Tester c’est douter")),
+		"title", db.Escape("T-shirt Tester c'est douter"),
+		"description", db.Escape("T-shirt développeur unisexe Tester c'est douter"),
+		"slug", stringutil.Slugify(db.Escape("T-shirt Tester c'est douter")),
 		"currency", "EUR",
 		"price", 100.5,
 		"quantity", rand.Intn(10),
@@ -293,6 +293,69 @@ func TestSearchReturnsProductsWhenTitleIsFound(t *testing.T) {
 	p, err := Search(c, Query{Keywords: "T-Shirt"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: "T-Shirt"}) = %v, want nil`, err.Error())
+	}
+
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID != "PDT1" {
+		t.Fatalf(`p[0].ID = %s, want "PDT1"`, p.Products[0].ID)
+	}
+}
+
+func TestSearchReturnsNoErrorWhenUsingQuote(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Keywords: "c'est"}, 0, 10)
+
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Keywords: "c'est"}) = %v, want nil`, err.Error())
+	}
+
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID != "PDT1" {
+		t.Fatalf(`p[0].ID = %s, want "PDT1"`, p.Products[0].ID)
+	}
+}
+
+func TestSearchReturnsNoErrorWhenUsingDash(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Keywords: "t-shirt"}, 0, 10)
+
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Keywords: "t-shirt"}) = %v, want nil`, err.Error())
+	}
+
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID != "PDT1" {
+		t.Fatalf(`p[0].ID = %s, want "PDT1"`, p.Products[0].ID)
+	}
+}
+
+func TestSearchReturnsNoErrorWhenUsingSpace(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Keywords: "hello douter"}, 0, 10)
+
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Keywords: "hello douter"}) = %v, want nil`, err.Error())
 	}
 
 	if p.Total == 0 {

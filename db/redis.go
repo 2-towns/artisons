@@ -3,9 +3,12 @@ package db
 
 import (
 	"context"
+	"encoding/csv"
 	"fmt"
 	"gifthub/conf"
 	"log"
+	"log/slog"
+	"regexp"
 	"strings"
 
 	"github.com/redis/go-redis/v9"
@@ -39,41 +42,21 @@ func ConvertMap(m map[interface{}]interface{}) map[string]string {
 // Escape escapes the key characters used in Redis Search by
 // adding backslashes.
 func Escape(value string) string {
-	replacements := map[string]string{
-		",": "\\,",
-		".": "\\.",
-		"<": "\\<",
-		">": "\\>",
-		"{": "\\{",
-		"}": "\\}",
-		"[": "\\[",
-		"]": "\\]",
-		`"`: "\\\"",
-		":": "\\:",
-		";": "\\;",
-		"!": "\\!",
-		"@": "\\@",
-		"#": "\\#",
-		"$": "\\$",
-		"%": "\\%",
-		"^": "\\^",
-		"&": "\\&",
-		"*": "\\*",
-		"(": "\\(",
-		")": "\\)",
-		"-": "\\-",
-		"+": "\\+",
-		"=": "\\=",
-		"~": "\\~",
-	}
+	s := strings.ReplaceAll(value, "-", "\\-")
+	return strings.ReplaceAll(s, "'", "\\'")
+}
 
-	s := strings.Trim(value, " ")
-
-	for key, v := range replacements {
-		s = strings.ReplaceAll(s, key, v)
-	}
-
-	return s
+// SearchValue replaces the space by the caracter |.
+// There is no need to escape other characters here is the quote from Redis:
+// The Redis protocol has no concept of string escaping, so injection
+// is impossible under normal circumstances using a normal client library.
+// The protocol uses prefixed-length strings and is completely binary safe.
+// https://github.com/RediSearch/RediSearch/issues/259
+// https://redis.io/docs/management/security/
+func SearchValue(value string) string {
+	esc := Escape(value)
+	space := regexp.MustCompile(`\s+`)
+	return space.ReplaceAllString(esc, "|")
 }
 
 func Unescape(s string) string {
@@ -87,6 +70,28 @@ func Run(ctx context.Context, args []interface{}) error {
 	log.Println(r)
 
 	return err
+}
+
+func SplitQuery(ctx context.Context, s string) ([]interface{}, error) {
+	args := []interface{}{}
+	r := csv.NewReader(strings.NewReader(s))
+	r.Comma = ' '
+	fields, err := r.Read()
+
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the string", slog.String("string", s), slog.String("error", err.Error()))
+		return []interface{}{}, err
+	}
+
+	log.Println(fields)
+
+	for _, val := range fields {
+		if val != "" {
+			args = append(args, val)
+		}
+	}
+
+	return args, nil
 }
 
 /*func SubscribeToExpireKeys() {

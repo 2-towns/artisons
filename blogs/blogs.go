@@ -135,34 +135,30 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 func Search(c context.Context, q Query, offset, num int) (SearchResults, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "searching products")
 
-	qs := "@status:{online} "
+	qs := fmt.Sprintf("FT.SEARCH %s @status:{online}", db.BlogIdx)
 
 	if q.Keywords != "" {
-		k := db.Escape(q.Keywords)
-		qs += fmt.Sprintf("(@title:'*%s*')|(@description:'*%s*')|(@id:'{%s})'", k, k, k)
+		k := db.SearchValue(q.Keywords)
+		qs += fmt.Sprintf("(@title:%s)|(@description:%s)|(@id:{%s})", k, k, k)
 	}
 
 	if q.Lang != "" {
-		qs += fmt.Sprintf("(@lang:'{%s})'", q.Lang)
+		qs += fmt.Sprintf("(@lang:{%s})", q.Lang)
 	}
+
+	qs += fmt.Sprintf(" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)
 
 	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
 
 	ctx := context.Background()
-	cmds, err := db.Redis.Do(
-		ctx,
-		"FT.SEARCH",
-		db.BlogIdx,
-		qs,
-		"LIMIT",
-		fmt.Sprintf("%d", offset),
-		fmt.Sprintf("%d", num),
-		"SORTBY",
-		"updated_at",
-		"desc",
-	).Result()
+	args, err := db.SplitQuery(ctx, qs)
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("query", qs), slog.String("error", err.Error()))
+		return SearchResults{}, err
+	}
+
+	cmds, err := db.Redis.Do(ctx, args...).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("error", err.Error()))
 		return SearchResults{}, err
 	}
 

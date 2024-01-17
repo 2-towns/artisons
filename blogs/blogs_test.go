@@ -78,38 +78,6 @@ func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 	}
 }
 
-// func TestListReturnsArticlesWhenSuccess(t *testing.T) {
-// 	c := tests.Context()
-// 	page := 0
-
-// 	articles, err := List(c, page)
-// 	if err != nil {
-// 		t.Fatalf(`List(c, page) = %v, want nil`, err.Error())
-// 	}
-
-// 	a := articles[len(articles)-1]
-
-// 	if a.ID == 0 {
-// 		t.Fatalf(`a.ID = %v, want positive`, a.ID)
-// 	}
-
-// 	if a.Title == "" {
-// 		t.Fatalf(`a.Title = %v, want not empty`, a.Title)
-// 	}
-
-// 	if a.Slug == "" {
-// 		t.Fatalf(`a.Slug = %v, want not empty`, a.Slug)
-// 	}
-
-// 	if a.Description == "" {
-// 		t.Fatalf(`a.Description = %v, want not empty`, a.Description)
-// 	}
-
-//		if a.Image == "" {
-//			t.Fatalf(`a.Image = %v, want not empty`, a.Image)
-//		}
-//	}
-
 func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 	c := tests.Context()
 	a, err := Search(c, Query{Keywords: "Mangez de l'ail"}, 0, 10)
@@ -127,6 +95,42 @@ func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 
 	if a.Articles[0].ID == 99 {
 		t.Fatalf(`p[0].ID = %d, want = 99`, a.Articles[0].ID)
+	}
+}
+
+func TestSearchReturnsArticlesWhenAtLeastOneMatching(t *testing.T) {
+	c := tests.Context()
+	a, err := Search(c, Query{Keywords: "hello ail"}, 0, 10)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Keywords: ""hello ail"}) = %v, want nil`, err.Error())
+	}
+
+	if a.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, a.Total)
+	}
+
+	if len(a.Articles) == 0 {
+		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(a.Articles))
+	}
+
+	if a.Articles[0].ID == 99 {
+		t.Fatalf(`p[0].ID = %d, want = 99`, a.Articles[0].ID)
+	}
+}
+
+func TestSearchReturnsNoArticleWhenNoMatchi(t *testing.T) {
+	c := tests.Context()
+	a, err := Search(c, Query{Keywords: "hello world"}, 0, 10)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Keywords: ""hello world"}) = %v, want nil`, err.Error())
+	}
+
+	if a.Total > 0 {
+		t.Fatalf(`p.Total = %d, want == 0`, a.Total)
+	}
+
+	if len(a.Articles) > 0 {
+		t.Fatalf(`len(p.Articles) = %d, want == 0`, len(a.Articles))
 	}
 }
 

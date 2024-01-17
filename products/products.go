@@ -12,6 +12,7 @@ import (
 	"gifthub/tracking"
 	"gifthub/users"
 	"gifthub/validators"
+	"log"
 	"log/slog"
 	"path"
 	"strconv"
@@ -345,11 +346,11 @@ func Find(c context.Context, pid string) (Product, error) {
 func Search(c context.Context, q Query, offset, num int) (SearchResults, error) {
 	slog.LogAttrs(c, slog.LevelInfo, "searching products")
 
-	qs := "@status:{online} "
+	qs := fmt.Sprintf("FT.SEARCH %s \"@status:{online}", db.ProductIdx)
 
 	if q.Keywords != "" {
-		k := db.Escape( q.Keywords)
-		qs += fmt.Sprintf("(@title:'*%s*')|(@description:'*%s*')|(@sku:'{%s}')|(@id:'{%s})'", k, k, k, k)
+		k := db.SearchValue(q.Keywords)
+		qs += fmt.Sprintf("(@title:%s)|(@description:%s)|(@sku:{%s})|(@id:{%s})", k, k, k, k)
 	}
 
 	var priceMin interface{} = "-inf"
@@ -381,23 +382,22 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 		qs += fmt.Sprintf("@meta:{%s}", s)
 	}
 
+	qs += fmt.Sprintf("\" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)
+
 	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
 
 	ctx := context.Background()
-	cmds, err := db.Redis.Do(
-		ctx,
-		"FT.SEARCH",
-		db.ProductIdx,
-		qs,
-		"LIMIT",
-		fmt.Sprintf("%d", offset),
-		fmt.Sprintf("%d", num),
-		"SORTBY",
-		"updated_at",
-		"desc",
-	).Result()
+	args, err := db.SplitQuery(ctx, qs)
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("query", qs), slog.String("error", err.Error()))
+		return SearchResults{}, err
+	}
+
+	for _, v := range args {
+		log.Println(v)
+	}
+	cmds, err := db.Redis.Do(ctx, args...).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("error", err.Error()))
 		return SearchResults{}, err
 	}
 

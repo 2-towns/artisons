@@ -68,9 +68,9 @@ func init() {
 	db.Redis.HSet(ctx, "product:PDT111",
 		"id", "PDT111",
 		"sku", "SKU111",
-		"title", db.Escape("T-shirt Tester c’est douter"),
-		"description", db.Escape("T-shirt développeur unisexe Tester c’est douter"),
-		"slug", stringutil.Slugify(db.Escape("T-shirt Tester c’est douter")),
+		"title", db.Escape("T-shirt Tester c'est douter"),
+		"description", db.Escape("T-shirt développeur unisexe Tester c'est douter"),
+		"slug", stringutil.Slugify(db.Escape("T-shirt Tester c'est douter")),
 		"currency", "EUR",
 		"price", 100.5,
 		"quantity", rand.Intn(10),
@@ -297,11 +297,11 @@ Order ID: ` + order.ID + `
 Order date: Friday, November 11
 Order total: 105.50
 
-+-----------------------------+----------+-------+-------+---------------------------------------------------------+
-| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                    |
-+-----------------------------+----------+-------+-------+---------------------------------------------------------+
-| T-shirt Tester c’est douter |        1 | 100.5 | 100.5 | http://localhost/PDT111-t-shirt-tester-cest-douter.html |
-+-----------------------------+----------+-------+-------+---------------------------------------------------------+
++-----------------------------+----------+-------+-------+----------------------------------------------------------+
+| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                     |
++-----------------------------+----------+-------+-------+----------------------------------------------------------+
+| T-shirt Tester c'est douter |        1 | 100.5 | 100.5 | http://localhost/PDT111-t-shirt-tester-c-est-douter.html |
++-----------------------------+----------+-------+-------+----------------------------------------------------------+
 
 See you around,
 The Customer Experience Team at gifthub shop`
