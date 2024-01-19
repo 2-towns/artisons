@@ -104,6 +104,3 @@ func main() {
 
 	http.ListenAndServe(conf.ServerAddr, router.R)
 }
-
-// fix url image
-// Change the blog editor to display paragraph
