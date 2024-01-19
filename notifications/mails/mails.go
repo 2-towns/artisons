@@ -15,13 +15,13 @@ const rfc2822 = "Mon, 02 Jan 2006 15:04:05 -0700"
 
 // Send an email.
 // Only text format is supported for now.
-func Send(c context.Context, email, subject, message string) error {
+func Send(ctx context.Context, email, subject, message string) error {
 	l := slog.With(slog.String("email", email))
-	l.LogAttrs(c, slog.LevelInfo, "sending a new email")
+	l.LogAttrs(ctx, slog.LevelInfo, "sending a new email")
 
 	mid, err := stringutil.Random()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot generated the message-id", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot generated the message-id", slog.String("error", err.Error()))
 		return err
 	}
 
@@ -43,7 +43,7 @@ func Send(c context.Context, email, subject, message string) error {
 		fmt.Sprintf("%s\r\n", message)
 
 	if conf.Email.Dry {
-		slog.LogAttrs(c, slog.LevelInfo, "will not send email because of dry")
+		slog.LogAttrs(ctx, slog.LevelInfo, "will not send email because of dry")
 		return nil
 	}
 
@@ -51,9 +51,9 @@ func Send(c context.Context, email, subject, message string) error {
 	err = smtp.SendMail(fmt.Sprintf("%s:%s", host, port), auth, from, to, []byte(msg))
 
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot send the email", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot send the email", slog.String("error", err.Error()))
 	} else {
-		l.LogAttrs(c, slog.LevelInfo, "the email is sent")
+		l.LogAttrs(ctx, slog.LevelInfo, "the email is sent")
 	}
 
 	return err

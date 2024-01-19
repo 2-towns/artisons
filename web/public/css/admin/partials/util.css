@@ -85,7 +85,16 @@
 	display: grid;
 }
 
+.half-grid {
+	grid-template-columns: 1fr 1fr;
+	gap: var(--spacing);
+}
+
 @media (max-width: 800px) {
+	.half-grid {
+		grid-template-columns: 1fr;
+	}
+
 	.column-mobile {
 		flex-direction: column;
 	}

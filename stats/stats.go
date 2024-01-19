@@ -111,15 +111,15 @@ func generateDemoData(ctx context.Context) error {
 // available keys order. So stats:pageviews is the index 0, stats:browsers 1...
 // The product titles of the most sold products and most share are loaded from redis
 // at the end of the function.
-func MostValues(c context.Context, days int) ([][]MostValue, error) {
+func MostValues(ctx context.Context, days int) ([][]MostValue, error) {
 	prefix := ""
-	demo, ok := c.Value(contexts.Demo).(bool)
+	demo, ok := ctx.Value(contexts.Demo).(bool)
 	values := [][]MostValue{}
 
 	if demo && ok {
 		prefix = "demo:"
-		if err := generateDemoData(c); err != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
+		if err := generateDemoData(ctx); err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
 			return values, errors.New("something went wrong")
 		}
 	}
@@ -134,10 +134,9 @@ func MostValues(c context.Context, days int) ([][]MostValue, error) {
 	}
 
 	l := slog.With(slog.Any("key", keys), slog.Int("days", days), slog.Bool("demo", demo))
-	l.LogAttrs(c, slog.LevelInfo, "get range statistics")
+	l.LogAttrs(ctx, slog.LevelInfo, "get range statistics")
 
 	now := time.Now()
-	ctx := context.Background()
 	pipe := db.Redis.Pipeline()
 
 	for _, key := range keys {
@@ -156,7 +155,7 @@ func MostValues(c context.Context, days int) ([][]MostValue, error) {
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil && err.Error() != "redis: nil" {
-		slog.LogAttrs(c, slog.LevelError, "cannot get statistics", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get statistics", slog.String("error", err.Error()))
 		return [][]MostValue{}, err
 	}
 
@@ -202,7 +201,7 @@ func MostValues(c context.Context, days int) ([][]MostValue, error) {
 
 	cmds, err = pipe.Exec(ctx)
 	if err != nil && err.Error() != "redis: nil" {
-		slog.LogAttrs(c, slog.LevelError, "cannot get the product names", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the product names", slog.String("error", err.Error()))
 		return values, nil
 	}
 
@@ -261,7 +260,7 @@ func sum(array []int) int {
 // For each statistics, the sum is calculated and added to the struct.
 // Finalylly a bounce rate between the visits and the unique visits is calculated and added
 // in the same format than the other statistics.
-func GetAll(c context.Context, days int) (Data, error) {
+func GetAll(ctx context.Context, days int) (Data, error) {
 	values := Data{
 		{Value: []int{}},
 		{Value: []int{}},
@@ -271,19 +270,18 @@ func GetAll(c context.Context, days int) (Data, error) {
 		{Value: []int{}},
 	}
 	prefix := ""
-	demo, ok := c.Value(contexts.Demo).(bool)
+	demo, ok := ctx.Value(contexts.Demo).(bool)
 	if demo && ok {
 		prefix = "demo:"
-		if err := generateDemoData(c); err != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
+		if err := generateDemoData(ctx); err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
 			return values, errors.New("something went wrong")
 		}
 	}
 
 	l := slog.With(slog.Int("days", days), slog.Bool("demo", demo))
-	l.LogAttrs(c, slog.LevelInfo, "get all statistics")
+	l.LogAttrs(ctx, slog.LevelInfo, "get all statistics")
 
-	ctx := context.Background()
 	now := time.Now()
 	pipe := db.Redis.Pipeline()
 	keys := []string{
@@ -307,7 +305,7 @@ func GetAll(c context.Context, days int) (Data, error) {
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil && err.Error() != "redis: nil" {
-		slog.LogAttrs(c, slog.LevelError, "cannot get statistics", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get statistics", slog.String("error", err.Error()))
 		return Data{}, err
 	}
 
@@ -329,7 +327,7 @@ func GetAll(c context.Context, days int) (Data, error) {
 		f, err := strconv.ParseFloat(s, 64)
 
 		if err != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot convert the value to int", slog.String("value", s), slog.String("error", err.Error()))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot convert the value to int", slog.String("value", s), slog.String("error", err.Error()))
 			values[row].Value = append([]int{0}, values[row].Value...)
 		} else {
 			value := int(f)
@@ -354,22 +352,21 @@ func GetAll(c context.Context, days int) (Data, error) {
 		values[len(keys)].Sum = int(float64(values[1].Sum) / float64(values[0].Sum) * 100)
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "got statistics")
+	slog.LogAttrs(ctx, slog.LevelInfo, "got statistics")
 
 	return values, nil
 }
 
-func Visit(c context.Context, ua useragent.UserAgent, data VisitData) error {
+func Visit(ctx context.Context, ua useragent.UserAgent, data VisitData) error {
 	l := slog.With()
-	l.LogAttrs(c, slog.LevelInfo, "get range statistics")
+	l.LogAttrs(ctx, slog.LevelInfo, "get range statistics")
 
-	ctx := context.Background()
 	now := time.Now().Format("20060102")
-
-	cid := c.Value(contexts.Cart).(string)
+	cid := ctx.Value(contexts.Cart).(string)
 	hasVisited, err := db.Redis.SIsMember(ctx, "stats:visits:members:"+now, cid).Result()
+
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get is member", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get is member", slog.String("error", err.Error()))
 		return err
 	}
 
@@ -412,17 +409,16 @@ func Visit(c context.Context, ua useragent.UserAgent, data VisitData) error {
 
 	_, err = pipe.Exec(ctx)
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot add statistics", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot add statistics", slog.String("error", err.Error()))
 	}
 
 	return nil
 }
 
-func Order(c context.Context, id string, quantites map[string]int, total float64) error {
+func Order(ctx context.Context, id string, quantites map[string]int, total float64) error {
 	l := slog.With(slog.String("id", id), slog.Float64("total", total))
-	l.LogAttrs(c, slog.LevelInfo, "store order statistics")
+	l.LogAttrs(ctx, slog.LevelInfo, "store order statistics")
 
-	ctx := context.Background()
 	now := time.Now().Format("20060102")
 	pipe := db.Redis.Pipeline()
 
@@ -435,7 +431,7 @@ func Order(c context.Context, id string, quantites map[string]int, total float64
 
 	_, err := pipe.Exec(ctx)
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot add statistics", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot add statistics", slog.String("error", err.Error()))
 	}
 
 	return nil

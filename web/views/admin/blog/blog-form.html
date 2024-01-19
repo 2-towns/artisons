@@ -1,4 +1,3 @@
-{{if .ID}} {{end}}
 <form
 	  hx-post="{{if .ID }}/admin/blog/{{.ID}}/edit.html{{else}}/admin/blog/add.html{{end}}"
 	  enctype="multipart/form-data">

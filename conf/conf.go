@@ -32,19 +32,10 @@ var ImgProxy = struct {
 	"",
 }
 
-// IsCurrencySupported returns true if the currency is supported
-// in the application
-func IsCurrencySupported(c string) bool {
-	return c == "EUR"
-}
-
 const Currency = "EUR"
 
 // DefaultMerchantId is the default merchant id
 var DefaultMID = "1234"
-
-// Languages contains the available languages in the application
-var Languages = []string{"en"}
 
 // ItemsPerPage is the number of items displayed per page or pagination
 // Deprecated: Should be moved into the configuration

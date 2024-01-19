@@ -51,6 +51,17 @@
 			</li>
 
 			<li
+				class='row header-menu-item {{if eq .Page "Tags"}} header-menu-item-active {{end}}'>
+				<a href="/admin/tags.html" class="row row-align header-menu-link">
+					<span class="header-menu-icon"> {{template "tag.svg" .}} </span>
+
+					<span class="nav-link-title">
+						{{translate .Lang "Tags"}}
+					</span>
+				</a>
+			</li>
+
+			<li
 				class='row header-menu-item {{if eq .Page "Blog"}} header-menu-item-active {{end}}'>
 				<a href="/admin/blog.html" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "article.svg" .}} </span>

@@ -49,6 +49,7 @@
 	display: inline-block;
 	margin-top: calc(var(--spacing) / 2);
 	color: var(--secondary);
+	font-size: 13px;
 }
 
 .input-group {

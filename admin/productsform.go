@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 	"errors"
-	"gifthub/conf"
 	"gifthub/http/httpext"
 	"gifthub/products"
 	"gifthub/string/stringutil"
@@ -102,7 +101,6 @@ func processProductFrom(ctx context.Context, form multipart.Form, id string) (pr
 		Quantity:    int(quantity),
 		Weight:      weight,
 		Tags:        tags,
-		Currency:    conf.Currency,
 	}
 
 	err = p.Validate(ctx)

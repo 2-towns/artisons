@@ -1,0 +1,74 @@
+<div class="table-responsive">
+    <div id="table">
+        <table class="table">
+            <thead class="thead">
+                <tr class="tr">
+                    <th class="th">{{translate .Lang "Key"}}</th>
+                    <th class="th">{{translate .Lang "Children"}}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody class="tbody">
+                {{ if .Empty }}
+                <tr class="tr">
+                    <td colspan="9" class="text-center box td">
+                        {{translate .Lang "No results found."}}
+                    </td>
+                </tr>
+                {{else}}
+                <!-- -->
+
+                {{ range .Tags}}
+                <tr class="tr">
+                    <td class="box td" hx-disable>{{.Key}}</td>
+                    <td class="box td" hx-disable>{{join .Children ","}}</td>
+                    <td class="box td">
+                        <div class="row row-align row-gap">
+                            <a
+                               href="/admin/tags/{{.Key}}/edit.html"
+                               class="button table-button">
+                                <span class="button-icon"> {{template "edit.svg"}} </span>
+                            </a>
+
+                            <label for="destroy-{{.Key}}" class="table-label">
+                                <input
+                                       type="checkbox"
+                                       id="destroy-{{.Key}}"
+                                       class="input table-destroy-checkbox input-checkbox" />
+
+                                <a class="button table-button table-confirm-button">
+                                    <span class="button-icon"> {{template "trash.svg"}} </span>
+                                </a>
+
+                                <a
+                                   hx-post="/admin/tags/{{.Key}}/delete.html"
+                                   hx-include="[name='page']"
+                                   hx-target="#table"
+                                   class="button table-button table-delete-confirm-button">
+                                    <div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+                                    <span class="htmx-hide"> {{template "trash.svg"}} </span>
+
+                                    <span class="table-destroy-confirmation">
+                                        {{template "question-mark.svg"}}
+                                    </span>
+                                </a>
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+                {{end}}
+
+                {{end}}
+            </tbody>
+        </table>
+
+        <div id="tags-categories-destroy-htmx"></div>
+
+        {{if .Pagination.Total }}
+
+        {{template "pagination.html" .Pagination}}
+
+        {{end}}
+    </div>
+</div>

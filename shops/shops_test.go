@@ -9,8 +9,8 @@ import (
 
 var ra faker.RealAddress = faker.GetRealAddress()
 var shop Contact = Contact{
-	Logo:    "../web/images/123/1",
-	Banner1: "../web/images/123/1",
+	Logo:    "../shops/123/1.jpeg",
+	Banner1: "../shops/123/1.jpeg",
 	Name:    faker.Name(),
 	Email:   faker.Email(),
 	Address: ra.Address,

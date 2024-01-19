@@ -160,11 +160,11 @@ func init() {
 	}
 }
 
-func (s Contact) Validate(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "validating a contact settings")
+func (s Contact) Validate(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "validating a contact settings")
 
 	if err := validators.V.Struct(s); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("input:%s", low)
@@ -173,11 +173,11 @@ func (s Contact) Validate(c context.Context) error {
 	return nil
 }
 
-func (s ShopSettings) Validate(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "validating a shop settings")
+func (s ShopSettings) Validate(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "validating a shop settings")
 
 	if err := validators.V.Struct(s); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the shop", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("input:%s", low)
@@ -186,9 +186,9 @@ func (s ShopSettings) Validate(c context.Context) error {
 	return nil
 }
 
-func (s Contact) Save(c context.Context) error {
+func (s Contact) Save(ctx context.Context) error {
 	l := slog.With(slog.String("name", s.Name))
-	l.LogAttrs(c, slog.LevelInfo, "trying to save the contact shop")
+	l.LogAttrs(ctx, slog.LevelInfo, "trying to save the contact shop")
 
 	now := time.Now()
 	_, err := db.Redis.HSet(context.Background(), "shop",
@@ -207,15 +207,15 @@ func (s Contact) Save(c context.Context) error {
 	).Result()
 
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
 		return errors.New("something went wrong")
 	}
 
 	return nil
 }
 
-func (s ShopSettings) Save(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "trying to save the shop")
+func (s ShopSettings) Save(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "trying to save the shop")
 
 	guest := "0"
 	if s.Guest {
@@ -271,7 +271,7 @@ func (s ShopSettings) Save(c context.Context) error {
 	).Result()
 
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
 		return errors.New("something went wrong")
 	}
 

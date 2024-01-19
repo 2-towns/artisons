@@ -13,34 +13,34 @@ import (
 	"net/http"
 )
 
-func findBySessionID(c context.Context, sid string) (User, error) {
+func findBySessionID(ctx context.Context, sid string) (User, error) {
 	l := slog.With(slog.String("sid", sid))
-	l.LogAttrs(c, slog.LevelInfo, "finding the user")
+	l.LogAttrs(ctx, slog.LevelInfo, "finding the user")
 
 	if sid == "" {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate the session id")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the session id")
 		return User{}, errors.New("your are not authorized to process this request")
 	}
 
-	id, err := db.Redis.Get(c, "auth:"+sid).Result()
+	id, err := db.Redis.Get(ctx, "auth:"+sid).Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot get the auth id from redis", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot get the auth id from redis", slog.String("error", err.Error()))
 		return User{}, errors.New("your are not authorized to process this request")
 	}
 
-	m, err := db.Redis.HGetAll(c, "user:"+id).Result()
+	m, err := db.Redis.HGetAll(ctx, "user:"+id).Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot get the session from redis", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot get the session from redis", slog.String("error", err.Error()))
 		return User{}, errors.New("your are not authorized to process this request")
 	}
 
 	m["sid"] = sid
-	u, err := parseUser(c, m)
+	u, err := parseUser(ctx, m)
 	if err != nil {
 		return User{}, errors.New("your are not authorized to process this request")
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "user found", slog.Int("user_id", u.ID))
+	l.LogAttrs(ctx, slog.LevelInfo, "user found", slog.Int("user_id", u.ID))
 
 	return u, err
 }

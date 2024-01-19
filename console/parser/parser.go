@@ -281,7 +281,6 @@ func parseCsvLine(line []string) (products.Product, error) {
 		Title:       strings.ReplaceAll(line[ititle], "\"", ""),
 		Description: strings.ReplaceAll(line[idescription], "\"", ""),
 		Price:       price,
-		Currency:    line[icurrency],
 		Quantity:    int(quantity),
 		Status:      line[istatus],
 		Weight:      weight,

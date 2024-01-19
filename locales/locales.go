@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"golang.org/x/exp/slices"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -55,15 +54,8 @@ var Console language.Tag = language.English
 // missing or not recognized.
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		langs := strings.Split(r.Header.Get("Accept-Language"), "-")
-		lang := langs[0]
+		// langs := strings.Split(r.Header.Get("Accept-Language"), "-")
 		var tag language.Tag
-
-		if !slices.Contains(conf.Languages, lang) {
-			tag = conf.DefaultLocale
-		} else {
-			tag = language.Make(lang)
-		}
 
 		// create new context from `r` request context, and assign key `"user"`
 		// to value of `"123"`
@@ -93,17 +85,17 @@ func Translate(l language.Tag, msg string, attr ...interface{}) string {
 	return t.Sprintf(msg, attr...)
 }
 
-func (v Value) Validate(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "validating a translation")
+func (v Value) Validate(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "validating a translation")
 
 	if err := validators.V.Struct(v); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the translation", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the translation", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("input:%s", low)
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "translation validated")
+	slog.LogAttrs(ctx, slog.LevelInfo, "translation validated")
 
 	return nil
 }

@@ -87,21 +87,21 @@ type Query struct {
 // is valid. The values can be "collect" or "home".
 // The "collect" value can be used only if it's allowed
 // in the settings.
-func IsValidDelivery(c context.Context, d string) bool {
+func IsValidDelivery(ctx context.Context, d string) bool {
 	l := slog.With(slog.String("delivery", d))
-	l.LogAttrs(c, slog.LevelInfo, "checking delivery validity")
+	l.LogAttrs(ctx, slog.LevelInfo, "checking delivery validity")
 
 	if err := validators.V.Var(d, "oneof=collect home"); err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
 		return false
 	}
 
 	if d == "home" && !conf.HasHomeDelivery {
-		l.LogAttrs(c, slog.LevelInfo, "cannot continue while the home is not activated")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue while the home is not activated")
 		return false
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "the delivery is valid")
+	l.LogAttrs(ctx, slog.LevelInfo, "the delivery is valid")
 
 	return true
 }
@@ -109,21 +109,21 @@ func IsValidDelivery(c context.Context, d string) bool {
 // IsValidPayment returns true if the payment
 // is valid. The values can be "card", "cash", "bitcoin" or "wire".
 // The payments can be enablee or disabled in the settings.
-func IsValidPayment(c context.Context, p string) bool {
+func IsValidPayment(ctx context.Context, p string) bool {
 	l := slog.With(slog.String("payment", p))
-	l.LogAttrs(c, slog.LevelInfo, "checking payment validity")
+	l.LogAttrs(ctx, slog.LevelInfo, "checking payment validity")
 
-	if err := validators.V.Var(c, "oneof=cash wire bitcoin card"); err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate  te payment", slog.String("error", err.Error()))
+	if err := validators.V.Var(ctx, "oneof=cash wire bitcoin card"); err != nil {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate  te payment", slog.String("error", err.Error()))
 		return false
 	}
 
 	if !slices.Contains(Payments, p) {
-		l.LogAttrs(c, slog.LevelInfo, "cannot continue while the payment method is not activated")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue while the payment method is not activated")
 		return false
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "the payment is valid")
+	l.LogAttrs(ctx, slog.LevelInfo, "the payment is valid")
 
 	return true
 }
@@ -138,25 +138,25 @@ func IsValidPayment(c context.Context, p string) bool {
 // - user:ID:orders => the order id added in the set
 // An error occurs if the delivery or the payment values are invalid,
 // if the product list is empty, or one of the product is not available.
-func (o Order) Save(c context.Context) (string, error) {
+func (o Order) Save(ctx context.Context) (string, error) {
 	l := slog.With()
-	l.LogAttrs(c, slog.LevelInfo, "saving the order")
+	l.LogAttrs(ctx, slog.LevelInfo, "saving the order")
 
-	if !IsValidDelivery(c, o.Delivery) {
+	if !IsValidDelivery(ctx, o.Delivery) {
 		return "", errors.New("your are not authorized to process this request")
 	}
 
-	if !IsValidPayment(c, o.Payment) {
+	if !IsValidPayment(ctx, o.Payment) {
 		return "", errors.New("your are not authorized to process this request")
 	}
 
 	if len(o.Quantities) == 0 {
-		l.LogAttrs(c, slog.LevelInfo, "the product list is empty")
+		l.LogAttrs(ctx, slog.LevelInfo, "the product list is empty")
 		return "", errors.New("the cart is empty")
 	}
 
 	if err := validators.V.Struct(o.Address); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return "", fmt.Errorf("address_%s_required", low)
@@ -174,28 +174,27 @@ func (o Order) Save(c context.Context) (string, error) {
 		tra[key] = fmt.Sprintf("%d", q)
 	}
 
-	if !products.Availables(c, pids) {
-		l.LogAttrs(c, slog.LevelInfo, "no product is available")
+	if !products.Availables(ctx, pids) {
+		l.LogAttrs(ctx, slog.LevelInfo, "no product is available")
 		return "", errors.New("the cart is empty")
 	}
 
 	oid, err := stringutil.Random()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot generate the pid", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot generate the pid", slog.String("error", err.Error()))
 		return "", errors.New("something went wrong")
 	}
 
 	tra["oid"] = oid
 
-	o, err = o.WithProducts(c)
+	o, err = o.WithProducts(ctx)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelWarn, "cannot get the products", slog.Int("uid", o.UID))
+		l.LogAttrs(ctx, slog.LevelWarn, "cannot get the products", slog.Int("uid", o.UID))
 		return "", err
 	}
 
 	o = o.WithTotal()
 	now := time.Now()
-	ctx := context.Background()
 
 	if _, err = db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, "order:"+oid,
@@ -231,17 +230,17 @@ func (o Order) Save(c context.Context) (string, error) {
 
 		return nil
 	}); err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot save the order in redis", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot save the order in redis", slog.String("error", err.Error()))
 		return "", errors.New("something went wrong")
 	}
 
-	go stats.Order(c, oid, o.Quantities, o.Total)
+	go stats.Order(ctx, oid, o.Quantities, o.Total)
 
-	go o.SendConfirmationEmail(c)
+	go o.SendConfirmationEmail(ctx)
 
-	go tracking.Log(c, "order", tra)
+	go tracking.Log(ctx, "order", tra)
 
-	l.LogAttrs(c, slog.LevelInfo, "the new order is created", slog.String("oid", oid))
+	l.LogAttrs(ctx, slog.LevelInfo, "the new order is created", slog.String("oid", oid))
 
 	return oid, nil
 }
@@ -257,17 +256,17 @@ func (o Order) WithTotal() Order {
 	return o
 }
 
-func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
+func (o Order) SendConfirmationEmail(ctx context.Context) (string, error) {
 	l := slog.With(slog.String("oid", o.ID))
-	l.LogAttrs(c, slog.LevelInfo, "sending confirmation email")
+	l.LogAttrs(ctx, slog.LevelInfo, "sending confirmation email")
 
-	email, err := db.Redis.HGet(c, fmt.Sprintf("user:%d", o.UID), "email").Result()
+	email, err := db.Redis.HGet(ctx, fmt.Sprintf("user:%d", o.UID), "email").Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelWarn, "cannot get the email", slog.Int("uid", o.UID), slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelWarn, "cannot get the email", slog.Int("uid", o.UID), slog.String("error", err.Error()))
 		return "", err
 	}
 
-	lang := c.Value(contexts.Locale).(language.Tag)
+	lang := ctx.Value(contexts.Locale).(language.Tag)
 	p := message.NewPrinter(lang)
 
 	msg := p.Sprintf("email_order_confirmation", o.Address.Firstname)
@@ -290,9 +289,9 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 
 	msg += p.Sprintf("email_order_confirmationfooter")
 
-	err = mails.Send(c, email, p.Sprintf("email_order_subject", o.ID), msg)
+	err = mails.Send(ctx, email, p.Sprintf("email_order_subject", o.ID), msg)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelWarn, "cannot send the email", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelWarn, "cannot send the email", slog.String("error", err.Error()))
 		return "", err
 	}
 
@@ -306,25 +305,23 @@ func (o Order) SendConfirmationEmail(c context.Context) (string, error) {
 // to be sent to the customer.
 // The keys are :
 // - order:oid => the order data
-func UpdateStatus(c context.Context, oid, status string) error {
+func UpdateStatus(ctx context.Context, oid, status string) error {
 	l := slog.With(slog.String("oid", oid), slog.String("status", status))
-	l.LogAttrs(c, slog.LevelInfo, "updating the order status")
+	l.LogAttrs(ctx, slog.LevelInfo, "updating the order status")
 
 	if err := validators.V.Var(status, "required,oneof=created processing delivering delivered canceled"); err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate the status", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the status", slog.String("error", err.Error()))
 		return errors.New("input:status")
 	}
 
-	ctx := context.Background()
-
 	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot find the order")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the order")
 		return errors.New("oops the data is not found")
 	}
 
 	_, err := db.Redis.HSet(ctx, "order:"+oid, "status", status).Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, " cannot update the status order", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, " cannot update the status order", slog.String("error", err.Error()))
 		return errors.New("something went wrong")
 	}
 
@@ -333,36 +330,34 @@ func UpdateStatus(c context.Context, oid, status string) error {
 		"status": status,
 	}
 
-	go tracking.Log(c, "order_status", tra)
+	go tracking.Log(ctx, "order_status", tra)
 
-	l.LogAttrs(c, slog.LevelInfo, "the status is updated")
+	l.LogAttrs(ctx, slog.LevelInfo, "the status is updated")
 
 	return nil
 }
 
-func (o Order) WithProducts(c context.Context) (Order, error) {
+func (o Order) WithProducts(ctx context.Context) (Order, error) {
 	l := slog.With(slog.String("oid", o.ID))
-
-	ctx := context.Background()
 
 	m, err := db.Redis.HGetAll(ctx, "order:"+o.ID+":products").Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot retrieve the order products", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot retrieve the order products", slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
 	pds := []products.Product{}
 
 	for key, value := range m {
-		product, err := products.Find(c, key)
+		product, err := products.Find(ctx, key)
 		if err != nil {
-			l.LogAttrs(c, slog.LevelError, "cannot retrieve the product", slog.String("pid", key), slog.String("error", err.Error()))
+			l.LogAttrs(ctx, slog.LevelError, "cannot retrieve the product", slog.String("pid", key), slog.String("error", err.Error()))
 			return Order{}, errors.New("something went wrong")
 		}
 
 		q, err := strconv.ParseInt(value, 10, 32)
 		if err != nil {
-			l.LogAttrs(c, slog.LevelError, "cannot parse the quantity", slog.String("quantity", value), slog.String("error", err.Error()))
+			l.LogAttrs(ctx, slog.LevelError, "cannot parse the quantity", slog.String("quantity", value), slog.String("error", err.Error()))
 			return Order{}, errors.New("something went wrong")
 		}
 
@@ -376,37 +371,35 @@ func (o Order) WithProducts(c context.Context) (Order, error) {
 	return o, nil
 }
 
-func Find(c context.Context, oid string) (Order, error) {
+func Find(ctx context.Context, oid string) (Order, error) {
 	l := slog.With(slog.String("oid", oid))
-	l.LogAttrs(c, slog.LevelInfo, "finding the order")
+	l.LogAttrs(ctx, slog.LevelInfo, "finding the order")
 
 	if oid == "" {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty id")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty id")
 		return Order{}, errors.New("input:id")
 	}
 
-	ctx := context.Background()
-
 	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot find the order")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the order")
 		return Order{}, errors.New("oops the data is not found")
 	}
 
 	data, err := db.Redis.HGetAll(ctx, "order:"+oid).Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot get the order from redis", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot get the order from redis", slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
-	o, err := parse(c, data)
+	o, err := parse(ctx, data)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot parse the order", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot parse the order", slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
 	ids, err := db.Redis.SMembers(ctx, "order:"+oid+":notes").Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot parse the order note ids", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot parse the order note ids", slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
@@ -420,7 +413,7 @@ func Find(c context.Context, oid string) (Order, error) {
 	})
 
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get the order notes", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the order notes", slog.String("error", err.Error()))
 		return o, errors.New("something went wrong")
 	}
 
@@ -428,7 +421,7 @@ func Find(c context.Context, oid string) (Order, error) {
 		key := fmt.Sprintf("%s", cmd.Args()[1])
 
 		if cmd.Err() != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot get the tag links", slog.String("key", key), slog.String("error", err.Error()))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the tag links", slog.String("key", key), slog.String("error", err.Error()))
 			continue
 		}
 
@@ -436,7 +429,7 @@ func Find(c context.Context, oid string) (Order, error) {
 
 		createdAt, err := strconv.ParseInt(val["created_at"], 10, 64)
 		if err != nil {
-			l.LogAttrs(c, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.String("created_at", val["created_at"]))
+			l.LogAttrs(ctx, slog.LevelError, "cannot parse the created at date", slog.String("error", err.Error()), slog.String("created_at", val["created_at"]))
 			continue
 		}
 
@@ -446,7 +439,7 @@ func Find(c context.Context, oid string) (Order, error) {
 		})
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "got the order with notes", slog.Int("notes", len(o.Notes)))
+	l.LogAttrs(ctx, slog.LevelInfo, "got the order with notes", slog.Int("notes", len(o.Notes)))
 
 	return o, nil
 }
@@ -455,20 +448,18 @@ func Find(c context.Context, oid string) (Order, error) {
 // The keys are:
 // - order:oid:note:nid => the note data
 // - order:oid:notes => the note id list
-func AddNote(c context.Context, oid, note string) error {
+func AddNote(ctx context.Context, oid, note string) error {
 	l := slog.With(slog.String("oid", oid))
-	l.LogAttrs(c, slog.LevelInfo, "adding a note")
-
-	ctx := context.Background()
+	l.LogAttrs(ctx, slog.LevelInfo, "adding a note")
 
 	if note == "" {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate the note")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the note")
 		return errors.New("input:note")
 	}
 
 	rep, err := db.Redis.Exists(ctx, "order:"+oid).Result()
 	if rep == 0 || err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot find the order")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the order")
 		return errors.New("oops the data is not found")
 	}
 
@@ -482,44 +473,44 @@ func AddNote(c context.Context, oid, note string) error {
 
 		return nil
 	}); err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot store the note", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot store the note", slog.String("error", err.Error()))
 		return errors.New("something went wrong")
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "note added")
+	l.LogAttrs(ctx, slog.LevelInfo, "note added")
 
 	return nil
 }
 
-func parse(c context.Context, m map[string]string) (Order, error) {
+func parse(ctx context.Context, m map[string]string) (Order, error) {
 	l := slog.With(slog.String("user_id", m["uid"]))
-	l.LogAttrs(c, slog.LevelInfo, "parsing the order")
+	l.LogAttrs(ctx, slog.LevelInfo, "parsing the order")
 
 	uid, err := strconv.ParseInt(m["uid"], 10, 64)
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot parse the uid", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the uid", slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
 	createdAt, err := strconv.ParseInt(m["created_at"], 10, 64)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot parse the created_at", slog.String("created_at", m["created_at"]), slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot parse the created_at", slog.String("created_at", m["created_at"]), slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
 	updatedAt, err := strconv.ParseInt(m["updated_at"], 10, 64)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot parse the updated_at", slog.String("updated_at", m["updated_at"]), slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot parse the updated_at", slog.String("updated_at", m["updated_at"]), slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
 	total, err := strconv.ParseFloat(m["total"], 64)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot parse the total", slog.String("total", m["total"]), slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot parse the total", slog.String("total", m["total"]), slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "order parsed", slog.String("id", m["id"]))
+	slog.LogAttrs(ctx, slog.LevelInfo, "order parsed", slog.String("id", m["id"]))
 
 	return Order{
 		ID:            m["id"],
@@ -545,8 +536,8 @@ func parse(c context.Context, m map[string]string) (Order, error) {
 	}, nil
 }
 
-func Search(c context.Context, q Query, offset, num int) (SearchResults, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "searching orders")
+func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "searching orders")
 
 	qs := fmt.Sprintf("FT.SEARCH %s @type:{order}", db.OrderIdx)
 
@@ -557,9 +548,8 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 
 	qs += fmt.Sprintf(" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)
 
-	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
+	slog.LogAttrs(ctx, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
 
-	ctx := context.Background()
 	args, err := db.SplitQuery(ctx, qs)
 	if err != nil {
 		return SearchResults{}, err
@@ -574,7 +564,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	res := cmds.(map[interface{}]interface{})
 	total := res["total_results"].(int64)
 
-	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", res["total_results"].(int64)))
+	slog.LogAttrs(ctx, slog.LevelInfo, "search done", slog.Int64("results", res["total_results"].(int64)))
 
 	results := res["results"].([]interface{})
 	orders := []Order{}
@@ -584,7 +574,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 		attributes := m["extra_attributes"].(map[interface{}]interface{})
 		data := db.ConvertMap(attributes)
 
-		order, err := parse(c, data)
+		order, err := parse(ctx, data)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot order the product", slog.Any("order", data), slog.String("error", err.Error()))
 			continue

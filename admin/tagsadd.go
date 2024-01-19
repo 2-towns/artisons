@@ -1,80 +1,60 @@
 package admin
 
 import (
-	"gifthub/blogs"
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/cookies"
 	"gifthub/http/httperrors"
 	"gifthub/http/httpext"
+	"gifthub/tags"
 	"gifthub/templates"
 	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"golang.org/x/text/language"
 )
 
-var blogEditTpl *template.Template
+var tagsAddTpl *template.Template
 
 func init() {
 	var err error
 
-	blogEditTpl, err = templates.Build("base.html").ParseFiles(
+	tagsAddTpl, err = templates.Build("base.html").ParseFiles(
 		append(templates.AdminUI,
-			conf.WorkingSpace+"web/views/admin/blog/blog-head.html",
-			conf.WorkingSpace+"web/views/admin/blog/blog-scripts.html",
-			conf.WorkingSpace+"web/views/admin/blog/blog-edit.html",
-			conf.WorkingSpace+"web/views/admin/blog/blog-form.html",
+			conf.WorkingSpace+"web/views/admin/tags/tags-add.html",
+			conf.WorkingSpace+"web/views/admin/tags/tags-form.html",
 		)...)
 
 	if err != nil {
 		log.Panicln(err)
 	}
-
 }
 
-func EditBlogForm(w http.ResponseWriter, r *http.Request) {
+func AddTagForm(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	id := chi.URLParam(r, "id")
-
-	val, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
-		httperrors.Page(w, ctx, "oops the data is not found", 404)
-	}
-
-	p, err := blogs.Find(ctx, int(val))
-	if err != nil {
-		httperrors.Page(w, ctx, "oops the data is not found", 404)
-		return
-	}
 
 	data := struct {
 		Lang language.Tag
 		Page string
 		ID   string
-		Data blogs.Article
+		Data tags.Tag
 	}{
 		lang,
-		"Blog",
-		id,
-		p,
+		"Tags",
+		"",
+		tags.Tag{},
 	}
 
-	w.Header().Set("Content-Security-Policy", blogCspPolicy)
-
-	if err := blogEditTpl.Execute(w, &data); err != nil {
+	if err := tagsAddTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }
 
-func EditBlog(w http.ResponseWriter, r *http.Request) {
+func AddTag(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	if err := r.ParseMultipartForm(conf.MaxUploadSize); err != nil {
@@ -83,16 +63,27 @@ func EditBlog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := chi.URLParam(r, "id")
-	p, err := processBlogFrom(ctx, *r.MultipartForm, id)
+	id := ""
+	t, err := processTagFrom(ctx, *r.MultipartForm, id)
 	if err != nil {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
-	err = p.Save(ctx)
+	exists, err := tags.Exists(ctx, t.Key)
 	if err != nil {
-		httpext.RollbackUpload(ctx, []string{p.Image})
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	if exists {
+		httperrors.Alert(w, ctx, "the tag exists already")
+		return
+	}
+
+	err = t.Save(ctx)
+	if err != nil {
+		httpext.RollbackUpload(ctx, []string{t.Image})
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
@@ -108,6 +99,6 @@ func EditBlog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
-	w.Header().Set("HX-Redirect", "/admin/blog.html")
+	w.Header().Set("HX-Redirect", "/admin/tags.html")
 	w.Write([]byte(""))
 }

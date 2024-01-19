@@ -4,267 +4,365 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/http/contexts"
 	"gifthub/validators"
+	"log"
 	"log/slog"
-	"slices"
+	"math"
+	"sort"
+	"strconv"
 	"strings"
+	"time"
 
+	"golang.org/x/exp/maps"
+
+	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/text/language"
 )
 
 type Tag struct {
-	Name  string `validate:"required,alpha"`
-	Label string `validate:"required"`
-	// If the score is positive, the tag will be added in the root tag
-	Score int
-	Links []Tag
+	Key       string `validate:"required,alphanum"`
+	Label     string `validate:"required"`
+	Image     string
+	Children  []string
+	Root      bool
+	Score     int
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-func (t Tag) Save(c context.Context) error {
-	l := slog.With(slog.String("tag", t.Name))
-	l.LogAttrs(c, slog.LevelInfo, "adding a new tag")
+var Tree = []Leaf{}
 
-	if err := validators.V.Var(t.Name, "alpha"); err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate name", slog.String("name", t.Name), slog.String("error", err.Error()))
-		return errors.New("input:tagname")
-	}
+type Leaf struct {
+	Tag
+	Branches []*Leaf
+}
 
-	if err := validators.V.Var(t.Label, "required"); err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate label", slog.String("label", t.Label), slog.String("error", err.Error()))
-		return errors.New("input:taglabel")
-	}
+type ListResults struct {
+	Total int
+	Tags  []Tag
+}
 
-	if slices.Contains(conf.Languages, t.Name) {
-		l.LogAttrs(c, slog.LevelInfo, "cannot use a reserved word")
-		return errors.New("input_name_reserved")
-	}
-
+func init() {
 	ctx := context.Background()
 
-	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, "tag", t.Name, t.Label)
+	t, err := tree(ctx)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the categories", slog.String("error", err.Error()))
+		log.Fatalln(err)
+	}
 
-		if t.Score > 0 {
-			rdb.ZAdd(ctx, "tag:root", redis.Z{
+	Tree = t
+}
+
+func (p Tag) Validate(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "validating a tag")
+
+	if err := validators.V.Struct(p); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the tag", slog.String("error", err.Error()))
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return fmt.Errorf("input:%s", low)
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "tag validated")
+
+	return nil
+}
+
+func Exists(ctx context.Context, key string) (bool, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "checking existence", slog.String("key", key))
+
+	exists, err := db.Redis.Exists(ctx, "tag:"+key).Result()
+
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot check tags existence")
+		return false, errors.New("something went wrong")
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "tag existence", slog.String("key", key), slog.Int64("exists", exists))
+
+	return exists > 0, nil
+}
+
+func (t Tag) Save(ctx context.Context) error {
+	l := slog.With(slog.String("tag", t.Key))
+	l.LogAttrs(ctx, slog.LevelInfo, "adding a new tag")
+
+	children := strings.Join(t.Children, ";")
+	now := time.Now()
+
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.HSet(ctx, "tag", t.Key, children)
+		rdb.HSet(ctx, "tag:"+t.Key,
+			"image", t.Image,
+			"label", t.Label,
+			"updated_at", now.Unix(),
+		)
+
+		rdb.HSetNX(ctx, "tag:"+t.Key, "created_at", now.Unix())
+
+		if t.Root {
+			rdb.ZAdd(ctx, "tags", redis.Z{
 				Score:  float64(t.Score),
-				Member: t.Name,
+				Member: t.Key,
 			})
-		} else {
-			rdb.ZRem(ctx, "tag:root", t.Name)
 		}
+
+		t, err := tree(ctx)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot build the categories tree", slog.String("error", err.Error()))
+			return err
+		}
+
+		Tree = t
 
 		return nil
 
 	}); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
 		return errors.New("something went wrong")
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "tag saved successfully")
+	l.LogAttrs(ctx, slog.LevelInfo, "tag saved successfully")
 
 	return nil
 }
 
-// Link register a link with another tag with a score used by the Redis sorted set.
-// An error is raised if the tag itself exists in the targeted tag links.
-func (t Tag) Link(c context.Context, tag string, score float64) error {
-	l := slog.With(slog.String("tag", t.Name))
-	l.LogAttrs(c, slog.LevelInfo, "linking a tag", slog.String("target", tag))
-
-	if tag == "" {
-		slog.LogAttrs(c, slog.LevelInfo, "cannot continue with empty tag")
-		return errors.New("input:name")
-	}
-
-	if score == 0 {
-		slog.LogAttrs(c, slog.LevelInfo, "cannot continue with zero score")
-		return errors.New("input:score")
-	}
-
-	ctx := context.Background()
-	exists, err := db.Redis.HExists(ctx, "tag", tag).Result()
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot retrieve the target tag", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
-	}
-
-	if !exists {
-		return errors.New("input_tag_notfound")
-	}
-
-	_, err = db.Redis.ZAdd(ctx, "tag:"+t.Name, redis.Z{
-		Score:  score,
-		Member: tag,
-	}).Result()
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot link the tag", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
-	}
-
-	l.LogAttrs(c, slog.LevelInfo, "tag linked successfully")
-
-	return nil
-}
-
-func List(c context.Context) ([]Tag, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "listing tags")
-
-	hashes, err := db.Redis.HGetAll(context.Background(), "tag").Result()
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return []Tag{}, errors.New("something went wrong")
-	}
-
-	tags := []Tag{}
-
-	for key, value := range hashes {
-		tags = append(tags, Tag{
-			Name:  key,
-			Label: value,
-		})
-	}
-
-	slog.LogAttrs(c, slog.LevelInfo, "found tags", slog.Int("length", len(tags)))
-
-	return tags, nil
-}
-
-func (t Tag) WithLinks(c context.Context) (Tag, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "listing tags")
-
-	links, err := db.Redis.ZRange(context.Background(), "tag:"+t.Name, 0, -1).Result()
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return t, errors.New("something went wrong")
-	}
-
-	hashes, err := db.Redis.HGetAll(context.Background(), "tag").Result()
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return t, errors.New("something went wrong")
-	}
-
+func parse(ctx context.Context, data map[string]string) (Tag, error) {
 	tag := Tag{
-		Name:  t.Name,
-		Label: t.Label,
-		Links: []Tag{},
-	}
-
-	for _, value := range links {
-		tag.Links = append(tag.Links, Tag{
-			Name:  value,
-			Label: hashes[value],
-		})
+		Key:      data["key"],
+		Label:    data["label"],
+		Image:    data["image"],
+		Children: strings.Split(data["children"], ";"),
 	}
 
 	return tag, nil
 }
 
-func (t Tag) RemoveLink(c context.Context, tag string) error {
-	l := slog.With(slog.String("tag", t.Name))
-	l.LogAttrs(c, slog.LevelInfo, "removing the link", slog.String("target", tag))
+func Find(ctx context.Context, key string) (Tag, error) {
+	l := slog.With(slog.String("id", key))
+	l.LogAttrs(ctx, slog.LevelInfo, "looking for tag")
 
-	_, err := db.Redis.ZRem(context.Background(), "tag:"+t.Name, tag).Result()
+	if key == "" {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty tag key")
+		return Tag{}, errors.New("input:id")
+	}
+
+	if exists, err := db.Redis.Exists(ctx, "tag:"+key).Result(); exists == 0 || err != nil {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the tag")
+		return Tag{}, errors.New("oops the data is not found")
+	}
+
+	data, err := db.Redis.HGetAll(ctx, "tag:"+key).Result()
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot link the tag", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
+		l.LogAttrs(ctx, slog.LevelError, "cannot find the tag", slog.String("error", err.Error()))
+		return Tag{}, err
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "tag removed successfully")
+	data["key"] = key
+	tag, err := parse(ctx, data)
+	if err != nil {
+		l.LogAttrs(ctx, slog.LevelError, "cannot parse the tag", slog.String("error", err.Error()))
+		return Tag{}, err
+	}
 
-	return nil
+	score, err := db.Redis.ZScore(ctx, "tags", key).Result()
+	if err == nil {
+		tag.Root = true
+		tag.Score = int(score)
+	}
+
+	l.LogAttrs(ctx, slog.LevelInfo, "the tag is found")
+
+	return tag, nil
 }
 
-type treeDepth struct {
-	Depth int
-	Limit int
-}
+func List(ctx context.Context, offset, num int) (ListResults, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "listing tags")
 
-func tree(name string, labels map[string]string, links map[string][]string, td treeDepth) Tag {
-	if td.Depth >= conf.TagMaxDepth || td.Depth >= td.Limit {
-		return Tag{}
+	hashes, err := db.Redis.HGetAll(context.Background(), "tag").Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
+		return ListResults{}, errors.New("something went wrong")
 	}
 
-	tag := Tag{
-		Name:  name,
-		Label: labels[name],
-		Links: []Tag{},
-	}
+	tags := map[string]Tag{}
 
-	for _, link := range links[name] {
-		t := tree(link, labels, links, treeDepth{
-			Depth: td.Depth + 1,
-			Limit: td.Limit,
-		})
-
-		if t.Name == "" {
-			continue
+	for key, value := range hashes {
+		tags[key] = Tag{
+			Key:      key,
+			Children: strings.Split(value, ";"),
 		}
-
-		tag.Links = append(tag.Links, t)
 	}
-
-	return tag
-}
-
-// Root the tags available in the root tags.
-// The limit is the depth limit used for the
-func Root(c context.Context, limit int) ([]Tag, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "listing root  tags")
-
-	ctx := context.Background()
-
-	hashes, err := db.Redis.HGetAll(ctx, "tag").Result()
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
-		return []Tag{}, errors.New("something went wrong")
-	}
-
-	labels := map[string]string{}
 
 	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		for key, value := range hashes {
-			labels[key] = value
-			rdb.ZRange(ctx, "tag:"+key, 0, -1)
+		for key := range hashes {
+			rdb.HGet(ctx, "tag:"+key, "updated_at")
 		}
 
 		return nil
 	})
 
-	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot get the tag links", slog.String("error", err.Error()))
-		return []Tag{}, errors.New("something went wrong")
+	if err != nil && err.Error() != "redis: nil" {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the tag meta data", slog.String("error", err.Error()))
+		return ListResults{}, errors.New("something went wrong")
 	}
-
-	links := map[string][]string{}
 
 	for _, cmd := range cmds {
 		key := fmt.Sprintf("%s", cmd.Args()[1])
 
-		if cmd.Err() != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot get the tag links", slog.String("key", key), slog.String("error", err.Error()))
+		if cmd.Err() != nil && cmd.Err().Error() != "redis: nil" {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the tag meta data", slog.String("key", key), slog.String("error", err.Error()))
 			continue
 		}
 
-		name := strings.Replace(key, "tag:", "", 1)
-		links[name] = cmd.(*redis.StringSliceCmd).Val()
+		val := cmd.(*redis.StringCmd).Val()
+
+		if val == "" {
+			continue
+		}
+
+		k := strings.Replace(key, "tag:", "", 1)
+
+		updatedAt, err := strconv.ParseInt(val, 10, 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the updated at", slog.String("error", err.Error()), slog.String("updated_at", val))
+			return ListResults{}, errors.New("input:updated_at")
+		}
+
+		t := tags[k]
+		t.UpdatedAt = time.Unix(updatedAt, 0)
+		tags[k] = t
 	}
 
-	tags := []Tag{}
-	lang := c.Value(contexts.Locale).(language.Tag)
+	slog.LogAttrs(ctx, slog.LevelInfo, "found tags", slog.Int("length", len(tags)))
 
-	for _, value := range links[lang.String()] {
-		tags = append(tags, tree(value, labels, links, treeDepth{
-			Depth: 0,
-			Limit: limit,
-		}))
+	values := maps.Values(tags)
+	o := math.Min(float64(offset), float64(len(hashes)))
+	n := math.Min(float64(num), float64(len(hashes)))
+
+	sort.Slice(values, func(i, j int) bool {
+		return values[i].UpdatedAt.Unix() > values[j].UpdatedAt.Unix()
+	})
+
+	return ListResults{
+		Tags:  values[int(o):int(n)],
+		Total: len(tags),
+	}, nil
+}
+
+func Delete(ctx context.Context, key string) error {
+	l := slog.With(slog.String("tag", key))
+	l.LogAttrs(ctx, slog.LevelInfo, "deleting  tag")
+
+	if key == "" {
+		slog.LogAttrs(ctx, slog.LevelInfo, "the name cannot be empty")
+		return errors.New("input:name")
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "root tags loaded", slog.Int("length", len(tags)))
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.HDel(ctx, "tag", key)
+		rdb.Del(ctx, "tag:"+key)
+		rdb.ZRem(ctx, "tags", key)
 
-	return tags, nil
+		return nil
+
+	}); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot delete the data", slog.String("error", err.Error()))
+		return errors.New("something went wrong")
+	}
+
+	l.LogAttrs(ctx, slog.LevelInfo, "tag deleted successfully")
+
+	return nil
+}
+
+func tree(ctx context.Context) ([]Leaf, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "building tree")
+
+	leaves := []Leaf{}
+
+	roots, err := db.Redis.ZRange(ctx, "tags", 0, -1).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the roots", slog.String("error", err.Error()))
+		return []Leaf{}, errors.New("something went wrong")
+	}
+
+	tags, err := db.Redis.HGetAll(ctx, "tag").Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
+		return []Leaf{}, errors.New("something went wrong")
+	}
+
+	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+		for key := range tags {
+			rdb.HGetAll(ctx, "tag:"+key)
+		}
+
+		return nil
+	})
+
+	if err != nil && err.Error() != "redis: nil" {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the tag meta data", slog.String("error", err.Error()))
+		return []Leaf{}, errors.New("something went wrong")
+	}
+
+	tag := map[string]Tag{}
+
+	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil && cmd.Err().Error() != "redis: nil" {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the tag meta data", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
+		val := cmd.(*redis.MapStringStringCmd).Val()
+
+		tag[val["key"]] = Tag{}
+	}
+
+	for _, val := range roots {
+		leaf := Leaf{
+			Tag: Tag{
+				Key:   val,
+				Label: tag[val].Label,
+				Image: tag[val].Image,
+			},
+			Branches: []*Leaf{},
+		}
+
+		branches := strings.Split(tags[val], ";")
+
+		for _, branch := range branches {
+			l := Leaf{
+				Tag: Tag{
+					Key:   branch,
+					Label: tag[branch].Label,
+					Image: tag[branch].Image,
+				},
+			}
+
+			lb := strings.Split(tags[branch], ";")
+
+			for _, b := range lb {
+				l.Branches = append(l.Branches, &Leaf{
+					Tag: Tag{
+						Key:   b,
+						Label: tag[branch].Label,
+						Image: tag[branch].Image,
+					},
+				})
+			}
+
+			leaf.Branches = append(leaf.Branches, &l)
+		}
+
+		leaves = append(leaves, leaf)
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "tree built")
+
+	return leaves, nil
 }

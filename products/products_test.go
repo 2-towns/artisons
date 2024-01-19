@@ -1,7 +1,7 @@
 package products
 
 import (
-	"context"
+	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/locales"
 	"gifthub/string/stringutil"
@@ -54,7 +54,6 @@ var product = Product{
 	Slug:        "title",
 	MID:         "12345",
 	Sku:         "123456",
-	Currency:    "EUR",
 	Quantity:    1,
 	Status:      "online",
 	Weight:      1.5,
@@ -74,9 +73,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestImagePathReturnsCorrectPathWhenSuccess(t *testing.T) {
-	pid := "123"
+	pid := "/products/123.jpeg"
 	p := ImagePath(pid)
-	expected := "/web/images/123"
+	expected := conf.WorkingSpace + "web/images/products/123.jpeg"
 
 	if !strings.HasSuffix(p, expected) {
 		t.Fatalf(`strings.HasSuffix(p, expected) = %s, want %s`, p, expected)
@@ -84,7 +83,7 @@ func TestImagePathReturnsCorrectPathWhenSuccess(t *testing.T) {
 }
 
 func TestAvailableReturnsTrueWhenSuccess(t *testing.T) {
-	ctx := context.Background()
+	ctx := tests.Context()
 	pid, _ := stringutil.Random()
 	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
 	c := tests.Context()
@@ -103,7 +102,7 @@ func TestAvailableReturnsFalseWhenProductIsNotFound(t *testing.T) {
 }
 
 func TestAvailablesReturnsTrueWhenSuccess(t *testing.T) {
-	ctx := context.Background()
+	ctx := tests.Context()
 	pid, _ := stringutil.Random()
 	db.Redis.HSet(ctx, "product:"+pid, "status", "online")
 	c := tests.Context()
@@ -151,28 +150,6 @@ func TestValidateReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 
 	if err := p.Validate(c); err == nil || err.Error() != "input:description" {
 		t.Fatalf(`p.Validate(c) = %v, want not "input:description"`, err.Error())
-	}
-}
-
-func TestValidateReturnsErrorWhenCurrencyIsEmpty(t *testing.T) {
-	c := tests.Context()
-
-	p := product
-	p.Currency = ""
-
-	if err := p.Validate(c); err == nil || err.Error() != "input:currency" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input:currency"`, err.Error())
-	}
-}
-
-func TestValidateReturnsErrorWhenCurrencyIsNotSupported(t *testing.T) {
-	c := tests.Context()
-
-	p := product
-	p.Currency = "ABC"
-
-	if err := p.Validate(c); err == nil || err.Error() != "input:currency" {
-		t.Fatalf(`p.Validate(c) = %v, want not "input:currency"`, err.Error())
 	}
 }
 
@@ -247,17 +224,9 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 		t.Fatalf(`p.Sku = %v, want string`, p.Sku)
 	}
 
-	if p.Currency != "EUR" {
-		t.Fatalf(`p.Currency = %v, want string`, p.Currency)
-	}
-
 	if p.Description == "" {
 		t.Fatalf(`p.Description  = %v, want string`, p.Description)
 	}
-
-	// if p.MID == "" {
-	// 	t.Fatalf(`p.MID = %v, want string`, p.MID)
-	// }
 
 	if p.ID != "PDT1" {
 		t.Fatalf(`p.PID = %v, want "PDT1"`, p.ID)

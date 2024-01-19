@@ -13,14 +13,14 @@ import (
 )
 
 // Send a push notification on a device.
-func Send(c context.Context, device, message string) error {
+func Send(ctx context.Context, device, message string) error {
 	l := slog.With(slog.String("message", message))
-	l.LogAttrs(c, slog.LevelInfo, "sending a new notification")
+	l.LogAttrs(ctx, slog.LevelInfo, "sending a new notification")
 
 	s := &webpush.Subscription{}
 	json.Unmarshal([]byte(device), s)
 
-	l.LogAttrs(c, slog.LevelInfo, "preparing to send a push notification")
+	l.LogAttrs(ctx, slog.LevelInfo, "preparing to send a push notification")
 
 	resp, err := webpush.SendNotification([]byte(message), s, &webpush.Options{
 		Subscriber:      conf.VapidEmail,
@@ -30,9 +30,9 @@ func Send(c context.Context, device, message string) error {
 	})
 
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot send the notification", slog.String("err", err.Error()), slog.Int("status", resp.StatusCode))
+		l.LogAttrs(ctx, slog.LevelError, "cannot send the notification", slog.String("err", err.Error()), slog.Int("status", resp.StatusCode))
 	} else {
-		l.LogAttrs(c, slog.LevelInfo, "notification sent", slog.Int("status", resp.StatusCode))
+		l.LogAttrs(ctx, slog.LevelInfo, "notification sent", slog.Int("status", resp.StatusCode))
 	}
 
 	defer resp.Body.Close()

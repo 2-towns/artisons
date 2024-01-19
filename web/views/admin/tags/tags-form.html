@@ -1,0 +1,166 @@
+<form
+      hx-post="{{if .Data.Key }}/admin/tags/{{.Data.Key}}/edit.html{{else}}/admin/tags/add.html{{end}}"
+      enctype="multipart/form-data">
+    <div class="form box">
+        <div class="form-row" id="key-row">
+            <label class="input-label" for="key">
+                {{translate .Lang "Key"}}
+            </label>
+
+            <input
+                   id="key"
+                   name="key"
+                   required
+                   class="input input-full"
+                   pattern="[a-zA-Z0-9]+"
+                   value="{{if .Data.Key }}{{.Data.Key}}{{end}}"
+                   {{if .Data.Key }}disabled{{end}} />
+
+
+            <small class="input-help">
+                {{translate .Lang "The tag identifier can contains only alphanumeric characters, no space."}}
+                {{translate .Lang "You cannot change it after the creation."}}
+                <br />
+                {{translate .Lang "To link a product with this tag, you need to add this key in the product tags."}}
+            </small>
+
+            <div id="key-error"></div>
+        </div>
+
+        <div class="form-row" id="label-row">
+            <label class="input-label" for="label">
+                {{translate .Lang "Label"}}
+            </label>
+
+            <input
+                   id="label"
+                   name="label"
+                   required
+                   class="input input-full"
+                   value="{{if .Data.Label }}{{.Data.Label}}{{end}}" />
+
+
+            <small class="input-help">
+                {{translate .Lang "Define the text displayed on the website."}}
+            </small>
+
+            <div id="label-error"></div>
+        </div>
+
+        <div class="form-row" id="children-row">
+            <label class="input-label" for="children">
+                {{translate .Lang "Children"}} -
+                <i>{{translate .Lang "Optional"}}</i>
+            </label>
+
+            <input
+                   id="children"
+                   name="children"
+                   class="input input-full"
+                   placeholder='{{translate .Lang "short;books"}}'
+                   value='{{if .Data.Key}}{{join .Data.Children ";"}}{{end}}' />
+
+            <small class="input-help">
+                {{translate .Lang "Enter the keys of the children tags separated by ';'."}}
+                <br />
+                {{translate .Lang "If the tag does not exist, it will be ignored."}}
+            </small>
+
+            <div id="children-error"></div>
+        </div>
+
+        <div class="form-row row row-align row-between" id="root-row">
+            <div>
+                <label class="switch-label" for="root">
+                    {{translate .Lang "Root tag"}}
+                </label>
+
+                <small class="input-help">
+                    {{translate
+                    .Lang
+                    "If enabled, the tag will be added to the main tag list displayed on the website."}}
+                </small>
+                <div id="root-error"></div>
+            </div>
+            <div>
+                <label class="">
+                    <input
+                           id="root"
+                           name="root"
+                           class="switch"
+                           type="checkbox"
+                           {{if .Data.Root}}checked{{end}} />
+                </label>
+            </div>
+        </div>
+
+        <div class="form-row" id="score-row">
+            <label class="input-label" for="score">
+                {{translate .Lang "Score"}} -
+                <i>{{translate .Lang "Optional"}}</i>
+            </label>
+
+            <input
+                   id="score"
+                   name="score"
+                   type="number"
+                   class="input input-full"
+                   pattern="[a-zA-Z0-9]+"
+                   value="{{if .Data.Score }}{{.Data.Score}}{{end}}" />
+
+
+            <small class="input-help">
+                {{translate .Lang "Define the score inside the root tag list."}}
+                {{translate .Lang "The higher the score, the more it will appear first."}}
+            </small>
+
+            <div id="score-error"></div>
+        </div>
+
+        <div class="form-row" id="image-row">
+            <label for="image" class="input-label">
+                {{translate .Lang "Image"}} -
+                <i>{{translate .Lang "Optional"}}</i>
+            </label>
+
+            <input
+                   id="image"
+                   name="image"
+                   class="input-file input-full"
+                   type="file"
+                   accept="image/png, image/jpeg, image/jpg" />
+
+            <small class="input-help">
+                {{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
+            </small>
+
+            {{if .Data.Image}}
+
+            <small class="input-link">
+                <a href="{{.Data.Image}}" target="_blank" class="link">
+                    {{.Data.Image}}
+                </a>
+            </small>
+
+            {{end}}
+
+            <div id="image-error"></div>
+        </div>
+
+
+        <div id="alert"></div>
+    </div>
+
+    <div class="card-footer box">
+        <div class="form row row-between row-gap">
+            <a href="/admin/tags.html" class="button row row-align fill">
+                {{translate .Lang "Back"}}
+            </a>
+            <button class="button button-primary fill">
+                <div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+                {{translate .Lang "Save"}}
+            </button>
+        </div>
+    </div>
+</form>

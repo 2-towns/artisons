@@ -43,17 +43,17 @@ type Query struct {
 	Lang     string
 }
 
-func (p Article) Validate(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "validating a article")
+func (p Article) Validate(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "validating a article")
 
 	if err := validators.V.Struct(p); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the article", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("input:%s", low)
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "article validated")
+	slog.LogAttrs(ctx, slog.LevelInfo, "article validated")
 
 	return nil
 }
@@ -72,10 +72,9 @@ func NextID(ctx context.Context) (int, error) {
 	return int(id), nil
 }
 
-func (a Article) Save(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "creating a blog article")
+func (a Article) Save(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "creating a blog article")
 
-	ctx := context.Background()
 	slug := stringutil.Slugify(a.Title)
 	now := time.Now().Unix()
 
@@ -88,11 +87,11 @@ func (a Article) Save(c context.Context) error {
 		"created_at", now,
 		"updated_at", now,
 	).Result(); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
 		return errors.New("something went wrong")
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "blog article created", slog.Int("id", a.ID))
+	slog.LogAttrs(ctx, slog.LevelInfo, "blog article created", slog.Int("id", a.ID))
 
 	return nil
 }
@@ -132,8 +131,8 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 	return a, nil
 }
 
-func Search(c context.Context, q Query, offset, num int) (SearchResults, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "searching products")
+func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "searching products")
 
 	qs := fmt.Sprintf("FT.SEARCH %s @status:{online}", db.BlogIdx)
 
@@ -148,9 +147,8 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 
 	qs += fmt.Sprintf(" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)
 
-	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
+	slog.LogAttrs(ctx, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
 
-	ctx := context.Background()
 	args, err := db.SplitQuery(ctx, qs)
 	if err != nil {
 		return SearchResults{}, err
@@ -172,7 +170,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 		attributes := m["extra_attributes"].(map[interface{}]interface{})
 		data := db.ConvertMap(attributes)
 
-		product, err := parse(c, data)
+		product, err := parse(ctx, data)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the blog", slog.Any("blog", data), slog.String("error", err.Error()))
 			continue
@@ -181,7 +179,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 		articles = append(articles, product)
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", total))
+	slog.LogAttrs(ctx, slog.LevelInfo, "search done", slog.Int64("results", total))
 
 	return SearchResults{
 		Total:    int(total),
@@ -189,56 +187,52 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	}, nil
 }
 
-func Delete(c context.Context, id int) error {
+func Delete(ctx context.Context, id int) error {
 	l := slog.With(slog.Int("id", id))
-	l.LogAttrs(c, slog.LevelInfo, "deleting blog article")
-
-	ctx := context.Background()
+	l.LogAttrs(ctx, slog.LevelInfo, "deleting blog article")
 
 	if _, err := db.Redis.Del(ctx, fmt.Sprintf("blog:%d", id)).Result(); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot delete the data", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot delete the data", slog.String("error", err.Error()))
 		return errors.New("something went wrong")
 	}
 
 	image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
 	err := os.Remove(image)
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelWarn, "cannot remove the image", slog.String("file", image), slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelWarn, "cannot remove the image", slog.String("file", image), slog.String("error", err.Error()))
 		return nil
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "the article is deleted successfuly")
+	l.LogAttrs(ctx, slog.LevelInfo, "the article is deleted successfuly")
 
 	return nil
 }
 
 // Find looks for a blog by its id
-func Find(c context.Context, id int) (Article, error) {
+func Find(ctx context.Context, id int) (Article, error) {
 	l := slog.With(slog.Int("id", id))
-	l.LogAttrs(c, slog.LevelInfo, "looking for article")
+	l.LogAttrs(ctx, slog.LevelInfo, "looking for article")
 
 	if id == 0 {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty article id")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty article id")
 		return Article{}, errors.New("input:id")
 	}
 
-	ctx := context.Background()
-
 	if exists, err := db.Redis.Exists(ctx, fmt.Sprintf("blog:%d", id)).Result(); exists == 0 || err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot find the blog")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the blog")
 		return Article{}, errors.New("oops the data is not found")
 	}
 
 	data, err := db.Redis.HGetAll(ctx, fmt.Sprintf("blog:%d", id)).Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot find the article", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot find the article", slog.String("error", err.Error()))
 		return Article{}, err
 	}
 
-	a, err := parse(c, data)
+	a, err := parse(ctx, data)
 
 	if err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "the article is found")
+		l.LogAttrs(ctx, slog.LevelInfo, "the article is found")
 	}
 
 	return a, err

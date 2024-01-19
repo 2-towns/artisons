@@ -106,7 +106,7 @@ ZZZ étant la cause du renvoi de cette donnée par le test.
 ### Tests functionnels
 
 ```
-hurl --variables-file web/hurl/admin/.env --test web/hurl/admin/*.hurl
+hurl --variable time=$(date +%s) --variables-file web/hurl/admin/.env --test web/hurl/admin/*.hurl
 ```
 
 ## Terminal
@@ -132,9 +132,9 @@ Siroter un bon café.
 Les logs doivent être renseignés avec le package `slog`. Un contexte doit être passé pour connaître l'identifiant de la requête. Example:
 
 ```go
-func Add(c context.Context, cid, id string, quantity int) error {
+func Add(ctx context.Context, cid, id string, quantity int) error {
     // ...
-    l.LogAttrs(c, slog.LevelInfo, "adding a product to the cart")
+    l.LogAttrs(ctx, slog.LevelInfo, "adding a product to the cart")
     // ...
 }
 ```

@@ -95,7 +95,6 @@ func SplitQuery(ctx context.Context, s string) ([]interface{}, error) {
 }
 
 /*func SubscribeToExpireKeys() {
-	ctx := context.Background()
 	if _, err := Redis.ConfigSet(ctx, "notify-keyspace-events", "KEA").Result(); err != nil {
 		log.Panicln(err)
 	}

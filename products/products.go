@@ -34,7 +34,6 @@ type Product struct {
 	Slug     string  `redis:"slug"`
 	MID      string  `redis:"mid"`
 	Sku      string  `redis:"sku" validate:"omitempty,alphanum"`
-	Currency string  `redis:"currency"`
 	Quantity int     `redis:"quantity" validate:"required"`
 	Status   string  `redis:"status" validate:"oneof=online offline"`
 	Weight   float64 `redis:"weight"`
@@ -91,11 +90,10 @@ func ImagePath(id string) string {
 }
 
 // Available return true if all the product ids are availables
-func Availables(c context.Context, pids []string) bool {
+func Availables(ctx context.Context, pids []string) bool {
 	l := slog.With(slog.Any("ids", pids))
-	l.LogAttrs(c, slog.LevelInfo, "checking the pids availability")
+	l.LogAttrs(ctx, slog.LevelInfo, "checking the pids availability")
 
-	ctx := context.Background()
 	pipe := db.Redis.Pipeline()
 	for _, pid := range pids {
 		pipe.HGet(ctx, "product:"+pid, "status")
@@ -103,7 +101,7 @@ func Availables(c context.Context, pids []string) bool {
 
 	cmds, err := pipe.Exec(ctx)
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot get the product ids", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot get the product ids", slog.String("error", err.Error()))
 		return false
 	}
 
@@ -111,46 +109,44 @@ func Availables(c context.Context, pids []string) bool {
 		key := fmt.Sprintf("%s", cmd.Args()[1])
 
 		if cmd.Err() != nil {
-			slog.LogAttrs(c, slog.LevelError, "cannot get the status", slog.String("key", key), slog.String("error", err.Error()))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the status", slog.String("key", key), slog.String("error", err.Error()))
 			continue
 		}
 
 		status := cmd.(*redis.StringCmd).Val()
 		if status != "online" {
-			l.LogAttrs(c, slog.LevelInfo, "cannot get the product while it is not available", slog.String("id", cmd.Args()[1].(string)))
+			l.LogAttrs(ctx, slog.LevelInfo, "cannot get the product while it is not available", slog.String("id", cmd.Args()[1].(string)))
 			return false
 		}
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "the pids are available")
+	l.LogAttrs(ctx, slog.LevelInfo, "the pids are available")
 
 	return true
 }
 
 // Available return true if the product is available
-func Available(c context.Context, pid string) bool {
+func Available(ctx context.Context, pid string) bool {
 	l := slog.With(slog.String("id", pid))
-	l.LogAttrs(c, slog.LevelInfo, "checking the pid availability")
-
-	ctx := context.Background()
+	l.LogAttrs(ctx, slog.LevelInfo, "checking the pid availability")
 
 	if exists, err := db.Redis.Exists(ctx, "product:"+pid).Result(); exists == 0 || err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot find the product")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the product")
 		return false
 	}
 
 	status, err := db.Redis.HGet(ctx, "product:"+pid, "status").Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
 		return false
 	}
 
-	l.LogAttrs(c, slog.LevelInfo, "got the product status", slog.String("availability", "status"))
+	l.LogAttrs(ctx, slog.LevelInfo, "got the product status", slog.String("availability", "status"))
 
 	return status == "online"
 }
 
-func parse(c context.Context, data map[string]string) (Product, error) {
+func parse(ctx context.Context, data map[string]string) (Product, error) {
 	price, err := strconv.ParseFloat(data["price"], 32)
 	if err != nil {
 		slog.Error("cannot parse the product price", slog.String("price", data["price"]))
@@ -159,7 +155,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 
 	quantity, err := strconv.ParseInt(data["quantity"], 10, 32)
 	if err != nil {
-		slog.Error("cannot parse the product quantity", slog.String("quantity", data["quantity"]))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product quantity", slog.String("quantity", data["quantity"]))
 		return Product{}, errors.New("input:quantity")
 	}
 
@@ -168,7 +164,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 	if data["weight"] != "" {
 		v, err := strconv.ParseFloat(data["weight"], 32)
 		if err != nil {
-			slog.Error("cannot parse the product weight", slog.String("weight", data["weight"]))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product weight", slog.String("weight", data["weight"]))
 			return Product{}, errors.New("input:weight")
 		}
 
@@ -178,7 +174,7 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 	if data["discount"] != "" {
 		v, err := strconv.ParseFloat(data["discount"], 32)
 		if err != nil {
-			slog.Error("cannot parse the product discount", slog.String("discount", data["discount"]))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product discount", slog.String("discount", data["discount"]))
 			return Product{}, errors.New("input:discount")
 		}
 
@@ -187,13 +183,13 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 
 	createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
 	if err != nil {
-		slog.Error("cannot parse the product created at", slog.String("created_at", data["created_at"]))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product created at", slog.String("created_at", data["created_at"]))
 		return Product{}, errors.New("input:created_at")
 	}
 
 	updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 	if err != nil {
-		slog.Error("cannot parse the product updated at", slog.String("updated_at", data["updated_at"]))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product updated at", slog.String("updated_at", data["updated_at"]))
 		return Product{}, errors.New("input:updated_at")
 	}
 
@@ -205,13 +201,12 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 		Slug:        db.Unescape(data["slug"]),
 		MID:         data["mid"],
 		Sku:         db.Unescape(data["sku"]),
-		Currency:    data["currency"],
 		Quantity:    int(quantity),
 		Weight:      weight,
 		Status:      data["status"],
 		Tags:        strings.Split(db.Unescape(data["tags"]), ";"),
 		Links:       strings.Split(db.Unescape(data["links"]), ";"),
-		Meta:        UnSerializeMeta(c, db.Unescape(data["meta"]), ";"),
+		Meta:        UnSerializeMeta(ctx, db.Unescape(data["meta"]), ";"),
 		Image1:      data["image_1"],
 		Image2:      data["image_2"],
 		Image3:      data["image_3"],
@@ -221,19 +216,14 @@ func parse(c context.Context, data map[string]string) (Product, error) {
 	}, nil
 }
 
-func (p Product) Validate(c context.Context) error {
-	slog.LogAttrs(c, slog.LevelInfo, "validating a product")
+func (p Product) Validate(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "validating a product")
 
 	if err := validators.V.Struct(p); err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot validate the product", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the product", slog.String("error", err.Error()))
 		field := err.(validator.ValidationErrors)[0]
 		low := strings.ToLower(field.Field())
 		return fmt.Errorf("input:%s", low)
-	}
-
-	if !conf.IsCurrencySupported(p.Currency) {
-		slog.Info("cannot use an unsupported currency", slog.String("currency", p.Currency))
-		return errors.New("input:currency")
 	}
 
 	return nil
@@ -261,7 +251,6 @@ func (p Product) Save(ctx context.Context) error {
 		"title", title,
 		"slug", stringutil.Slugify(title),
 		"description", db.Escape(p.Title),
-		"currency", p.Currency,
 		"price", p.Price,
 		"quantity", p.Quantity,
 		"status", p.Status,
@@ -306,32 +295,30 @@ func (p Product) Save(ctx context.Context) error {
 }
 
 // Find looks for a product by its product id
-func Find(c context.Context, pid string) (Product, error) {
+func Find(ctx context.Context, pid string) (Product, error) {
 	l := slog.With(slog.String("id", pid))
-	l.LogAttrs(c, slog.LevelInfo, "looking for product")
+	l.LogAttrs(ctx, slog.LevelInfo, "looking for product")
 
 	if pid == "" {
-		l.LogAttrs(c, slog.LevelInfo, "cannot validate empty product id")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty product id")
 		return Product{}, errors.New("input:id")
 	}
 
-	ctx := context.Background()
-
 	if exists, err := db.Redis.Exists(ctx, "product:"+pid).Result(); exists == 0 || err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "cannot find the product")
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the product")
 		return Product{}, errors.New("oops the data is not found")
 	}
 
 	data, err := db.Redis.HGetAll(ctx, "product:"+pid).Result()
 	if err != nil {
-		l.LogAttrs(c, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
 		return Product{}, err
 	}
 
-	p, err := parse(c, data)
+	p, err := parse(ctx, data)
 
 	if err != nil {
-		l.LogAttrs(c, slog.LevelInfo, "the product is found", slog.String("sku", p.Sku))
+		l.LogAttrs(ctx, slog.LevelInfo, "the product is found", slog.String("sku", p.Sku))
 	}
 
 	return p, err
@@ -343,8 +330,8 @@ func Find(c context.Context, pid string) (Product, error) {
 // Note that the offset is zero-indexed.
 // The default is 0 10, which returns 10 items starting from the first result.
 // You can use LIMIT 0 0 to count the number of documents in the result set without actually returning them.
-func Search(c context.Context, q Query, offset, num int) (SearchResults, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "searching products")
+func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "searching products")
 
 	qs := fmt.Sprintf("FT.SEARCH %s \"@status:{online}", db.ProductIdx)
 
@@ -378,15 +365,14 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	}
 
 	if len(q.Meta) > 0 {
-		s := db.Escape(SerializeMeta(c, q.Meta, " | "))
+		s := db.Escape(SerializeMeta(ctx, q.Meta, " | "))
 		qs += fmt.Sprintf("@meta:{%s}", s)
 	}
 
 	qs += fmt.Sprintf("\" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)
 
-	slog.LogAttrs(c, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
+	slog.LogAttrs(ctx, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
 
-	ctx := context.Background()
 	args, err := db.SplitQuery(ctx, qs)
 	if err != nil {
 		return SearchResults{}, err
@@ -404,7 +390,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	res := cmds.(map[interface{}]interface{})
 	total := res["total_results"].(int64)
 
-	slog.LogAttrs(c, slog.LevelInfo, "search done", slog.Int64("results", total))
+	slog.LogAttrs(ctx, slog.LevelInfo, "search done", slog.Int64("results", total))
 
 	results := res["results"].([]interface{})
 	products := []Product{}
@@ -414,7 +400,7 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 		attributes := m["extra_attributes"].(map[interface{}]interface{})
 		data := db.ConvertMap(attributes)
 
-		product, err := parse(c, data)
+		product, err := parse(ctx, data)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product", slog.Any("product", data), slog.String("error", err.Error()))
 			continue
@@ -423,13 +409,13 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 		products = append(products, product)
 	}
 
-	user, ok := c.Value(contexts.User).(users.User)
+	user, ok := ctx.Value(contexts.User).(users.User)
 	if !ok || user.Role != "admin" {
 		tra := map[string]string{
 			"query": fmt.Sprintf("'%s'", qs),
 		}
 
-		go tracking.Log(c, "product_search", tra)
+		go tracking.Log(ctx, "product_search", tra)
 	}
 
 	return SearchResults{
@@ -438,12 +424,12 @@ func Search(c context.Context, q Query, offset, num int) (SearchResults, error) 
 	}, nil
 }
 
-func Count(c context.Context) (int, error) {
-	slog.LogAttrs(c, slog.LevelInfo, "counting products")
+func Count(ctx context.Context) (int, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "counting products")
 
-	count, err := db.Redis.ZCount(c, "products", "-inf", "+inf").Result()
+	count, err := db.Redis.ZCount(ctx, "products", "-inf", "+inf").Result()
 	if err != nil {
-		slog.LogAttrs(c, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
 		return 0, err
 	}
 
@@ -457,8 +443,8 @@ func (p Product) URL() string {
 // SerializeMeta transforms a meta map to a string representation.
 // The values are separated by ";".
 // Example: map["color"]"blue" => color_blue
-func SerializeMeta(c context.Context, m map[string]string, sep string) string {
-	slog.LogAttrs(c, slog.LevelInfo, "serializing the product meta", slog.Any("meta", m))
+func SerializeMeta(ctx context.Context, m map[string]string, sep string) string {
+	slog.LogAttrs(ctx, slog.LevelInfo, "serializing the product meta", slog.Any("meta", m))
 
 	s := ""
 	for key, value := range m {
@@ -469,7 +455,7 @@ func SerializeMeta(c context.Context, m map[string]string, sep string) string {
 		s += fmt.Sprintf("%s_%s", key, value)
 	}
 
-	slog.LogAttrs(c, slog.LevelInfo, "serialize done successfully", slog.String("serialized", s))
+	slog.LogAttrs(ctx, slog.LevelInfo, "serialize done successfully", slog.String("serialized", s))
 
 	return s
 }
@@ -477,7 +463,7 @@ func SerializeMeta(c context.Context, m map[string]string, sep string) string {
 // UnSerializeMeta transform the meta serialized to a map.
 // The values are separated by ";".
 // Example: color_blue => map["color"]"blue"
-func UnSerializeMeta(c context.Context, s, sep string) map[string]string {
+func UnSerializeMeta(ctx context.Context, s, sep string) map[string]string {
 	if s == "" {
 		return map[string]string{}
 	}
@@ -489,7 +475,7 @@ func UnSerializeMeta(c context.Context, s, sep string) map[string]string {
 		parts := strings.Split(value, "_")
 
 		if len(parts) != 2 {
-			slog.LogAttrs(c, slog.LevelError, "cannot unserialize the product meta", slog.String("serialized", s))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot unserialize the product meta", slog.String("serialized", s))
 			continue
 		}
 
