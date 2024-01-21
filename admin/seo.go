@@ -9,6 +9,7 @@ import (
 	"gifthub/templates"
 	"html/template"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -78,10 +79,6 @@ func (f seoFeature) Find(ctx context.Context, id interface{}) (seo.Content, erro
 	return seo.Find(ctx, id.(string))
 }
 
-func (f seoFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
-	return seoFormTpl
-}
-
 func (f seoFeature) ID(ctx context.Context, id string) (interface{}, error) {
 	return id, nil
 }
@@ -115,10 +112,18 @@ func SeoList(w http.ResponseWriter, r *http.Request) {
 }
 
 func SeoForm(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestForm[seo.Content](w, r, httpext.Form[seo.Content]{
+	data := httpext.DigestForm[seo.Content](w, r, httpext.Form[seo.Content]{
 		Name:    seoName,
 		Feature: seoFeature{},
 	})
+
+	if data.Page == "" {
+		return
+	}
+
+	if err := seoFormTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func SeoSave(w http.ResponseWriter, r *http.Request) {

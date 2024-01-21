@@ -49,10 +49,6 @@ func init() {
 	}
 }
 
-func (f settingsFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
-	return settingsTpl
-}
-
 func (f settingsFeature) Find(ctx context.Context, id interface{}) (shops.Settings, error) {
 	return shops.Data, nil
 }
@@ -178,10 +174,18 @@ func (f settingsShopFeature) UpdateImage(a *shops.ShopSettings, key, image strin
 }
 
 func SettingsForm(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestForm[shops.Settings](w, r, httpext.Form[shops.Settings]{
+	data := httpext.DigestForm[shops.Settings](w, r, httpext.Form[shops.Settings]{
 		Name:    settingsName,
 		Feature: settingsFeature{},
 	})
+
+	if data.Page == "" {
+		return
+	}
+
+	if err := settingsTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func SettingsShopSave(w http.ResponseWriter, r *http.Request) {

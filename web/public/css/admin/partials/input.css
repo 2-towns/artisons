@@ -133,3 +133,21 @@ input[type="checkbox"]:checked~.input-link {
 	display: block;
 	width: 70px;
 }
+
+.ts-control {
+	border: none;
+	padding: 0;
+}
+
+.ts-wrapper {
+	display: flex;
+	align-items: center;
+	height: auto;
+	padding: var(--spacing);
+}
+
+.ts-wrapper.multi .ts-control>div,
+.ts-dropdown .active {
+	background-color: var(--primary);
+	color: white;
+}

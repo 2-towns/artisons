@@ -25,6 +25,15 @@ import (
 	"golang.org/x/text/language"
 )
 
+type form[T any] struct {
+	Lang     language.Tag
+	Page     string
+	ID       interface{}
+	Data     T
+	Currency string
+	Extra    interface{}
+}
+
 func Redirect(w http.ResponseWriter, r *http.Request, url string, status int) {
 	isHX, _ := r.Context().Value(contexts.HX).(bool)
 
@@ -91,7 +100,6 @@ type ListFeature[T any] interface {
 type FormFeature[T any] interface {
 	ID(ctx context.Context, id string) (interface{}, error)
 	Find(ctx context.Context, id interface{}) (T, error)
-	FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template
 }
 
 type List[T any] struct {
@@ -307,7 +315,7 @@ func DigestSave[T Entity](w http.ResponseWriter, r *http.Request, f Save[T]) {
 	w.Write([]byte(""))
 }
 
-func DigestForm[T any](w http.ResponseWriter, r *http.Request, f Form[T]) {
+func DigestForm[T any](w http.ResponseWriter, r *http.Request, f Form[T]) form[T] {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	id := chi.URLParam(r, "id")
@@ -318,35 +326,27 @@ func DigestForm[T any](w http.ResponseWriter, r *http.Request, f Form[T]) {
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
 		httperrors.Page(w, ctx, "oops the data is not found", 404)
+		return form[T]{}
 	}
 
 	if fid != "" && fid != 0 {
 		item, err = f.Feature.Find(ctx, fid)
 		if err != nil {
 			httperrors.Page(w, ctx, "oops the data is not found", 404)
-			return
+			return form[T]{}
 		}
 	}
 
-	data := struct {
-		Lang     language.Tag
-		Page     string
-		ID       interface{}
-		Data     T
-		Currency string
-	}{
+	data := form[T]{
 		lang,
 		f.Name,
 		id,
 		item,
 		conf.Currency,
+		"",
 	}
 
-	t := f.Feature.FormTemplate(ctx, w)
-
-	if err := t.Execute(w, &data); err != nil {
-		slog.Error("cannot render the template", slog.String("error", err.Error()))
-	}
+	return data
 }
 
 func DigestDelete[T Entity](w http.ResponseWriter, r *http.Request, f Delete[T]) {

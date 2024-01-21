@@ -137,12 +137,6 @@ func (f blogFeature) ID(ctx context.Context, id string) (interface{}, error) {
 	return int(val), nil
 }
 
-func (f blogFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
-	w.Header().Set("Content-Security-Policy", blogCspPolicy)
-
-	return blogFormTpl
-}
-
 func (f blogFeature) Find(ctx context.Context, id interface{}) (blogs.Article, error) {
 	return blogs.Find(ctx, id.(int))
 }
@@ -179,10 +173,20 @@ func BlogList(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogForm(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestForm[blogs.Article](w, r, httpext.Form[blogs.Article]{
+	data := httpext.DigestForm[blogs.Article](w, r, httpext.Form[blogs.Article]{
 		Name:    blogName,
 		Feature: blogFeature{},
 	})
+
+	if data.Page == "" {
+		return
+	}
+
+	w.Header().Set("Content-Security-Policy", blogCspPolicy)
+
+	if err := blogFormTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func BlogDelete(w http.ResponseWriter, r *http.Request) {

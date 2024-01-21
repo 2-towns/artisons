@@ -96,6 +96,7 @@ func (t Tag) Save(ctx context.Context) (string, error) {
 		rdb.HSet(ctx, "tag", t.Key, children)
 		rdb.HSet(ctx, "tag:"+t.Key,
 			"image", t.Image,
+			"children", children,
 			"label", t.Label,
 			"updated_at", now.Unix(),
 		)

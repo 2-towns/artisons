@@ -174,17 +174,16 @@
 					<i> {{translate .Lang "Optional"}}</i>
 				</label>
 
-				<input
-					   id="tags"
-					   name="tags"
-					   class="input input-full"
-					   placeholder='{{translate .Lang "summer topQuality"}}'
-					   value='{{if .Data.Tags }}{{join .Data.Tags " "}}{{end}}' />
-
-				<small class="input-help">
-					{{translate .Lang "Separate your tags by a ';'."}}
-					{{translate .Lang "You can separate the words inside a tag by using a uppercase letter."}}
-				</small>
+				<select
+						id="tags"
+						name="tags"
+						multiple
+						class="input input-full tags">
+					<option></option>
+					{{range .Extra.Tags}}
+					<option {{if contains $.Data.Tags .Key}}selected="true" {{end}}>{{.Key}}</option>
+					{{end}}
+				</select>
 
 				<div id="tags-error"></div>
 			</div>

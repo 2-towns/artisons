@@ -5,6 +5,7 @@ import (
 	"errors"
 	"gifthub/conf"
 	"gifthub/http/contexts"
+	"gifthub/http/httperrors"
 	"gifthub/http/httpext"
 	"gifthub/tags"
 	"gifthub/templates"
@@ -13,7 +14,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -53,6 +53,8 @@ func init() {
 
 	tagsFormTpl, err = templates.Build("base.html").ParseFiles(
 		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/tags/tags-scripts.html",
+			conf.WorkingSpace+"web/views/admin/tags/tags-head.html",
 			conf.WorkingSpace+"web/views/admin/tags/tags-form.html",
 		)...)
 
@@ -107,7 +109,7 @@ func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, 
 	t := tags.Tag{
 		Key:      key,
 		Label:    r.FormValue("label"),
-		Children: strings.Split(r.FormValue("children"), ";"),
+		Children: r.MultipartForm.Value["children"],
 		Root:     r.FormValue("root") == "on",
 		Score:    score,
 	}
@@ -117,10 +119,6 @@ func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, 
 
 func (f tagsFeature) ID(ctx context.Context, id string) (interface{}, error) {
 	return id, nil
-}
-
-func (f tagsFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
-	return tagsFormTpl
 }
 
 func (f tagsFeature) Find(ctx context.Context, id interface{}) (tags.Tag, error) {
@@ -158,10 +156,26 @@ func TagsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func TagsForm(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestForm[tags.Tag](w, r, httpext.Form[tags.Tag]{
+	data := httpext.DigestForm[tags.Tag](w, r, httpext.Form[tags.Tag]{
 		Name:    tagsName,
 		Feature: tagsFeature{},
 	})
+
+	if data.Page == "" {
+		return
+	}
+
+	ctx := r.Context()
+	t, err := tags.List(ctx, 0, 9999)
+	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
+	}
+
+	data.Extra = t
+
+	if err := tagsFormTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func TagsDelete(w http.ResponseWriter, r *http.Request) {

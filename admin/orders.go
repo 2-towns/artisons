@@ -107,10 +107,6 @@ func (f ordersFeature) Find(ctx context.Context, id interface{}) (orders.Order, 
 	return orders.Find(ctx, id.(string))
 }
 
-func (f ordersFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
-	return ordersFormTpl
-}
-
 func (f ordersFeature) ID(ctx context.Context, id string) (interface{}, error) {
 	return id, nil
 }
@@ -124,10 +120,18 @@ func OrdersList(w http.ResponseWriter, r *http.Request) {
 }
 
 func OrdersForm(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestForm[orders.Order](w, r, httpext.Form[orders.Order]{
+	data := httpext.DigestForm[orders.Order](w, r, httpext.Form[orders.Order]{
 		Name:    ordersName,
 		Feature: ordersFeature{},
 	})
+
+	if data.Page == "" {
+		return
+	}
+
+	if err := ordersFormTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func OrdersUpdateStatus(w http.ResponseWriter, r *http.Request) {

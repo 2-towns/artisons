@@ -17,3 +17,8 @@ htmx.defineExtension("input", {
 });
 
 
+if(document.getElementsByClassName("tags").length > 0){
+	var config = {};
+	new TomSelect('.tags',config);
+}
+

@@ -6,15 +6,16 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
+	"gifthub/http/httperrors"
 	"gifthub/http/httpext"
 	"gifthub/products"
+	"gifthub/tags"
 	"gifthub/templates"
 	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -55,6 +56,8 @@ func init() {
 	productsFormTpl, err = templates.Build("base.html").ParseFiles(
 		append(templates.AdminUI,
 			conf.WorkingSpace+"web/views/admin/icons/close.svg",
+			conf.WorkingSpace+"web/views/admin/products/products-head.html",
+			conf.WorkingSpace+"web/views/admin/products/products-scripts.html",
 			conf.WorkingSpace+"web/views/admin/products/products-form.html",
 		)...)
 
@@ -140,7 +143,7 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 		Description: r.FormValue("description"),
 		Status:      status,
 		Sku:         r.FormValue("sku"),
-		Tags:        strings.Split(r.FormValue("tags"), ";"),
+		Tags:        r.MultipartForm.Value["tags"],
 		Price:       price,
 		Discount:    discount,
 		Weight:      weight,
@@ -166,10 +169,6 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 
 func (f productsFeature) ID(ctx context.Context, id string) (interface{}, error) {
 	return id, nil
-}
-
-func (f productsFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
-	return productsFormTpl
 }
 
 func (f productsFeature) Find(ctx context.Context, id interface{}) (products.Product, error) {
@@ -217,10 +216,26 @@ func ProductList(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProductForm(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestForm[products.Product](w, r, httpext.Form[products.Product]{
+	data := httpext.DigestForm[products.Product](w, r, httpext.Form[products.Product]{
 		Name:    productsName,
 		Feature: productsFeature{},
 	})
+
+	if data.Page == "" {
+		return
+	}
+
+	ctx := r.Context()
+	t, err := tags.List(ctx, 0, 9999)
+	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
+	}
+
+	data.Extra = t
+
+	if err := productsFormTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func ProductDelete(w http.ResponseWriter, r *http.Request) {

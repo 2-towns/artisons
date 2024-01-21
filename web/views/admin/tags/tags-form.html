@@ -68,12 +68,18 @@
                     <i>{{translate .Lang "Optional"}}</i>
                 </label>
 
-                <input
-                       id="children"
-                       name="children"
-                       class="input input-full"
-                       placeholder='{{translate .Lang "short;books"}}'
-                       value='{{if .Data.Key}}{{join .Data.Children ";"}}{{end}}' />
+
+                <select
+                        id="children"
+                        name="children"
+                        multiple
+                        class="input input-full tags">
+                    <option></option>
+                    {{range .Extra.Tags}}
+                    <option {{if contains $.Data.Children .Key}}selected="true" {{end}}>{{.Key}}</option>
+                    {{end}}
+                </select>
+
 
                 <small class="input-help">
                     {{translate .Lang "Enter the keys of the children tags separated by ';'."}}
