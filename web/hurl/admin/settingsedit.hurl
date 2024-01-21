@@ -41,22 +41,6 @@ header "HX-Retarget" == "#name-error"
 header "HX-Reswap" == "innerHTML show:#name-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
-# Editing the contact settings without email shows an error 
-POST {{host}}/admin/contact-settings.html
-HX-Request: true
-[MultipartFormData]
-name: My shop
-email: 
-address: 18 street mysupershop.com 
-city: Oran
-zipcode: 31000
-logo:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#email-error" 
-header "HX-Reswap" == "innerHTML show:#email-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
 # Editing the contact settings with invalid email shows an error 
 POST {{host}}/admin/contact-settings.html
 HX-Request: true
@@ -66,6 +50,7 @@ email:
 address: 18 street mysupershop.com 
 city: Oran
 zipcode: 31000
+phone: 12345
 logo:file,image.jpg;
 HTTP 200
 [Asserts]
@@ -73,39 +58,7 @@ header "HX-Retarget" == "#email-error"
 header "HX-Reswap" == "innerHTML show:#email-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
-# Editing the contact settings without email shows an error 
-POST {{host}}/admin/contact-settings.html
-HX-Request: true
-[MultipartFormData]
-name: My shop
-email: contact@shop.com
-address: 
-city: Oran
-zipcode: 31000
-logo:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#address-error" 
-header "HX-Reswap" == "innerHTML show:#address-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
-# Editing the contact settings without email shows an error 
-POST {{host}}/admin/contact-settings.html
-HX-Request: true
-[MultipartFormData]
-name: My shop
-email: contact@shop.com
-address: 18 street mysupershop.com 
-city: 
-zipcode: 31000
-logo:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#city-error" 
-header "HX-Reswap" == "innerHTML show:#city-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
-# Editing the contact settings without email shows an error 
+# Editing the contact settings without phone shows an error 
 POST {{host}}/admin/contact-settings.html
 HX-Request: true
 [MultipartFormData]
@@ -113,12 +66,12 @@ name: My shop
 email: contact@shop.com
 address: 18 street mysupershop.com 
 city: Oran
-zipcode: 
+phone: 
 logo:file,image.jpg;
 HTTP 200
 [Asserts]
-header "HX-Retarget" == "#zipcode-error" 
-header "HX-Reswap" == "innerHTML show:#zipcode-row:top" 
+header "HX-Retarget" == "#phone-error" 
+header "HX-Reswap" == "innerHTML show:#phone-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing the contact settings with correct data shows success

@@ -33,7 +33,7 @@ title:
 lang: en
 description: 100 % coton pour les couleurs unies
 status: online
-image_1:file,image.jpg;
+image:file,image.jpg;
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#title-error" 
@@ -48,42 +48,12 @@ title: Great article
 lang: en
 description:
 status: online
-image_1:file,image.jpg;
+image:file,image.jpg;
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#description-error" 
 header "HX-Reswap" == "innerHTML show:#description-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
-# Adding an article without status shows an error 
-POST {{host}}/admin/blog/add.html
-HX-Request: true
-[MultipartFormData]
-title: Great article
-lang: en
-description: Great description
-status: 
-image_1:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#status-error" 
-header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
-# Adding an article with bad status shows an error 
-POST {{host}}/admin/blog/add.html
-HX-Request: true
-[MultipartFormData]
-title: Great article
-lang: en
-description: Great description
-status: hello
-image_1:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#status-error" 
-header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid."
 
 # Adding an article without file shows an error 
 POST {{host}}/admin/blog/add.html

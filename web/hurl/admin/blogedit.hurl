@@ -53,34 +53,6 @@ header "HX-Retarget" == "#description-error"
 header "HX-Reswap" == "innerHTML show:#description-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
-# Editing an article without status shows an error 
-POST {{host}}/admin/blog/2/edit.html
-HX-Request: true
-[MultipartFormData]
-title: Great article
-description: Great description
-status: 
-image_1:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#status-error" 
-header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
-# Editing an article with bad status shows an error 
-POST {{host}}/admin/blog/2/edit.html
-HX-Request: true
-[MultipartFormData]
-title: Great article
-description: Great description
-status: hello
-image_1:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#status-error" 
-header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid."
-
 # Editing an article with a bad picture shows an error 
 POST {{host}}/admin/blog/2/edit.html
 HX-Request: true

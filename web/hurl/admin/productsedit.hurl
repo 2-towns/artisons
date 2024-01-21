@@ -151,42 +151,6 @@ header "HX-Retarget" == "#quantity-error"
 header "HX-Reswap" == "innerHTML show:#quantity-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
-# Editing a product without status shows an error 
-POST {{host}}/admin/products/PDT2/edit.html
-HX-Request: true
-[MultipartFormData]
-title: T-shirt développeur unisexe JavaScript Park
-description: 100 % coton pour les couleurs unies
-sku: 123
-price: 123.5
-quantity: 1
-status: 
-tags: winter cold
-image_1:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#status-error" 
-header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
-# Editing a product with bad status shows an error 
-POST {{host}}/admin/products/PDT2/edit.html
-HX-Request: true
-[MultipartFormData]
-title: T-shirt développeur unisexe JavaScript Park
-description: 100 % coton pour les couleurs unies
-sku: 123
-price: 123.5
-quantity: 1
-status: abc
-tags: winter cold
-image_1:file,image.jpg;
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#status-error" 
-header "HX-Reswap" == "innerHTML show:#status-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
 # Editing a product with bad weight shows an error 
 POST {{host}}/admin/products/PDT2/edit.html
 HX-Request: true
