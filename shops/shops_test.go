@@ -30,36 +30,14 @@ func TestSaveReturnErrorWhenNameIsEmpty(t *testing.T) {
 	}
 }
 
-func TestSaveReturnErrorWhenAddressIsEmpty(t *testing.T) {
+func TestSaveReturnErrorWhenPhoneIsEmpty(t *testing.T) {
 	s := shop
-	s.Address = ""
+	s.Phone = ""
 
 	ctx := tests.Context()
 	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input:address" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:address'", err)
-	}
-}
-
-func TestSaveReturnErrorWhenCityIsEmpty(t *testing.T) {
-	s := shop
-	s.City = ""
-
-	ctx := tests.Context()
-	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input:city" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:city'", err)
-	}
-}
-
-func TestSaveReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
-	s := shop
-	s.Zipcode = ""
-
-	ctx := tests.Context()
-	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input:zipcode" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:zipcode'", err)
+	if err == nil || err.Error() != "input:phone" {
+		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:phone'", err)
 	}
 }
 

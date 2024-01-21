@@ -19,11 +19,11 @@ import (
 
 type Contact struct {
 	Name    string `validate:"required"`
-	Address string `validate:"required"`
-	City    string `validate:"required"`
-	Zipcode string `validate:"required"`
-	Phone   string
-	Email   string `validate:"required,email"`
+	Address string
+	City    string
+	Zipcode string
+	Phone   string `validate:"required"`
+	Email   string `validate:"email"`
 	Logo    string
 	Banner1 string
 	Banner2 string
