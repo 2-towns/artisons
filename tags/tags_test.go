@@ -103,7 +103,7 @@ func TestFindReturnsEmptyTagWhenTheKeyDoesNotExist(t *testing.T) {
 func TestSaveReturnsNilWhenEmptyWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
-	if err := tag.Save(c); err != nil {
+	if _, err := tag.Save(c); err != nil {
 		t.Fatalf(`tag.Save(c) = %v, want nil`, err)
 	}
 }

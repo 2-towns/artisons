@@ -128,6 +128,33 @@ func IsValidPayment(ctx context.Context, p string) bool {
 	return true
 }
 
+func (o Order) Validate(ctx context.Context) error {
+	l := slog.With()
+	l.LogAttrs(ctx, slog.LevelInfo, "saving the order")
+
+	if !IsValidDelivery(ctx, o.Delivery) {
+		return errors.New("your are not authorized to process this request")
+	}
+
+	if !IsValidPayment(ctx, o.Payment) {
+		return errors.New("your are not authorized to process this request")
+	}
+
+	if len(o.Quantities) == 0 {
+		l.LogAttrs(ctx, slog.LevelInfo, "the product list is empty")
+		return errors.New("the cart is empty")
+	}
+
+	if err := validators.V.Struct(o.Address); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return fmt.Errorf("address_%s_required", low)
+	}
+
+	return nil
+}
+
 // Add create an order into Redis.
 // The default order status is "created".
 // The default payment_status is "payment_progress".
@@ -141,26 +168,6 @@ func IsValidPayment(ctx context.Context, p string) bool {
 func (o Order) Save(ctx context.Context) (string, error) {
 	l := slog.With()
 	l.LogAttrs(ctx, slog.LevelInfo, "saving the order")
-
-	if !IsValidDelivery(ctx, o.Delivery) {
-		return "", errors.New("your are not authorized to process this request")
-	}
-
-	if !IsValidPayment(ctx, o.Payment) {
-		return "", errors.New("your are not authorized to process this request")
-	}
-
-	if len(o.Quantities) == 0 {
-		l.LogAttrs(ctx, slog.LevelInfo, "the product list is empty")
-		return "", errors.New("the cart is empty")
-	}
-
-	if err := validators.V.Struct(o.Address); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
-		field := err.(validator.ValidationErrors)[0]
-		low := strings.ToLower(field.Field())
-		return "", fmt.Errorf("address_%s_required", low)
-	}
 
 	tra := map[string]string{
 		"uid":      fmt.Sprintf("%d", o.UID),

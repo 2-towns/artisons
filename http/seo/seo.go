@@ -122,7 +122,7 @@ func (c Content) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (c Content) Save(ctx context.Context) error {
+func (c Content) Save(ctx context.Context) (string, error) {
 	l := slog.With(slog.String("key", c.Key))
 	l.LogAttrs(ctx, slog.LevelInfo, "saving a seo")
 
@@ -160,7 +160,7 @@ func (c Content) Save(ctx context.Context) error {
 		return nil
 	}); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot store the seo", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
+		return "", errors.New("something went wrong")
 	}
 
 	c.UpdatedAt = now
@@ -168,7 +168,7 @@ func (c Content) Save(ctx context.Context) error {
 
 	l.LogAttrs(ctx, slog.LevelInfo, "seo saved")
 
-	return nil
+	return c.Key, nil
 }
 
 func Find(ctx context.Context, key string) (Content, error) {

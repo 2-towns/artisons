@@ -186,16 +186,8 @@ func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 func TestSaveReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
-	if err := product.Save(c); err != nil {
+	if _, err := product.Save(c); err != nil {
 		t.Fatalf(`p.Save(c) = %v, want nil`, err.Error())
-	}
-}
-
-func TestSaveReturnsErrorWhenPidIsEmpty(t *testing.T) {
-	c := tests.Context()
-	p := Product{ID: ""}
-	if err := p.Save(c); err == nil {
-		t.Fatalf(`p.Save(c) = %v, want "input:pid"`, err.Error())
 	}
 }
 

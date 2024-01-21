@@ -58,22 +58,21 @@ func (p Article) Validate(ctx context.Context) error {
 	return nil
 }
 
-func NextID(ctx context.Context) (int, error) {
-	slog.LogAttrs(ctx, slog.LevelInfo, "getting the next article id")
-
-	id, err := db.Redis.Incr(ctx, "blog_next_id").Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
-		return 0, errors.New("something went wrong")
-	}
-
-	slog.LogAttrs(ctx, slog.LevelInfo, "next id generated", slog.Int64("id", id))
-
-	return int(id), nil
+func (a *Article) UpdateImage(key, value string) {
+	a.Image = value
 }
 
-func (a Article) Save(ctx context.Context) error {
+func (a Article) Save(ctx context.Context) (string, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "creating a blog article")
+
+	if a.ID == 0 {
+		id, err := db.Redis.Incr(ctx, "blog_next_id").Result()
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
+			return "", errors.New("something went wrong")
+		}
+		a.ID = int(id)
+	}
 
 	slug := stringutil.Slugify(a.Title)
 	now := time.Now().Unix()
@@ -88,12 +87,12 @@ func (a Article) Save(ctx context.Context) error {
 		"updated_at", now,
 	).Result(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
+		return "", errors.New("something went wrong")
 	}
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "blog article created", slog.Int("id", a.ID))
 
-	return nil
+	return fmt.Sprintf("%d", a.ID), nil
 }
 
 func parse(ctx context.Context, data map[string]string) (Article, error) {

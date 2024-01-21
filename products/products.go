@@ -12,7 +12,6 @@ import (
 	"gifthub/tracking"
 	"gifthub/users"
 	"gifthub/validators"
-	"log"
 	"log/slog"
 	"path"
 	"strconv"
@@ -232,10 +231,16 @@ func (p Product) Validate(ctx context.Context) error {
 // Save a product into redis.
 // The keys are :
 // product:pid => the product data
-func (p Product) Save(ctx context.Context) error {
+func (p Product) Save(ctx context.Context) (string, error) {
 	if p.ID == "" {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot continue with empty pid")
-		return errors.New("input:pid")
+		pid, err := stringutil.Random()
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot generated the product id", slog.String("error", err.Error()))
+			return "", errors.New("something went wrong")
+		}
+
+		p.ID = pid
 	}
 
 	l := slog.With(slog.String("id", p.ID))
@@ -262,6 +267,7 @@ func (p Product) Save(ctx context.Context) error {
 		"created_at", now,
 		"updated_at", now,
 	)
+
 	if p.Image1 == "-" {
 		values = append(values, "image_1", "")
 	} else if p.Image1 != "" {
@@ -288,10 +294,10 @@ func (p Product) Save(ctx context.Context) error {
 
 	if _, err := db.Redis.HSet(ctx, key, values).Result(); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot store the product", slog.String("error", err.Error()))
-		return err
+		return "", err
 	}
 
-	return nil
+	return p.ID, nil
 }
 
 // Find looks for a product by its product id
@@ -378,9 +384,6 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 		return SearchResults{}, err
 	}
 
-	for _, v := range args {
-		log.Println(v)
-	}
 	cmds, err := db.Redis.Do(ctx, args...).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot run the search query", slog.String("error", err.Error()))

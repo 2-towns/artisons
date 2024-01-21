@@ -1,10 +1,11 @@
 package admin
 
 import (
+	"context"
+	"errors"
 	"gifthub/conf"
 	"gifthub/http/contexts"
-	"gifthub/http/cookies"
-	"gifthub/http/httperrors"
+	"gifthub/http/httpext"
 	"gifthub/tags"
 	"gifthub/templates"
 	"html/template"
@@ -12,12 +13,20 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
-	"golang.org/x/text/language"
+	"github.com/go-chi/chi/v5"
 )
+
+const tagsName = "Tags"
+const tagsURL = "/admin/tags.html"
+const tagsFolder = "tags"
 
 var tagsTpl *template.Template
 var tagsHxTpl *template.Template
+var tagsFormTpl *template.Template
+
+type tagsFeature struct{}
 
 func init() {
 	var err error
@@ -41,62 +50,126 @@ func init() {
 	if err != nil {
 		log.Panicln(err)
 	}
+
+	tagsFormTpl, err = templates.Build("base.html").ParseFiles(
+		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/tags/tags-form.html",
+		)...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
 }
 
-func Tags(w http.ResponseWriter, r *http.Request) {
-	var page int = 1
+func (f tagsFeature) ListTemplate(ctx context.Context) *template.Template {
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		return tagsHxTpl
+	}
 
-	ppage := r.URL.Query().Get("page")
-	if ppage != "" {
-		if d, err := strconv.ParseInt(ppage, 10, 32); err == nil && d > 0 {
-			page = int(d)
+	return tagsTpl
+}
+
+func (f tagsFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[tags.Tag], error) {
+	res, err := tags.List(ctx, offset, num)
+
+	return httpext.SearchResults[tags.Tag]{
+		Total: res.Total,
+		Items: res.Tags,
+	}, err
+}
+
+func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, error) {
+	key := chi.URLParam(r, "id")
+	if key == "" {
+		key = r.FormValue("key")
+
+		exists, err := tags.Exists(ctx, key)
+		if err != nil {
+			return tags.Tag{}, err
+		}
+
+		if exists {
+			return tags.Tag{}, errors.New("the tag exists already")
 		}
 	}
 
-	ctx := r.Context()
-	lang := ctx.Value(contexts.Locale).(language.Tag)
-	offset := (page - 1) * conf.ItemsPerPage
-	num := offset + conf.ItemsPerPage
-
-	res, err := tags.List(ctx, offset, num)
-	if err != nil {
-		httperrors.Catch(w, ctx, err.Error(), 500)
-		return
+	var score int = 0
+	if r.FormValue("score") != "" {
+		val, err := strconv.ParseInt(r.FormValue("score"), 10, 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the score", slog.String("score", r.FormValue("score")), slog.String("error", err.Error()))
+			return tags.Tag{}, errors.New("input:score")
+		}
+		score = int(val)
 	}
 
-	pag := templates.Paginate(page, len(res.Tags), int(res.Total))
-	pag.URL = "/admin/tags.html"
-	pag.Lang = lang
-
-	flash := ""
-	c, err := r.Cookie(cookies.FlashMessage)
-	if err == nil && c != nil {
-		flash = c.Value
+	t := tags.Tag{
+		Key:      key,
+		Label:    r.FormValue("label"),
+		Children: strings.Split(r.FormValue("children"), ";"),
+		Root:     r.FormValue("root") == "on",
+		Score:    score,
 	}
 
-	data := struct {
-		Lang       language.Tag
-		Page       string
-		Tags       []tags.Tag
-		Empty      bool
-		Flash      string
-		Pagination templates.Pagination
-	}{
-		lang,
-		"Tags",
-		res.Tags,
-		len(res.Tags) == 0,
-		flash,
-		pag,
-	}
+	return t, nil
+}
 
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	var t *template.Template = tagsTpl
-	if isHX {
-		t = tagsHxTpl
-	}
+func (f tagsFeature) ID(ctx context.Context, id string) (interface{}, error) {
+	return id, nil
+}
 
-	if err := t.Execute(w, &data); err != nil {
-		slog.Error("cannot render the template", slog.String("error", err.Error()))
-	}
+func (f tagsFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
+	return tagsFormTpl
+}
+
+func (f tagsFeature) Find(ctx context.Context, id interface{}) (tags.Tag, error) {
+	return tags.Find(ctx, id.(string))
+}
+
+func (f tagsFeature) Delete(ctx context.Context, id interface{}) error {
+	return tags.Delete(ctx, id.(string))
+}
+
+func (f tagsFeature) IsImageRequired(a tags.Tag, key string) bool {
+	return false
+}
+
+func (f tagsFeature) UpdateImage(a *tags.Tag, key, image string) {
+}
+
+func TagsSave(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestSave[tags.Tag](w, r, httpext.Save[tags.Tag]{
+		Name:    tagsName,
+		URL:     tagsURL,
+		Feature: tagsFeature{},
+		Form:    httpext.MultipartForm{},
+		Images:  []string{"image"},
+		Folder:  tagsFolder,
+	})
+}
+
+func TagsList(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestList[tags.Tag](w, r, httpext.List[tags.Tag]{
+		Name:    tagsName,
+		URL:     tagsURL,
+		Feature: tagsFeature{},
+	})
+}
+
+func TagsForm(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestForm[tags.Tag](w, r, httpext.Form[tags.Tag]{
+		Feature: tagsFeature{},
+	})
+}
+
+func TagsDelete(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestDelete[tags.Tag](w, r, httpext.Delete[tags.Tag]{
+		List: httpext.List[tags.Tag]{
+			Name:    tagsName,
+			URL:     tagsURL,
+			Feature: tagsFeature{},
+		},
+		Feature: tagsFeature{},
+	})
 }

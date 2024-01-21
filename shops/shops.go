@@ -186,7 +186,7 @@ func (s ShopSettings) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (s Contact) Save(ctx context.Context) error {
+func (s Contact) Save(ctx context.Context) (string, error) {
 	l := slog.With(slog.String("name", s.Name))
 	l.LogAttrs(ctx, slog.LevelInfo, "trying to save the contact shop")
 
@@ -208,13 +208,13 @@ func (s Contact) Save(ctx context.Context) error {
 
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
+		return "", errors.New("something went wrong")
 	}
 
-	return nil
+	return "", nil
 }
 
-func (s ShopSettings) Save(ctx context.Context) error {
+func (s ShopSettings) Save(ctx context.Context) (string, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "trying to save the shop")
 
 	guest := "0"
@@ -272,8 +272,8 @@ func (s ShopSettings) Save(ctx context.Context) error {
 
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
+		return "", errors.New("something went wrong")
 	}
 
-	return nil
+	return "", nil
 }

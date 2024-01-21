@@ -85,7 +85,7 @@ func Exists(ctx context.Context, key string) (bool, error) {
 	return exists > 0, nil
 }
 
-func (t Tag) Save(ctx context.Context) error {
+func (t Tag) Save(ctx context.Context) (string, error) {
 	l := slog.With(slog.String("tag", t.Key))
 	l.LogAttrs(ctx, slog.LevelInfo, "adding a new tag")
 
@@ -121,12 +121,12 @@ func (t Tag) Save(ctx context.Context) error {
 
 	}); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
+		return "", errors.New("something went wrong")
 	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "tag saved successfully")
 
-	return nil
+	return t.Key, nil
 }
 
 func parse(ctx context.Context, data map[string]string) (Tag, error) {

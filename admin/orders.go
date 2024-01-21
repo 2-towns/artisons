@@ -1,23 +1,33 @@
 package admin
 
 import (
+	"context"
 	"gifthub/conf"
+	"gifthub/db"
 	"gifthub/http/contexts"
-	"gifthub/http/cookies"
 	"gifthub/http/httperrors"
+	"gifthub/http/httpext"
 	"gifthub/orders"
 	"gifthub/templates"
 	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
-	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"golang.org/x/text/language"
 )
 
+const ordersName = "Orders"
+const ordersURL = "/admin/orders.html"
+
 var ordersTpl *template.Template
 var ordersHxTpl *template.Template
+var ordersFormTpl *template.Template
+var ordersUpdateStatusTpl *template.Template
+var ordersNoteAddStatusTpl *template.Template
+
+type ordersFeature struct{}
 
 func init() {
 	var err error
@@ -40,70 +50,156 @@ func init() {
 	if err != nil {
 		log.Panicln(err)
 	}
+
+	ordersFormTpl, err = templates.Build("base.html").ParseFiles(
+		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/icons/anchor.svg",
+			conf.WorkingSpace+"web/views/admin/orders/orders-form.html",
+			conf.WorkingSpace+"web/views/admin/orders/orders-notes.html",
+		)...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	ordersUpdateStatusTpl, err = templates.Build("alert-success.html").ParseFiles(templates.AdminSuccess...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	ordersNoteAddStatusTpl, err = templates.Build("orders-add-note-success.html").ParseFiles(
+		append(templates.AdminSuccess,
+			conf.WorkingSpace+"web/views/admin/orders/orders-add-note-success.html",
+			conf.WorkingSpace+"web/views/admin/orders/orders-notes.html",
+		)...,
+	)
+
+	if err != nil {
+		log.Panicln(err)
+	}
 }
 
-func Orders(w http.ResponseWriter, r *http.Request) {
-	var page int = 1
-
-	ppage := r.URL.Query().Get("page")
-	if ppage != "" {
-		if d, err := strconv.ParseInt(ppage, 10, 32); err == nil && d > 0 {
-			page = int(d)
-		}
+func (f ordersFeature) ListTemplate(ctx context.Context) *template.Template {
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		return ordersHxTpl
 	}
 
-	q := r.URL.Query().Get("q")
+	return ordersTpl
+}
+
+func (f ordersFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[orders.Order], error) {
 	query := orders.Query{}
 	if q != "" {
-		query.Keyword = q
+		query.Keyword = db.Escape(q)
 	}
 
-	ctx := r.Context()
-	lang := ctx.Value(contexts.Locale).(language.Tag)
-	offset := (page - 1) * conf.ItemsPerPage
-	num := offset + conf.ItemsPerPage
-
 	res, err := orders.Search(ctx, query, offset, num)
-	if err != nil {
-		httperrors.Catch(w, ctx, err.Error(), 500)
+
+	return httpext.SearchResults[orders.Order]{
+		Total: res.Total,
+		Items: res.Orders,
+	}, err
+}
+
+func (f ordersFeature) Find(ctx context.Context, id interface{}) (orders.Order, error) {
+	return orders.Find(ctx, id.(string))
+}
+
+func (f ordersFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
+	return ordersFormTpl
+}
+
+func (f ordersFeature) ID(ctx context.Context, id string) (interface{}, error) {
+	return id, nil
+}
+
+func OrdersList(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestList[orders.Order](w, r, httpext.List[orders.Order]{
+		Name:    ordersName,
+		URL:     ordersURL,
+		Feature: ordersFeature{},
+	})
+}
+
+func OrdersForm(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestForm[orders.Order](w, r, httpext.Form[orders.Order]{
+		Feature: ordersFeature{},
+	})
+}
+
+func OrdersUpdateStatus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	if err := r.ParseForm(); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
+		httperrors.HXCatch(w, ctx, "something went wrong")
 		return
 	}
 
-	pag := templates.Paginate(page, len(res.Orders), int(res.Total))
-	pag.URL = "/admin/orders.html"
-	pag.Lang = lang
+	oid := chi.URLParam(r, "id")
+	status := r.FormValue("status")
 
-	flash := ""
-	c, err := r.Cookie(cookies.FlashMessage)
-	if err == nil && c != nil {
-		flash = c.Value
+	err := orders.UpdateStatus(ctx, oid, status)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
 	}
+
+	lang := ctx.Value(contexts.Locale).(language.Tag)
 
 	data := struct {
-		Lang       language.Tag
-		Page       string
-		Orders     []orders.Order
-		Empty      bool
-		Currency   string
-		Pagination templates.Pagination
-		Flash      string
+		Flash string
+		Lang  language.Tag
 	}{
+		"The data has been saved successfully.",
 		lang,
-		"Orders",
-		res.Orders,
-		len(res.Orders) == 0,
-		conf.Currency,
-		pag,
-		flash,
 	}
 
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	var t *template.Template = ordersTpl
-	if isHX {
-		t = ordersHxTpl
+	if err := ordersUpdateStatusTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
+}
+
+func OrdersAddNote(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	if err := r.ParseForm(); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
+		httperrors.HXCatch(w, ctx, "something went wrong")
+		return
 	}
 
-	if err = t.Execute(w, &data); err != nil {
+	oid := chi.URLParam(r, "id")
+	note := r.FormValue("note")
+
+	err := orders.AddNote(ctx, oid, note)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	id := chi.URLParam(r, "id")
+	o, err := orders.Find(ctx, id)
+	if err != nil {
+		httperrors.Page(w, ctx, err.Error(), 400)
+		return
+	}
+
+	lang := ctx.Value(contexts.Locale).(language.Tag)
+
+	data := struct {
+		Flash string
+		Lang  language.Tag
+		Data  orders.Order
+	}{
+		"The data has been saved successfully.",
+		lang,
+		o,
+	}
+
+	if err := ordersNoteAddStatusTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }

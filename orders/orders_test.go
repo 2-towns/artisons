@@ -130,33 +130,33 @@ func TestSaveReturnsNilWhenSuccess(t *testing.T) {
 	}
 }
 
-func TestSaveReturnsErrorWhenDeliveryIsInvalid(t *testing.T) {
+func TestValidateReturnsErrorWhenDeliveryIsInvalid(t *testing.T) {
 	o := order
 	o.Delivery = "toto"
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "your are not authorized to process this request" {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'unauthorized'`, oid, err)
+	if err := o.Validate(ctx); err == nil || err.Error() != "your are not authorized to process this request" {
+		t.Fatalf(`o.Validate(ctx) = %v, want string, 'unauthorized'`, err)
 	}
 }
 
-func TestSaveReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
+func TestValidateReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	o := order
 	o.Payment = "toto"
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "your are not authorized to process this request" {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'unauthorized'`, oid, err)
+	if err := o.Validate(ctx); err == nil || err.Error() != "your are not authorized to process this request" {
+		t.Fatalf(`o.Save(ctx) =  %v, want string, 'unauthorized'`, err)
 	}
 }
 
-func TestSaveReturnsErrorWhenProductsIsEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 	o := order
 	o.Quantities = map[string]int{}
 	ctx := tests.Context()
 
-	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "the cart is empty" {
-		t.Fatalf(`o.Save(ctx) = '%s', %v, want string, 'the cart is empty'`, oid, err)
+	if err := o.Validate(ctx); err == nil || err.Error() != "the cart is empty" {
+		t.Fatalf(`o.Validate(ctx) = %v, want string, 'the cart is empty'`, err)
 	}
 }
 

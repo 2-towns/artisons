@@ -467,7 +467,7 @@ func processLine(chans chan<- int, i int, mid string, line []string) {
 		return
 	}
 
-	if err = product.Save(ctx); err != nil {
+	if _, err = product.Save(ctx); err != nil {
 		catchError(err)
 		return
 	}

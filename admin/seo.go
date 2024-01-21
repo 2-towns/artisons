@@ -1,22 +1,27 @@
 package admin
 
 import (
+	"context"
 	"gifthub/conf"
 	"gifthub/http/contexts"
-	"gifthub/http/cookies"
+	"gifthub/http/httpext"
 	"gifthub/http/seo"
 	"gifthub/templates"
 	"html/template"
 	"log"
-	"log/slog"
 	"net/http"
-	"strconv"
 
-	"golang.org/x/text/language"
+	"github.com/go-chi/chi/v5"
 )
+
+const seoName = "SEO"
+const seoURL = "/admin/seo.html"
 
 var seoTpl *template.Template
 var seoHxTpl *template.Template
+var seoFormTpl *template.Template
+
+type seoFeature struct{}
 
 func init() {
 	var err error
@@ -39,57 +44,89 @@ func init() {
 	if err != nil {
 		log.Panicln(err)
 	}
+
+	seoFormTpl, err = templates.Build("base.html").ParseFiles(
+		append(templates.AdminUI,
+			conf.WorkingSpace+"web/views/admin/seo/seo-form.html",
+		)...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
 }
 
-func Seo(w http.ResponseWriter, r *http.Request) {
-	var page int = 1
-
-	ppage := r.URL.Query().Get("page")
-	if ppage != "" {
-		if d, err := strconv.ParseInt(ppage, 10, 32); err == nil && d > 0 {
-			page = int(d)
-		}
+func (f seoFeature) ListTemplate(ctx context.Context) *template.Template {
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		return seoHxTpl
 	}
 
-	ctx := r.Context()
-	lang := ctx.Value(contexts.Locale).(language.Tag)
-	offset := (page - 1) * conf.ItemsPerPage
-	num := offset + conf.ItemsPerPage
+	return seoTpl
+}
+
+func (f seoFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[seo.Content], error) {
 
 	res := seo.List(ctx, offset, num)
-	pag := templates.Paginate(page, len(res.Content), int(res.Total))
-	pag.URL = "/admin/seo.html"
-	pag.Lang = lang
 
-	flash := ""
-	c, err := r.Cookie(cookies.FlashMessage)
-	if err == nil && c != nil {
-		flash = c.Value
+	return httpext.SearchResults[seo.Content]{
+		Total: res.Total,
+		Items: res.Content,
+	}, nil
+}
+
+func (f seoFeature) Find(ctx context.Context, id interface{}) (seo.Content, error) {
+	return seo.Find(ctx, id.(string))
+}
+
+func (f seoFeature) FormTemplate(ctx context.Context, w http.ResponseWriter) *template.Template {
+	return seoFormTpl
+}
+
+func (f seoFeature) ID(ctx context.Context, id string) (interface{}, error) {
+	return id, nil
+}
+
+func (data seoFeature) Digest(ctx context.Context, r *http.Request) (seo.Content, error) {
+	key := chi.URLParam(r, "id")
+
+	c := seo.Content{
+		Key:         key,
+		URL:         r.FormValue("url"),
+		Title:       r.FormValue("title"),
+		Description: r.FormValue("description"),
 	}
 
-	data := struct {
-		Lang       language.Tag
-		Page       string
-		Content    []seo.Content
-		Empty      bool
-		Pagination templates.Pagination
-		Flash      string
-	}{
-		lang,
-		"SEO",
-		res.Content,
-		len(res.Content) == 0,
-		pag,
-		flash,
-	}
+	return c, nil
+}
 
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	var t *template.Template = seoTpl
-	if isHX {
-		t = seoHxTpl
-	}
+func (f seoFeature) IsImageRequired(a seo.Content, key string) bool {
+	return false
+}
 
-	if err = t.Execute(w, &data); err != nil {
-		slog.Error("cannot render the template", slog.String("error", err.Error()))
-	}
+func (f seoFeature) UpdateImage(a *seo.Content, key, image string) {
+}
+
+func SeoList(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestList[seo.Content](w, r, httpext.List[seo.Content]{
+		Name:    seoName,
+		URL:     seoURL,
+		Feature: seoFeature{},
+	})
+}
+
+func SeoForm(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestForm[seo.Content](w, r, httpext.Form[seo.Content]{
+		Feature: seoFeature{},
+	})
+}
+
+func SeoSave(w http.ResponseWriter, r *http.Request) {
+	httpext.DigestSave[seo.Content](w, r, httpext.Save[seo.Content]{
+		Name:    seoName,
+		URL:     seoURL,
+		Feature: seoFeature{},
+		Form:    httpext.UrlEncodedForm{},
+		Images:  []string{},
+		Folder:  "",
+	})
 }

@@ -147,7 +147,7 @@ func TestSaveReturnsNoErrorWhenDataAreOk(t *testing.T) {
 		Description: "Buh the social networks.",
 	}
 
-	if err := c.Save(ctx); err != nil {
+	if _, err := c.Save(ctx); err != nil {
 		t.Fatalf(`c.Save(ctx) = %s, want nil`, err.Error())
 	}
 

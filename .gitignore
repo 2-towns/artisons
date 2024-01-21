@@ -23,6 +23,7 @@ web/images/*
 !web/images/blog
 !web/images/products
 !web/images/settings
+!web/images/tags
 
 # blog sub folder
 web/images/blog/*
@@ -39,8 +40,12 @@ web/images/products/*
 !web/images/products/PDT3.jpeg
 !web/images/products/PDT4.jpeg
 
+# tags sub folder
+web/images/tags/*
+!web/images/tags/.gitkeep
+
 # settings sub folder
-web/images/articles/*
+web/images/settings/*
 !web/images/settings/.gitkeep
 
 # tracking logs

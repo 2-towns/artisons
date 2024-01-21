@@ -1,98 +1,118 @@
-<form
-	  hx-post="{{if .ID }}/admin/blog/{{.ID}}/edit.html{{else}}/admin/blog/add.html{{end}}"
-	  enctype="multipart/form-data">
-	<div class="form box">
-		<div class="form-row" id="title-row">
-			<label class="input-label" for="title">
-				{{translate .Lang "Title"}}
-			</label>
+{{define "content"}}
 
-			<input
-				   id="title"
-				   name="title"
-				   required
-				   class="input input-full"
-				   required
-				   value="{{if .Data.Title }}{{.Data.Title}}{{end}}" />
+<article class="card" hx-ext="alert, input">
+	<div class="row row-align box card-header">
+		<div>
+			<h3 class="card-title">
+				{{if .ID }}
+				{{translate .Lang "Edit"}}
+				{{else}}
+				{{translate .Lang "Add"}}
+				{{end}}
+			</h3>
+		</div>
+	</div>
 
-			<div id="title-error"></div>
+
+	<form
+		  hx-post="{{if .ID }}/admin/blog/{{.ID}}/edit.html{{else}}/admin/blog/add.html{{end}}"
+		  enctype="multipart/form-data">
+		<div class="form box">
+			<div class="form-row" id="title-row">
+				<label class="input-label" for="title">
+					{{translate .Lang "Title"}}
+				</label>
+
+				<input
+					   id="title"
+					   name="title"
+					   required
+					   class="input input-full"
+					   required
+					   value="{{if .Data.Title }}{{.Data.Title}}{{end}}" />
+
+				<div id="title-error"></div>
+			</div>
+
+			<div class="form-row" id="description-row">
+				<label class="input-label" id="description">
+					{{translate .Lang "Description"}}
+				</label>
+				<textarea
+						  id="description"
+						  rows="5"
+						  name="description"
+						  required
+						  class="input textarea input-full">{{if .Data.Description}}{{.Data.Description}}{{end}}</textarea>
+				<div id="description-error"></div>
+			</div>
+
+			<div class="form-row" id="status-row">
+				<label class="input-label" for="status">
+					{{translate .Lang "Status"}}
+				</label>
+
+				<select id="status" name="status" class="input select input-full">
+					<option value="online" {{if eq .Data.Status "online" }}selected{{end}}>
+						{{translate .Lang "Online"}}
+					</option>
+
+					<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
+						{{translate .Lang "Offline"}}
+					</option>
+				</select>
+
+				<div id="status-error"></div>
+			</div>
+
+			<div class="form-row" id="image-row">
+				<label for="image" class="input-label">
+					{{translate .Lang "Image"}}
+				</label>
+
+				<input
+					   id="image"
+					   name="image"
+					   class="input-file input-full"
+					   type="file"
+					   accept="image/png, image/jpeg, image/jpg"
+					   {{if.ID}}{{else}}required{{end}} />
+
+				<small class="input-help">
+					{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
+				</small>
+
+				{{if index .Data.Image}}
+
+				<small class="input-link">
+					<a href="{{.Data.Image}}" target="_blank" class="link">
+						{{.Data.Image}}
+					</a>
+				</small>
+
+				{{end}}
+
+				<div id="image-error"></div>
+			</div>
+
+
+			<div id="alert"></div>
 		</div>
 
-		<div class="form-row" id="description-row">
-			<label class="input-label" id="description">
-				{{translate .Lang "Description"}}
-			</label>
-			<textarea
-					  id="description"
-					  rows="5"
-					  name="description"
-					  required
-					  class="input textarea input-full">{{if .Data.Description}}{{.Data.Description}}{{end}}</textarea>
-			<div id="description-error"></div>
-		</div>
-
-		<div class="form-row" id="status-row">
-			<label class="input-label" for="status">
-				{{translate .Lang "Status"}}
-			</label>
-
-			<select id="status" name="status" class="input select input-full">
-				<option value="online" {{if eq .Data.Status "online" }}selected{{end}}>
-					{{translate .Lang "Online"}}
-				</option>
-
-				<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
-					{{translate .Lang "Offline"}}
-				</option>
-			</select>
-
-			<div id="status-error"></div>
-		</div>
-
-		<div class="form-row" id="image-row">
-			<label for="image" class="input-label">
-				{{translate .Lang "Image"}}
-			</label>
-
-			<input
-				   id="image"
-				   name="image"
-				   class="input-file input-full"
-				   type="file"
-				   accept="image/png, image/jpeg, image/jpg"
-				   {{if.ID}}{{else}}required{{end}} />
-
-			<small class="input-help">
-				{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
-			</small>
-
-			{{if .Data.Image}}
-
-			<small class="input-link">
-				<a href="{{.Data.Image}}" target="_blank" class="link">
-					{{.Data.Image}}
+		<div class="card-footer box">
+			<div class="form row row-between row-gap">
+				<a href="/admin/blog.html" class="button row row-align fill">
+					{{translate .Lang "Back"}}
 				</a>
-			</small>
+				<button class="button button-primary fill">
+					<div id="spinner" class="htmx-indicator htmx-spinner"></div>
 
-			{{end}}
-
-			<div id="image-error"></div>
+					{{translate .Lang "Save"}}
+				</button>
+			</div>
 		</div>
+	</form>
+</article>
 
 
-		<div id="alert"></div>
-	</div>
-
-	<div class="card-footer box">
-		<div class="form row row-between row-gap">
-			<a href="/admin/blog.html" class="button row row-align fill">
-				{{translate .Lang "Back"}}
-			</a>
-			<button class="button button-primary fill">
-				<div id="spinner" class="htmx-indicator htmx-spinner"></div>
-
-				{{translate .Lang "Save"}}
-			</button>
-		</div>
-	</div>
-</form>
+{{end}}

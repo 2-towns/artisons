@@ -6,7 +6,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"gifthub/conf"
-	"log"
 	"log/slog"
 	"regexp"
 	"strings"
@@ -64,10 +63,7 @@ func Unescape(s string) string {
 }
 
 func Run(ctx context.Context, args []interface{}) error {
-	log.Println(args)
-	r, err := Redis.Do(ctx, args...).Result()
-
-	log.Println(r)
+	_, err := Redis.Do(ctx, args...).Result()
 
 	return err
 }
@@ -82,8 +78,6 @@ func SplitQuery(ctx context.Context, s string) ([]interface{}, error) {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the string", slog.String("string", s), slog.String("error", err.Error()))
 		return []interface{}{}, err
 	}
-
-	log.Println(fields)
 
 	for _, val := range fields {
 		if val != "" {
