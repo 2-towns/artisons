@@ -179,6 +179,7 @@ func (f settingsShopFeature) UpdateImage(a *shops.ShopSettings, key, image strin
 
 func SettingsForm(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestForm[shops.Settings](w, r, httpext.Form[shops.Settings]{
+		Name:    settingsName,
 		Feature: settingsFeature{},
 	})
 }

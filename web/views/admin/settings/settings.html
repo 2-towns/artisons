@@ -9,7 +9,8 @@
 				<div class="box">
 					<div class="form-row" id="items-row">
 						<label class="input-label" for="items">
-							{{translate .Lang "Products per page"}}
+							{{translate .Lang "Products per page"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="items"
@@ -25,7 +26,8 @@
 
 					<div class="form-row" id="min-row">
 						<label class="input-label" for="min">
-							{{translate .Lang "Minimum purchase amount"}}
+							{{translate .Lang "Minimum purchase amount"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="min"
@@ -49,7 +51,8 @@
 
 					<div class="form-row" id="image_with-row">
 						<label class="input-label" for="min">
-							{{translate .Lang "Default image width"}}
+							{{translate .Lang "Default image width"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="image_with"
@@ -67,7 +70,8 @@
 
 					<div class="form-row" id="image_height-row">
 						<label class="input-label" for="min">
-							{{translate .Lang "Default image width"}}
+							{{translate .Lang "Default image width"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="image_height"
@@ -376,12 +380,12 @@
 
 					<div class="form-row" id="address-row">
 						<label class="input-label" for="address">
-							{{translate .Lang "Address"}}
+							{{translate .Lang "Address"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="address"
 							   name="address"
-							   required
 							   class="input input-full"
 							   value="{{if .Data.Contact.Address }}{{.Data.Contact.Address}}{{end}}" />
 						<div id="address-error"></div>
@@ -389,7 +393,8 @@
 
 					<div class="form-row" id="city-row">
 						<label class="input-label" for="city">
-							{{translate .Lang "City"}}
+							{{translate .Lang "City"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="city"
@@ -402,12 +407,12 @@
 
 					<div class="form-row" id="zipcode-row">
 						<label class="input-label" for="zipcode">
-							{{translate .Lang "zipcode"}}
+							{{translate .Lang "zipcode"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="zipcode"
 							   name="zipcode"
-							   required
 							   class="input input-full"
 							   value="{{if .Data.Contact.Zipcode }}{{.Data.Contact.Zipcode}}{{end}}" />
 						<div id="zipcode-error"></div>
@@ -415,13 +420,13 @@
 
 					<div class="form-row" id="email-row">
 						<label class="input-label" for="email">
-							{{translate .Lang "Email"}}
+							{{translate .Lang "Email"}} -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 						<input
 							   id="email"
 							   name="email"
 							   type="email"
-							   required
 							   class="input input-full"
 							   value="{{if .Data.Contact.Email }}{{.Data.Contact.Email}}{{end}}" />
 						<div id="email-error"></div>
@@ -470,7 +475,8 @@
 
 					<div class="form-row" id="banner_1-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "Banner"}} 1
+							{{translate .Lang "Banner"}} 1 -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 
 						{{if .Data.Contact.Banner1}}
@@ -521,7 +527,8 @@
 
 					<div class="form-row" id="banner_2-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "Banner"}} 2
+							{{translate .Lang "Banner"}} 2 -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 
 						{{if .Data.Contact.Banner2}}
@@ -572,7 +579,8 @@
 
 					<div class="form-row" id="banner_3-row">
 						<label for="logo" class="input-label">
-							{{translate .Lang "Banner"}} 3
+							{{translate .Lang "Banner"}} 3 -
+							<i> {{translate .Lang "Optional"}}</i>
 						</label>
 
 						{{if .Data.Contact.Banner3}}

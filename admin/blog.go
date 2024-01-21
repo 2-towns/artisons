@@ -118,6 +118,10 @@ func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blogs.Arti
 }
 
 func (f blogFeature) ID(ctx context.Context, id string) (interface{}, error) {
+	if id == "" {
+		return 0, nil
+	}
+
 	val, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
@@ -170,6 +174,7 @@ func BlogList(w http.ResponseWriter, r *http.Request) {
 
 func BlogForm(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestForm[blogs.Article](w, r, httpext.Form[blogs.Article]{
+		Name:    blogName,
 		Feature: blogFeature{},
 	})
 }

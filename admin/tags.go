@@ -159,6 +159,7 @@ func TagsList(w http.ResponseWriter, r *http.Request) {
 
 func TagsForm(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestForm[tags.Tag](w, r, httpext.Form[tags.Tag]{
+		Name:    tagsName,
 		Feature: tagsFeature{},
 	})
 }

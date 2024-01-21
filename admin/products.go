@@ -212,6 +212,7 @@ func ProductList(w http.ResponseWriter, r *http.Request) {
 
 func ProductForm(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestForm[products.Product](w, r, httpext.Form[products.Product]{
+		Name:    productsName,
 		Feature: productsFeature{},
 	})
 }

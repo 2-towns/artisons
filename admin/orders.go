@@ -125,6 +125,7 @@ func OrdersList(w http.ResponseWriter, r *http.Request) {
 
 func OrdersForm(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestForm[orders.Order](w, r, httpext.Form[orders.Order]{
+		Name:    ordersName,
 		Feature: ordersFeature{},
 	})
 }

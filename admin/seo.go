@@ -116,6 +116,7 @@ func SeoList(w http.ResponseWriter, r *http.Request) {
 
 func SeoForm(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestForm[seo.Content](w, r, httpext.Form[seo.Content]{
+		Name:    seoName,
 		Feature: seoFeature{},
 	})
 }
