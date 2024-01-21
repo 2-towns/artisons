@@ -463,8 +463,8 @@
 						{{if .Data.Contact.Logo}}
 
 						<small class="input-link">
-							<a href="{{.Data.Contact.Logo}}" target="_blank" class="link">
-								{{.Data.Contact.Logo}}
+							<a href='{{image .Data.Contact.Logo "" "" .Data.UpdatedAt}}' target="_blank" class="link">
+								{{image .Data.Contact.Logo "" "" .Data.UpdatedAt}}
 							</a>
 						</small>
 
@@ -515,8 +515,9 @@
 						{{if .Data.Contact.Banner1}}
 
 						<small class="input-link">
-							<a href="{{.Data.Contact.Banner1}}" target="_blank" class="link">
-								{{.Data.Contact.Banner1}}
+							<a href='{{image .Data.Contact.Banner1 "" "" .Data.UpdatedAt}}' target="_blank"
+							   class="link">
+								{{image .Data.Contact.Banner1 "" "" .Data.UpdatedAt}}
 							</a>
 						</small>
 
@@ -567,8 +568,9 @@
 						{{if .Data.Contact.Banner2}}
 
 						<small class="input-link">
-							<a href="{{.Data.Contact.Banner2}}" target="_blank" class="link">
-								{{.Data.Contact.Banner2}}
+							<a href='{{image .Data.Contact.Banner2 "" "" .Data.UpdatedAt}}' target="_blank"
+							   class="link">
+								{{image .Data.Contact.Banner2 "" "" .Data.UpdatedAt}}
 							</a>
 						</small>
 
@@ -619,8 +621,9 @@
 						{{if .Data.Contact.Banner3}}
 
 						<small class="input-link">
-							<a href="{{.Data.Contact.Banner3}}" target="_blank" class="link">
-								{{.Data.Contact.Banner3}}
+							<a href='{{image .Data.Contact.Banner3 "" "" .Data.UpdatedAt}}' target="_blank"
+							   class="link">
+								{{image .Data.Contact.Banner3 "" "" .Data.UpdatedAt}}
 							</a>
 						</small>
 

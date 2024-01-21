@@ -28,7 +28,13 @@
 .header-menu-list {
 	list-style: none;
 	overflow-x: scroll;
-	height: 63px;
+	height: 73px;
+}
+
+@-moz-document url-prefix() {
+	.header-menu-list {
+		height: 63px;
+	}
 }
 
 .header-menu-item {

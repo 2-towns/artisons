@@ -72,22 +72,29 @@
 				<div id="sku-error"></div>
 			</div>
 
-			<div class="form-row" id="status-row">
-				<label class="input-label" for="status">
-					{{translate .Lang "Status"}}
-				</label>
+			<div class="form-row row row-between row-align" id="status-row">
+				<div>
+					<label class="switch-label" for="status">
+						{{translate .Lang "Status"}}
+					</label>
 
-				<select id="status" name="status" class="input select input-full">
-					<option value="online" {{if eq .Data.Status "online" }}selected{{end}}>
-						{{translate .Lang "text_general_online"}}
-					</option>
-
-					<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
-						{{translate .Lang "Offline"}}
-					</option>
-				</select>
-
-				<div id="status-error"></div>
+					<small class="input-help">
+						{{translate
+						.Lang
+						"If you disabled it, it will not be referenced by th search engines."}}
+					</small>
+					<div id="status-error"></div>
+				</div>
+				<div>
+					<label class="">
+						<input
+							   id="status"
+							   name="status"
+							   class="switch"
+							   type="checkbox"
+							   {{if eq .Data.Status "online" }}checked{{end}} />
+					</label>
+				</div>
 			</div>
 
 			<div class="form-row" id="price-row">
@@ -202,8 +209,8 @@
 				{{if .Data.Image1}}
 
 				<small class="input-link">
-					<a href="{{.Data.Image1}}" target="_blank" class="link">
-						{{.Data.Image1}}
+					<a href='{{image .Data.Image1 "" "" .Data.UpdatedAt}}' target="_blank" class="link">
+						{{image .Data.Image1 "" "" .Data.UpdatedAt}}
 					</a>
 				</small>
 
@@ -232,7 +239,7 @@
 					<input
 						   id="image_2"
 						   name="image_2"
-						   class="input-file fill"
+						   class="input-file fill input-group-input"
 						   type="file"
 						   accept="image/png, image/jpeg, image/jpg" />
 
@@ -254,8 +261,8 @@
 				{{if .Data.Image2}}
 
 				<small class="input-link">
-					<a href="{{.Data.Image2}}" target="_blank" class="link">
-						{{.Data.Image2}}
+					<a href='{{image .Data.Image2 "" "" .Data.UpdatedAt}}' target="_blank" class="link">
+						{{image .Data.Image2 "" "" .Data.UpdatedAt}}
 					</a>
 				</small>
 
@@ -306,8 +313,8 @@
 				{{if .Data.Image3}}
 
 				<small class="input-link">
-					<a href="{{.Data.Image3}}" target="_blank" class="link">
-						{{.Data.Image3}}
+					<a href='{{image .Data.Image3 "" "" .Data.UpdatedAt}}' target="_blank" class="link">
+						{{image .Data.Image3 "" "" .Data.UpdatedAt}}
 					</a>
 				</small>
 
@@ -358,8 +365,8 @@
 				{{if .Data.Image4}}
 
 				<small class="input-link">
-					<a href="{{.Data.Image4}}" target="_blank" class="link">
-						{{.Data.Image4}}
+					<a href='{{image .Data.Image4 "" "" .Data.UpdatedAt}}' target="_blank" class="link">
+						{{image .Data.Image4 "" "" .Data.UpdatedAt}}
 					</a>
 				</small>
 

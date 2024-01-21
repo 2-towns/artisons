@@ -152,8 +152,8 @@
                 {{if .Data.Image}}
 
                 <small class="input-link">
-                    <a href="{{.Data.Image}}" target="_blank" class="link">
-                        {{.Data.Image}}
+                    <a href='{{image .Data.Image "" "" .Data.UpdatedAt}}' target="_blank" class="link">
+                        {{image .Data.Image "" "" .Data.UpdatedAt}}
                     </a>
                 </small>
 

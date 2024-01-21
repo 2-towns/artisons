@@ -18,16 +18,17 @@ import (
 )
 
 type Contact struct {
-	Name    string `validate:"required"`
-	Address string
-	City    string
-	Zipcode string
-	Phone   string `validate:"required"`
-	Email   string `validate:"email"`
-	Logo    string
-	Banner1 string
-	Banner2 string
-	Banner3 string
+	Name      string `validate:"required"`
+	Address   string
+	City      string
+	Zipcode   string
+	Phone     string `validate:"required"`
+	Email     string `validate:"email"`
+	Logo      string
+	Banner1   string
+	Banner2   string
+	Banner3   string
+	UpdatedAt time.Time
 }
 
 type ShopSettings struct {
@@ -129,18 +130,24 @@ func init() {
 		}
 	}
 
+	updatedAt, err := strconv.ParseInt(d["updated_at"], 10, 64)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the updated at", slog.String("error", err.Error()), slog.String("updated_at", d["updated_at"]))
+	}
+
 	Data = Settings{
 		Contact: Contact{
-			Name:    d["name"],
-			Address: d["address"],
-			City:    d["city"],
-			Zipcode: d["zipcode"],
-			Phone:   d["phone"],
-			Email:   d["email"],
-			Logo:    d["logo"],
-			Banner1: d["banner_1"],
-			Banner2: d["banner_2"],
-			Banner3: d["banner_3"],
+			Name:      d["name"],
+			Address:   d["address"],
+			City:      d["city"],
+			Zipcode:   d["zipcode"],
+			Phone:     d["phone"],
+			Email:     d["email"],
+			Logo:      d["logo"],
+			Banner1:   d["banner_1"],
+			Banner2:   d["banner_2"],
+			Banner3:   d["banner_3"],
+			UpdatedAt: time.Unix(updatedAt, 0),
 		},
 		ShopSettings: ShopSettings{
 			Guest:            d["guest"] == "1",

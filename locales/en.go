@@ -210,5 +210,6 @@ func LoadEn() {
 	message.SetString(language.English, "Define the score inside the root tag list.", "Define the score inside the root tag list.")
 	message.SetString(language.English, "The higher the score, the more it will appear first.", "The higher the score, the more it will appear first.")
 	message.SetString(language.English, "the tag exists already", "The tag exists already.")
+	message.SetString(language.English, "If you disabled it, it will not be referenced by th search engines.", "If you disabled it, it will not be referenced by th search engines.")
 
 }

@@ -114,15 +114,13 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 		return Article{}, errors.New("input:updated_at")
 	}
 
-	image := path.Join(conf.ImgProxy.Path, "blog", fmt.Sprintf("%d", id))
-
 	a := Article{
 		ID:          int(id),
 		Title:       db.Unescape(data["title"]),
 		Description: db.Unescape(data["description"]),
 		Slug:        data["slug"],
 		Status:      data["status"],
-		Image:       image,
+		Image:       data["image"],
 		CreatedAt:   time.Unix(createdAt, 0),
 		UpdatedAt:   time.Unix(updatedAt, 0),
 	}

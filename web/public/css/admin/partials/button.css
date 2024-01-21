@@ -56,10 +56,24 @@
 
 .button-icon {
 	color: var(--secondary);
+	display: flex;
 }
 
-.input-group-button {
+.input-group-button:not(.button-primary) {
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
 	border-left: none;
+	height: calc(var(--input-height) + 3px);
+	box-shadow: var(--box-shadow-input);
+}
+
+@-moz-document url-prefix() {
+	.input-group-button:not(.button-primary) {
+		height: calc(var(--input-height) + 4px);
+	}
+}
+
+.input-group-input {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
 }

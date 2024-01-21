@@ -47,22 +47,29 @@
 				<div id="description-error"></div>
 			</div>
 
-			<div class="form-row" id="status-row">
-				<label class="input-label" for="status">
-					{{translate .Lang "Status"}}
-				</label>
+			<div class="form-row row row-align row-between" id="status-row">
+				<div>
+					<label class="switch-label" for="status">
+						{{translate .Lang "Status"}}
+					</label>
 
-				<select id="status" name="status" class="input select input-full">
-					<option value="online" {{if eq .Data.Status "online" }}selected{{end}}>
-						{{translate .Lang "Online"}}
-					</option>
-
-					<option value="offline" {{if eq .Data.Status "offline" }} selected {{end}}>
-						{{translate .Lang "Offline"}}
-					</option>
-				</select>
-
-				<div id="status-error"></div>
+					<small class="input-help">
+						{{translate
+						.Lang
+						"If you disabled it, it will not be referenced by th search engines."}}
+					</small>
+					<div id="status-error"></div>
+				</div>
+				<div>
+					<label class="">
+						<input
+							   id="status"
+							   name="status"
+							   class="switch"
+							   type="checkbox"
+							   {{if eq .Data.Status "online" }}checked{{end}} />
+					</label>
+				</div>
 			</div>
 
 			<div class="form-row" id="image-row">
@@ -85,8 +92,8 @@
 				{{if index .Data.Image}}
 
 				<small class="input-link">
-					<a href="{{.Data.Image}}" target="_blank" class="link">
-						{{.Data.Image}}
+					<a href='{{image .Data.Image "" "" .Data.UpdatedAt}}' target="_blank" class="link">
+						{{image .Data.Image "" "" .Data.UpdatedAt}}
 					</a>
 				</small>
 

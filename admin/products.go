@@ -129,10 +129,16 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 		weight = val
 	}
 
+	status := "online"
+
+	if r.FormValue("status") != "on" {
+		status = "offline"
+	}
+
 	p := products.Product{
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
-		Status:      r.FormValue("status"),
+		Status:      status,
 		Sku:         r.FormValue("sku"),
 		Tags:        strings.Split(r.FormValue("tags"), ";"),
 		Price:       price,

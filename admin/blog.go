@@ -96,10 +96,16 @@ func (f blogFeature) Search(ctx context.Context, q string, offset, num int) (htt
 }
 
 func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blogs.Article, error) {
+	status := "online"
+
+	if r.FormValue("status") != "on" {
+		status = "offline"
+	}
+
 	a := blogs.Article{
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
-		Status:      r.FormValue("status"),
+		Status:      status,
 	}
 
 	id := chi.URLParam(r, "id")

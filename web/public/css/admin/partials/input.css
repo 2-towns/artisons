@@ -124,8 +124,8 @@ select.input-full {
 	box-shadow: 0 0 0 4px rgba(var(--danger-rgb), 0.25);
 }
 
-.input-checkbox:checked~.input-group .button,
-.input-checkbox:checked~.input-link {
+input[type="checkbox"]:checked~.input-group .button,
+input[type="checkbox"]:checked~.input-link {
 	display: none;
 }
 
