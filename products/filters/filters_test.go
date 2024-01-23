@@ -39,12 +39,23 @@ func init() {
 		"updated_at", time.Now().Unix(),
 	)
 
+	db.Redis.HSet(ctx, "filter:sizes",
+		"key", "sizes2",
+		"editable", "1",
+		"label", "Sizes",
+		"values", "S;M;L",
+		"updated_at", time.Now().Unix(),
+	)
+
 	db.Redis.ZAdd(ctx, "filters", redis.Z{
 		Score:  float64(filter.UpdatedAt.Unix()),
 		Member: filter.Key,
 	}, redis.Z{
 		Score:  float64(filter.UpdatedAt.Unix()),
 		Member: "sizes",
+	}, redis.Z{
+		Score:  float64(filter.UpdatedAt.Unix()),
+		Member: "sizes2",
 	})
 
 	db.Redis.ZAdd(ctx, "fitlter:active", redis.Z{
@@ -173,7 +184,7 @@ func TestDeleteReturnsErrorWhenKeyIsEmpty(t *testing.T) {
 func TestDeleteReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
-	if err := Delete(c, "sizes"); err != nil {
+	if err := Delete(c, "sizes2"); err != nil {
 		t.Fatalf(`Delete(c) = %v, want nil`, err)
 	}
 }

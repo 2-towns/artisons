@@ -24,12 +24,14 @@ func init() {
 	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", user.ID),
 		"id", user.ID,
 		"email", faker.Email(),
+		"created_at", now.Unix(),
 		"updated_at", now.Unix(),
 	)
 
 	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 98),
 		"id", 98,
 		"email", faker.Email(),
+		"created_at", now.Unix(),
 		"updated_at", now.Unix(),
 	)
 
