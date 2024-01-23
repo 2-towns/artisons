@@ -7,6 +7,7 @@ import (
 	"gifthub/db"
 	"gifthub/validators"
 	"log/slog"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -81,13 +82,11 @@ func (f Filter) Save(ctx context.Context) (string, error) {
 		})
 
 		if f.Active {
-			rdb.HSet(ctx, fmt.Sprintf("filter:%s", f.Key), "active", "1")
 			rdb.ZAdd(ctx, "filters:active", redis.Z{
 				Score:  float64(f.Score),
 				Member: f.Key,
 			})
 		} else {
-			rdb.HSet(ctx, fmt.Sprintf("filter:%s", f.Key), "active", "0")
 			rdb.ZRem(ctx, "filters:active", f.Key)
 		}
 
@@ -113,7 +112,6 @@ func parse(ctx context.Context, data map[string]string) (Filter, error) {
 		Key:       data["key"],
 		Type:      data["type"],
 		Label:     data["label"],
-		Active:    data["active"] == "1",
 		Values:    strings.Split(data["values"], ";"),
 		UpdatedAt: time.Unix(updatedAt, 0),
 	}
@@ -128,6 +126,12 @@ func List(ctx context.Context, offset, num int) (ListResults, error) {
 	keys, err := db.Redis.ZRange(ctx, "filters", int64(offset), int64(num)).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the filter keys")
+		return ListResults{}, errors.New("something went wrong")
+	}
+
+	actives, err := db.Redis.ZRange(ctx, "filters:active", 0, 9999).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the active filter keys")
 		return ListResults{}, errors.New("something went wrong")
 	}
 
@@ -162,6 +166,8 @@ func List(ctx context.Context, offset, num int) (ListResults, error) {
 			continue
 		}
 
+		filter.Active = slices.Contains(actives, filter.Key)
+
 		filters = append(filters, filter)
 	}
 
@@ -170,6 +176,8 @@ func List(ctx context.Context, offset, num int) (ListResults, error) {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the filters count")
 		return ListResults{}, errors.New("something went wrong")
 	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "found filters", slog.Int("length", len(filters)))
 
 	return ListResults{
 		Total:   int(total),
@@ -197,7 +205,6 @@ func Find(ctx context.Context, key string) (Filter, error) {
 		return Filter{}, err
 	}
 
-	data["key"] = key
 	filter, err := parse(ctx, data)
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot parse the filter", slog.String("error", err.Error()))
