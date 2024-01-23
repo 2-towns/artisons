@@ -9,7 +9,10 @@
 		"editor.defaultFormatter": "vscode.css-language-features"
 	},
 	"[json]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
+		"editor.defaultFormatter": "vscode.json-language-features"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "vscode.json-language-features"
 	},
 	"[html]": {
 		"editor.defaultFormatter": "vscode.html-language-features"

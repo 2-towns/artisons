@@ -82,12 +82,6 @@ func init() {
 
 		val := cmd.(*redis.MapStringStringCmd).Val()
 
-		createdAt, err := strconv.ParseInt(val["created_at"], 10, 64)
-		if err != nil {
-			slog.Error("cannot parse the created at", slog.String("created_at", val["created_at"]))
-			continue
-		}
-
 		updatedAt, err := strconv.ParseInt(val["updated_at"], 10, 64)
 		if err != nil {
 			slog.Error("cannot parse the product updated at", slog.String("updated_at", val["updated_at"]))
@@ -100,7 +94,6 @@ func init() {
 		c.Title = db.Unescape(val["title"])
 		c.URL = db.Unescape(val["url"])
 		c.Description = db.Unescape(val["description"])
-		c.CreatedAt = time.Unix(createdAt, 0)
 		c.UpdatedAt = time.Unix(updatedAt, 0)
 		URLs[k] = c
 

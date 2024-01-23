@@ -248,12 +248,12 @@ func parseCsvLine(line []string) (products.Product, error) {
 		tags = strings.Split(line[itags], cellSeparator)
 	}
 
-	var links []string
-	if length > ilinks && line[ilinks] != "" {
-		links = strings.Split(line[ilinks], cellSeparator)
-	}
+	// var links []string
+	// if length > ilinks && line[ilinks] != "" {
+	// 	links = strings.Split(line[ilinks], cellSeparator)
+	// }
 
-	options := make(map[string]string)
+	options := make(map[string][]string)
 	if length > ioptions && line[ioptions] != "" {
 		o := strings.Split(line[ioptions], cellSeparator)
 
@@ -267,7 +267,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 			k := strings.ReplaceAll(parts[0], "\"", "")
 			v := strings.ReplaceAll(parts[1], "\"", "")
 
-			options[k] = v
+			options[k] = []string{v}
 		}
 
 		if len(o) != len(options) {
@@ -285,9 +285,9 @@ func parseCsvLine(line []string) (products.Product, error) {
 		Status:      line[istatus],
 		Weight:      weight,
 		Tags:        tags,
-		Links:       links,
-		Meta:        options,
-		Image1:      iids[0],
+		// Links:       links,
+		Meta:   options,
+		Image1: iids[0],
 	}
 
 	ctx := context.WithValue(context.Background(), contexts.Locale, language.English)

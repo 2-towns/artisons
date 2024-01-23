@@ -27,7 +27,6 @@ type Tag struct {
 	Children  []string
 	Root      bool
 	Score     int
-	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
@@ -76,7 +75,7 @@ func Exists(ctx context.Context, key string) (bool, error) {
 	exists, err := db.Redis.Exists(ctx, "tag:"+key).Result()
 
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot check tags existence")
+		slog.LogAttrs(ctx, slog.LevelError, "cannot check tags existence")
 		return false, errors.New("something went wrong")
 	}
 
@@ -100,8 +99,6 @@ func (t Tag) Save(ctx context.Context) (string, error) {
 			"label", t.Label,
 			"updated_at", now.Unix(),
 		)
-
-		rdb.HSetNX(ctx, "tag:"+t.Key, "created_at", now.Unix())
 
 		if t.Root {
 			rdb.ZAdd(ctx, "tags", redis.Z{
@@ -150,12 +147,12 @@ func Find(ctx context.Context, key string) (Tag, error) {
 		return Tag{}, errors.New("input:id")
 	}
 
-	if exists, err := db.Redis.Exists(ctx, "tag:"+key).Result(); exists == 0 || err != nil {
+	if exists, err := db.Redis.Exists(ctx, "filter:"+key).Result(); exists == 0 || err != nil {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the tag")
 		return Tag{}, errors.New("oops the data is not found")
 	}
 
-	data, err := db.Redis.HGetAll(ctx, "tag:"+key).Result()
+	data, err := db.Redis.HGetAll(ctx, "filter:"+key).Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot find the tag", slog.String("error", err.Error()))
 		return Tag{}, err
@@ -255,11 +252,11 @@ func List(ctx context.Context, offset, num int) (ListResults, error) {
 
 func Delete(ctx context.Context, key string) error {
 	l := slog.With(slog.String("tag", key))
-	l.LogAttrs(ctx, slog.LevelInfo, "deleting  tag")
+	l.LogAttrs(ctx, slog.LevelInfo, "deleting tag")
 
 	if key == "" {
-		slog.LogAttrs(ctx, slog.LevelInfo, "the name cannot be empty")
-		return errors.New("input:name")
+		slog.LogAttrs(ctx, slog.LevelInfo, "the key cannot be empty")
+		return errors.New("input:key")
 	}
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {

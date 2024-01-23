@@ -17,8 +17,13 @@ htmx.defineExtension("input", {
 });
 
 
-if(document.getElementsByClassName("tags").length > 0){
+if (document.getElementsByClassName("tags").length > 0) {
 	var config = {};
-	new TomSelect('.tags',config);
+	var element = document.querySelector(".tags")
+	if (element.classList.contains("tags-create")) {
+		config.create = true
+	}
+	console.info(element, config)
+	new TomSelect('.tags', config);
 }
 

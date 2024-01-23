@@ -14,8 +14,7 @@
     </div>
 
     <form
-          hx-post="{{if .Data.Key }}/admin/tags/{{.Data.Key}}/edit.html{{else}}/admin/tags/add.html{{end}}"
-          enctype="multipart/form-data">
+          hx-post="{{if .Data.Key }}/admin/filters/{{.Data.Key}}/edit.html{{else}}/admin/filters/add.html{{end}}">
         <div class="form box">
             <div class="form-row" id="key-row">
                 <label class="input-label" for="key">
@@ -35,8 +34,6 @@
                 <small class="input-help">
                     {{translate .Lang "The tag identifier can contains only alphanumeric characters, no space."}}
                     {{translate .Lang "You cannot change it after the creation."}}
-                    <br />
-                    {{translate .Lang "To link a product with this tag, you need to add this key in the product tags."}}
                 </small>
 
                 <div id="key-error"></div>
@@ -62,53 +59,56 @@
                 <div id="label-error"></div>
             </div>
 
-            <div class="form-row" id="children-row">
-                <label class="input-label" for="children">
-                    {{translate .Lang "Children"}} -
-                    <i>{{translate .Lang "Optional"}}</i>
+            <div class="form-row" id="values-row">
+                <label class="input-label" for="values">
+                    {{translate .Lang "Values"}}
                 </label>
 
 
                 <select
-                        id="children"
-                        name="children"
+                        id="values"
+                        name="values"
                         multiple
-                        class="input input-full tags">
+                        class="input input-full tags tags-create">
                     <option></option>
-                    {{range .Extra.Tags}}
-                    <option {{if contains $.Data.Children .Key}}selected="true" {{end}}>{{.Key}}</option>
+                    {{range .Data.Values}}
+                    <option {{if contains $.Data.Values .}}selected="true" {{end}}>{{.}}</option>
                     {{end}}
                 </select>
 
 
                 <small class="input-help">
-                    {{translate .Lang "Organize your tags hierarchically by adding children to the current tag."}}
+                    {{translate .Lang "The first letter will be automatically capitalized on the website."}}
+                    {{translate .Lang "So it's recommanded to define the values in lowercase."}}
+                    <br />
+                    {{translate .Lang "The values will be available for product filtering."}}
                 </small>
 
-                <div id="children-error"></div>
+                <div id="values-error"></div>
             </div>
 
             <div class="form-row row row-align row-between" id="root-row">
                 <div>
-                    <label class="switch-label" for="root">
-                        {{translate .Lang "Root tag"}}
+                    <label class="switch-label" for="active">
+                        {{translate .Lang "Active"}}
                     </label>
 
                     <small class="input-help">
                         {{translate
                         .Lang
-                        "If enabled, the tag will be added to the main tag list displayed on the website."}}
+                        "If enabled, the filter will be available on the product details on the website."}}
                     </small>
-                    <div id="root-error"></div>
+
+                    <div id="active-error"></div>
                 </div>
                 <div>
                     <label class="">
                         <input
-                               id="root"
-                               name="root"
+                               id="active"
+                               name="active"
                                class="switch"
                                type="checkbox"
-                               {{if .Data.Root}}checked{{end}} />
+                               {{if .Data.Active}}checked{{end}} />
                     </label>
                 </div>
             </div>
@@ -128,50 +128,19 @@
 
 
                 <small class="input-help">
-                    {{translate .Lang "Define the score inside the root tag list."}}
+                    {{translate .Lang "Define the score inside the filter list."}}
                     {{translate .Lang "The higher the score, the more it will appear first."}}
                 </small>
 
                 <div id="score-error"></div>
             </div>
 
-            <div class="form-row" id="image-row">
-                <label for="image" class="input-label">
-                    {{translate .Lang "Image"}} -
-                    <i>{{translate .Lang "Optional"}}</i>
-                </label>
-
-                <input
-                       id="image"
-                       name="image"
-                       class="input-file input-full"
-                       type="file"
-                       accept="image/png, image/jpeg, image/jpg" />
-
-                <small class="input-help">
-                    {{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}
-                </small>
-
-                {{if .Data.Image}}
-
-                <small class="input-link">
-                    <a href='{{image .Data.Image "" "" .Data.UpdatedAt}}' target="_blank" class="link">
-                        {{image .Data.Image "" "" .Data.UpdatedAt}}
-                    </a>
-                </small>
-
-                {{end}}
-
-                <div id="image-error"></div>
-            </div>
-
-
             <div id="alert"></div>
         </div>
 
         <div class="card-footer box">
             <div class="form row row-between row-gap">
-                <a href="/admin/tags.html" class="button row row-align fill">
+                <a href="/admin/filters.html" class="button row row-align fill">
                     {{translate .Lang "Back"}}
                 </a>
                 <button class="button button-primary fill">

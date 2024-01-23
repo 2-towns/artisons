@@ -25,14 +25,12 @@ func init() {
 		"id", user.ID,
 		"email", faker.Email(),
 		"updated_at", now.Unix(),
-		"created_at", now.Unix(),
 	)
 
 	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 98),
 		"id", 98,
 		"email", faker.Email(),
 		"updated_at", now.Unix(),
-		"created_at", now.Unix(),
 	)
 
 	db.Redis.Set(ctx, "auth:"+user.SID, user.ID, conf.SessionDuration)

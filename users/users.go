@@ -80,7 +80,7 @@ func Otp(ctx context.Context, email string) (string, error) {
 
 	ttl, err := db.Redis.TTL(ctx, email+":otp").Result()
 	if err != nil {
-		l.LogAttrs(ctx, slog.LevelInfo, "cannot get the ttl", slog.String("error", err.Error()))
+		l.LogAttrs(ctx, slog.LevelError, "cannot get the ttl", slog.String("error", err.Error()))
 		return "", errors.New("something went wrong")
 	}
 
@@ -168,7 +168,7 @@ func parseUser(ctx context.Context, m map[string]string) (User, error) {
 	l.LogAttrs(ctx, slog.LevelInfo, "parsing the user data")
 
 	if m["id"] == "" {
-		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty id")
+		l.LogAttrs(ctx, slog.LevelError, "cannot continue with empty id")
 		return User{}, errors.New("something went wrong")
 	}
 
@@ -228,7 +228,7 @@ func (u User) SaveAddress(ctx context.Context, a Address) error {
 	}
 
 	if u.ID == 0 {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot validate the user id while it is empty")
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user id while it is empty")
 		return errors.New("something went wrong")
 	}
 

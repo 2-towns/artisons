@@ -4,7 +4,9 @@
             <thead class="thead">
                 <tr class="tr">
                     <th class="th">{{translate .Lang "Key"}}</th>
-                    <th class="th">{{translate .Lang "Children"}}</th>
+                    <th class="th">{{translate .Lang "Type"}}</th>
+                    <th class="th">{{translate .Lang "Values"}}</th>
+                    <th class="th">{{translate .Lang "Active"}}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -21,11 +23,27 @@
                 {{ range .Items}}
                 <tr class="tr">
                     <td class="box td" hx-disable>{{.Key}}</td>
-                    <td class="box td" hx-disable>{{join .Children ","}}</td>
+                    <td class="box td" hx-disable>{{.Type}}</td>
+                    <td class="box td" hx-disable>{{join .Values ","}}</td>
+                    <td class="box td" hx-disable>
+                        <div class="row row-align row-gap">
+                            {{ if .Active}}
+
+                            <span class="table-badge table-badge-success"></span>
+                            {{translate $.Lang "Active"}}
+
+                            {{else}}
+
+                            <span class="table-badge table-badge-danger"></span>
+                            {{translate $.Lang "Disabled"}}
+
+                            {{end}}
+                        </div>
+                    </td>
                     <td class="box td">
                         <div class="row row-align row-gap">
                             <a
-                               href="/admin/tags/{{.Key}}/edit.html"
+                               href="/admin/filters/{{.Key}}/edit.html"
                                class="button table-button">
                                 <span class="button-icon"> {{template "edit.svg"}} </span>
                             </a>
@@ -41,7 +59,7 @@
                                 </a>
 
                                 <a
-                                   hx-post="/admin/tags/{{.Key}}/delete.html"
+                                   hx-post="/admin/filters/{{.Key}}/delete.html"
                                    hx-include="[name='page']"
                                    hx-target="#table"
                                    class="button table-button table-delete-confirm-button">

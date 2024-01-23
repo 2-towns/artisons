@@ -46,7 +46,7 @@ func parseRedisFile(ctx context.Context, file string) [][]interface{} {
 		fields, err := r.Read()
 
 		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "error when parsiling line", slog.String("line", line), slog.String("error", err.Error()))
+			slog.LogAttrs(ctx, slog.LevelError, "error when parsing line", slog.String("line", line), slog.String("error", err.Error()))
 			log.Fatalln(err)
 		}
 
@@ -56,7 +56,7 @@ func parseRedisFile(ctx context.Context, file string) [][]interface{} {
 			}
 		}
 
-		if strings.Contains(line, "created_at") && !strings.Contains(line, "FT.CREATE") {
+		if strings.Contains(line, "updated_at") && !strings.Contains(line, "FT.CREATE") {
 			args = append(args, "updated_at", time.Now().Unix())
 		}
 

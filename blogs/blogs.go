@@ -83,7 +83,6 @@ func (a Article) Save(ctx context.Context) (string, error) {
 		"image", a.Image,
 		"slug", slug,
 		"status", a.Status,
-		"created_at", now,
 		"updated_at", now,
 	).Result(); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
@@ -102,12 +101,6 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 		return Article{}, errors.New("input:id")
 	}
 
-	createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the created at", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("created_at", data["created_at"]))
-		return Article{}, errors.New("input:created_at")
-	}
-
 	updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the updated at", slog.String("error", err.Error()), slog.Int64("id", id), slog.String("updated_at", data["updated_at"]))
@@ -121,7 +114,6 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 		Slug:        data["slug"],
 		Status:      data["status"],
 		Image:       data["image"],
-		CreatedAt:   time.Unix(createdAt, 0),
 		UpdatedAt:   time.Unix(updatedAt, 0),
 	}
 

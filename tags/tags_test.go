@@ -13,7 +13,7 @@ var tag Tag = Tag{
 	Key:       "phones",
 	Label:     "Phones",
 	Root:      false,
-	CreatedAt: time.Now(),
+	UpdatedAt: time.Now(),
 }
 
 func init() {
@@ -127,15 +127,15 @@ func TestListReturnsTags(t *testing.T) {
 	tag := r.Tags[0]
 
 	if tag.Key == "" {
-		t.Fatalf(`tag.Name = %s, want not empty`, tag.Key)
+		t.Fatalf(`tag.Key = %s, want not empty`, tag.Key)
 	}
 }
 
-func TestDeleteReturnsErrorWhenNameIsEmpty(t *testing.T) {
+func TestDeleteReturnsErrorWhenKeyIsEmpty(t *testing.T) {
 	c := tests.Context()
 
-	if err := Delete(c, ""); err == nil || err.Error() != "input:name" {
-		t.Fatalf(`Delete.Save(c) = %v, want 'input:name'`, err)
+	if err := Delete(c, ""); err == nil || err.Error() != "input:key" {
+		t.Fatalf(`Delete(c) = %v, want 'input:key'`, err)
 	}
 }
 
@@ -143,7 +143,7 @@ func TestDeleteReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
 	if err := Delete(c, "children"); err != nil {
-		t.Fatalf(`Delete.Save(c) = %v, want nil`, err)
+		t.Fatalf(`Delete(c) = %v, want nil`, err)
 	}
 }
 

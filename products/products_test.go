@@ -32,11 +32,11 @@ func init() {
 		"status", "online",
 		"weight", rand.Float32(),
 		"mid", faker.Phonenumber(),
+		"meta", "color_blue;color_blue cyan",
 		"tags", "clothes",
 		"image_1", "PDT1.jpeg",
 		"image_2", "PDT1.jpeg",
 		"links", "",
-		"created_at", now,
 		"updated_at", now,
 	)
 
@@ -243,10 +243,6 @@ func TestFindReturnsProductWhenSuccess(t *testing.T) {
 	if p.Tags[0] != "clothes" {
 		t.Fatalf(`p.Tags[0] = %s, want "clothes"`, p.Tags[0])
 	}
-
-	// if p.Meta["color"] != "blue" {
-	// 	t.Fatalf(`p.Meta["color"] = %v, want "blue"`, p.Meta["color"])
-	// }
 }
 
 func TestSearchReturnsProductsWhenTitleIsFound(t *testing.T) {
@@ -496,29 +492,49 @@ func TestSearchReturnsEmptySliceWhenTagsAreNotFound(t *testing.T) {
 	}
 }
 
-// func TestSearchReturnsProductsWhenMetaAreFound(t *testing.T) {
-// 	c := tests.Context()
-// 	p, err := Search(c, Query{Meta: map[string]string{"color": "blue"}}, 0, 10)
-// 	if err != nil {
-// 		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "blue"}}) = %v, want nil`, err.Error())
-// 	}
+func TestSearchReturnsProductsWhenMetaAreFound(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Meta: map[string][]string{"color": {"blue"}}}, 0, 10)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "blue"}}) = %v, want nil`, err.Error())
+	}
 
-// 	if p.Total == 0 {
-// 		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
-// 	}
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
 
-// 	if len(p.Products) == 0 {
-// 		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
-// 	}
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
 
-// 	if p.Products[0].ID == "" {
-// 		t.Fatalf(`p.Products[0].ID = %s, want ""`, p.Products[0].ID)
-// 	}
-// }
+	if p.Products[0].ID == "" {
+		t.Fatalf(`p.Products[0].ID = %s, want ""`, p.Products[0].ID)
+	}
+}
+
+func TestSearchReturnsProductsWhenMetaWithSpaceAreFound(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{Meta: map[string][]string{"color": {"blue cyan"}}}, 0, 10)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "blue cyan"}}) = %v, want nil`, err.Error())
+	}
+
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	if len(p.Products) == 0 {
+		t.Fatalf(`len(p.Products) = %d, want > 0`, len(p.Products))
+	}
+
+	if p.Products[0].ID == "" {
+		t.Fatalf(`p.Products[0].ID = %s, want ""`, p.Products[0].ID)
+	}
+}
 
 func TestSearchReturnsEmptySliceWhenMetaAreNotFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Meta: map[string]string{"color": "crazy"}}, 0, 10)
+	p, err := Search(c, Query{Meta: map[string][]string{"color": {"crazy"}}}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Meta: map[string]string{"color": "crazy"}}) = %v, want nil`, err.Error())
 	}
@@ -537,25 +553,6 @@ func TestURLReturnsTheProductURLWhenSuccess(t *testing.T) {
 		t.Fatalf(`product.URL()  = %s, want 'http://localhost/123-title.html'`, product.URL())
 	}
 }
-
-// func TestListReturnProductsWhenSuccess(t *testing.T) {
-// 	c := tests.Context()
-
-// 	pds, err := List(c, 0)
-// 	if err != nil {
-// 		t.Fatalf(`List(c, 1) = %v, %v want not empty, nil`, pds, err.Error())
-// 	}
-
-// 	if len(pds) == 0 {
-// 		t.Fatalf(`len(p.Products) = %d, want > 0`, len(pds))
-// 	}
-
-// 	p := pds[0]
-
-// 	if p.ID == "" {
-// 		t.Fatal(`p.ID = '', want not empty`, p.ID)
-// 	}
-// }
 
 func TestCountReturnPositiveWhenSuccess(t *testing.T) {
 	c := tests.Context()

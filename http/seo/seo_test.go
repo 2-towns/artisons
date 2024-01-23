@@ -35,7 +35,6 @@ func init() {
 		"url", db.Escape(content.URL),
 		"key", content.Key,
 		"lang", conf.DefaultLocale.String(),
-		"created_at", now,
 		"updated_at", now,
 	)
 

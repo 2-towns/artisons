@@ -1,0 +1,28 @@
+{{define "content"}}
+
+<div id="alert">
+    {{if .Flash }}
+
+    {{template "alert-success.html" .}}
+
+    {{end}}
+</div>
+
+
+<div hx-ext="alert, input">
+    <div>
+        <div class="card card-separator" id="filters-categories">
+            <div class="row row-align row-gap row-between box">
+                <div>
+                    <h3 class="card-title">{{translate .Lang "List"}}</h3>
+                </div>
+                <div>
+
+                </div>
+            </div>
+            {{template "filters-table.html" .}}
+        </div>
+    </div>
+</div>
+
+{{end}}

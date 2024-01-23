@@ -71,6 +71,7 @@ var AdminUI = []string{
 	conf.WorkingSpace + "web/views/admin/icons/settings.svg",
 	conf.WorkingSpace + "web/views/admin/icons/seo.svg",
 	conf.WorkingSpace + "web/views/admin/icons/tag.svg",
+	conf.WorkingSpace + "web/views/admin/icons/filter.svg",
 }
 
 var AdminSuccess = []string{

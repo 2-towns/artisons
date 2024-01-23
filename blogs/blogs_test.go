@@ -30,7 +30,6 @@ func init() {
 		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
 		"online", "1",
 		"updated_at", now.Unix(),
-		"created_at", now.Unix(),
 	)
 
 	db.Redis.HSet(ctx, "blog:98",
@@ -42,7 +41,6 @@ func init() {
 		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
 		"online", "1",
 		"updated_at", now.Unix(),
-		"created_at", now.Unix(),
 	)
 }
 

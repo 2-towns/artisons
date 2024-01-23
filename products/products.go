@@ -22,6 +22,19 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+var IndexArgs []interface{} = []interface{}{
+	"FT.CREATE", "product-idx",
+	"ON", "HASH", "PREFIX", "1", "product:", "SCHEMA",
+	"id", "TAG",
+	"title", "TEXT",
+	"sku", "TAG",
+	"description", "TEXT",
+	"price", "NUMERIC", "SORTABLE",
+	"tags", "TAG", "SEPARATOR", ";",
+	"status", "TAG",
+	"updated_at", "NUMERIC", "SORTABLE",
+}
+
 // Product is the product representation in the application
 type Product struct {
 	ID          string  `redis:"id"` // ID is an unique identifier
@@ -43,11 +56,9 @@ type Product struct {
 	Image4 string
 	Tags   []string
 
-	// todo manage the product links
-	Links []string // Links contains the linked product IDs
+	// Links []string // Links contains the linked product IDs
 
-	// todo manage the product links
-	Meta map[string]string // Meta contains the product options.
+	Meta map[string][]string
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -65,7 +76,7 @@ type Query struct {
 	PriceMin float32
 	PriceMax float32
 	Tags     []string
-	Meta     map[string]string
+	Meta     map[string][]string
 }
 
 const (
@@ -180,12 +191,6 @@ func parse(ctx context.Context, data map[string]string) (Product, error) {
 		weight = v
 	}
 
-	createdAt, err := strconv.ParseInt(data["created_at"], 10, 64)
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product created at", slog.String("created_at", data["created_at"]))
-		return Product{}, errors.New("input:created_at")
-	}
-
 	updatedAt, err := strconv.ParseInt(data["updated_at"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the product updated at", slog.String("updated_at", data["updated_at"]))
@@ -204,13 +209,11 @@ func parse(ctx context.Context, data map[string]string) (Product, error) {
 		Weight:      weight,
 		Status:      data["status"],
 		Tags:        strings.Split(db.Unescape(data["tags"]), ";"),
-		Links:       strings.Split(db.Unescape(data["links"]), ";"),
-		Meta:        UnSerializeMeta(ctx, db.Unescape(data["meta"]), ";"),
+		Meta:        UnSerializeMeta(ctx, db.Unescape(data["meta"])),
 		Image1:      data["image_1"],
 		Image2:      data["image_2"],
 		Image3:      data["image_3"],
 		Image4:      data["image_4"],
-		CreatedAt:   time.Unix(createdAt, 0),
 		UpdatedAt:   time.Unix(updatedAt, 0),
 	}, nil
 }
@@ -264,7 +267,6 @@ func (p Product) Save(ctx context.Context) (string, error) {
 		"tags", db.Escape(strings.Join(p.Tags, ";")),
 		// "links", db.Escape(strings.Join(p.Links, ";")),
 		// "meta", db.Escape(SerializeMeta(ctx, p.Meta, ";")),
-		"created_at", now,
 		"updated_at", now,
 	)
 
@@ -371,7 +373,9 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 	}
 
 	if len(q.Meta) > 0 {
-		s := db.Escape(SerializeMeta(ctx, q.Meta, " | "))
+		s := SerializeMeta(ctx, q.Meta)
+		s = strings.Replace(s, ";", " | ", 999)
+		s = db.Escape(s)
 		qs += fmt.Sprintf("@meta:{%s}", s)
 	}
 
@@ -445,18 +449,19 @@ func (p Product) URL() string {
 
 // SerializeMeta transforms a meta map to a string representation.
 // The values are separated by ";".
-// Example: map["color"]"blue" => color_blue
-func SerializeMeta(ctx context.Context, m map[string]string, sep string) string {
+// Example: map["color"][]{"blue"} => color_blue
+func SerializeMeta(ctx context.Context, m map[string][]string) string {
 	slog.LogAttrs(ctx, slog.LevelInfo, "serializing the product meta", slog.Any("meta", m))
 
-	s := ""
-	for key, value := range m {
-		if s != "" {
-			s += sep
-		}
+	meta := []string{}
 
-		s += fmt.Sprintf("%s_%s", key, value)
+	for key, values := range m {
+		for _, val := range values {
+			meta = append(meta, key+"_"+val)
+		}
 	}
+
+	s := strings.Join(meta, ";")
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "serialize done successfully", slog.String("serialized", s))
 
@@ -466,13 +471,13 @@ func SerializeMeta(ctx context.Context, m map[string]string, sep string) string 
 // UnSerializeMeta transform the meta serialized to a map.
 // The values are separated by ";".
 // Example: color_blue => map["color"]"blue"
-func UnSerializeMeta(ctx context.Context, s, sep string) map[string]string {
+func UnSerializeMeta(ctx context.Context, s string) map[string][]string {
 	if s == "" {
-		return map[string]string{}
+		return map[string][]string{}
 	}
 
-	values := strings.Split(s, sep)
-	meta := map[string]string{}
+	values := strings.Split(s, ";")
+	meta := map[string][]string{}
 
 	for _, value := range values {
 		parts := strings.Split(value, "_")
@@ -482,7 +487,7 @@ func UnSerializeMeta(ctx context.Context, s, sep string) map[string]string {
 			continue
 		}
 
-		meta[parts[0]] = parts[1]
+		meta[parts[0]] = append(meta[parts[0]], parts[1])
 	}
 
 	return meta
