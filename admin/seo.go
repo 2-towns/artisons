@@ -83,6 +83,10 @@ func (f seoFeature) ID(ctx context.Context, id string) (interface{}, error) {
 	return id, nil
 }
 
+func (f seoFeature) Validate(ctx context.Context, r *http.Request, data seo.Content) error {
+	return nil
+}
+
 func (data seoFeature) Digest(ctx context.Context, r *http.Request) (seo.Content, error) {
 	key := chi.URLParam(r, "id")
 
@@ -112,12 +116,12 @@ func SeoList(w http.ResponseWriter, r *http.Request) {
 }
 
 func SeoForm(w http.ResponseWriter, r *http.Request) {
-	data := httpext.DigestForm[seo.Content](w, r, httpext.Form[seo.Content]{
+	data, err := httpext.DigestForm[seo.Content](w, r, httpext.Form[seo.Content]{
 		Name:    seoName,
 		Feature: seoFeature{},
 	})
 
-	if data.Page == "" {
+	if err != nil {
 		return
 	}
 

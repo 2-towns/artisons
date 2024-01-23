@@ -17,12 +17,12 @@ import (
 )
 
 type Filter struct {
-	Key    string `validate:"required"`
-	Type   string `validate:"required,oneof=list color"`
-	Label  string `validate:"required"`
-	Score  int
-	Values []string
-	Active bool
+	Key      string `validate:"required,alphanum"`
+	Editable bool
+	Label    string `validate:"required"`
+	Score    int
+	Values   []string
+	Active   bool
 
 	UpdatedAt time.Time
 }
@@ -62,19 +62,44 @@ func Exists(ctx context.Context, key string) (bool, error) {
 	return exists > 0, nil
 }
 
+func Editable(ctx context.Context, key string) (bool, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "checking editable", slog.String("key", key))
+
+	editable, err := db.Redis.HGet(ctx, "filter:"+key, "editable").Result()
+
+	if err != nil && err.Error() != "redis: nil" {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot check filter editable")
+		return false, errors.New("something went wrong")
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "filter is editable", slog.Bool("eligible", editable == "1"))
+
+	return editable == "1", nil
+}
+
 func (f Filter) Save(ctx context.Context) (string, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "creating a filter")
 
 	now := time.Now().Unix()
 
+	editable, err := Editable(ctx, f.Key)
+	if err != nil {
+		return "", err
+	}
+
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, fmt.Sprintf("filter:%s", f.Key),
-			"key", f.Key,
-			"type", f.Type,
+		k := fmt.Sprintf("filter:%s", f.Key)
+		rdb.HSet(ctx, k,
 			"label", f.Label,
-			"values", strings.Join(f.Values, ";"),
 			"updated_at", now,
 		)
+
+		if editable {
+			rdb.HSet(ctx, k, "values", strings.Join(f.Values, ";"))
+		}
+
+		rdb.HSetNX(ctx, k, "key", f.Key)
+		rdb.HSetNX(ctx, k, "editable", "1")
 
 		rdb.ZAdd(ctx, "filters", redis.Z{
 			Score:  float64(now),
@@ -110,7 +135,7 @@ func parse(ctx context.Context, data map[string]string) (Filter, error) {
 
 	filter := Filter{
 		Key:       data["key"],
-		Type:      data["type"],
+		Editable:  data["editable"] == "1",
 		Label:     data["label"],
 		Values:    strings.Split(data["values"], ";"),
 		UpdatedAt: time.Unix(updatedAt, 0),
@@ -119,11 +144,60 @@ func parse(ctx context.Context, data map[string]string) (Filter, error) {
 	return filter, nil
 }
 
+func Actives(ctx context.Context) ([]Filter, error) {
+	l := slog.With()
+	l.LogAttrs(ctx, slog.LevelInfo, "looking for filters")
+
+	actives, err := db.Redis.ZRevRange(ctx, "filters:active", 0, 9999).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the active filter keys")
+		return []Filter{}, errors.New("something went wrong")
+	}
+
+	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+		for _, k := range actives {
+			rdb.HGetAll(ctx, "filter:"+k)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the filters")
+		return []Filter{}, errors.New("something went wrong")
+	}
+
+	filters := []Filter{}
+
+	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the filter", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
+		val := cmd.(*redis.MapStringStringCmd).Val()
+
+		filter, err := parse(ctx, val)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the filter", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
+		filter.Active = slices.Contains(actives, filter.Key)
+
+		filters = append(filters, filter)
+	}
+
+	return filters, nil
+}
+
 func List(ctx context.Context, offset, num int) (ListResults, error) {
 	l := slog.With()
 	l.LogAttrs(ctx, slog.LevelInfo, "looking for filters")
 
-	keys, err := db.Redis.ZRange(ctx, "filters", int64(offset), int64(num)).Result()
+	keys, err := db.Redis.ZRevRange(ctx, "filters", int64(offset), int64(num)).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the filter keys")
 		return ListResults{}, errors.New("something went wrong")

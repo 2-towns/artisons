@@ -188,6 +188,39 @@
 				<div id="tags-error"></div>
 			</div>
 
+			{{range $_, $f := .Extra.Filters}}
+			<div class="form-row" id="{{$f.Key}}-row">
+				<label for="{{$f.Key}}" class="input-label filter-label">
+					{{translate $.Lang $f.Key}} -
+					<i> {{translate $.Lang "Optional"}}</i>
+				</label>
+
+				<div class="row row-align row-gap">
+					{{range $i, $v := $f.Values}}
+					<input
+						   type="checkbox"
+						   name="{{$f.Key}}"
+						   value="{{$v}}"
+						   class="hide"
+						   id="{{$f.Key}}-{{$i}}"
+						   {{if contains (index $.Data.Meta $f.Key) $v}}checked{{end}} />
+					{{if eq $f.Key "colors"}}
+					<label for="{{$f.Key}}-{{$i}}" class="input-color input-color-{{$v}}">
+					</label>
+					{{else}}
+					<label for="{{$f.Key}}-{{$i}}" class="input-filter">
+						{{$v}}
+					</label>
+					{{end}}
+
+					{{end}}
+					</label>
+				</div>
+
+				<div id="{{.Key}}-error"></div>
+			</div>
+			{{end}}
+
 			<div class="form-row" id="image_1-row">
 				<label for="image_1" class="input-label">
 					{{translate .Lang "Image"}} 1

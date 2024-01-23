@@ -221,6 +221,9 @@ func LoadEn() {
 	message.SetString(language.English, "If enabled, the filter will be available on the product details on the website.", "If enabled, the filter will be available on the product details on the website.")
 	message.SetString(language.English, "Yes", "Yes")
 	message.SetString(language.English, "No", "No")
+	message.SetString(language.English, "Editable", "Editable")
 	message.SetString(language.English, "the children cannot be root tags", "The children cannot be root tags.")
+	message.SetString(language.English, "the filter cannot be editable", "The filter cannot be editable.")
+	message.SetString(language.English, "Non editable", "Non editable")
 
 }

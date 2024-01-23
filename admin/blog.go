@@ -153,6 +153,10 @@ func (f blogFeature) UpdateImage(a *blogs.Article, key, image string) {
 	a.Image = image
 }
 
+func (f blogFeature) Validate(ctx context.Context, r *http.Request, data blogs.Article) error {
+	return nil
+}
+
 func BlogSave(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestSave[blogs.Article](w, r, httpext.Save[blogs.Article]{
 		Name:    blogName,
@@ -173,12 +177,12 @@ func BlogList(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogForm(w http.ResponseWriter, r *http.Request) {
-	data := httpext.DigestForm[blogs.Article](w, r, httpext.Form[blogs.Article]{
+	data, err := httpext.DigestForm[blogs.Article](w, r, httpext.Form[blogs.Article]{
 		Name:    blogName,
 		Feature: blogFeature{},
 	})
 
-	if data.Page == "" {
+	if err != nil {
 		return
 	}
 

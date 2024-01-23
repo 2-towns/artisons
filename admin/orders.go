@@ -120,12 +120,12 @@ func OrdersList(w http.ResponseWriter, r *http.Request) {
 }
 
 func OrdersForm(w http.ResponseWriter, r *http.Request) {
-	data := httpext.DigestForm[orders.Order](w, r, httpext.Form[orders.Order]{
+	data, err := httpext.DigestForm[orders.Order](w, r, httpext.Form[orders.Order]{
 		Name:    ordersName,
 		Feature: ordersFeature{},
 	})
 
-	if data.Page == "" {
+	if err != nil {
 		return
 	}
 

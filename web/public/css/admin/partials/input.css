@@ -155,3 +155,81 @@ input[type="checkbox"]:checked~.input-link {
 .ts-dropdown .active.create {
 	color: white;
 }
+
+.filter-label {
+	text-transform: capitalize;
+}
+
+.input-color {
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+}
+
+
+input[type="checkbox"]:checked+.input-color {
+	border-color: var(--input-border-color-focus);
+	box-shadow: var(--input-shadow);
+}
+
+.input-color-black {
+	background-color: black
+}
+
+.input-color-blue {
+	background-color: blue
+}
+
+.input-color-brown {
+	background-color: brown
+}
+
+.input-color-gray {
+	background-color: gray
+}
+
+.input-color-green {
+	background-color: green
+}
+
+.input-color-orange {
+	background-color: orange
+}
+
+.input-color-pink {
+	background-color: pink
+}
+
+.input-color-purple {
+	background-color: purple
+}
+
+.input-color-purple {
+	background-color: purple
+}
+
+.input-color-red {
+	background-color: red
+}
+
+.input-color-white {
+	background-color: white
+}
+
+.input-color-yellow {
+	background-color: yellow;
+}
+
+.input-filter {
+	padding: calc(var(--spacing) / 2) var(--spacing);
+	border: 1px solid var(--border-color);
+	cursor: pointer;
+}
+
+input[type="checkbox"]:checked+.input-filter {
+	border-color: var(--primary);
+	background-color: var(--background-color);
+	color: var(--primary);
+}

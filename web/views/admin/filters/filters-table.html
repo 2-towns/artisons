@@ -4,9 +4,9 @@
             <thead class="thead">
                 <tr class="tr">
                     <th class="th">{{translate .Lang "Key"}}</th>
-                    <th class="th">{{translate .Lang "Type"}}</th>
                     <th class="th">{{translate .Lang "Values"}}</th>
                     <th class="th">{{translate .Lang "Active"}}</th>
+                    <th class="th">{{translate .Lang "Editable"}}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -23,7 +23,6 @@
                 {{ range .Items}}
                 <tr class="tr">
                     <td class="box td" hx-disable>{{.Key}}</td>
-                    <td class="box td" hx-disable>{{.Type}}</td>
                     <td class="box td" hx-disable>{{join .Values ","}}</td>
                     <td class="box td" hx-disable>
                         <div class="row row-align row-gap">
@@ -40,6 +39,22 @@
                             {{end}}
                         </div>
                     </td>
+                    <td class="box td" hx-disable>
+                        <div class="row row-align row-gap">
+                            {{ if .Editable}}
+
+                            <span class="table-badge table-badge-success"></span>
+                            {{translate $.Lang "Editable"}}
+
+                            {{else}}
+
+                            <span class="table-badge table-badge-danger"></span>
+                            {{translate $.Lang "Non editable"}}
+
+                            {{end}}
+                        </div>
+                    </td>
+
                     <td class="box td">
                         <div class="row row-align row-gap">
                             <a
@@ -48,6 +63,7 @@
                                 <span class="button-icon"> {{template "edit.svg"}} </span>
                             </a>
 
+                            {{if .Editable}}
                             <label for="destroy-{{.Key}}" class="table-label">
                                 <input
                                        type="checkbox"
@@ -72,6 +88,7 @@
                                     </span>
                                 </a>
                             </label>
+                            {{end}}
                         </div>
                     </td>
                 </tr>

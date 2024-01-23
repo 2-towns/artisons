@@ -9,6 +9,7 @@ import (
 	"gifthub/http/httperrors"
 	"gifthub/http/httpext"
 	"gifthub/products"
+	"gifthub/products/filters"
 	"gifthub/tags"
 	"gifthub/templates"
 	"html/template"
@@ -138,6 +139,17 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 		status = "offline"
 	}
 
+	filters, err := filters.Actives(ctx)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the filters", slog.String("error", err.Error()))
+		return products.Product{}, errors.New("something went wrong")
+	}
+
+	meta := map[string][]string{}
+	for _, val := range filters {
+		meta[val.Key] = r.Form[val.Key]
+	}
+
 	p := products.Product{
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
@@ -148,6 +160,7 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 		Discount:    discount,
 		Weight:      weight,
 		Quantity:    int(quantity),
+		Meta:        meta,
 	}
 
 	if r.FormValue("image_2_delete") != "" {
@@ -196,6 +209,10 @@ func (f productsFeature) UpdateImage(p *products.Product, key, image string) {
 	}
 }
 
+func (f productsFeature) Validate(ctx context.Context, r *http.Request, data products.Product) error {
+	return nil
+}
+
 func ProductSave(w http.ResponseWriter, r *http.Request) {
 	httpext.DigestSave[products.Product](w, r, httpext.Save[products.Product]{
 		Name:    productsName,
@@ -216,12 +233,12 @@ func ProductList(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProductForm(w http.ResponseWriter, r *http.Request) {
-	data := httpext.DigestForm[products.Product](w, r, httpext.Form[products.Product]{
+	data, err := httpext.DigestForm[products.Product](w, r, httpext.Form[products.Product]{
 		Name:    productsName,
 		Feature: productsFeature{},
 	})
 
-	if data.Page == "" {
+	if err != nil {
 		return
 	}
 
@@ -231,7 +248,18 @@ func ProductForm(w http.ResponseWriter, r *http.Request) {
 		httperrors.Catch(w, ctx, err.Error(), 500)
 	}
 
-	data.Extra = t
+	f, err := filters.Actives(ctx)
+	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
+	}
+
+	data.Extra = struct {
+		Tags    []tags.Tag
+		Filters []filters.Filter
+	}{
+		t.Tags,
+		f,
+	}
 
 	if err := productsFormTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))

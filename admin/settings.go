@@ -123,6 +123,10 @@ func (data settingsShopFeature) Digest(ctx context.Context, r *http.Request) (sh
 	return s, nil
 }
 
+func (f settingsContactFeature) Validate(ctx context.Context, r *http.Request, data shops.Contact) error {
+	return nil
+}
+
 func (data settingsContactFeature) Digest(ctx context.Context, r *http.Request) (shops.Contact, error) {
 	s := shops.Contact{
 		Name:    r.FormValue("name"),
@@ -173,13 +177,17 @@ func (f settingsShopFeature) UpdateImage(a *shops.ShopSettings, key, image strin
 
 }
 
+func (f settingsShopFeature) Validate(ctx context.Context, r *http.Request, data shops.ShopSettings) error {
+	return nil
+}
+
 func SettingsForm(w http.ResponseWriter, r *http.Request) {
-	data := httpext.DigestForm[shops.Settings](w, r, httpext.Form[shops.Settings]{
+	data, err := httpext.DigestForm[shops.Settings](w, r, httpext.Form[shops.Settings]{
 		Name:    settingsName,
 		Feature: settingsFeature{},
 	})
 
-	if data.Page == "" {
+	if err != nil {
 		return
 	}
 

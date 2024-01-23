@@ -81,23 +81,24 @@ func Exists(ctx context.Context, key string) (bool, error) {
 	return exists > 0, nil
 }
 
-func AreEligible(ctx context.Context, keys []string) error {
+func AreEligible(ctx context.Context, keys []string) (bool, error) {
 	l := slog.With(slog.Any("tag", keys))
 	l.LogAttrs(ctx, slog.LevelInfo, "looking if keys are root tags")
 
 	roots, err := db.Redis.ZRange(ctx, "tags:root", 0, 9999).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the root tags", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
+		return false, errors.New("something went wrong")
 	}
 
 	for _, val := range keys {
 		if slices.Contains(roots, val) {
-			return errors.New("the children cannot be root tags")
+			slog.LogAttrs(ctx, slog.LevelInfo, "the tag is not eligible", slog.String("tag", val))
+			return false, nil
 		}
 	}
 
-	return nil
+	return true, nil
 
 }
 
@@ -110,12 +111,13 @@ func (t Tag) Save(ctx context.Context) (string, error) {
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, "tag:"+t.Key,
-			"key", t.Key,
 			"image", t.Image,
 			"children", children,
 			"label", t.Label,
 			"updated_at", now.Unix(),
 		)
+
+		rdb.HSetNX(ctx, "tag:"+t.Key, "key", t.Key)
 
 		rdb.ZAdd(ctx, "tags", redis.Z{
 			Score:  float64(t.UpdatedAt.Unix()),
@@ -211,7 +213,7 @@ func Find(ctx context.Context, key string) (Tag, error) {
 func List(ctx context.Context, offset, num int) (ListResults, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "listing tags")
 
-	keys, err := db.Redis.ZRange(ctx, "tags", int64(offset), int64(num)).Result()
+	keys, err := db.Redis.ZRevRange(ctx, "tags", int64(offset), int64(num)).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
 		return ListResults{}, errors.New("something went wrong")

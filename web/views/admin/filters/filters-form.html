@@ -50,8 +50,6 @@
                        required
                        class="input input-full"
                        value="{{if .Data.Label }}{{.Data.Label}}{{end}}" />
-
-
                 <small class="input-help">
                     {{translate .Lang "Define the text displayed on the website."}}
                 </small>
@@ -64,8 +62,8 @@
                     {{translate .Lang "Values"}}
                 </label>
 
-
                 <select
+                        {{if .Data.Editable }}{{else}}disabled{{end}}
                         id="values"
                         name="values"
                         multiple
@@ -75,7 +73,6 @@
                     <option {{if contains $.Data.Values .}}selected="true" {{end}}>{{.}}</option>
                     {{end}}
                 </select>
-
 
                 <small class="input-help">
                     {{translate .Lang "The first letter will be automatically capitalized on the website."}}

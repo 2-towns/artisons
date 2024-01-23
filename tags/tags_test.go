@@ -230,15 +230,15 @@ func TestTreeReturnsTags(t *testing.T) {
 func TestEligibleReturnsNilWhenTagsAreNotRooot(t *testing.T) {
 	c := tests.Context()
 
-	if err := AreEligible(c, []string{"clothes", "shoes"}); err != nil {
-		t.Fatalf(`AreEligible(c, []string{"clothes", "shoes"}) = %v, want nil`, err)
+	if eligible, err := AreEligible(c, []string{"clothes", "shoes"}); !eligible || err != nil {
+		t.Fatalf(`AreEligible(c, []string{"clothes", "shoes"}) = %v, %v, want true, nil`, eligible, err)
 	}
 }
 
 func TestEligibleReturnsErrorWhenTagsAreRoot(t *testing.T) {
 	c := tests.Context()
 
-	if err := AreEligible(c, []string{"mens"}); err == nil || err.Error() != "the children cannot be root tags" {
-		t.Fatalf(`AreEligible(c, []string{"mens"}) = %v, want "the children cannot be root tags"`, err)
+	if eligible, err := AreEligible(c, []string{"mens"}); eligible || err != nil {
+		t.Fatalf(`AreEligible(c, []string{"mens"}) = %v, %v, want false, nil`, eligible, err)
 	}
 }

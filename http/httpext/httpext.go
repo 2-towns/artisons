@@ -126,6 +126,7 @@ type DeleteFeature[T Entity] interface {
 type DigestFeature[T Entity] interface {
 	IsImageRequired(e T, key string) bool
 	Digest(ctx context.Context, r *http.Request) (T, error)
+	Validate(ctx context.Context, r *http.Request, data T) error
 	UpdateImage(e *T, key, image string)
 }
 
@@ -262,6 +263,12 @@ func DigestSave[T Entity](w http.ResponseWriter, r *http.Request, f Save[T]) {
 		return
 	}
 
+	err = f.Feature.Validate(ctx, r, data)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
 	filepaths := []string{}
 
 	for _, filename := range f.Images {
@@ -315,7 +322,7 @@ func DigestSave[T Entity](w http.ResponseWriter, r *http.Request, f Save[T]) {
 	w.Write([]byte(""))
 }
 
-func DigestForm[T any](w http.ResponseWriter, r *http.Request, f Form[T]) form[T] {
+func DigestForm[T any](w http.ResponseWriter, r *http.Request, f Form[T]) (form[T], error) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	id := chi.URLParam(r, "id")
@@ -326,14 +333,14 @@ func DigestForm[T any](w http.ResponseWriter, r *http.Request, f Form[T]) form[T
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
 		httperrors.Page(w, ctx, "oops the data is not found", 404)
-		return form[T]{}
+		return form[T]{}, err
 	}
 
 	if fid != "" && fid != 0 {
 		item, err = f.Feature.Find(ctx, fid)
 		if err != nil {
 			httperrors.Page(w, ctx, "oops the data is not found", 404)
-			return form[T]{}
+			return form[T]{}, err
 		}
 	}
 
@@ -346,7 +353,7 @@ func DigestForm[T any](w http.ResponseWriter, r *http.Request, f Form[T]) form[T
 		"",
 	}
 
-	return data
+	return data, nil
 }
 
 func DigestDelete[T Entity](w http.ResponseWriter, r *http.Request, f Delete[T]) {

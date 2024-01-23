@@ -12,7 +12,7 @@ import (
 
 var filter Filter = Filter{
 	Key:       "color",
-	Type:      "color",
+	Editable:  true,
 	Label:     "color",
 	Score:     1,
 	Values:    []string{"yellow", "blue"},
@@ -26,12 +26,14 @@ func init() {
 	db.Redis.HSet(ctx, "filter:colors",
 		"key", filter.Key,
 		"label", filter.Label,
+		"editable", "0",
 		"values", strings.Join(filter.Values, ";"),
 		"updated_at", filter.UpdatedAt.Unix(),
 	)
 
 	db.Redis.HSet(ctx, "filter:sizes",
 		"key", "sizes",
+		"editable", "1",
 		"label", "Sizes",
 		"values", "S;M;L",
 		"updated_at", time.Now().Unix(),
@@ -62,25 +64,14 @@ func TestValidateReturnsErrorWhenTheKeyIsEmpty(t *testing.T) {
 	}
 }
 
-func TestValidateReturnsErrorWhenTypeIsEmpty(t *testing.T) {
+func TestValidateReturnsErrorWhenTheKeyIsInvalid(t *testing.T) {
 	c := tests.Context()
 
 	f := filter
-	f.Type = ""
+	f.Key = "hello!"
 
-	if err := f.Validate(c); err == nil || err.Error() != "input:type" {
-		t.Fatalf(`ta.Validate(c) = %v, want 'input:type'`, err.Error())
-	}
-}
-
-func TestValidateReturnsErrorWhenTypeIsInvalid(t *testing.T) {
-	c := tests.Context()
-
-	f := filter
-	f.Type = "hello"
-
-	if err := f.Validate(c); err == nil || err.Error() != "input:type" {
-		t.Fatalf(`ta.Validate(c) = %v, want 'input:type'`, err.Error())
+	if err := f.Validate(c); err == nil || err.Error() != "input:key" {
+		t.Fatalf(`f.Validate(c) = %v, want 'input:key'`, err.Error())
 	}
 }
 
@@ -152,6 +143,25 @@ func TestListReturnsFilters(t *testing.T) {
 	}
 }
 
+func TestActivesReturnsFilters(t *testing.T) {
+	c := tests.Context()
+
+	filters, err := Actives(c)
+	if err != nil {
+		t.Fatalf(`Actives(c) = %v, want nil`, err)
+	}
+
+	if len(filters) == 0 {
+		t.Fatalf(`len(filters) = %d, want > 0`, len(filters))
+	}
+
+	filter := filters[0]
+
+	if filter.Key == "" {
+		t.Fatalf(`filter.Key = %s, want not empty`, filter.Key)
+	}
+}
+
 func TestDeleteReturnsErrorWhenKeyIsEmpty(t *testing.T) {
 	c := tests.Context()
 
@@ -171,7 +181,7 @@ func TestDeleteReturnsNilWhenSuccess(t *testing.T) {
 func TestExistsReturnsTrueWhenFilterDoesNotExist(t *testing.T) {
 	c := tests.Context()
 
-	if exists, err := Exists(c, "colors"); exists == false || err != nil {
+	if exists, err := Exists(c, "colors"); !exists || err != nil {
 		t.Fatalf(`Exists(c, "colors") = %v, %v, want true', nil`, exists, err)
 	}
 }
@@ -179,7 +189,31 @@ func TestExistsReturnsTrueWhenFilterDoesNotExist(t *testing.T) {
 func TestExistsReturnsFalseWhenFilterDoesNotExist(t *testing.T) {
 	c := tests.Context()
 
-	if exists, err := Exists(c, "hello"); exists == true || err != nil {
+	if exists, err := Exists(c, "hello"); exists || err != nil {
 		t.Fatalf(`Exists(c, "hello") = %v, %v, want false', nil`, exists, err)
+	}
+}
+
+func TestExistsReturnsFalseWhenFilterIsNotEditable(t *testing.T) {
+	c := tests.Context()
+
+	if editable, err := Editable(c, "colors"); editable || err != nil {
+		t.Fatalf(`Exists(c, "colors") = %v, %v, want false', nil`, editable, err)
+	}
+}
+
+func TestExistsReturnsTrueWhenFilterIsEditable(t *testing.T) {
+	c := tests.Context()
+
+	if editable, err := Editable(c, "sizes"); !editable || err != nil {
+		t.Fatalf(`Exists(c, "sizes") = %v, %v, want true', nil`, editable, err)
+	}
+}
+
+func TestExistsReturnsFalseWhenEditableFilterThatDoesNotExist(t *testing.T) {
+	c := tests.Context()
+
+	if editable, err := Editable(c, "hello!!"); editable || err != nil {
+		t.Fatalf(`Exists(c, "hello") = %v, %v, want false', nil`, editable, err)
 	}
 }

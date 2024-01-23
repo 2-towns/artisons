@@ -266,7 +266,7 @@ func (p Product) Save(ctx context.Context) (string, error) {
 		"mid", p.MID,
 		"tags", db.Escape(strings.Join(p.Tags, ";")),
 		// "links", db.Escape(strings.Join(p.Links, ";")),
-		// "meta", db.Escape(SerializeMeta(ctx, p.Meta, ";")),
+		"meta", db.Escape(SerializeMeta(ctx, p.Meta)),
 		"updated_at", now,
 	)
 

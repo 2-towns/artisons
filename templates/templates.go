@@ -100,6 +100,7 @@ func Build(name string) *template.Template {
 		"contains": func(values []string, value string) bool {
 			return slices.Contains(values, value)
 		},
+
 		"image": func(id, width, height string, cachebuster time.Time) string {
 			return images.URL(id, images.Options{
 				Width:       width,

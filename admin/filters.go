@@ -79,21 +79,24 @@ func (f filtersFeature) Search(ctx context.Context, q string, offset, num int) (
 	}, err
 }
 
-func (data filtersFeature) Digest(ctx context.Context, r *http.Request) (filters.Filter, error) {
+func (f filtersFeature) Validate(ctx context.Context, r *http.Request, data filters.Filter) error {
 	key := chi.URLParam(r, "id")
+
 	if key == "" {
 		key = r.FormValue("key")
-
 		exists, err := filters.Exists(ctx, key)
 		if err != nil {
-			return filters.Filter{}, err
+			return err
 		}
 
 		if exists {
-			return filters.Filter{}, errors.New("the filter exists already")
+			return errors.New("the filter exists already")
 		}
 	}
+	return nil
+}
 
+func (data filtersFeature) Digest(ctx context.Context, r *http.Request) (filters.Filter, error) {
 	var score int = 0
 	if r.FormValue("score") != "" {
 		val, err := strconv.ParseInt(r.FormValue("score"), 10, 64)
@@ -104,9 +107,9 @@ func (data filtersFeature) Digest(ctx context.Context, r *http.Request) (filters
 		score = int(val)
 	}
 
-	typ := "list"
-	if key == "colors" {
-		typ = "color"
+	key := chi.URLParam(r, "id")
+	if key == "" {
+		key = r.FormValue("key")
 	}
 
 	f := filters.Filter{
@@ -114,11 +117,8 @@ func (data filtersFeature) Digest(ctx context.Context, r *http.Request) (filters
 		Label:  r.FormValue("label"),
 		Score:  score,
 		Active: r.FormValue("active") == "on",
-		Type:   typ,
 		Values: r.Form["values"],
 	}
-
-	log.Println("label!!!!!!!!!!!!!!", r.Form)
 
 	return f, nil
 }
@@ -132,6 +132,15 @@ func (f filtersFeature) Find(ctx context.Context, id interface{}) (filters.Filte
 }
 
 func (f filtersFeature) Delete(ctx context.Context, id interface{}) error {
+	editable, err := filters.Editable(ctx, id.(string))
+	if err != nil {
+		return err
+	}
+
+	if !editable {
+		return errors.New("the filter cannot be editable")
+	}
+
 	return filters.Delete(ctx, id.(string))
 }
 
@@ -162,12 +171,12 @@ func FiltersList(w http.ResponseWriter, r *http.Request) {
 }
 
 func FiltersForm(w http.ResponseWriter, r *http.Request) {
-	data := httpext.DigestForm[filters.Filter](w, r, httpext.Form[filters.Filter]{
+	data, err := httpext.DigestForm[filters.Filter](w, r, httpext.Form[filters.Filter]{
 		Name:    filtersName,
 		Feature: filtersFeature{},
 	})
 
-	if data.Page == "" {
+	if err != nil {
 		return
 	}
 

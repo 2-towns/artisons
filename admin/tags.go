@@ -81,21 +81,33 @@ func (f tagsFeature) Search(ctx context.Context, q string, offset, num int) (htt
 	}, err
 }
 
-func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, error) {
+func (f tagsFeature) Validate(ctx context.Context, r *http.Request, data tags.Tag) error {
 	key := chi.URLParam(r, "id")
 	if key == "" {
-		key = r.FormValue("key")
-
+		key := r.FormValue("key")
 		exists, err := tags.Exists(ctx, key)
 		if err != nil {
-			return tags.Tag{}, err
+			return err
 		}
 
 		if exists {
-			return tags.Tag{}, errors.New("the tag exists already")
+			return errors.New("the tag exists already")
 		}
 	}
 
+	eligible, err := tags.AreEligible(ctx, data.Children)
+	if err != nil {
+		return err
+	}
+
+	if !eligible {
+		return errors.New("the children cannot be root tags")
+	}
+
+	return nil
+}
+
+func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, error) {
 	var score int = 0
 	if r.FormValue("score") != "" {
 		val, err := strconv.ParseInt(r.FormValue("score"), 10, 64)
@@ -106,16 +118,17 @@ func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, 
 		score = int(val)
 	}
 
+	key := chi.URLParam(r, "id")
+	if key == "" {
+		key = r.FormValue("key")
+	}
+
 	t := tags.Tag{
 		Key:      key,
 		Label:    r.FormValue("label"),
 		Children: r.MultipartForm.Value["children"],
 		Root:     r.FormValue("root") == "on",
 		Score:    score,
-	}
-
-	if err := tags.AreEligible(ctx, t.Children); err != nil {
-		return tags.Tag{}, err
 	}
 
 	return t, nil
@@ -160,12 +173,12 @@ func TagsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func TagsForm(w http.ResponseWriter, r *http.Request) {
-	data := httpext.DigestForm[tags.Tag](w, r, httpext.Form[tags.Tag]{
+	data, err := httpext.DigestForm[tags.Tag](w, r, httpext.Form[tags.Tag]{
 		Name:    tagsName,
 		Feature: tagsFeature{},
 	})
 
-	if data.Page == "" {
+	if err != nil {
 		return
 	}
 

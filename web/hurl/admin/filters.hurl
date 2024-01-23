@@ -25,18 +25,17 @@ HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/index.html"
 
-# Get the last id 
-GET {{host}}/admin/tags.html
+# Display the tags
+GET {{host}}/admin/filters.html
 HTTP 200
 [Asserts]
 body not contains "No results found." 
-[Captures]
-key: xpath "normalize-space((//tr)[1]/td)"
+xpath "//table/tbody/tr" count > 0
 
-# Destroy the tag
-POST {{host}}/admin/tags/{{key}}/delete.html
+# Access the tags with huge page shoes empty message
+GET {{host}}/admin/filters.html?page=100
 HX-Request: true
-User-Agent: {{ua}}
 HTTP 200
 [Asserts]
-xpath "//td[text()='{{key}}']" not exists
+body contains "No results found." 
+
