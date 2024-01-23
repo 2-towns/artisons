@@ -5,6 +5,7 @@
                 <tr class="tr">
                     <th class="th">{{translate .Lang "Key"}}</th>
                     <th class="th">{{translate .Lang "Children"}}</th>
+                    <th class="th">{{translate .Lang "Root"}}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -22,6 +23,21 @@
                 <tr class="tr">
                     <td class="box td" hx-disable>{{.Key}}</td>
                     <td class="box td" hx-disable>{{join .Children ","}}</td>
+                    <td class="box td" hx-disable>
+                        <div class="row row-align row-gap">
+                            {{ if .Root }}
+
+                            <span class="table-badge table-badge-success"></span>
+                            {{translate $.Lang "Yes"}}
+
+                            {{else}}
+
+                            <span class="table-badge table-badge-danger"></span>
+                            {{translate $.Lang "No"}}
+
+                            {{end}}
+                        </div>
+                    </td>
                     <td class="box td">
                         <div class="row row-align row-gap">
                             <a

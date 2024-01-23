@@ -85,6 +85,18 @@ HTTP 200
 xpath "//div[@class='alert alert-danger box']" exists 
 xpath "normalize-space(//p[@class='alert-message']/text())" == "The tag exists already." 
 
+# Adding the tags with root children key shows an error 
+POST {{host}}/admin/tags/add.html
+HX-Request: true
+[MultipartFormData]
+key: books3{{time}}
+label: Books
+children: womens
+HTTP 200
+[Asserts]
+xpath "//div[@class='alert alert-danger box']" exists 
+xpath "normalize-space(//p[@class='alert-message']/text())" == "The children cannot be root tags." 
+
 # Adding the tags with correct data works
 POST {{host}}/admin/tags/add.html
 HX-Request: true

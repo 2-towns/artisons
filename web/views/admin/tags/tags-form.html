@@ -76,7 +76,9 @@
                         class="input input-full tags">
                     <option></option>
                     {{range .Extra.Tags}}
+                    {{if eq .Root false}}
                     <option {{if contains $.Data.Children .Key}}selected="true" {{end}}>{{.Key}}</option>
+                    {{end}}
                     {{end}}
                 </select>
 
@@ -125,7 +127,6 @@
                        type="number"
                        class="input input-full"
                        value="{{if .Data.Score }}{{.Data.Score}}{{end}}" />
-
 
                 <small class="input-help">
                     {{translate .Lang "Define the score inside the root tag list."}}

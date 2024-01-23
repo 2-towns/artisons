@@ -114,6 +114,10 @@ func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, 
 		Score:    score,
 	}
 
+	if err := tags.AreEligible(ctx, t.Children); err != nil {
+		return tags.Tag{}, err
+	}
+
 	return t, nil
 }
 

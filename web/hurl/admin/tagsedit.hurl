@@ -50,6 +50,18 @@ header "HX-Retarget" == "#score-error"
 header "HX-Reswap" == "innerHTML show:#score-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
+# Editing the tags with root children key shows an error 
+POST {{host}}/admin/tags/mens/edit.html
+HX-Request: true
+[MultipartFormData]
+key: mens
+label: Books
+children: womens
+HTTP 200
+[Asserts]
+xpath "//div[@class='alert alert-danger box']" exists 
+xpath "normalize-space(//p[@class='alert-message']/text())" == "The children cannot be root tags." 
+
 # Editing the tags with correct data works
 POST {{host}}/admin/tags/mens/edit.html
 HX-Request: true

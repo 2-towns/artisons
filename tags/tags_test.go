@@ -20,6 +20,7 @@ func init() {
 	ctx := tests.Context()
 
 	db.Redis.Del(ctx, "tags")
+	db.Redis.Del(ctx, "tags:root")
 	db.Redis.HSet(ctx, "tag",
 		"mens", "clothes;shoes",
 		"womens", "clothes;shoes",
@@ -33,12 +34,25 @@ func init() {
 	db.Redis.ZAdd(ctx, "tags", redis.Z{
 		Score:  float64(1),
 		Member: "mens",
+	}, redis.Z{
+		Score:  float64(2),
+		Member: "womens",
+	}, redis.Z{
+		Score:  float64(2),
+		Member: "shoes",
+	}, redis.Z{
+		Score:  float64(2),
+		Member: "clothes",
 	})
 
-	db.Redis.ZAdd(ctx, "tags", redis.Z{
+	db.Redis.ZAdd(ctx, "tags:root", redis.Z{
+		Score:  float64(1),
+		Member: "mens",
+	}, redis.Z{
 		Score:  float64(2),
 		Member: "womens",
 	})
+
 }
 
 func TestValidateReturnsErrorWhenTheKeyIsEmpty(t *testing.T) {
@@ -210,5 +224,21 @@ func TestTreeReturnsTags(t *testing.T) {
 
 	if womens.Branches[1].Key != "shoes" {
 		t.Fatalf(`womens.Branches[0].Name = %v, want 'shoes'`, womens.Branches[1].Key)
+	}
+}
+
+func TestEligibleReturnsNilWhenTagsAreNotRooot(t *testing.T) {
+	c := tests.Context()
+
+	if err := AreEligible(c, []string{"clothes", "shoes"}); err != nil {
+		t.Fatalf(`AreEligible(c, []string{"clothes", "shoes"}) = %v, want nil`, err)
+	}
+}
+
+func TestEligibleReturnsErrorWhenTagsAreRoot(t *testing.T) {
+	c := tests.Context()
+
+	if err := AreEligible(c, []string{"mens"}); err == nil || err.Error() != "the children cannot be root tags" {
+		t.Fatalf(`AreEligible(c, []string{"mens"}) = %v, want "the children cannot be root tags"`, err)
 	}
 }
