@@ -1,4 +1,4 @@
-package blogs
+package blog
 
 import (
 	"gifthub/conf"
@@ -21,6 +21,7 @@ func init() {
 	ctx := tests.Context()
 	now := time.Now()
 
+	db.Redis.Del(ctx, "blog")
 	db.Redis.HSet(ctx, "blog:99",
 		"id", "99",
 		"title", article.Title,
@@ -28,8 +29,8 @@ func init() {
 		"lang", conf.DefaultLocale.String(),
 		"description", article.Description,
 		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
-		"online", "1",
 		"updated_at", now.Unix(),
+		"type", "blog",
 	)
 
 	db.Redis.HSet(ctx, "blog:98",
@@ -39,7 +40,17 @@ func init() {
 		"lang", conf.DefaultLocale.String(),
 		"description", article.Description,
 		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
-		"online", "1",
+		"type", "blog",
+		"updated_at", now.Unix(),
+	)
+
+	db.Redis.HSet(ctx, "blog:97",
+		"id", "97",
+		"title", "Terms of Sales",
+		"status", "online",
+		"lang", conf.DefaultLocale.String(),
+		"description", "Hello !",
+		"type", "cms",
 		"updated_at", now.Unix(),
 	)
 }
@@ -80,7 +91,7 @@ func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 	c := tests.Context()
 	a, err := Search(c, Query{Keywords: "Mangez de l'ail"}, 0, 10)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Keywords: "Manger de l'ail"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: "Mangez de l'ail"}) = %v, want nil`, err.Error())
 	}
 
 	if a.Total == 0 {
@@ -118,9 +129,9 @@ func TestSearchReturnsArticlesWhenAtLeastOneMatching(t *testing.T) {
 
 func TestSearchReturnsNoArticleWhenNoMatchi(t *testing.T) {
 	c := tests.Context()
-	a, err := Search(c, Query{Keywords: "hello world"}, 0, 10)
+	a, err := Search(c, Query{Keywords: "crazy world"}, 0, 10)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Keywords: ""hello world"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: ""crazy world"}) = %v, want nil`, err.Error())
 	}
 
 	if a.Total > 0 {
@@ -154,9 +165,9 @@ func TestSearchReturnsArticlesWhenDescriptionIsFound(t *testing.T) {
 
 func TestSearchReturnsNoArticleWhenCriteriaDoNotMatch(t *testing.T) {
 	c := tests.Context()
-	a, err := Search(c, Query{Keywords: "hello"}, 0, 10)
+	a, err := Search(c, Query{Keywords: "crazy"}, 0, 10)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Keywords: "hello"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: "crazy"}) = %v, want nil`, err.Error())
 	}
 
 	if a.Total != 0 {
@@ -207,5 +218,21 @@ func TestFindReturnsArticleWhenSuccess(t *testing.T) {
 
 	if p.Image == "" {
 		t.Fatalf(`p.Image = %v, want string`, p.Image)
+	}
+}
+
+func TestDeletableReturnsFalseWhenTypeIsCms(t *testing.T) {
+	c := tests.Context()
+
+	if deletable, err := Deletable(c, 97); deletable || err != nil {
+		t.Fatalf(`Deletable(c, 97) = %v, %v, want false', nil`, deletable, err)
+	}
+}
+
+func TestDeletableReturnsFalseWhenTypeIsBlog(t *testing.T) {
+	c := tests.Context()
+
+	if deletable, err := Deletable(c, 99); !deletable || err != nil {
+		t.Fatalf(`Deletable(c, c) = %v, %v, want true', nil`, !deletable, err)
 	}
 }

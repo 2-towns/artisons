@@ -1,5 +1,5 @@
 // blogs contains the function related to the content creation for a blog
-package blogs
+package blog
 
 import (
 	"context"
@@ -22,6 +22,7 @@ import (
 type Article struct {
 	ID          int
 	Title       string `validate:"required"`
+	Type        string
 	Slug        string
 	Description string `validate:"required"`
 	Status      string `redis:"status" validate:"oneof=online offline"`
@@ -41,6 +42,22 @@ type SearchResults struct {
 type Query struct {
 	Keywords string
 	Lang     string
+	Type     string
+}
+
+func Deletable(ctx context.Context, id int) (bool, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "checking deletable", slog.Int("key", id))
+
+	typ, err := db.Redis.HGet(ctx, fmt.Sprintf("blog:%d", id), "type").Result()
+
+	if err != nil && err.Error() != "redis: nil" {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot check blog deletable")
+		return false, errors.New("something went wrong")
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "filter is deletable", slog.Bool("deletable", typ == "blog"))
+
+	return typ == "blog", nil
 }
 
 func (p Article) Validate(ctx context.Context) error {
@@ -114,6 +131,7 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 		Slug:        data["slug"],
 		Status:      data["status"],
 		Image:       data["image"],
+		Type:        data["type"],
 		UpdatedAt:   time.Unix(updatedAt, 0),
 	}
 
@@ -132,6 +150,10 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 
 	if q.Lang != "" {
 		qs += fmt.Sprintf("(@lang:{%s})", q.Lang)
+	}
+
+	if q.Type != "" {
+		qs += fmt.Sprintf("(@type:{%s})", q.Type)
 	}
 
 	qs += fmt.Sprintf(" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)

@@ -205,7 +205,7 @@ func TestExistsReturnsFalseWhenFilterDoesNotExist(t *testing.T) {
 	}
 }
 
-func TestExistsReturnsFalseWhenFilterIsNotEditable(t *testing.T) {
+func TestEditableReturnsFalseWhenFilterIsNotEditable(t *testing.T) {
 	c := tests.Context()
 
 	if editable, err := Editable(c, "colors"); editable || err != nil {
@@ -213,7 +213,7 @@ func TestExistsReturnsFalseWhenFilterIsNotEditable(t *testing.T) {
 	}
 }
 
-func TestExistsReturnsTrueWhenFilterIsEditable(t *testing.T) {
+func TestEditableReturnsTrueWhenFilterIsEditable(t *testing.T) {
 	c := tests.Context()
 
 	if editable, err := Editable(c, "sizes"); !editable || err != nil {
@@ -221,7 +221,7 @@ func TestExistsReturnsTrueWhenFilterIsEditable(t *testing.T) {
 	}
 }
 
-func TestExistsReturnsFalseWhenEditableFilterThatDoesNotExist(t *testing.T) {
+func TestEditableReturnsFalseWhenEditableFilterThatDoesNotExist(t *testing.T) {
 	c := tests.Context()
 
 	if editable, err := Editable(c, "hello!!"); editable || err != nil {

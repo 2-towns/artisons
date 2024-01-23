@@ -3,7 +3,7 @@ package admin
 import (
 	"context"
 	"errors"
-	"gifthub/blogs"
+	"gifthub/blog"
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
@@ -18,7 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const blogName = "Blog"
+const blogName = "CMS"
 const blogURL = "/admin/blog.html"
 const blogFolder = "blog"
 
@@ -81,31 +81,32 @@ func (f blogFeature) ListTemplate(ctx context.Context) *template.Template {
 	return blogTpl
 }
 
-func (f blogFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[blogs.Article], error) {
-	query := blogs.Query{}
+func (f blogFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[blog.Article], error) {
+	query := blog.Query{}
 	if q != "" {
 		query.Keywords = db.Escape(q)
 	}
 
-	res, err := blogs.Search(ctx, query, offset, num)
+	res, err := blog.Search(ctx, query, offset, num)
 
-	return httpext.SearchResults[blogs.Article]{
+	return httpext.SearchResults[blog.Article]{
 		Total: res.Total,
 		Items: res.Articles,
 	}, err
 }
 
-func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blogs.Article, error) {
+func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blog.Article, error) {
 	status := "online"
 
 	if r.FormValue("status") != "on" {
 		status = "offline"
 	}
 
-	a := blogs.Article{
+	a := blog.Article{
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
 		Status:      status,
+		Type:        "blog",
 	}
 
 	id := chi.URLParam(r, "id")
@@ -114,7 +115,7 @@ func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blogs.Arti
 
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
-			return blogs.Article{}, errors.New("input:id")
+			return blog.Article{}, errors.New("input:id")
 		}
 
 		a.ID = int(i)
@@ -137,28 +138,37 @@ func (f blogFeature) ID(ctx context.Context, id string) (interface{}, error) {
 	return int(val), nil
 }
 
-func (f blogFeature) Find(ctx context.Context, id interface{}) (blogs.Article, error) {
-	return blogs.Find(ctx, id.(int))
+func (f blogFeature) Find(ctx context.Context, id interface{}) (blog.Article, error) {
+	return blog.Find(ctx, id.(int))
 }
 
 func (f blogFeature) Delete(ctx context.Context, id interface{}) error {
-	return blogs.Delete(ctx, id.(int))
+	deletable, err := blog.Deletable(ctx, id.(int))
+	if err != nil {
+		return err
+	}
+
+	if !deletable {
+		return errors.New("the item cannot be deleted")
+	}
+
+	return blog.Delete(ctx, id.(int))
 }
 
-func (f blogFeature) IsImageRequired(a blogs.Article, key string) bool {
+func (f blogFeature) IsImageRequired(a blog.Article, key string) bool {
 	return a.ID == 0
 }
 
-func (f blogFeature) UpdateImage(a *blogs.Article, key, image string) {
+func (f blogFeature) UpdateImage(a *blog.Article, key, image string) {
 	a.Image = image
 }
 
-func (f blogFeature) Validate(ctx context.Context, r *http.Request, data blogs.Article) error {
+func (f blogFeature) Validate(ctx context.Context, r *http.Request, data blog.Article) error {
 	return nil
 }
 
 func BlogSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[blogs.Article](w, r, httpext.Save[blogs.Article]{
+	httpext.DigestSave[blog.Article](w, r, httpext.Save[blog.Article]{
 		Name:    blogName,
 		URL:     blogURL,
 		Feature: blogFeature{},
@@ -169,7 +179,7 @@ func BlogSave(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogList(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestList[blogs.Article](w, r, httpext.List[blogs.Article]{
+	httpext.DigestList[blog.Article](w, r, httpext.List[blog.Article]{
 		Name:    blogName,
 		URL:     blogURL,
 		Feature: blogFeature{},
@@ -177,7 +187,7 @@ func BlogList(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[blogs.Article](w, r, httpext.Form[blogs.Article]{
+	data, err := httpext.DigestForm[blog.Article](w, r, httpext.Form[blog.Article]{
 		Name:    blogName,
 		Feature: blogFeature{},
 	})
@@ -194,8 +204,8 @@ func BlogForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogDelete(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestDelete[blogs.Article](w, r, httpext.Delete[blogs.Article]{
-		List: httpext.List[blogs.Article]{
+	httpext.DigestDelete[blog.Article](w, r, httpext.Delete[blog.Article]{
+		List: httpext.List[blog.Article]{
 			Name:    blogName,
 			URL:     blogURL,
 			Feature: blogFeature{},

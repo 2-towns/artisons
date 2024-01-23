@@ -26,7 +26,7 @@
 					<td class="box td" hx-disable>{{.Title}}</td>
 					<td class="box td">
 						<div class="row row-align row-gap">
-							{{ if eq .Status "Online"}}
+							{{ if eq .Status "online"}}
 
 							<span class="table-badge table-badge-success"></span>
 							{{translate $.Lang "Online"}}
@@ -48,6 +48,7 @@
 								<span class="button-icon"> {{template "edit.svg"}} </span>
 							</a>
 
+							{{if eq .Type "blog"}}
 							<label for="destroy-{{.ID}}" class="table-label">
 								<input
 									   type="checkbox"
@@ -72,6 +73,7 @@
 									</span>
 								</a>
 							</label>
+							{{end}}
 						</div>
 					</td>
 				</tr>

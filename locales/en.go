@@ -225,5 +225,7 @@ func LoadEn() {
 	message.SetString(language.English, "the children cannot be root tags", "The children cannot be root tags.")
 	message.SetString(language.English, "the filter cannot be editable", "The filter cannot be editable.")
 	message.SetString(language.English, "Non editable", "Non editable")
+	message.SetString(language.English, "CMS", "CMS")
+	message.SetString(language.English, "the item cannot be deleted", "The item cannot be deleted.")
 
 }
