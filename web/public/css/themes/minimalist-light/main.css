@@ -26,7 +26,11 @@ a:visited {
 	--gray-darker: #818181;
 	--border-radius-1: .3125rem;
 	--border-radius-2: .5rem;
-
+	--border-radius-3: .75rem;
+	--border-radius-4: 1rem;
+	--border-radius-5: 1.25rem;
+	--border-radius-6: 1.5rem;
+	--primary: #8E6CEF;
 }
 
 .header-account {
@@ -330,8 +334,6 @@ option {
 			font-weight: 450;
 			color: var(--gray-darker);
 		}
-
-
 	}
 
 	.wishlist {
@@ -342,5 +344,42 @@ option {
 		display: flex;
 		width: 100%;
 		justify-content: space-between;
+	}
+}
+
+.add-address {
+	form {
+
+		width: 80%;
+		height: 100vh;
+		margin: auto;
+		margin-top: 1.5rem;
+		border-radius: var(--border-radius-2);
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		text-align: center;
+
+		.form-field {
+			width: 100%;
+			border-radius: var(--border-radius-2);
+			border: none;
+			padding: 1.25rem;
+			background-color: var(--gray-light);
+		}
+
+		.form-field:focus {
+			outline: none;
+			border: none;
+		}
+
+		.form-field:hover {
+			border: none;
+		}
+
+		.btn {
+			margin-top: 5rem;
+			background-color: var(--primary);
+		}
 	}
 }

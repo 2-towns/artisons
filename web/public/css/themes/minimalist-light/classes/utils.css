@@ -31,6 +31,26 @@
 	align-items: flex-end;
 }
 
+.gap-1 {
+	gap: 0.25rem;
+}
+
+.gap-2 {
+	gap: 0.5rem;
+}
+
+.gap-3 {
+	gap: 1rem;
+}
+
+.gap-4 {
+	gap: 1.5rem;
+}
+
+.gap-5 {
+	gap: 2rem;
+}
+
 /* Margin Utilities */
 .m-1 {
 	margin: 0.25rem;
@@ -180,10 +200,25 @@
 }
 
 /* Width and Height Utilities */
+.w-50 {
+	width: 50%;
+}
+
+.h-50 {
+	height: 50%;
+}
+
 .w-100 {
 	width: 100%;
 }
 
 .h-100 {
 	height: 100%;
+}
+
+
+.btn {
+	padding: 1rem 1.5rem;
+	border: none;
+	border-radius: var(--border-radius-6);
 }

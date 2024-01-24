@@ -11,69 +11,27 @@
 	<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400..900&display=swap" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="/web/public/css/themes/minimalist-light/main.css">
-	<title>Compte</title>
+	<title>ajout adresse</title>
 </head>
 
 <body>
 	<header class="header-account">
-		<h2>Mon Compte</h2>
+		<h2>Addresse de livraison</h2>
 	</header>
 
-	<main class="account">
+	<main class="add-address">
 
-		<div class="identity">
-			<h3 class="name">François Pignon</h3>
-			<div class="d-flex justify-content-between w-100">
-				<p class="mail">f.pignon@gmail.com</p>
-				<a>Edit</a>
+
+		<form>
+			<input type="text" class="form-field" placeholder="Rue">
+			<input type="text" class="form-field" placeholder="Complément d'adresse">
+			<div class="d-flex gap-3">
+				<input type="city" class="form-field" placeholder="Ville">
+				<input type="number" class="form-field" placeholder="Code postal">
 			</div>
-			<p class="phone">0612324565</p>
-
-		</div>
-
-		<div class="address">
-			<p class="address-info">95 rue de la paix<br>
-				75000 Paris
-			</p>
-			<a class="d-flex align-items-center">Edit</a>
-		</div>
-		<div class="wishlist">
-			<p class="wishlist-text">Wishlist
-			</p>
-			<a href="/wishlist"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-						 xmlns="http://www.w3.org/2000/svg">
-					<path d="M12.9 7.94004L15.52 10.56C16.29 11.33 16.29 12.59 15.52 13.36L9 19.87M9 4.04004L10.04 5.08004"
-								stroke="#272727" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-								stroke-linejoin="round" />
-				</svg></a>
-
-
-		</div>
-		<div class="wishlist">
-			<p class="wishlist-text">Help
-			</p>
-			<a href="/wishlist"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-						 xmlns="http://www.w3.org/2000/svg">
-					<path d="M12.9 7.94004L15.52 10.56C16.29 11.33 16.29 12.59 15.52 13.36L9 19.87M9 4.04004L10.04 5.08004"
-								stroke="#272727" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-								stroke-linejoin="round" />
-				</svg></a>
-
-
-		</div>
-		<div class="wishlist">
-			<p class="wishlist-text">Support
-			</p>
-			<a href="/wishlist"> <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-						 xmlns="http://www.w3.org/2000/svg">
-					<path d="M12.9 7.94004L15.52 10.56C16.29 11.33 16.29 12.59 15.52 13.36L9 19.87M9 4.04004L10.04 5.08004"
-								stroke="#272727" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round"
-								stroke-linejoin="round" />
-				</svg></a>
-
-
-		</div>
-
+			<input type="text" class="form-field" placeholder="Pays">
+			<button type="submit" class="btn">Sauvegarder</button>
+		</form>
 	</main>
 
 	<nav class="bottom-nav">
@@ -103,7 +61,6 @@
 
 
 		</a>
-
 		<a href="/wish" class="nav-item wish-svg">
 			<svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path d="M13.7267 2.31478C14.3134 2.97478 14.6667 3.84145 14.6667 4.79478C14.6667 9.46145 10.3467 12.2148 8.41337 12.8814C8.18671 12.9614 7.81337 12.9614 7.58671 12.8814C5.65337 12.2148 1.33337 9.46145 1.33337 4.79478C1.33337 2.73478 2.99337 1.06812 5.04004 1.06812C6.25337 1.06812 7.32671 1.65478 8.00004 2.56145C8.34256 2.0987 8.78869 1.7226 9.3027 1.46328C9.81672 1.20396 10.3843 1.06862 10.96 1.06812"
@@ -112,7 +69,9 @@
 
 		</a>
 	</nav>
+	<footer>
 
+	</footer>
 </body>
 
 </html>
