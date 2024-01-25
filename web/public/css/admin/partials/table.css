@@ -68,7 +68,7 @@
 	word-wrap: break-word;
 	word-break: break-all;
 	white-space: normal;
-	min-width: 200px;
+	max-width: 120px;
 }
 
 .table-pagination {
@@ -127,11 +127,11 @@
 	transition: 0.5s;
 }
 
-.table-destroy-checkbox:checked ~ .table-confirm-button {
+.table-destroy-checkbox:checked~.table-confirm-button {
 	display: none;
 }
 
-.table-destroy-checkbox:checked ~ .table-delete-confirm-button {
+.table-destroy-checkbox:checked~.table-delete-confirm-button {
 	display: flex;
 	transition: 0.35s;
 	--border-color: var(--danger);

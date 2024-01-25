@@ -62,6 +62,14 @@
 	border-top-color: #182433;
 }
 
+.stats-chart-container-30 foreignObject:nth-child(even) {
+	display: none;
+}
+
+.ct-labels foreignObject {
+	overflow: visible;
+}
+
 @media (max-width: 800px) {
 	.stats-grid {
 		grid-template-columns: minmax(0, 1fr);
@@ -79,10 +87,6 @@
 
 	.stats-header-item:nth-child(3) {
 		padding-left: 0;
-	}
-
-	.ct-labels foreignObject {
-		overflow: visible;
 	}
 
 	.ct-labels foreignObject:nth-child(even) {

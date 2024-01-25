@@ -175,43 +175,39 @@ input[type="checkbox"]:checked+.input-color {
 }
 
 .input-color-black {
-	background-color: black
+	background-color: #182433
 }
 
 .input-color-blue {
-	background-color: blue
+	background-color: #206bc4
 }
 
 .input-color-brown {
-	background-color: brown
+	background-color: #795548
 }
 
 .input-color-gray {
-	background-color: gray
+	background-color: #757575
 }
 
 .input-color-green {
-	background-color: green
+	background-color: #74b816
 }
 
 .input-color-orange {
-	background-color: orange
+	background-color: #f59f00
 }
 
 .input-color-pink {
-	background-color: pink
+	background-color: #d6336c
 }
 
 .input-color-purple {
-	background-color: purple
-}
-
-.input-color-purple {
-	background-color: purple
+	background-color: #ae3ec9
 }
 
 .input-color-red {
-	background-color: red
+	background-color: #F44336
 }
 
 .input-color-white {
@@ -219,7 +215,7 @@ input[type="checkbox"]:checked+.input-color {
 }
 
 .input-color-yellow {
-	background-color: yellow;
+	background-color: #FFFF00;
 }
 
 .input-filter {
@@ -232,4 +228,8 @@ input[type="checkbox"]:checked+.input-filter {
 	border-color: var(--primary);
 	background-color: var(--background-color);
 	color: var(--primary);
+}
+
+.input-shop-color {
+	display: block;
 }
