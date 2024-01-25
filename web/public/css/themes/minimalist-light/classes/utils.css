@@ -104,6 +104,57 @@
 	margin-bottom: 2rem;
 }
 
+.my-1 {
+	margin-top: 0.25rem;
+	margin-bottom: 0.25rem;
+}
+
+.my-2 {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.my-3 {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+
+.my-4 {
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.my-5 {
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+}
+
+.mx-1 {
+	margin-left: 0.25rem;
+	margin-right: 0.25rem;
+}
+
+.mx-2 {
+	margin-left: 0.5rem;
+	margin-right: 0.5rem;
+}
+
+
+.mx-3 {
+	margin-left: 1rem;
+	margin-right: 1rem;
+}
+
+.mx-4 {
+	margin-left: 1.5rem;
+	margin-right: 1.5rem;
+}
+
+.mx-5 {
+	margin-left: 2rem;
+	margin-right: 2rem;
+}
+
 
 
 

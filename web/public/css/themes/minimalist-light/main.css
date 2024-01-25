@@ -33,23 +33,16 @@ a:visited {
 	--primary: #8E6CEF;
 }
 
-.header-account {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 3rem 0;
-	width: 80%;
-	margin: auto;
-	margin-top: 3rem;
-}
 
-.header {
+
+.header.home {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	padding: 3rem 0;
 	width: 80%;
 	margin: auto;
+
 
 	.logo {
 		height: 4rem;
@@ -75,6 +68,18 @@ a:visited {
 
 
 	}
+}
+
+.header.account,
+.header.address-info,
+.header.payment-methods {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 3rem 0;
+	width: 80%;
+	margin: auto;
+	margin-top: 3rem;
 }
 
 
@@ -347,7 +352,7 @@ option {
 	}
 }
 
-.add-address {
+.address-info {
 	form {
 
 		width: 80%;
@@ -382,4 +387,34 @@ option {
 			background-color: var(--primary);
 		}
 	}
+}
+
+.payment-methods {
+	width: 80%;
+	margin: auto;
+	margin-top: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+
+	.payment-method-list {
+		.label {
+			font-family: Gabarito;
+			font-size: 1rem;
+			font-style: normal;
+			font-weight: 700;
+			line-height: normal;
+		}
+
+		.payment-method {
+			border-radius: var(--border-radius-2);
+			background: var(--gray-light);
+			padding: 1rem;
+			display: flex;
+			justify-content: space-between;
+			width: 100%;
+			margin-top: 1rem;
+		}
+	}
+
 }
