@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"gifthub/admin"
-	"gifthub/admin/login"
+	"gifthub/admin/auth"
 	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/httperrors"
@@ -100,9 +100,10 @@ func main() {
 	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
 
 	router.R.Get("/", pages.Home)
-	router.R.Get("/auth/index.html", login.Form)
-	router.R.Post("/auth/otp.html", login.Otp)
-	router.R.Post("/auth/login.html", login.Login)
+	router.R.Get("/auth/index.html", auth.Form)
+	router.R.Post("/auth/otp.html", auth.Otp)
+	router.R.Post("/auth/login.html", auth.Login)
+	router.R.Post("/auth/logout.html", auth.Logout)
 
 	router.R.Mount("/admin", adminRouter())
 

@@ -479,24 +479,24 @@ func Login(ctx context.Context, otp, glue, device string) (string, error) {
 }
 
 // Logout destroys the user session.
-func Logout(ctx context.Context, sid string) error {
-	l := slog.With(slog.String("sid", sid))
+func (u User) Logout(ctx context.Context) error {
+	l := slog.With(slog.String("sid", u.SID))
 	l.LogAttrs(ctx, slog.LevelInfo, "trying to logout")
 
-	if sid == "" {
+	if u.SID == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the session id")
 		return errors.New("your are not authorized to process this request")
 	}
 
-	uid, err := db.Redis.Get(ctx, "auth:"+sid).Result()
+	uid, err := db.Redis.Get(ctx, "auth:"+u.SID).Result()
 	if err != nil || uid == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot find the session id")
 		return errors.New("your are not authorized to process this request")
 	}
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.Del(ctx, "auth:"+sid)
-		rdb.HDel(ctx, "user:%s"+uid, "auth:"+sid)
+		rdb.Del(ctx, "auth:"+u.SID)
+		rdb.HDel(ctx, "user:%s"+uid, "auth:"+u.SID)
 
 		return nil
 	}); err != nil {
@@ -505,7 +505,7 @@ func Logout(ctx context.Context, sid string) error {
 	}
 
 	data := map[string]string{
-		"sid": sid,
+		"sid": u.SID,
 	}
 
 	go tracking.Log(ctx, "logout", data)

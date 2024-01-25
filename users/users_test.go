@@ -38,6 +38,7 @@ func init() {
 	db.Redis.Set(ctx, "auth:"+user.SID, user.ID, conf.SessionDuration)
 	db.Redis.HSet(ctx, "auth:"+user.SID+":session", "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0")
 	db.Redis.SAdd(ctx, fmt.Sprintf("user:%d:sessions", user.ID), user.SID)
+	db.Redis.Set(ctx, "auth:"+"will-logout", "1", conf.SessionDuration)
 }
 
 var ra faker.RealAddress = faker.GetRealAddress()
@@ -217,9 +218,7 @@ func TestLoginReturnsErrorWhenOtpDoesNotExist(t *testing.T) {
 func TestLogoutRetunsEmptyWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	db.Redis.Set(ctx, "auth:"+"will-logout", "1", conf.SessionDuration)
-
-	err := Logout(ctx, "will-logout")
+	err := User{SID: "will-logout"}.Logout(ctx)
 	if err != nil {
 		t.Fatalf("Logout(ctx, u.SID) = %v, want nil", err)
 	}
@@ -227,7 +226,7 @@ func TestLogoutRetunsEmptyWhenSuccess(t *testing.T) {
 
 func TestLogoutRetunsErrorWhenSidIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	err := Logout(ctx, "")
+	err := User{}.Logout(ctx)
 	if err == nil || err.Error() != "your are not authorized to process this request" {
 		t.Fatalf("Logout(ctx, '') = %v, want 'your are not authorized to process this request'", err)
 	}
@@ -235,7 +234,7 @@ func TestLogoutRetunsErrorWhenSidIsMissing(t *testing.T) {
 
 func TestLogoutRetunsErrorWhenSessionDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	err := Logout(ctx, "iamnotexisting")
+	err := User{SID: "iamnotexisting"}.Logout(ctx)
 	if err == nil || err.Error() != "your are not authorized to process this request" {
 		t.Fatalf(`Logout(ctx, "iamnotexisting") = %v, want 'your are not authorized to process this request'`, err)
 	}
@@ -243,7 +242,7 @@ func TestLogoutRetunsErrorWhenSessionDoesNotExist(t *testing.T) {
 
 func TestLogoutRetunsErrorWhenSessionIsNotFound(t *testing.T) {
 	ctx := tests.Context()
-	err := Logout(ctx, "122")
+	err := User{SID: "122"}.Logout(ctx)
 	if err == nil || err.Error() != "your are not authorized to process this request" {
 		t.Fatalf("Logout(ctx, 124, '122') = %v, want nil", err)
 	}

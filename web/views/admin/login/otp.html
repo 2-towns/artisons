@@ -8,7 +8,7 @@
 		"Please click the link to confirm your address or enter the otp code below."}}
 	</p>
 
-	<form hx-post="/auth/login.html">
+	<form hx-post="/auth/login.html" class="form-row-single">
 		<div id="otp-row" class="form-row-single">
 			<div class="row row-between row-gap">
 				<input
@@ -72,9 +72,8 @@
 
 		<div class="row row-gap">
 			<a
-			   href="#"
+			   href="/auth/index.html"
 			   class="button fill"
-			   hx-get="/auth/index.html"
 			   hx-target=" #otp"
 			   hx-swap="outerHTML">
 				{{translate .Lang "Cancel"}}
