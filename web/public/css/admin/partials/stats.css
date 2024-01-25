@@ -88,4 +88,8 @@
 	.ct-labels foreignObject:nth-child(even) {
 		display: none;
 	}
+
+	.stats-chart-container-30 foreignObject:nth-child(3n) {
+		display: none;
+	}
 }
