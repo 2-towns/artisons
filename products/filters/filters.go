@@ -197,7 +197,7 @@ func List(ctx context.Context, offset, num int) (ListResults, error) {
 	l := slog.With()
 	l.LogAttrs(ctx, slog.LevelInfo, "looking for filters")
 
-	keys, err := db.Redis.ZRevRange(ctx, "filters", int64(offset), int64(num)).Result()
+	keys, err := db.Redis.ZRevRange(ctx, "filters", int64(offset), int64(num-1)).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the filter keys")
 		return ListResults{}, errors.New("something went wrong")
