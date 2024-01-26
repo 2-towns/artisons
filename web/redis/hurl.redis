@@ -5,7 +5,8 @@ SET "blog_next_id" 3
 HSET "order:ORD1" id "ORD1" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389 
 HSET "order:ORD2" id "ORD2" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389  updated_at 1705310389 
 HSET "product:PDT1" id "PDT1" title "T-shirt Tester c’est douter" description "T-Shirt unisexe" slug "t-shirt-tester-c-est-douter" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" updated_at 1705310389 
-HSET "product:PDT2" id "PDT2" title "Mug Nodejs" description "T-Shirt unisexe" slug "t-shirt-tester-c-est-douter" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" updated_at 1705310389 
+HSET "product:PDT2" id "PDT2" title "Mug Nodejs" description "Mug tendance" slug "mug-nodejs" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" updated_at 1705310389 
+HSET pids "t-shirt-tester-c-est-douter" "PDT1" "mug-nodejs" "PDT2"
 HSET "tag:mens" "key" "mens" "label" "Mens" "updated_at" 1705310389 "children" "clothes;shoes" 
 HSET "tag:womens" "key" "womens" "label" "Womens" "updated_at" 1705310389 "children" "clothes;shoes" 
 HSET "tag:kids" "key" "kids" "label" "Kids" "updated_at" 1705310389 "children" "clothes;shoes" 

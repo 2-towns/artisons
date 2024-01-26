@@ -152,3 +152,5 @@ func Pagination(page int) (int, int) {
 
 // DefaultLocale is the default language applied
 var DefaultLocale = language.English
+
+const DefaultTheme = "minimalist"

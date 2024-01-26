@@ -2,17 +2,18 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"gifthub/admin"
 	"gifthub/admin/auth"
 	"gifthub/cache"
 	"gifthub/conf"
 	"gifthub/http/httperrors"
+	"gifthub/http/pages"
 	"gifthub/http/router"
 	"gifthub/http/security"
 	"gifthub/http/seo"
 	"gifthub/locales"
 	"gifthub/logs"
-	"gifthub/pages"
 	"gifthub/stats"
 	"gifthub/users"
 	"log/slog"
@@ -34,6 +35,7 @@ func adminRouter() http.Handler {
 	r.Get("/products.html", admin.ProductList)
 	r.Get("/products/add.html", admin.ProductForm)
 	r.Get("/products/{id}/edit.html", admin.ProductForm)
+	r.Get("/products/slug.html", admin.Slug)
 	r.Get("/blog.html", admin.BlogList)
 	r.Get("/blog/add.html", admin.BlogForm)
 	r.Get("/blog/{id}/edit.html", admin.BlogForm)
@@ -99,7 +101,9 @@ func main() {
 	fs := http.FileServer(http.Dir("web/public"))
 	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
 
-	router.R.Get("/", pages.Home)
+	router.R.Get(seo.URLs["home"].URL, pages.Home)
+	router.R.Get(seo.URLs["wish"].URL, pages.Wish)
+	router.R.Get(fmt.Sprintf("%s/:slug.html", seo.URLs["product"].URL), pages.Product)
 	router.R.Get("/auth/index.html", auth.Form)
 	router.R.Post("/auth/otp.html", auth.Otp)
 	router.R.Post("/auth/login.html", auth.Login)

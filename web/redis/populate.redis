@@ -1,7 +1,9 @@
 SADD admins hello@world.com lock@world.com
 HSET "shop" logo "shops/logo.jpg" active "1" guest "1" name "My Shop" city "Oran" address "Hay Yasmine" zipcode "31244" phone "0559682532" updated_at 1705310389 
-HSET "home" key "home" title "Home Page" description "You can access to multiple products." url "/" updated_at 1705310389 
-HSET "shop" key "shop" title "Shop Page" description "You can access to multiple products." url "/shop.html" updated_at 1705310389 
+HSET "seo:home" key "home" title "Home Page" description "You can access to multiple products." url "/" updated_at 1705310389 
+HSET "seo:wish" key "wish" title "Wish Page" description "You can access to multiple products." url "/wish.html" updated_at 1705310389 
+HSET "seo:product" key "product" title "Product title  %s" description "Product description %s." url "/product" updated_at 1705310389 
+SADD "seo" 1 "home" 1 "wish"
 HSET "product:PDT1" title "T-shirt Tester c’est douter"
 HSET "product:PDT2" title "Mug Reste chez 127.0.0.1"
 HSET "product:PDT3" title "Sticker Go Lang"

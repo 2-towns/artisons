@@ -8,6 +8,7 @@ import (
 	"gifthub/images"
 	"gifthub/locales"
 	"html/template"
+	"log"
 	"slices"
 	"strings"
 	"time"
@@ -80,6 +81,26 @@ var AdminSuccess = []string{
 }
 
 var AdminList = append(AdminUI, AdminSuccess...)
+
+var Pages map[string]*template.Template = map[string]*template.Template{}
+var pages = []string{"home", "wish", "wish-list"}
+
+func init() {
+	folder := fmt.Sprintf("%s/web/views/themes/%s", conf.WorkingSpace, conf.DefaultTheme)
+
+	for _, value := range pages {
+		tpl, err := Build("base.html").ParseFiles([]string{
+			folder + "/base.html",
+			folder + fmt.Sprintf("/%s.html", value),
+		}...)
+
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		Pages[value] = tpl
+	}
+}
 
 func Build(name string) *template.Template {
 	return template.New(name).Funcs(template.FuncMap{

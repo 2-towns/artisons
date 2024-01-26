@@ -10,6 +10,7 @@ import (
 	"gifthub/http/httpext"
 	"gifthub/products"
 	"gifthub/products/filters"
+	"gifthub/string/stringutil"
 	"gifthub/tags"
 	"gifthub/templates"
 	"html/template"
@@ -59,6 +60,7 @@ func init() {
 			conf.WorkingSpace+"web/views/admin/icons/close.svg",
 			conf.WorkingSpace+"web/views/admin/products/products-head.html",
 			conf.WorkingSpace+"web/views/admin/products/products-scripts.html",
+			conf.WorkingSpace+"web/views/admin/products/products-slug.html",
 			conf.WorkingSpace+"web/views/admin/products/products-form.html",
 		)...)
 
@@ -163,6 +165,12 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 		Meta:        meta,
 	}
 
+	if r.FormValue("slug") != "" {
+		p.Slug = r.FormValue("slug")
+	} else {
+		p.Slug = stringutil.Slugify(p.Title)
+	}
+
 	if r.FormValue("image_2_delete") != "" {
 		p.Image2 = "-"
 	}
@@ -210,6 +218,11 @@ func (f productsFeature) UpdateImage(p *products.Product, key, image string) {
 }
 
 func (f productsFeature) Validate(ctx context.Context, r *http.Request, data products.Product) error {
+	pid, err := products.PID(ctx, data.Slug)
+	if err != nil || (pid != "" && pid != data.ID) {
+		return errors.New("input:slug")
+	}
+
 	return nil
 }
 

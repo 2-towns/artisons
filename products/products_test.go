@@ -37,8 +37,11 @@ func init() {
 		"image_1", "PDT1.jpeg",
 		"image_2", "PDT1.jpeg",
 		"links", "",
+		"created_at", now,
 		"updated_at", now,
 	)
+
+	db.Redis.HSet(ctx, "pids", db.Escape("T-shirt développeur unisexe Tester c'est douter"), "PDT1")
 
 	db.Redis.ZAdd(ctx, "products", redis.Z{
 		Score:  float64(time.Now().Unix()),
@@ -200,8 +203,8 @@ func TestFindReturnsErrorWhenPidIsMissing(t *testing.T) {
 
 func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, ""); err == nil || err.Error() != "input:id" {
-		t.Fatalf(`Find(c, "") = %v, want "input:id"`, err.Error())
+	if _, err := Find(c, "doesnotexist"); err == nil || err.Error() != "input:id" {
+		t.Fatalf(`Find(c, "doesnotexist") = %v, want "input:id"`, err.Error())
 	}
 }
 
@@ -572,5 +575,94 @@ func TestDeleteReturnsErrorWhenIdIsEmpty(t *testing.T) {
 	c := tests.Context()
 	if err := Delete(c, ""); err == nil || err.Error() != "input:id" {
 		t.Fatalf(`Delete(c, "") = %s want "input:id"`, err.Error())
+	}
+}
+
+func TestListReturnsProductsWhenOk(t *testing.T) {
+	c := tests.Context()
+	pds, err := List(c, []string{"PDT1"})
+
+	if err != nil {
+		t.Fatalf(`List(c, []string{"PDT1"}) = %v, %v want not empty, nil`, pds, err.Error())
+	}
+
+	if len(pds) == 0 {
+		t.Fatalf(`len(pds) = %d want > 0`, len(pds))
+	}
+
+	if pds[0].ID == "" {
+		t.Fatalf(`pds[0].ID = %s want not empty`, pds[0].ID)
+	}
+}
+
+func TestPIDReturnsEmptyWhenSlugDoesNotExist(t *testing.T) {
+	ctx := tests.Context()
+
+	if pid, err := PID(ctx, "coucou-c-est-moi"); err != nil || pid != "" {
+		t.Fatalf(`HasUniqueSlug(ctx, "coucou-c-est-moi") = %v, %s want not empty, nil`, pid, err)
+	}
+}
+
+func TestPIDReturnsPIDWhenSlugDoesExist(t *testing.T) {
+	ctx := tests.Context()
+
+	s := db.Escape("T-shirt développeur unisexe Tester c'est douter")
+	if pid, err := PID(ctx, s); err != nil || pid == "" {
+		t.Fatalf(`HasUniqueSlug(ctx, s = %v, %s want not false, not empty`, pid, err)
+	}
+}
+
+func TestFindBySlugReturnsErrorWhenSlugIsMissing(t *testing.T) {
+	c := tests.Context()
+	if _, err := FindBySlug(c, ""); err == nil || err.Error() != "the data is not found" {
+		t.Fatalf(`FindBySlug(c,"") = %v, want "the data is not found"`, err.Error())
+	}
+}
+
+func TestFindBySlugReturnsErrorWhenSlugDoesNotExist(t *testing.T) {
+	c := tests.Context()
+	if _, err := FindBySlug(c, "doesnotexist"); err == nil || err.Error() != "the data is not found" {
+		t.Fatalf(`FindBySlug(c, "doesnotexist") = %v, want "the data is not found"`, err.Error())
+	}
+}
+
+func TestFindBySlugReturnsProductWhenSuccess(t *testing.T) {
+	c := tests.Context()
+	slug := db.Escape("T-shirt développeur unisexe Tester c'est douter")
+	p, err := FindBySlug(c, slug)
+	if err != nil {
+		t.Fatalf(`Find(c, slug) = %v, want nil`, err.Error())
+	}
+
+	if p.Sku == "" {
+		t.Fatalf(`p.Sku = %v, want string`, p.Sku)
+	}
+
+	if p.Description == "" {
+		t.Fatalf(`p.Description  = %v, want string`, p.Description)
+	}
+
+	if p.ID != "PDT1" {
+		t.Fatalf(`p.PID = %v, want "PDT1"`, p.ID)
+	}
+
+	if p.Slug == "" {
+		t.Fatalf(`p.Slug = %v, want string`, p.Slug)
+	}
+
+	if p.Status != "online" {
+		t.Fatalf(`p.Status = %v, want string`, p.Status)
+	}
+
+	if p.Title == "" {
+		t.Fatalf(`p.Title = %v, want string`, p.Title)
+	}
+
+	if p.Image1 == "" {
+		t.Fatalf(`p.Image1 = %v, want string`, p.Image1)
+	}
+
+	if p.Tags[0] != "clothes" {
+		t.Fatalf(`p.Tags[0] = %s, want "clothes"`, p.Tags[0])
 	}
 }

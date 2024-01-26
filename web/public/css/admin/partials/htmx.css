@@ -30,6 +30,10 @@
 	margin-right: var(--spacing);
 }
 
+.htmx-spinner-inverse {
+	color: var(--secondary);
+}
+
 .htmx-request .htmx-spinner {
 	display: inline-block;
 }

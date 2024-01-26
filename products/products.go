@@ -7,10 +7,7 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/http/contexts"
 	"gifthub/string/stringutil"
-	"gifthub/tracking"
-	"gifthub/users"
 	"gifthub/validators"
 	"log/slog"
 	"path"
@@ -231,6 +228,26 @@ func (p Product) Validate(ctx context.Context) error {
 	return nil
 }
 
+func PID(ctx context.Context, slug string) (string, error) {
+	exists, err := db.Redis.HExists(ctx, "pids", slug).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot verify the slug existence", slog.String("error", err.Error()))
+		return "", errors.New("something went wrong")
+	}
+
+	if !exists {
+		return "", nil
+	}
+
+	s, err := db.Redis.HGet(ctx, "pids", slug).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the slug", slog.String("error", err.Error()))
+		return "", errors.New("something went wrong")
+	}
+
+	return s, nil
+}
+
 // Save a product into redis.
 // The keys are :
 // product:pid => the product data
@@ -257,7 +274,7 @@ func (p Product) Save(ctx context.Context) (string, error) {
 		"id", p.ID,
 		"sku", db.Escape(p.Sku),
 		"title", title,
-		"slug", stringutil.Slugify(title),
+		"slug", db.Escape(p.Slug),
 		"description", db.Escape(p.Title),
 		"price", p.Price,
 		"quantity", p.Quantity,
@@ -294,7 +311,13 @@ func (p Product) Save(ctx context.Context) (string, error) {
 		values = append(values, "image_4", p.Image4)
 	}
 
-	if _, err := db.Redis.HSet(ctx, key, values).Result(); err != nil {
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		rdb.HSet(ctx, key, values).Result()
+		rdb.HSetNX(ctx, key, "created_at", now)
+		rdb.HSet(ctx, "pids", p.Slug, p.ID)
+
+		return nil
+	}); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot store the product", slog.String("error", err.Error()))
 		return "", err
 	}
@@ -330,6 +353,28 @@ func Find(ctx context.Context, pid string) (Product, error) {
 	}
 
 	return p, err
+}
+
+func FindBySlug(ctx context.Context, slug string) (Product, error) {
+	l := slog.With(slog.String("slug", slug))
+	l.LogAttrs(ctx, slog.LevelInfo, "looking for product from slug")
+
+	if slug == "" {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty slug")
+		return Product{}, errors.New("the data is not found")
+	}
+
+	pid, err := PID(ctx, slug)
+	if err != nil {
+		return Product{}, nil
+	}
+
+	if pid == "" {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty pid")
+		return Product{}, errors.New("the data is not found")
+	}
+
+	return Find(ctx, pid)
 }
 
 // Search is looking into Redis to find dat matching  the criteria.
@@ -416,14 +461,14 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 		products = append(products, product)
 	}
 
-	user, ok := ctx.Value(contexts.User).(users.User)
-	if !ok || user.Role != "admin" {
-		tra := map[string]string{
-			"query": fmt.Sprintf("'%s'", qs),
-		}
+	// user, ok := ctx.Value(contexts.User).(users.User)
+	// if !ok || user.Role != "admin" {
+	// 	tra := map[string]string{
+	// 		"query": fmt.Sprintf("'%s'", qs),
+	// 	}
 
-		go tracking.Log(ctx, "product_search", tra)
-	}
+	// 	go tracking.Log(ctx, "product_search", tra)
+	// }
 
 	return SearchResults{
 		Total:    int(total),
@@ -507,4 +552,45 @@ func Delete(ctx context.Context, pid string) error {
 	}
 
 	return nil
+}
+
+func List(ctx context.Context, pids []string) ([]Product, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "listing products", slog.Any("pids", pids))
+
+	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+		for _, key := range pids {
+			key := "product:" + key
+			rdb.HGetAll(ctx, key)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the products", slog.String("error", err.Error()))
+		return []Product{}, err
+	}
+
+	pds := []Product{}
+
+	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the product", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
+		val := cmd.(*redis.MapStringStringCmd).Val()
+
+		p, err := parse(ctx, val)
+		if err != nil {
+			continue
+		}
+
+		pds = append(pds, p)
+
+	}
+
+	return pds, nil
 }

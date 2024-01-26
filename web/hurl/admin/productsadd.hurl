@@ -200,6 +200,7 @@ price: 123.5
 quantity: 1
 status: online
 tags: winter cold
+slug: t-shirt-developpeur-unisexe-javascript-park-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image_1-error" 
@@ -218,6 +219,7 @@ quantity: 1
 status: online
 tags: winter cold
 image_1:file,image.txt;
+slug: t-shirt-developpeur-unisexe-javascript-park-with-bad-picture-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image_1-error" 
@@ -237,10 +239,33 @@ status: online
 tags: winter cold
 image_1:file,image.jpg;
 image_2:file,image.txt;
+slug: t-shirt-developpeur-unisexe-javascript-park-with-bad-image-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image_2-error" 
 header "HX-Reswap" == "innerHTML show:#image_2-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
+
+# Adding product with existing slug shows an error
+POST {{host}}/admin/products/add.html
+HX-Request: true
+[MultipartFormData]
+title: T-shirt développeur unisexe JavaScript Park
+description: 100 % coton pour les couleurs unies
+sku: 123
+price: 123.5
+quantity: 1
+status: online
+weight: 12.4
+discount: 12.5
+tags: winter cold
+slug: t-shirt-tester-c-est-douter
+image_1:file,image.jpg;
+image_2:file,image.jpg;
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#slug-error" 
+header "HX-Reswap" == "innerHTML show:#slug-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding a product with correct data works
@@ -258,6 +283,7 @@ discount: 12.5
 tags: winter cold
 image_1:file,image.jpg;
 image_2:file,image.jpg;
+slug: slug-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products.html"
@@ -276,6 +302,7 @@ price: 123.5
 quantity: 1
 status: online
 image_1:file,image.jpg;
+slug: slug-only-required-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products.html"

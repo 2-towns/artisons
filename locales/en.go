@@ -227,5 +227,9 @@ func LoadEn() {
 	message.SetString(language.English, "Non editable", "Non editable")
 	message.SetString(language.English, "CMS", "CMS")
 	message.SetString(language.English, "the item cannot be deleted", "The item cannot be deleted.")
-
+	message.SetString(language.English, "Generate from the title", "Generate from the title")
+	message.SetString(language.English, "The URL has to be unique.", "The URL has to be unique.")
+	message.SetString(language.English, "Let it empty to generate one automatically.", "Let it empty to generate one automatically.")
+	message.SetString(language.English, "The URL has to be unique.", "The URL has to be unique.")
+	message.SetString(language.English, "Fill with auto generated value.", "Fill with auto generated value.")
 }

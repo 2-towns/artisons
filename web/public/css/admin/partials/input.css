@@ -62,6 +62,22 @@
 	width: 100%;
 }
 
+.input-group-input {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	flex: 1
+}
+
+.input-group-text {
+	border: 1px solid var(--border-color);
+	border-left: none;
+	background-color: var(--input-button-color);
+	display: flex;
+	padding: 0 var(--spacing);
+	color: var(--secondary);
+	align-items: center;
+}
+
 .input-file {
 	padding: var(--spacing);
 	border-color: var(--border-color);

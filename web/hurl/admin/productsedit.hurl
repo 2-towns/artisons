@@ -201,6 +201,7 @@ quantity: 1
 status: online
 tags: winter cold
 image_1:file,image.txt;
+slug: t-shirt-developpeur-unisexe-javascript-park-with-bad-picture-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image_1-error" 
@@ -220,6 +221,7 @@ status: online
 tags: winter cold
 image_1:file,image.jpg;
 image_2:file,image.txt;
+slug: t-shirt-developpeur-unisexe-javascript-park-with-bad-image-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image_2-error" 
@@ -241,6 +243,7 @@ discount: 12.5
 tags: winter cold
 image_1:file,image.jpg;
 image_2:file,image.jpg;
+slug: slug-edit-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products.html"
@@ -259,6 +262,7 @@ price: 123.5
 quantity: 1
 status: online
 image_1:file,image.jpg;
+slug: slug-edit-only-required-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products.html"
@@ -266,6 +270,22 @@ cookie "flash" exists
 cookie "flash[HttpOnly]" exists
 cookie "flash[Max-Age]" != 0
 cookie "flash[Path]" == "/"
+
+# Editing product with existing slug shows an error
+POST {{host}}/admin/products/add.html
+HX-Request: true
+[MultipartFormData]
+title: T-shirt développeur unisexe JavaScript Park
+description: 100 % coton pour les couleurs unies
+price: 123.5
+quantity: 1
+status: online
+slug: t-shirt-tester-c-est-douter
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#slug-error" 
+header "HX-Reswap" == "innerHTML show:#slug-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing a product without image works
 POST {{host}}/admin/products/PDT2/edit.html
@@ -276,6 +296,7 @@ description: 100 % coton pour les couleurs unies
 price: 123.5
 quantity: 1
 status: online
+slug: slug-without-image-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products.html"
@@ -307,6 +328,7 @@ price: 123.5
 quantity: 1
 status: online
 image_2_delete: on
+slug: slug-whilte-deleting-image-2-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products.html"
