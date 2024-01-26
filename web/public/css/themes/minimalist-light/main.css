@@ -71,8 +71,10 @@ a:visited {
 }
 
 .header.account,
-.header.address-info,
-.header.payment-methods {
+.header.address,
+.header.payment-methods,
+.header.card,
+.header.wishlist {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -352,7 +354,8 @@ option {
 	}
 }
 
-.address-info {
+.address,
+.card {
 	form {
 
 		width: 80%;
@@ -386,8 +389,16 @@ option {
 			margin-top: 5rem;
 			background-color: var(--primary);
 		}
+
+		/* .card {
+			.btn {
+				margin-top: 10rem;
+			}
+		} */
 	}
 }
+
+
 
 .payment-methods {
 	width: 80%;
@@ -413,8 +424,66 @@ option {
 			display: flex;
 			justify-content: space-between;
 			width: 100%;
+			max-width: 100%;
 			margin-top: 1rem;
+			align-items: center;
 		}
 	}
 
+}
+
+
+.wishlist {
+	width: 85%;
+	margin: auto;
+	margin-top: 1.5rem;
+	display: flex;
+	gap: .75rem;
+	flex-wrap: wrap;
+}
+
+
+
+.wishlist::-webkit-scrollbar-thumb {
+	background: var(--gray);
+	border-radius: var(--border-radius-2);
+	border: 2px solid white;
+}
+
+.wishlist-card {
+	display: flex;
+	width: 9.5rem;
+	padding-bottom: 1rem;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: .5rem;
+	border-radius: var(--border-radius-2);
+	background: var(--Bg-Light-2, #F4F4F4);
+
+}
+
+.wishlist-card-info {
+	display: flex;
+	padding: 0 .375rem;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: .5rem;
+	align-self: stretch;
+}
+
+.wishlist-card-img {
+	border-radius: var(--border-radius-2);
+	height: 13.75rem;
+	align-self: stretch;
+}
+
+.wishlist-card-title {
+	overflow: hidden;
+	color: var(--Black-100, #272727);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: 'Montserrat', sans-serif;
+	font-size: .75rem;
+	font-style: normal;
+	font-weight: 450;
 }
