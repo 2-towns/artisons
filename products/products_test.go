@@ -203,8 +203,8 @@ func TestFindReturnsErrorWhenPidIsMissing(t *testing.T) {
 
 func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	c := tests.Context()
-	if _, err := Find(c, "doesnotexist"); err == nil || err.Error() != "input:id" {
-		t.Fatalf(`Find(c, "doesnotexist") = %v, want "input:id"`, err.Error())
+	if _, err := Find(c, "doesnotexist"); err == nil || err.Error() != "oops the data is not found" {
+		t.Fatalf(`Find(c, "doesnotexist") = %v, want "oops the data is not found"`, err.Error())
 	}
 }
 
