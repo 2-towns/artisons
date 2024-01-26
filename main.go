@@ -102,12 +102,15 @@ func main() {
 	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
 
 	router.R.Get(seo.URLs["home"].URL, pages.Home)
-	router.R.Get(seo.URLs["wish"].URL, pages.Wish)
+	router.R.Get(seo.URLs["wishes"].URL, pages.Wishes)
 	router.R.Get(fmt.Sprintf("%s/:slug.html", seo.URLs["product"].URL), pages.Product)
 	router.R.Get("/auth/index.html", auth.Form)
+
 	router.R.Post("/auth/otp.html", auth.Otp)
 	router.R.Post("/auth/login.html", auth.Login)
 	router.R.Post("/auth/logout.html", auth.Logout)
+	router.R.Post("/wishes/:id/add.html", pages.Wish)
+	router.R.Post("/wishes/:id/delete.html", pages.UnWish)
 
 	router.R.Mount("/admin", adminRouter())
 
