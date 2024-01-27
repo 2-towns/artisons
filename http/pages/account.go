@@ -12,8 +12,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-// Home loads the most recent products in order to
-// display them on the home page.
 func Account(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)

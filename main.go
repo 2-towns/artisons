@@ -106,6 +106,7 @@ func main() {
 	router.R.Get(fmt.Sprintf("%s/:slug.html", seo.URLs["product"].URL), pages.Product)
 	router.R.Get("/sso.html", auth.Form)
 	router.R.Get("/otp.html", auth.Form)
+	router.R.Get("/addresses.html", pages.Addresses)
 
 	router.R.Route("/account", func(r chi.Router) {
 		r.Use(users.AccountOnly)
