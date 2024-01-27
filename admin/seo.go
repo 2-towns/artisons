@@ -4,7 +4,6 @@ import (
 	"context"
 	"gifthub/conf"
 	"gifthub/http/contexts"
-	"gifthub/http/httpext"
 	"gifthub/http/seo"
 	"gifthub/templates"
 	"html/template"
@@ -65,11 +64,11 @@ func (f seoFeature) ListTemplate(ctx context.Context) *template.Template {
 	return seoTpl
 }
 
-func (f seoFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[seo.Content], error) {
+func (f seoFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[seo.Content], error) {
 
 	res := seo.List(ctx, offset, num)
 
-	return httpext.SearchResults[seo.Content]{
+	return searchResults[seo.Content]{
 		Total: res.Total,
 		Items: res.Content,
 	}, nil
@@ -108,7 +107,7 @@ func (f seoFeature) UpdateImage(a *seo.Content, key, image string) {
 }
 
 func SeoList(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestList[seo.Content](w, r, httpext.List[seo.Content]{
+	digestList[seo.Content](w, r, list[seo.Content]{
 		Name:    seoName,
 		URL:     seoURL,
 		Feature: seoFeature{},
@@ -116,7 +115,7 @@ func SeoList(w http.ResponseWriter, r *http.Request) {
 }
 
 func SeoForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[seo.Content](w, r, httpext.Form[seo.Content]{
+	data, err := digestForm[seo.Content](w, r, Form[seo.Content]{
 		Name:    seoName,
 		Feature: seoFeature{},
 	})
@@ -131,11 +130,11 @@ func SeoForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func SeoSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[seo.Content](w, r, httpext.Save[seo.Content]{
+	digestSave[seo.Content](w, r, save[seo.Content]{
 		Name:    seoName,
 		URL:     seoURL,
 		Feature: seoFeature{},
-		Form:    httpext.UrlEncodedForm{},
+		Form:    urlEncodedForm{},
 		Images:  []string{},
 		Folder:  "",
 	})

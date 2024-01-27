@@ -83,32 +83,48 @@ var AdminSuccess = []string{
 var AdminList = append(AdminUI, AdminSuccess...)
 
 var Pages map[string]*template.Template = map[string]*template.Template{}
-var pages = []string{"home", "wish", "hx-wish", "login"}
+
+func buildTemplate(key string, files []string) {
+	name := "base.html"
+	folder := fmt.Sprintf("%sweb/views/themes/%s", conf.WorkingSpace, conf.DefaultTheme)
+
+	f := []string{}
+
+	if strings.HasPrefix(key, "hx") {
+		name = fmt.Sprintf("%s.html", key)
+	} else {
+		f = append(f, folder+"/base.html")
+	}
+
+	for _, file := range files {
+		if strings.Contains(file, "/") {
+			f = append(f, file)
+		} else {
+			f = append(f, folder+"/"+file)
+		}
+	}
+
+	log.Println(f)
+
+	tpl, err := Build(name).ParseFiles(f...)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	Pages[key] = tpl
+}
 
 func init() {
-	folder := fmt.Sprintf("%s/web/views/themes/%s", conf.WorkingSpace, conf.DefaultTheme)
-
-	for _, value := range pages {
-		files := []string{}
-
-		if !strings.HasPrefix(value, "hx") {
-			files = append(files, folder+"/base.html")
-		}
-
-		files = append(files, folder+fmt.Sprintf("/%s.html", value))
-
-		if value == "login" {
-			files = append(files, fmt.Sprintf("%s/web/views/login/login.html", conf.WorkingSpace))
-		}
-
-		tpl, err := Build(fmt.Sprintf("%s.html", value)).ParseFiles(files...)
-
-		if err != nil {
-			log.Panicln(err)
-		}
-
-		Pages[value] = tpl
-	}
+	buildTemplate("home", []string{"home.html"})
+	buildTemplate("login", []string{
+		"login.html",
+		fmt.Sprintf("%s/web/views/login/login.html", conf.WorkingSpace),
+	})
+	buildTemplate("wish", []string{"wish.html", "hx-wish.html"})
+	buildTemplate("hx-wish", []string{"hx-wish.html"})
+	buildTemplate("blog", []string{"blog.html", "hx-blog.html"})
+	buildTemplate("hx-blog", []string{"hx-blog.html"})
 }
 
 func Build(name string) *template.Template {

@@ -5,6 +5,7 @@ SET "blog_next_id" 3
 HSET "seo:home" key "home" title "Home Page" description "You can access to multiple products." url "/" updated_at 1705310389 
 HSET "seo:wishes" key "wishes" title "Wish Page" description "You can access to multiple products." url "/wishes.html" updated_at 1705310389 
 HSET "seo:product" key "product" title "Product title  %s" description "Product description %s." url "/product" updated_at 1705310389 
+HSET "seo:blog" key "blog" title "Blog title  %s" description "Blog description %s." url "/blog" updated_at 1705310389 
 SADD "seo" 1 "home" 1 "wish"
 HSET "order:ORD1" id "ORD1" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389 
 HSET "order:ORD2" id "ORD2" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389  updated_at 1705310389 

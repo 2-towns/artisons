@@ -103,6 +103,7 @@ func main() {
 	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
 	router.R.Get("/", pages.Home)
 	router.R.Get("/wish.html", pages.Wishes)
+	router.R.Get("/blog.html", pages.Blog)
 	router.R.Get(fmt.Sprintf("%s/:slug.html", seo.URLs["product"].URL), pages.Product)
 	router.R.Get("/sso.html", auth.Form)
 	router.R.Get("/otp.html", auth.Form)

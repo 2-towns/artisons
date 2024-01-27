@@ -7,7 +7,6 @@ import (
 	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
-	"gifthub/http/httpext"
 	"gifthub/products"
 	"gifthub/products/filters"
 	"gifthub/string/stringutil"
@@ -78,7 +77,7 @@ func (f productsFeature) ListTemplate(ctx context.Context) *template.Template {
 	return productsTpl
 }
 
-func (f productsFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[products.Product], error) {
+func (f productsFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[products.Product], error) {
 	query := products.Query{}
 	if q != "" {
 		query.Keywords = db.Escape(q)
@@ -86,7 +85,7 @@ func (f productsFeature) Search(ctx context.Context, q string, offset, num int) 
 
 	res, err := products.Search(ctx, query, offset, num)
 
-	return httpext.SearchResults[products.Product]{
+	return searchResults[products.Product]{
 		Total: res.Total,
 		Items: res.Products,
 	}, err
@@ -227,18 +226,18 @@ func (f productsFeature) Validate(ctx context.Context, r *http.Request, data pro
 }
 
 func ProductSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[products.Product](w, r, httpext.Save[products.Product]{
+	digestSave[products.Product](w, r, save[products.Product]{
 		Name:    productsName,
 		URL:     productsURL,
 		Feature: productsFeature{},
-		Form:    httpext.MultipartForm{},
+		Form:    multipartForm{},
 		Images:  []string{"image_1", "image_2", "image_3", "image_4"},
 		Folder:  productsFolder,
 	})
 }
 
 func ProductList(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestList[products.Product](w, r, httpext.List[products.Product]{
+	digestList[products.Product](w, r, list[products.Product]{
 		Name:    productsName,
 		URL:     productsURL,
 		Feature: productsFeature{},
@@ -246,7 +245,7 @@ func ProductList(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProductForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[products.Product](w, r, httpext.Form[products.Product]{
+	data, err := digestForm[products.Product](w, r, Form[products.Product]{
 		Name:    productsName,
 		Feature: productsFeature{},
 	})
@@ -280,8 +279,8 @@ func ProductForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProductDelete(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestDelete[products.Product](w, r, httpext.Delete[products.Product]{
-		List: httpext.List[products.Product]{
+	digestDelete[products.Product](w, r, delete[products.Product]{
+		list: list[products.Product]{
 			Name:    productsName,
 			URL:     productsURL,
 			Feature: productsFeature{},

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"gifthub/conf"
 	"gifthub/http/contexts"
-	"gifthub/http/httpext"
 	"gifthub/products/filters"
 	"gifthub/templates"
 	"html/template"
@@ -70,10 +69,10 @@ func (f filtersFeature) ListTemplate(ctx context.Context) *template.Template {
 	return filtersTpl
 }
 
-func (f filtersFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[filters.Filter], error) {
+func (f filtersFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[filters.Filter], error) {
 	res, err := filters.List(ctx, offset, num)
 
-	return httpext.SearchResults[filters.Filter]{
+	return searchResults[filters.Filter]{
 		Total: res.Total,
 		Items: res.Filters,
 	}, err
@@ -152,18 +151,18 @@ func (f filtersFeature) UpdateImage(a *filters.Filter, key, image string) {
 }
 
 func FiltersSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[filters.Filter](w, r, httpext.Save[filters.Filter]{
+	digestSave[filters.Filter](w, r, save[filters.Filter]{
 		Name:    filtersName,
 		URL:     filtersURL,
 		Feature: filtersFeature{},
-		Form:    httpext.UrlEncodedForm{},
+		Form:    urlEncodedForm{},
 		Images:  []string{},
 		Folder:  "",
 	})
 }
 
 func FiltersList(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestList[filters.Filter](w, r, httpext.List[filters.Filter]{
+	digestList[filters.Filter](w, r, list[filters.Filter]{
 		Name:    filtersName,
 		URL:     filtersURL,
 		Feature: filtersFeature{},
@@ -171,7 +170,7 @@ func FiltersList(w http.ResponseWriter, r *http.Request) {
 }
 
 func FiltersForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[filters.Filter](w, r, httpext.Form[filters.Filter]{
+	data, err := digestForm[filters.Filter](w, r, Form[filters.Filter]{
 		Name:    filtersName,
 		Feature: filtersFeature{},
 	})
@@ -186,8 +185,8 @@ func FiltersForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func FiltersDelete(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestDelete[filters.Filter](w, r, httpext.Delete[filters.Filter]{
-		List: httpext.List[filters.Filter]{
+	digestDelete[filters.Filter](w, r, delete[filters.Filter]{
+		list: list[filters.Filter]{
 			Name:    filtersName,
 			URL:     filtersURL,
 			Feature: filtersFeature{},

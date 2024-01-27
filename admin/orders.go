@@ -6,7 +6,6 @@ import (
 	"gifthub/db"
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
-	"gifthub/http/httpext"
 	"gifthub/orders"
 	"gifthub/templates"
 	"html/template"
@@ -89,7 +88,7 @@ func (f ordersFeature) ListTemplate(ctx context.Context) *template.Template {
 	return ordersTpl
 }
 
-func (f ordersFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[orders.Order], error) {
+func (f ordersFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[orders.Order], error) {
 	query := orders.Query{}
 	if q != "" {
 		query.Keyword = db.Escape(q)
@@ -97,7 +96,7 @@ func (f ordersFeature) Search(ctx context.Context, q string, offset, num int) (h
 
 	res, err := orders.Search(ctx, query, offset, num)
 
-	return httpext.SearchResults[orders.Order]{
+	return searchResults[orders.Order]{
 		Total: res.Total,
 		Items: res.Orders,
 	}, err
@@ -112,7 +111,7 @@ func (f ordersFeature) ID(ctx context.Context, id string) (interface{}, error) {
 }
 
 func OrdersList(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestList[orders.Order](w, r, httpext.List[orders.Order]{
+	digestList[orders.Order](w, r, list[orders.Order]{
 		Name:    ordersName,
 		URL:     ordersURL,
 		Feature: ordersFeature{},
@@ -120,7 +119,7 @@ func OrdersList(w http.ResponseWriter, r *http.Request) {
 }
 
 func OrdersForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[orders.Order](w, r, httpext.Form[orders.Order]{
+	data, err := digestForm[orders.Order](w, r, Form[orders.Order]{
 		Name:    ordersName,
 		Feature: ordersFeature{},
 	})

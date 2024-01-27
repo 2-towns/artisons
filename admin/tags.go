@@ -6,7 +6,6 @@ import (
 	"gifthub/conf"
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
-	"gifthub/http/httpext"
 	"gifthub/tags"
 	"gifthub/templates"
 	"html/template"
@@ -72,10 +71,10 @@ func (f tagsFeature) ListTemplate(ctx context.Context) *template.Template {
 	return tagsTpl
 }
 
-func (f tagsFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[tags.Tag], error) {
+func (f tagsFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[tags.Tag], error) {
 	res, err := tags.List(ctx, offset, num)
 
-	return httpext.SearchResults[tags.Tag]{
+	return searchResults[tags.Tag]{
 		Total: res.Total,
 		Items: res.Tags,
 	}, err
@@ -154,18 +153,18 @@ func (f tagsFeature) UpdateImage(a *tags.Tag, key, image string) {
 }
 
 func TagsSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[tags.Tag](w, r, httpext.Save[tags.Tag]{
+	digestSave[tags.Tag](w, r, save[tags.Tag]{
 		Name:    tagsName,
 		URL:     tagsURL,
 		Feature: tagsFeature{},
-		Form:    httpext.MultipartForm{},
+		Form:    multipartForm{},
 		Images:  []string{"image"},
 		Folder:  tagsFolder,
 	})
 }
 
 func TagsList(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestList[tags.Tag](w, r, httpext.List[tags.Tag]{
+	digestList[tags.Tag](w, r, list[tags.Tag]{
 		Name:    tagsName,
 		URL:     tagsURL,
 		Feature: tagsFeature{},
@@ -173,7 +172,7 @@ func TagsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func TagsForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[tags.Tag](w, r, httpext.Form[tags.Tag]{
+	data, err := digestForm[tags.Tag](w, r, Form[tags.Tag]{
 		Name:    tagsName,
 		Feature: tagsFeature{},
 	})
@@ -196,8 +195,8 @@ func TagsForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func TagsDelete(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestDelete[tags.Tag](w, r, httpext.Delete[tags.Tag]{
-		List: httpext.List[tags.Tag]{
+	digestDelete[tags.Tag](w, r, delete[tags.Tag]{
+		list: list[tags.Tag]{
 			Name:    tagsName,
 			URL:     tagsURL,
 			Feature: tagsFeature{},

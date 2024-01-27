@@ -7,7 +7,6 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
-	"gifthub/http/httpext"
 	"gifthub/templates"
 	"html/template"
 	"log"
@@ -81,7 +80,7 @@ func (f blogFeature) ListTemplate(ctx context.Context) *template.Template {
 	return blogTpl
 }
 
-func (f blogFeature) Search(ctx context.Context, q string, offset, num int) (httpext.SearchResults[blog.Article], error) {
+func (f blogFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[blog.Article], error) {
 	query := blog.Query{}
 	if q != "" {
 		query.Keywords = db.Escape(q)
@@ -89,7 +88,7 @@ func (f blogFeature) Search(ctx context.Context, q string, offset, num int) (htt
 
 	res, err := blog.Search(ctx, query, offset, num)
 
-	return httpext.SearchResults[blog.Article]{
+	return searchResults[blog.Article]{
 		Total: res.Total,
 		Items: res.Articles,
 	}, err
@@ -168,18 +167,18 @@ func (f blogFeature) Validate(ctx context.Context, r *http.Request, data blog.Ar
 }
 
 func BlogSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[blog.Article](w, r, httpext.Save[blog.Article]{
+	digestSave[blog.Article](w, r, save[blog.Article]{
 		Name:    blogName,
 		URL:     blogURL,
 		Feature: blogFeature{},
-		Form:    httpext.MultipartForm{},
+		Form:    multipartForm{},
 		Images:  []string{"image"},
 		Folder:  blogFolder,
 	})
 }
 
 func BlogList(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestList[blog.Article](w, r, httpext.List[blog.Article]{
+	digestList[blog.Article](w, r, list[blog.Article]{
 		Name:    blogName,
 		URL:     blogURL,
 		Feature: blogFeature{},
@@ -187,7 +186,7 @@ func BlogList(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[blog.Article](w, r, httpext.Form[blog.Article]{
+	data, err := digestForm[blog.Article](w, r, Form[blog.Article]{
 		Name:    blogName,
 		Feature: blogFeature{},
 	})
@@ -204,8 +203,8 @@ func BlogForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogDelete(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestDelete[blog.Article](w, r, httpext.Delete[blog.Article]{
-		List: httpext.List[blog.Article]{
+	digestDelete[blog.Article](w, r, delete[blog.Article]{
+		list: list[blog.Article]{
 			Name:    blogName,
 			URL:     blogURL,
 			Feature: blogFeature{},

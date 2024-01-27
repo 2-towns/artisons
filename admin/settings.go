@@ -5,7 +5,6 @@ import (
 	"errors"
 	"gifthub/conf"
 	"gifthub/http/contexts"
-	"gifthub/http/httpext"
 	"gifthub/shops"
 	"gifthub/templates"
 	"html/template"
@@ -182,7 +181,7 @@ func (f settingsShopFeature) Validate(ctx context.Context, r *http.Request, data
 }
 
 func SettingsForm(w http.ResponseWriter, r *http.Request) {
-	data, err := httpext.DigestForm[shops.Settings](w, r, httpext.Form[shops.Settings]{
+	data, err := digestForm[shops.Settings](w, r, Form[shops.Settings]{
 		Name:    settingsName,
 		Feature: settingsFeature{},
 	})
@@ -197,11 +196,11 @@ func SettingsForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func SettingsShopSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[shops.ShopSettings](w, r, httpext.Save[shops.ShopSettings]{
+	digestSave[shops.ShopSettings](w, r, save[shops.ShopSettings]{
 		Name:       settingsName,
 		URL:        settingsURL,
 		Feature:    settingsShopFeature{},
-		Form:       httpext.UrlEncodedForm{},
+		Form:       urlEncodedForm{},
 		Images:     []string{},
 		Folder:     "",
 		NoRedirect: true,
@@ -229,11 +228,11 @@ func SettingsShopSave(w http.ResponseWriter, r *http.Request) {
 }
 
 func SettingsContactSave(w http.ResponseWriter, r *http.Request) {
-	httpext.DigestSave[shops.Contact](w, r, httpext.Save[shops.Contact]{
+	digestSave[shops.Contact](w, r, save[shops.Contact]{
 		Name:       settingsName,
 		URL:        settingsURL,
 		Feature:    settingsContactFeature{},
-		Form:       httpext.MultipartForm{},
+		Form:       multipartForm{},
 		Images:     []string{"logo", "banner_1", "banner_2", "banner_3"},
 		Folder:     settingsFolder,
 		NoRedirect: true,

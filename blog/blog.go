@@ -41,7 +41,6 @@ type SearchResults struct {
 
 type Query struct {
 	Keywords string
-	Lang     string
 	Type     string
 }
 
@@ -139,17 +138,13 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 }
 
 func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error) {
-	slog.LogAttrs(ctx, slog.LevelInfo, "searching products")
+	slog.LogAttrs(ctx, slog.LevelInfo, "searching articles", slog.Int("offset", offset), slog.Int("num", num))
 
 	qs := fmt.Sprintf("FT.SEARCH %s @status:{online}", db.BlogIdx)
 
 	if q.Keywords != "" {
 		k := db.SearchValue(q.Keywords)
 		qs += fmt.Sprintf("(@title:%s)|(@description:%s)|(@id:{%s})", k, k, k)
-	}
-
-	if q.Lang != "" {
-		qs += fmt.Sprintf("(@lang:{%s})", q.Lang)
 	}
 
 	if q.Type != "" {
