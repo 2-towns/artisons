@@ -138,16 +138,9 @@ func Build(name string) *template.Template {
 				Cachebuster: cachebuster.Unix(),
 			})
 		},
-		"metatitle": func(key string, id string) string {
-			if id == "" {
-				return seo.URLs[key].Title
-			}
-
-			return strings.Replace(seo.URLs[key].Title, "{{key}}", id, 1)
-		},
-		"metadescription": func(key string, id string) string {
-			if id == "" {
-				return seo.URLs[key].Description
+		"meta": func(key string, t string, id string) string {
+			if t == "title" {
+				return strings.Replace(seo.URLs[key].Title, "{{key}}", id, 1)
 			}
 
 			return strings.Replace(seo.URLs[key].Description, "{{key}}", id, 1)
