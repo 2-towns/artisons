@@ -78,6 +78,7 @@ header "HX-Redirect" == "/admin/index.html"
 
 # Redirect when the admin is connected and try to access to auth
 GET {{host}}/sso.html
+HX-Current-URL: http://localhost:8080/sso.html
 HTTP 302
 [Asserts]
 header "Location" == "/admin/index.html"
