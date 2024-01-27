@@ -1,16 +1,17 @@
 # Display otp form when the correct email is used
-POST {{host}}/auth/otp.html
+POST {{host}}/otp.html
 HX-Request: true
 [FormParams]
 email: hello@world.com
 HTTP 200
 [Asserts]
-xpath "//form[@hx-post='/auth/login.html']" exists
+xpath "//form[@hx-post='/login.html']" exists
 [Captures]
 glue: xpath "normalize-space(//input[@id='glue']/@value)"
 
 # Redirect to dashboard when the otp is correct
-POST {{host}}/auth/login.html
+POST {{host}}/login.html
+HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]

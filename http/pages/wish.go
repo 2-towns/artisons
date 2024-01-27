@@ -9,6 +9,7 @@ import (
 	"gifthub/templates"
 	"gifthub/users"
 	"html/template"
+	"log"
 	"log/slog"
 	"net/http"
 
@@ -42,19 +43,20 @@ func Wishes(w http.ResponseWriter, r *http.Request) {
 		Shop     shops.Settings
 		Products []products.Product
 		Tags     []tags.Leaf
-		Wishes   []string
+		Empty    bool
 	}{
 		lang,
 		shops.Data,
 		pds,
 		tags.Tree,
-		wishes,
+		len(pds) == 0,
 	}
 
 	var t *template.Template
 	isHX, _ := ctx.Value(contexts.HX).(bool)
+
 	if isHX {
-		t = templates.Pages["wish-list"]
+		t = templates.Pages["hx-wish"]
 	} else {
 		t = templates.Pages["wish"]
 	}
@@ -66,6 +68,8 @@ func Wishes(w http.ResponseWriter, r *http.Request) {
 
 func Wish(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+
+	log.Println("!!!!!!!!!!!!!!!!!!!!!")
 
 	id := chi.URLParam(r, "id")
 

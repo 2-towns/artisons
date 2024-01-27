@@ -301,8 +301,8 @@ func TestAdminOnlyRedirectWhenNoUserInContext(t *testing.T) {
 		t.Fatalf(`status = %d, want %d`, status, http.StatusFound)
 	}
 
-	if rr.Header().Get("Location") != "/auth/index.html" {
-		t.Fatalf(`Location = %s, want %s`, rr.Header().Get("Location"), "/auth/index.html")
+	if rr.Header().Get("Location") != "/sso.html" {
+		t.Fatalf(`Location = %s, want %s`, rr.Header().Get("Location"), "/sso.html")
 	}
 }
 

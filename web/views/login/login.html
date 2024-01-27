@@ -7,7 +7,7 @@
 		{{translate .Lang "Please enter your email to receive a code and connect to the application."}}
 	</p>
 
-	<form hx-post="/auth/otp.html" hx-target="#article" hx-swap="outerHTML">
+	<form hx-post="/otp.html" hx-target="#article" hx-swap="outerHTML">
 		<div id="email-row" class="form-row-single">
 			<label class="input-label" for="email">
 				{{translate .Lang "Email"}}

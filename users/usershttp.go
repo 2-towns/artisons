@@ -74,12 +74,11 @@ func Middleware(next http.Handler) http.Handler {
 		}
 
 		http.SetCookie(w, cookie)
-
 		ctx := context.WithValue(r.Context(), contexts.Cart, cid)
 
 		sid, err := r.Cookie(cookies.SessionID)
 		if err != nil {
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
 
@@ -90,14 +89,14 @@ func Middleware(next http.Handler) http.Handler {
 			cookie := &http.Cookie{
 				Name:     cookies.SessionID,
 				Value:    sid.Value,
-				MaxAge:   0,
+				MaxAge:   -1,
 				Path:     "/",
 				HttpOnly: true,
 				Secure:   conf.Cookie.Secure,
 				Domain:   conf.Cookie.Domain,
 			}
 			http.SetCookie(w, cookie)
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		} else {
 			cookie := &http.Cookie{
@@ -119,6 +118,23 @@ func Middleware(next http.Handler) http.Handler {
 	})
 }
 
+func AccountOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		user, ok := ctx.Value(contexts.User).(User)
+
+		if !ok {
+			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
+			http.Redirect(w, r, "/otp.html", http.StatusFound)
+			return
+		}
+
+		ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -126,7 +142,7 @@ func AdminOnly(next http.Handler) http.Handler {
 
 		if !ok {
 			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
-			http.Redirect(w, r, "/auth/index.html", http.StatusFound)
+			http.Redirect(w, r, "/sso.html", http.StatusFound)
 			return
 		}
 

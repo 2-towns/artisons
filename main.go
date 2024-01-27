@@ -77,7 +77,7 @@ func adminRouter() http.Handler {
 func main() {
 	locales.LoadEn()
 	logs.Init()
-	security.LoadCsp()
+	// security.LoadCsp()
 	cache.Busting()
 
 	l := httplog.Logger{
@@ -99,18 +99,24 @@ func main() {
 	}
 
 	fs := http.FileServer(http.Dir("web/public"))
+
 	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
-
-	router.R.Get(seo.URLs["home"].URL, pages.Home)
-	router.R.Get(seo.URLs["wishes"].URL, pages.Wishes)
+	router.R.Get("/", pages.Home)
+	router.R.Get("/wish.html", pages.Wishes)
 	router.R.Get(fmt.Sprintf("%s/:slug.html", seo.URLs["product"].URL), pages.Product)
-	router.R.Get("/auth/index.html", auth.Form)
+	router.R.Get("/sso.html", auth.Form)
+	router.R.Get("/otp.html", auth.Form)
 
-	router.R.Post("/auth/otp.html", auth.Otp)
-	router.R.Post("/auth/login.html", auth.Login)
-	router.R.Post("/auth/logout.html", auth.Logout)
-	router.R.Post("/wishes/:id/add.html", pages.Wish)
-	router.R.Post("/wishes/:id/delete.html", pages.UnWish)
+	router.R.Route("/account", func(r chi.Router) {
+		r.Use(users.AccountOnly)
+		r.Get("/index.html", pages.Account)
+	})
+
+	router.R.Post("/wish/{id}/add.html", pages.Wish)
+	router.R.Post("/wish/{id}/delete.html", pages.UnWish)
+	router.R.Post("/otp.html", auth.Otp)
+	router.R.Post("/login.html", auth.Login)
+	router.R.Post("/logout.html", auth.Logout)
 
 	router.R.Mount("/admin", adminRouter())
 

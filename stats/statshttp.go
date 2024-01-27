@@ -36,13 +36,13 @@ func Middleware(next http.Handler) http.Handler {
 		if strings.HasPrefix(r.URL.Path, "/public") ||
 			strings.HasPrefix(r.URL.Path, "/favicon") ||
 			strings.HasPrefix(r.URL.Path, "/admin") ||
-			strings.HasPrefix(r.URL.Path, "/auth") {
+			strings.HasPrefix(r.URL.Path, "/login") ||
+			strings.HasPrefix(r.URL.Path, "/otp") {
 			next.ServeHTTP(w, r.WithContext(r.Context()))
 			return
 		}
 
 		ua := useragent.Parse(r.Header.Get("User-Agent"))
-
 		go Visit(r.Context(), ua, VisitData{
 			URL:     r.URL.Path,
 			Referer: r.Referer(),

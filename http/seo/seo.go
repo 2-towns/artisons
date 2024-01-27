@@ -84,7 +84,7 @@ func init() {
 
 		updatedAt, err := strconv.ParseInt(val["updated_at"], 10, 64)
 		if err != nil {
-			slog.Error("cannot parse the seo updated at", slog.String("updated_at", val["updated_at"]))
+			slog.Error("cannot parse the seo updated at", slog.String("updated_at", val["updated_at"]), slog.String("key", key))
 			continue
 		}
 

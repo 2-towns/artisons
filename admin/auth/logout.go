@@ -16,6 +16,6 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("HX-Redirect", "/auth/index.html")
+	w.Header().Set("HX-Redirect", "/sso.html")
 	w.Write([]byte(""))
 }

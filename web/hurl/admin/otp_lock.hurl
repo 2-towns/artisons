@@ -1,5 +1,5 @@
 # Generate an otp for lock user
-POST {{host}}/auth/otp.html
+POST {{host}}/otp.html
 HX-Request: true
 [FormParams]
 email: lock@world.com
@@ -8,7 +8,8 @@ HTTP 200
 glue: xpath "normalize-space(//input[@id='glue']/@value)"
 
 # Displays an error for first tentative
-POST {{host}}/auth/login.html
+POST {{host}}/login.html
+HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
@@ -24,7 +25,8 @@ HTTP 200
 body contains "The OTP does not match."
 
 # Displays an error for second tentative
-POST {{host}}/auth/login.html
+POST {{host}}/login.html
+HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
@@ -40,7 +42,8 @@ HTTP 200
 body contains "The OTP does not match."
 
 # Cancel the tentative after the third tentative
-POST {{host}}/auth/login.html
+POST {{host}}/login.html
+HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]

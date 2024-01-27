@@ -29,7 +29,7 @@ func init() {
 	tpl, err = templates.Build("base.html").ParseFiles([]string{
 		"web/views/admin/base.html",
 		"web/views/admin/simple.html",
-		"web/views/admin/login/login.html",
+		"web/views/login/login.html",
 		"web/views/admin/icons/logo.svg",
 	}...)
 
@@ -38,7 +38,7 @@ func init() {
 	}
 
 	hxtpl, err = templates.Build("login.html").ParseFiles([]string{
-		"web/views/admin/login/login.html",
+		"web/views/login/login.html",
 	}...)
 
 	if err != nil {
@@ -46,8 +46,7 @@ func init() {
 	}
 
 	otptpl, err = templates.Build("otp.html").ParseFiles(
-		"web/views/admin/login/otp.html",
-		"web/views/admin/js/otp.js.html",
+		"web/views/login/otp.html",
 	)
 
 	if err != nil {
@@ -63,7 +62,13 @@ func Form(w http.ResponseWriter, r *http.Request) {
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
-		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+
+		if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
+			httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+		} else {
+			httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+		}
+
 		return
 	}
 
@@ -72,7 +77,11 @@ func Form(w http.ResponseWriter, r *http.Request) {
 	if isHX {
 		t = hxtpl
 	} else {
-		t = tpl
+		if r.URL.Path == "/sso.html" {
+			t = tpl
+		} else {
+			t = templates.Pages["login"]
+		}
 		policy := fmt.Sprintf("default-src 'self'; script-src-elem 'self' %s;", security.CSP["otp"])
 		w.Header().Set("Content-Security-Policy", policy)
 	}
@@ -100,7 +109,7 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	email := r.FormValue("email")
-	if !users.IsAdmin(ctx, email) {
+	if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") && !users.IsAdmin(ctx, email) {
 		httperrors.InputMessage(w, ctx, "input:email")
 		return
 	}
@@ -113,11 +122,17 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
+	cancelURL := "/otp.html"
+	if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
+		cancelURL = "/sso.html"
+	}
+
 	data := struct {
-		Lang  language.Tag
-		Glue  string
-		Email string
-	}{lang, glue, email}
+		Lang      language.Tag
+		Glue      string
+		Email     string
+		CancelURL string
+	}{lang, glue, email, cancelURL}
 
 	if err = otptpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
@@ -130,7 +145,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
-		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+		if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
+			httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+		} else {
+			httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+		}
+
 		return
 	}
 
@@ -161,7 +181,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, cookie)
-	// Todo check user role to redirect on correct page
-	w.Header().Set("HX-Redirect", "/admin/index.html")
+
+	if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
+		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+	} else {
+		httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+	}
+
 	w.WriteHeader(http.StatusOK)
 }

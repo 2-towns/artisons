@@ -1,0 +1,9 @@
+{{ if .Empty }}
+No results found.
+{{else}}
+{{ range .Products}}
+<div class="wishlist-card">
+    <p>{{.Title}}</p>
+</div>
+{{end}}
+{{end}}

@@ -83,16 +83,25 @@ var AdminSuccess = []string{
 var AdminList = append(AdminUI, AdminSuccess...)
 
 var Pages map[string]*template.Template = map[string]*template.Template{}
-var pages = []string{"home", "wish", "wish-list"}
+var pages = []string{"home", "wish", "hx-wish", "login"}
 
 func init() {
 	folder := fmt.Sprintf("%s/web/views/themes/%s", conf.WorkingSpace, conf.DefaultTheme)
 
 	for _, value := range pages {
-		tpl, err := Build("base.html").ParseFiles([]string{
-			folder + "/base.html",
-			folder + fmt.Sprintf("/%s.html", value),
-		}...)
+		files := []string{}
+
+		if !strings.HasPrefix(value, "hx") {
+			files = append(files, folder+"/base.html")
+		}
+
+		files = append(files, folder+fmt.Sprintf("/%s.html", value))
+
+		if value == "login" {
+			files = append(files, fmt.Sprintf("%s/web/views/login/login.html", conf.WorkingSpace))
+		}
+
+		tpl, err := Build(fmt.Sprintf("%s.html", value)).ParseFiles(files...)
 
 		if err != nil {
 			log.Panicln(err)
