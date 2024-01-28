@@ -3,6 +3,7 @@ package blog
 import (
 	"gifthub/conf"
 	"gifthub/db"
+	"gifthub/string/stringutil"
 	"gifthub/tests"
 	"os"
 	"path"
@@ -13,6 +14,7 @@ import (
 var article Article = Article{
 	Title:       "Mangez de l'ail !",
 	Description: "C'est un antiseptique.",
+	Slug:        "mangez-de-lail",
 	Image:       path.Join(conf.WorkingSpace, "web", "tmp", "hello"),
 	Status:      "online",
 }
@@ -26,6 +28,7 @@ func init() {
 		"id", "99",
 		"title", article.Title,
 		"status", article.Status,
+		"slug", stringutil.Slugify(article.Title),
 		"lang", conf.DefaultLocale.String(),
 		"description", article.Description,
 		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
@@ -33,11 +36,14 @@ func init() {
 		"type", "blog",
 	)
 
+	db.Redis.HSet(ctx, "bids", db.Escape(article.Title), "99")
+
 	db.Redis.HSet(ctx, "blog:98",
 		"id", "98",
 		"title", article.Title,
 		"status", article.Status,
 		"lang", conf.DefaultLocale.String(),
+		"slug", stringutil.Slugify(article.Title+"-bis"),
 		"description", article.Description,
 		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
 		"type", "blog",
@@ -74,6 +80,17 @@ func TestValidReturnsErrorWhenDescriptionIsEmpty(t *testing.T) {
 
 	if err := a.Validate(c); err == nil || err.Error() != "input:description" {
 		t.Fatalf(`a.Validate(c) = %v, want "input:description"`, err.Error())
+	}
+}
+
+func TestValidReturnsErrorWhenSlugIsEmpty(t *testing.T) {
+	c := tests.Context()
+
+	a := article
+	a.Slug = ""
+
+	if err := a.Validate(c); err == nil || err.Error() != "input:slug" {
+		t.Fatalf(`a.Validate(c) = %v, want "input:slug"`, err.Error())
 	}
 }
 
@@ -234,5 +251,65 @@ func TestDeletableReturnsFalseWhenTypeIsBlog(t *testing.T) {
 
 	if deletable, err := Deletable(c, 99); !deletable || err != nil {
 		t.Fatalf(`Deletable(c, c) = %v, %v, want true', nil`, !deletable, err)
+	}
+}
+
+func TestGetIDFromSlugReturnsEmptyWhenSlugDoesNotExist(t *testing.T) {
+	ctx := tests.Context()
+
+	if pid, err := GetIDFromSlug(ctx, "i-do-not-exist"); err != nil || pid != 0 {
+		t.Fatalf(`GetIDFromSlug(ctx, "i-do-not-exist") = %v, %s want not empty, nil`, pid, err)
+	}
+}
+
+func TestGetIDFromSlugReturnsPIDWhenSlugDoesExist(t *testing.T) {
+	ctx := tests.Context()
+
+	s := db.Escape("Mangez de l'ail !")
+	if pid, err := GetIDFromSlug(ctx, s); err != nil || pid == 0 {
+		t.Fatalf(`GetIDFromSlug(ctx, s = %v, %s want not false, not empty`, pid, err)
+	}
+}
+
+func TestFindBySlugReturnsErrorWhenSlugIsMissing(t *testing.T) {
+	c := tests.Context()
+	if _, err := FindBySlug(c, ""); err == nil || err.Error() != "the data is not found" {
+		t.Fatalf(`FindBySlug(c,"") = %v, want "the data is not found"`, err.Error())
+	}
+}
+
+func TestFindBySlugReturnsErrorWhenSlugDoesNotExist(t *testing.T) {
+	c := tests.Context()
+	if _, err := FindBySlug(c, "doesnotexist"); err == nil || err.Error() != "the data is not found" {
+		t.Fatalf(`FindBySlug(c, "doesnotexist") = %v, want "the data is not found"`, err.Error())
+	}
+}
+
+func TestFindBySlugReturnsArticleWhenSuccess(t *testing.T) {
+	c := tests.Context()
+	slug := db.Escape("Mangez de l'ail !")
+	a, err := FindBySlug(c, slug)
+	if err != nil {
+		t.Fatalf(`Find(c, slug) = %v, want nil`, err.Error())
+	}
+
+	if a.Description == "" {
+		t.Fatalf(`p.Description  = %v, want string`, a.Description)
+	}
+
+	if a.ID != 99 {
+		t.Fatalf(`p.ID = %d, want "99"`, a.ID)
+	}
+
+	if a.Slug == "" {
+		t.Fatalf(`p.Slug = %v, want string`, a.Slug)
+	}
+
+	if a.Status != "online" {
+		t.Fatalf(`p.Status = %v, want string`, a.Status)
+	}
+
+	if a.Title == "" {
+		t.Fatalf(`p.Title = %v, want string`, a.Title)
 	}
 }

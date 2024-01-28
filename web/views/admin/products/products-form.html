@@ -42,7 +42,7 @@
 				</label>
 
 				<div class="input-group">
-					{{template "products-slug.html" .}}
+					{{template "slug.html" .}}
 					<span class="input-group-text">.html</span>
 				</div>
 
@@ -53,7 +53,7 @@
 						<div class="row row-gap row-align">
 							<a
 							   href="#"
-							   hx-get="/admin/products/slug.html"
+							   hx-get="/admin/slug.html"
 							   hx-include="input[name=title]"
 							   hx-swap="outerHTML"
 							   hx-target="#slug">

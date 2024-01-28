@@ -59,7 +59,7 @@ func init() {
 			conf.WorkingSpace+"web/views/admin/icons/close.svg",
 			conf.WorkingSpace+"web/views/admin/products/products-head.html",
 			conf.WorkingSpace+"web/views/admin/products/products-scripts.html",
-			conf.WorkingSpace+"web/views/admin/products/products-slug.html",
+			conf.WorkingSpace+"web/views/admin/slug.html",
 			conf.WorkingSpace+"web/views/admin/products/products-form.html",
 		)...)
 
@@ -217,7 +217,7 @@ func (f productsFeature) UpdateImage(p *products.Product, key, image string) {
 }
 
 func (f productsFeature) Validate(ctx context.Context, r *http.Request, data products.Product) error {
-	pid, err := products.PID(ctx, data.Slug)
+	pid, err := products.GetPIDFromSlug(ctx, data.Slug)
 	if err != nil || (pid != "" && pid != data.ID) {
 		return errors.New("input:slug")
 	}

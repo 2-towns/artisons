@@ -7,6 +7,7 @@ import (
 	"gifthub/conf"
 	"gifthub/db"
 	"gifthub/http/contexts"
+	"gifthub/string/stringutil"
 	"gifthub/templates"
 	"html/template"
 	"log"
@@ -120,6 +121,12 @@ func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blog.Artic
 		a.ID = int(i)
 	}
 
+	if r.FormValue("slug") != "" {
+		a.Slug = r.FormValue("slug")
+	} else {
+		a.Slug = stringutil.Slugify(a.Title)
+	}
+
 	return a, nil
 }
 
@@ -163,6 +170,11 @@ func (f blogFeature) UpdateImage(a *blog.Article, key, image string) {
 }
 
 func (f blogFeature) Validate(ctx context.Context, r *http.Request, data blog.Article) error {
+	id, err := blog.GetIDFromSlug(ctx, data.Slug)
+	if err != nil || (id != 0 && id != data.ID) {
+		return errors.New("input:slug")
+	}
+
 	return nil
 }
 

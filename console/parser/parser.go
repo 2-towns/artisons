@@ -30,19 +30,22 @@ type lines [][]string
 
 const isku int = 0
 const ititle = 1
-const iprice = 2
-const icurrency = 3
-const iquantity = 4
-const istatus = 5
-const idescription = 6
-const iimages = 7
-const iweight = 8
-const itags = 9
-const ilinks = 10
-const ioptions = 11
+const iprice = 3
+const islug = 2
+
+// const icurrency = 4
+const iquantity = 5
+const istatus = 6
+const idescription = 7
+const iimages = 8
+const iweight = 9
+const itags = 10
+
+// const ilinks = 11
+const ioptions = 12
 const cellSeparator = ";"
 const optionSeparator = ":"
-const requiredFields = 8
+const requiredFields = 9
 
 var (
 	printer = message.NewPrinter(locales.Console)
@@ -285,6 +288,7 @@ func parseCsvLine(line []string) (products.Product, error) {
 		Status:      line[istatus],
 		Weight:      weight,
 		Tags:        tags,
+		Slug:        line[islug],
 		// Links:       links,
 		Meta:   options,
 		Image1: iids[0],

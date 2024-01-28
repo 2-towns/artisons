@@ -8,7 +8,7 @@ import (
 const image = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png"
 
 var line = []string{
-	"123456", "Product", "12.4", "EUR", "1", "online", "Best product", image, "164", "gifts;garden", "1234", "color:blue",
+	"123456", "Product", "product", "12.4", "EUR", "1", "online", "Best product", image, "164", "gifts;garden", "1234", "color:blue",
 }
 
 var header = []string{"sku", "title", "price", "currency", "quantity", "status", "description", "images", "weight", "tags", "links", "options"}
@@ -84,7 +84,7 @@ func TestImportReturnsCountZeroWhenTitleIsMissing(t *testing.T) {
 	}
 }
 
-func TestImportReturnsCountZeroWhenPriceIsMissing(t *testing.T) {
+func TestImportReturnsCountZeroWhenSlugIsMissing(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
@@ -99,13 +99,28 @@ func TestImportReturnsCountZeroWhenPriceIsMissing(t *testing.T) {
 	}
 }
 
+func TestImportReturnsCountZeroWhenPriceIsMissing(t *testing.T) {
+	h := make([]string, len(header))
+	copy(h, header)
+
+	l := make([]string, len(line))
+	copy(l, line)
+	l[3] = ""
+	csv := lines{h, l}
+
+	count, err := Import(csv, conf.DefaultMID)
+	if err != nil || count != 0 {
+		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
+	}
+}
+
 func TestImportReturnsCountZeroWhenPriceIsInvalid(t *testing.T) {
 	h := make([]string, len(header))
 	copy(h, header)
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[2] = "toto"
+	l[3] = "toto"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -120,7 +135,7 @@ func TestImportReturnsCountZeroWhenQuantityIsMissing(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[4] = ""
+	l[5] = ""
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -135,7 +150,7 @@ func TestImportReturnsCountZeroWhenQuantityIsInvalid(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[4] = "toto"
+	l[5] = "toto"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -150,7 +165,7 @@ func TestImportReturnsCountZeroWhenStatusIsInvalid(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[5] = "toto"
+	l[6] = "toto"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -165,7 +180,7 @@ func TestImportReturnsCountZeroWhenDescriptionIsMissing(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[6] = ""
+	l[7] = ""
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -180,7 +195,7 @@ func TestImportReturnsCountZeroImagesAreInvalid(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[7] = "toto"
+	l[8] = "toto"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -195,7 +210,7 @@ func TestImportReturnsCountZeroWhenSkuImagesAreMissing(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[7] = ""
+	l[8] = ""
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -212,7 +227,7 @@ func TestImportReturnsCountZeroWhenImagesAreNotFound(t *testing.T) {
 	copy(l, line)
 
 	const image = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1_toto.png"
-	l[7] = image
+	l[8] = image
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -229,7 +244,7 @@ func TestImportReturnsCountZeroWhenImageHaveBadExtension(t *testing.T) {
 	copy(l, line)
 
 	const image = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.svg"
-	l[7] = image
+	l[8] = image
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -244,7 +259,7 @@ func TestImportReturnsCountZeroWhenLocalImageHaveBadExtension(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[7] = "../../web/data/product.svg"
+	l[8] = "../../web/data/product.svg"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -259,7 +274,7 @@ func TestImportReturnsCountZeroWhenLocalImageIsNotFound(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[7] = "../../web/data/toto.png"
+	l[8] = "../../web/data/toto.png"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -274,7 +289,7 @@ func TestImportReturnsCountZeroWhenWeightIsInvalid(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[8] = "toto"
+	l[9] = "toto"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -289,7 +304,7 @@ func TestImportReturnsCountZeroWhenOptionsAreInvalid(t *testing.T) {
 
 	l := make([]string, len(line))
 	copy(l, line)
-	l[11] = "toto"
+	l[12] = "toto"
 	csv := lines{h, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -311,7 +326,7 @@ func TestImportReturnsOneCountWhenLocalImageAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[7] = "../../web/data/product.png"
+	l[8] = "../../web/data/product.png"
 	csv := lines{header, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -324,7 +339,7 @@ func TestImportReturnsOneCountWhenNoOptionsAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[11] = ""
+	l[12] = ""
 	csv := lines{header, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -337,7 +352,7 @@ func TestImportReturnsOneCountWhenNoLinksAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[10] = ""
+	l[11] = ""
 	csv := lines{header, l}
 
 	count, err := Import(csv, conf.DefaultMID)
@@ -350,7 +365,7 @@ func TestImportReturnsOneCountWhenNoWeightAndSuccess(t *testing.T) {
 	l := make([]string, len(line))
 	copy(l, line)
 
-	l[8] = ""
+	l[9] = ""
 	csv := lines{header, l}
 
 	count, err := Import(csv, conf.DefaultMID)

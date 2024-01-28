@@ -14,3 +14,10 @@ HTTP 200
 [Asserts]
 body contains "No results found."
 
+# The blog article is displayed
+GET {{host}}/blog/mangez-de-lail.html
+HX-Request: true
+User-Agent: {{ua}}
+HTTP 200
+[Asserts]
+xpath "//p[text()=\"Mangez de l'ail\"]" exists

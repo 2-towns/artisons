@@ -104,8 +104,6 @@ func buildTemplate(key string, files []string) {
 		}
 	}
 
-	log.Println(f)
-
 	tpl, err := Build(name).ParseFiles(f...)
 
 	if err != nil {
@@ -125,6 +123,7 @@ func init() {
 	buildTemplate("hx-wish", []string{"hx-wish.html"})
 	buildTemplate("blog", []string{"blog.html", "hx-blog.html"})
 	buildTemplate("hx-blog", []string{"hx-blog.html"})
+	buildTemplate("article", []string{"article.html"})
 }
 
 func Build(name string) *template.Template {

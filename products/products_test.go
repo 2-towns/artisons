@@ -178,6 +178,17 @@ func TestValidateReturnsErrorWhenStatusIsNotSupported(t *testing.T) {
 	}
 }
 
+func TestValidateReturnsErrorWhenSlugIsEmpty(t *testing.T) {
+	c := tests.Context()
+
+	p := product
+	p.Slug = ""
+
+	if err := p.Validate(c); err == nil || err.Error() != "input:slug" {
+		t.Fatalf(`p.Validate(c) = %v, want not "input:slug"`, err.Error())
+	}
+}
+
 func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
@@ -595,20 +606,20 @@ func TestListReturnsProductsWhenOk(t *testing.T) {
 	}
 }
 
-func TestPIDReturnsEmptyWhenSlugDoesNotExist(t *testing.T) {
+func TestGetPIDFromSlugReturnsEmptyWhenSlugDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 
-	if pid, err := PID(ctx, "coucou-c-est-moi"); err != nil || pid != "" {
-		t.Fatalf(`HasUniqueSlug(ctx, "coucou-c-est-moi") = %v, %s want not empty, nil`, pid, err)
+	if pid, err := GetPIDFromSlug(ctx, "coucou-c-est-moi"); err != nil || pid != "" {
+		t.Fatalf(`GetPIDFromSlug(ctx, "coucou-c-est-moi") = %v, %s want not empty, nil`, pid, err)
 	}
 }
 
-func TestPIDReturnsPIDWhenSlugDoesExist(t *testing.T) {
+func TestGetPIDFromSlugReturnsPIDWhenSlugDoesExist(t *testing.T) {
 	ctx := tests.Context()
 
 	s := db.Escape("T-shirt développeur unisexe Tester c'est douter")
-	if pid, err := PID(ctx, s); err != nil || pid == "" {
-		t.Fatalf(`HasUniqueSlug(ctx, s = %v, %s want not false, not empty`, pid, err)
+	if pid, err := GetPIDFromSlug(ctx, s); err != nil || pid == "" {
+		t.Fatalf(`GetPIDFromSlug(ctx, s = %v, %s want not false, not empty`, pid, err)
 	}
 }
 

@@ -40,7 +40,7 @@ type Product struct {
 	Price       float64 `redis:"price" validate:"required"`
 	// The percent discount
 	Discount float64 `redis:"discount"`
-	Slug     string  `redis:"slug"`
+	Slug     string  `redis:"slug" validate:"required"`
 	MID      string  `redis:"mid"`
 	Sku      string  `redis:"sku" validate:"omitempty,alphanum"`
 	Quantity int     `redis:"quantity" validate:"required"`
@@ -228,7 +228,7 @@ func (p Product) Validate(ctx context.Context) error {
 	return nil
 }
 
-func PID(ctx context.Context, slug string) (string, error) {
+func GetPIDFromSlug(ctx context.Context, slug string) (string, error) {
 	exists, err := db.Redis.HExists(ctx, "pids", slug).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot verify the slug existence", slog.String("error", err.Error()))
@@ -312,7 +312,7 @@ func (p Product) Save(ctx context.Context) (string, error) {
 	}
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
-		rdb.HSet(ctx, key, values).Result()
+		rdb.HSet(ctx, key, values)
 		rdb.HSetNX(ctx, key, "created_at", now)
 		rdb.HSet(ctx, "pids", p.Slug, p.ID)
 
@@ -364,7 +364,7 @@ func FindBySlug(ctx context.Context, slug string) (Product, error) {
 		return Product{}, errors.New("the data is not found")
 	}
 
-	pid, err := PID(ctx, slug)
+	pid, err := GetPIDFromSlug(ctx, slug)
 	if err != nil {
 		return Product{}, nil
 	}

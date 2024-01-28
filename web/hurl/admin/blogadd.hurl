@@ -64,6 +64,7 @@ title: Great article
 lang: en
 description: Great description
 status: online
+slug:blog-without-file-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image-error" 
@@ -79,10 +80,27 @@ lang: en
 description: Great description
 status: online
 image:file,image.txt;
+slug:blog-with-bad-picture-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image-error" 
 header "HX-Reswap" == "innerHTML show:#image-row:top" 
+xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
+
+# Adding an article with existing slug show an error
+POST {{host}}/admin/blog/add.html
+HX-Request: true
+[MultipartFormData]
+title: Great article
+lang: en
+description: Great description
+status: online
+image:file,image.jpg;
+slug: mangez-de-lail
+HTTP 200
+[Asserts]
+header "HX-Retarget" == "#slug-error" 
+header "HX-Reswap" == "innerHTML show:#slug-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article with correct data works
@@ -94,6 +112,7 @@ lang: en
 description: Great description
 status: online
 image:file,image.jpg;
+slug: blog-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/blog.html"

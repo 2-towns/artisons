@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"gifthub/conf"
 	"gifthub/db"
-	"gifthub/string/stringutil"
 	"gifthub/validators"
 	"log/slog"
 	"os"
@@ -17,13 +16,14 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/redis/go-redis/v9"
 )
 
 type Article struct {
 	ID          int
 	Title       string `validate:"required"`
 	Type        string
-	Slug        string
+	Slug        string `validate:"required"`
 	Description string `validate:"required"`
 	Status      string `redis:"status" validate:"oneof=online offline"`
 
@@ -74,6 +74,32 @@ func (p Article) Validate(ctx context.Context) error {
 	return nil
 }
 
+func GetIDFromSlug(ctx context.Context, slug string) (int, error) {
+	exists, err := db.Redis.HExists(ctx, "bids", slug).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot verify the slug existence", slog.String("error", err.Error()))
+		return 0, errors.New("something went wrong")
+	}
+
+	if !exists {
+		return 0, nil
+	}
+
+	s, err := db.Redis.HGet(ctx, "bids", slug).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the slug", slog.String("error", err.Error()))
+		return 0, errors.New("something went wrong")
+	}
+
+	id, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id ", slog.String("id", s), slog.String("error", err.Error()))
+		return 0, errors.New("something went wrong")
+	}
+
+	return int(id), nil
+}
+
 func (a *Article) UpdateImage(key, value string) {
 	a.Image = value
 }
@@ -90,19 +116,27 @@ func (a Article) Save(ctx context.Context) (string, error) {
 		a.ID = int(id)
 	}
 
-	slug := stringutil.Slugify(a.Title)
 	now := time.Now().Unix()
 
-	if _, err := db.Redis.HSet(ctx, fmt.Sprintf("blog:%d", a.ID), "id", a.ID,
-		"title", a.Title,
-		"description", a.Description,
-		"image", a.Image,
-		"slug", slug,
-		"status", a.Status,
-		"updated_at", now,
-	).Result(); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot store the data", slog.String("error", err.Error()))
-		return "", errors.New("something went wrong")
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		key := fmt.Sprintf("blog:%d", a.ID)
+
+		rdb.HSet(ctx, key,
+			"title", db.Escape(a.Title),
+			"description", db.Escape(a.Description),
+			"image", a.Image,
+			"slug", db.Escape(a.Slug),
+			"status", a.Status,
+			"updated_at", now,
+		)
+		rdb.HSetNX(ctx, key, "id", a.ID)
+		rdb.HSetNX(ctx, key, "created_at", now)
+		rdb.HSet(ctx, "bids", a.Slug, a.ID)
+
+		return nil
+	}); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot store the product", slog.String("error", err.Error()))
+		return "", err
 	}
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "blog article created", slog.Int("id", a.ID))
@@ -242,4 +276,26 @@ func Find(ctx context.Context, id int) (Article, error) {
 	}
 
 	return a, err
+}
+
+func FindBySlug(ctx context.Context, slug string) (Article, error) {
+	l := slog.With(slog.String("slug", slug))
+	l.LogAttrs(ctx, slog.LevelInfo, "looking for article from slug")
+
+	if slug == "" {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty slug")
+		return Article{}, errors.New("the data is not found")
+	}
+
+	id, err := GetIDFromSlug(ctx, slug)
+	if err != nil {
+		return Article{}, nil
+	}
+
+	if id == 0 {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty id")
+		return Article{}, errors.New("the data is not found")
+	}
+
+	return Find(ctx, id)
 }

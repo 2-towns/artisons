@@ -1,2 +1,2 @@
-sku,title,price,currency,quantity,status,description,images,weight,tags,links,options
-1,"Mon beau produit",15,EUR,2,online,"Très beau produitd",./web/data/product.png,200,gift,124,color:blue
+sku,title,slug,price,currency,quantity,status,description,images,weight,tags,links,options
+1,"Mon beau produit","mon-beau-produit",15,EUR,2,online,"Très beau produitd",./web/data/product.png,200,gift,124,color:blue

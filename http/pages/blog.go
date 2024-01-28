@@ -7,6 +7,7 @@ import (
 	"gifthub/http/contexts"
 	"gifthub/http/httperrors"
 	"gifthub/shops"
+	"gifthub/tags"
 	"gifthub/templates"
 	"html/template"
 	"log/slog"
@@ -57,12 +58,14 @@ func Blog(w http.ResponseWriter, r *http.Request) {
 		Articles   []blog.Article
 		Empty      bool
 		Pagination templates.Pagination
+		Tags       []tags.Leaf
 	}{
 		lang,
 		shops.Data,
 		res.Articles,
 		len(res.Articles) == 0,
 		pag,
+		tags.Tree,
 	}
 
 	var t *template.Template

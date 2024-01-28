@@ -34,6 +34,37 @@
 				<div id="title-error"></div>
 			</div>
 
+			<div class="form-row" id="slug-row">
+				<label class="input-label" for="slug">
+					{{translate .Lang "Url"}}
+				</label>
+
+				<div class="input-group">
+					{{template "slug.html" .}}
+					<span class="input-group-text">.html</span>
+				</div>
+
+				<div>
+					<small class="input-help">
+						<span>{{translate .Lang "The URL has to be unique."}}</span>
+						<span>{{translate .Lang "Let it empty to generate one automatically."}}</span><br />
+						<div class="row row-gap row-align">
+							<a
+							   href="#"
+							   hx-get="/admin/slug.html"
+							   hx-include="input[name=title]"
+							   hx-swap="outerHTML"
+							   hx-target="#slug">
+								{{translate .Lang "Fill with auto generated value."}}
+							</a>
+							<div id="spinner" class="htmx-indicator htmx-spinner  htmx-spinner-inverse"></div>
+						</div>
+					</small>
+				</div>
+
+				<div id="slug-error"></div>
+			</div>
+
 			<div class="form-row" id="description-row">
 				<label class="input-label" id="description">
 					{{translate .Lang "Description"}}
