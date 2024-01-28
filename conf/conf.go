@@ -153,6 +153,6 @@ func Pagination(page int) (int, int) {
 // DefaultLocale is the default language applied
 var DefaultLocale = language.English
 
-const DefaultTheme = "minimalist"
+const DefaultTheme = "nostyle"
 
 const AddressesFrApi = "https://api-adresse.data.gouv.fr"
