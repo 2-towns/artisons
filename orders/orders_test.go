@@ -2,12 +2,12 @@ package orders
 
 import (
 	"fmt"
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/products"
-	"gifthub/string/stringutil"
-	"gifthub/tests"
-	"gifthub/users"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/products"
+	"artisons/string/stringutil"
+	"artisons/tests"
+	"artisons/users"
 	"math/rand"
 	"testing"
 	"time"
@@ -280,7 +280,7 @@ func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 	message.SetString(language.English, "price", "Price")
 	message.SetString(language.English, "total", "Total")
 	message.SetString(language.English, "link", "Link")
-	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at gifthub shop")
+	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at artisons shop")
 
 	o, _ := order.WithProducts(ctx)
 	o = o.WithTotal()
@@ -304,7 +304,7 @@ Order total: 105.50
 +-----------------------------+----------+-------+-------+----------------------------------------------------------+
 
 See you around,
-The Customer Experience Team at gifthub shop`
+The Customer Experience Team at artisons shop`
 
 	if tpl != expected {
 		t.Fatalf(`tpl = \n%s, want \n%s`, tpl, expected)

@@ -2,7 +2,7 @@ package products
 
 import (
 	"fmt"
-	"gifthub/tests"
+	"artisons/tests"
 )
 
 func ExampleSerializeMeta() {

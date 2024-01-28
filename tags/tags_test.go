@@ -1,8 +1,8 @@
 package tags
 
 import (
-	"gifthub/db"
-	"gifthub/tests"
+	"artisons/db"
+	"artisons/tests"
 	"testing"
 	"time"
 

@@ -2,10 +2,10 @@ package admin
 
 import (
 	"context"
-	"gifthub/conf"
-	"gifthub/http/contexts"
-	"gifthub/http/seo"
-	"gifthub/templates"
+	"artisons/conf"
+	"artisons/http/contexts"
+	"artisons/http/seo"
+	"artisons/templates"
 	"html/template"
 	"log"
 	"log/slog"

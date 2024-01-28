@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"gifthub/conf"
+	"artisons/conf"
 	"testing"
 )
 

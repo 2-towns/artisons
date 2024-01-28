@@ -3,8 +3,8 @@ package logs
 
 import (
 	"context"
-	"gifthub/http/contexts"
-	"gifthub/users"
+	"artisons/http/contexts"
+	"artisons/users"
 	"log"
 	"log/slog"
 	"os"

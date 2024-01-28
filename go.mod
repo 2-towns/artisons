@@ -1,4 +1,4 @@
-module gifthub
+module artisons
 
 go 1.21
 

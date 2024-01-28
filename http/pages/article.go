@@ -1,12 +1,12 @@
 package pages
 
 import (
-	"gifthub/blog"
-	"gifthub/http/contexts"
-	"gifthub/http/httperrors"
-	"gifthub/shops"
-	"gifthub/tags"
-	"gifthub/templates"
+	"artisons/blog"
+	"artisons/http/contexts"
+	"artisons/http/httperrors"
+	"artisons/shops"
+	"artisons/tags"
+	"artisons/templates"
 	"log"
 	"log/slog"
 	"net/http"

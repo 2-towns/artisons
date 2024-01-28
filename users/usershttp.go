@@ -3,12 +3,12 @@ package users
 import (
 	"context"
 	"errors"
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/http/contexts"
-	"gifthub/http/cookies"
-	"gifthub/http/httperrors"
-	"gifthub/string/stringutil"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/http/contexts"
+	"artisons/http/cookies"
+	"artisons/http/httperrors"
+	"artisons/string/stringutil"
 	"log/slog"
 	"net/http"
 )

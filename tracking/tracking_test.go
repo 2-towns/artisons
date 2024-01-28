@@ -2,9 +2,9 @@ package tracking
 
 import (
 	"fmt"
-	"gifthub/conf"
-	"gifthub/http/contexts"
-	"gifthub/tests"
+	"artisons/conf"
+	"artisons/http/contexts"
+	"artisons/tests"
 	"os"
 	"path"
 	"strings"

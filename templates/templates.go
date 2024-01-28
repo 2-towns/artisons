@@ -2,11 +2,11 @@ package templates
 
 import (
 	"fmt"
-	"gifthub/cache"
-	"gifthub/conf"
-	"gifthub/http/seo"
-	"gifthub/images"
-	"gifthub/locales"
+	"artisons/cache"
+	"artisons/conf"
+	"artisons/http/seo"
+	"artisons/images"
+	"artisons/locales"
 	"html/template"
 	"log"
 	"slices"

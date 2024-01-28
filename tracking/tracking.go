@@ -5,8 +5,8 @@ package tracking
 import (
 	"context"
 	"fmt"
-	"gifthub/conf"
-	"gifthub/http/contexts"
+	"artisons/conf"
+	"artisons/http/contexts"
 	"log/slog"
 	"os"
 	"path"

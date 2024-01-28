@@ -24,7 +24,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      WORKSPACE_DIR: /home/runner/work/gifthub/gifthub
+      WORKSPACE_DIR: /home/runner/work/artisons/artisons
       COOKIE_SECURE: 0
       EMAIL_DRY: 1
     steps:

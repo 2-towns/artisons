@@ -1,8 +1,8 @@
 package filters
 
 import (
-	"gifthub/db"
-	"gifthub/tests"
+	"artisons/db"
+	"artisons/tests"
 	"strings"
 	"testing"
 	"time"

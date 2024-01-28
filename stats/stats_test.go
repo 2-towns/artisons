@@ -2,10 +2,10 @@ package stats
 
 import (
 	"fmt"
-	"gifthub/db"
-	"gifthub/http/contexts"
-	"gifthub/string/stringutil"
-	"gifthub/tests"
+	"artisons/db"
+	"artisons/http/contexts"
+	"artisons/string/stringutil"
+	"artisons/tests"
 	"log"
 	"math/rand"
 	"net/http"

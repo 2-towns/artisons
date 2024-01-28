@@ -3,7 +3,7 @@ package cache
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"gifthub/conf"
+	"artisons/conf"
 	"log"
 	"log/slog"
 	"os"

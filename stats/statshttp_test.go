@@ -1,8 +1,8 @@
 package stats
 
 import (
-	"gifthub/db"
-	"gifthub/tests"
+	"artisons/db"
+	"artisons/tests"
 	"net/http"
 	"net/http/httptest"
 	"testing"

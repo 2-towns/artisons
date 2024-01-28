@@ -2,8 +2,8 @@ package users
 
 import (
 	"fmt"
-	"gifthub/db"
-	"gifthub/tests"
+	"artisons/db"
+	"artisons/tests"
 	"slices"
 	"testing"
 	"time"

@@ -2,12 +2,12 @@ package admin
 
 import (
 	"context"
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/http/contexts"
-	"gifthub/http/httperrors"
-	"gifthub/orders"
-	"gifthub/templates"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/http/contexts"
+	"artisons/http/httperrors"
+	"artisons/orders"
+	"artisons/templates"
 	"html/template"
 	"log"
 	"log/slog"

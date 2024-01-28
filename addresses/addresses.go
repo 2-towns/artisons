@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gifthub/conf"
+	"artisons/conf"
 	"io"
 	"log/slog"
 	"net/http"

@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"gifthub/conf"
+	"artisons/conf"
 	"log/slog"
 )
 

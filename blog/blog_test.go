@@ -1,10 +1,10 @@
 package blog
 
 import (
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/string/stringutil"
-	"gifthub/tests"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/string/stringutil"
+	"artisons/tests"
 	"os"
 	"path"
 	"testing"

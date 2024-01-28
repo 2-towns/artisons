@@ -1,7 +1,7 @@
 package security
 
 import (
-	"gifthub/tests"
+	"artisons/tests"
 	"net/http"
 	"net/http/httptest"
 	"testing"

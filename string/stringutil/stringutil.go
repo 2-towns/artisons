@@ -4,7 +4,7 @@ package stringutil
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"gifthub/conf"
+	"artisons/conf"
 	"io"
 
 	"github.com/gosimple/slug"

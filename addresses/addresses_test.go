@@ -1,7 +1,7 @@
 package addresses
 
 import (
-	"gifthub/tests"
+	"artisons/tests"
 	"testing"
 )
 

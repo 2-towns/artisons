@@ -2,11 +2,11 @@ package carts
 
 import (
 	"context"
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/http/contexts"
-	"gifthub/string/stringutil"
-	"gifthub/tests"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/http/contexts"
+	"artisons/string/stringutil"
+	"artisons/tests"
 	"testing"
 )
 

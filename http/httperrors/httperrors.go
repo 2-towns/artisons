@@ -3,9 +3,9 @@ package httperrors
 import (
 	"context"
 	"fmt"
-	"gifthub/conf"
-	"gifthub/http/contexts"
-	"gifthub/templates"
+	"artisons/conf"
+	"artisons/http/contexts"
+	"artisons/templates"
 	"html/template"
 	"log"
 	"log/slog"

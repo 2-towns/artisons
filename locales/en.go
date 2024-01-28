@@ -43,7 +43,7 @@ func LoadEn() {
 	// Emails
 	message.SetString(language.English, "email_order_confirmation", "Hi %s,\nWoo hoo! Your order is on its way. Your order details can be found below.\n")
 	message.SetString(language.English, "email_order_confirmationdate", "Order date: %s\n")
-	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at gifthub shop")
+	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at artisons shop")
 	message.SetString(language.English, "email_order_confirmationid", "Order ID: %s\n")
 	message.SetString(language.English, "email_order_confirmationsummary", "Here is your order summary:\n\n")
 	message.SetString(language.English, "email_order_confirmationtotal", "Order total: %.2f\n\n")

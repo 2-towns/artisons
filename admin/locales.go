@@ -1,11 +1,11 @@
 package admin
 
 import (
-	"gifthub/conf"
-	"gifthub/http/contexts"
-	"gifthub/http/httperrors"
-	"gifthub/locales"
-	"gifthub/templates"
+	"artisons/conf"
+	"artisons/http/contexts"
+	"artisons/http/httperrors"
+	"artisons/locales"
+	"artisons/templates"
 	"html/template"
 	"log"
 	"log/slog"

@@ -1,7 +1,7 @@
 package users
 
 import (
-	"gifthub/tests"
+	"artisons/tests"
 	"testing"
 )
 

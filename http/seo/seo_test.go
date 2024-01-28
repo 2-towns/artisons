@@ -1,10 +1,10 @@
 package seo
 
 import (
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/http/router"
-	"gifthub/tests"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/http/router"
+	"artisons/tests"
 	"log"
 	"net/http"
 	"net/http/httptest"

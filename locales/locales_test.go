@@ -1,7 +1,7 @@
 package locales
 
 import (
-	"gifthub/tests"
+	"artisons/tests"
 	"testing"
 )
 

@@ -2,8 +2,8 @@ package security
 
 import (
 	"context"
-	"gifthub/http/contexts"
-	"gifthub/http/httperrors"
+	"artisons/http/contexts"
+	"artisons/http/httperrors"
 	"log/slog"
 	"net/http"
 	"time"

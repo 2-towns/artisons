@@ -2,7 +2,7 @@ package referer
 
 import (
 	"encoding/json"
-	"gifthub/conf"
+	"artisons/conf"
 	"io"
 	"net/url"
 	"os"

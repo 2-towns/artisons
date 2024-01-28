@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"gifthub/http/contexts"
-	"gifthub/http/httperrors"
-	"gifthub/users"
+	"artisons/http/contexts"
+	"artisons/http/httperrors"
+	"artisons/users"
 	"net/http"
 )
 

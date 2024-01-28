@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gifthub/db"
+	"artisons/db"
 	"log/slog"
 	"time"
 

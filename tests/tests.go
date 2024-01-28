@@ -4,8 +4,8 @@ package tests
 import (
 	"context"
 	"fmt"
-	"gifthub/http/contexts"
-	"gifthub/string/stringutil"
+	"artisons/http/contexts"
+	"artisons/string/stringutil"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"

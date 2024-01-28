@@ -2,9 +2,9 @@ package users
 
 import (
 	"fmt"
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/tests"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/tests"
 	"testing"
 	"time"
 

@@ -1,11 +1,11 @@
 package products
 
 import (
-	"gifthub/conf"
-	"gifthub/db"
-	"gifthub/locales"
-	"gifthub/string/stringutil"
-	"gifthub/tests"
+	"artisons/conf"
+	"artisons/db"
+	"artisons/locales"
+	"artisons/string/stringutil"
+	"artisons/tests"
 	"math/rand"
 	"os"
 	"strings"

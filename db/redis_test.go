@@ -1,7 +1,7 @@
 package db
 
 import (
-	"gifthub/tests"
+	"artisons/tests"
 	"testing"
 )
 

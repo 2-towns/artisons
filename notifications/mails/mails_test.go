@@ -1,7 +1,7 @@
 package mails
 
 import (
-	"gifthub/tests"
+	"artisons/tests"
 	"testing"
 
 	"github.com/go-faker/faker/v4"

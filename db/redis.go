@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
-	"gifthub/conf"
+	"artisons/conf"
 	"log/slog"
 	"regexp"
 	"strings"

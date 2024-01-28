@@ -4,8 +4,8 @@ package mails
 import (
 	"context"
 	"fmt"
-	"gifthub/conf"
-	"gifthub/string/stringutil"
+	"artisons/conf"
+	"artisons/string/stringutil"
 	"log/slog"
 	"net/smtp"
 	"time"

@@ -6,7 +6,7 @@ package vapid
 import (
 	"context"
 	"encoding/json"
-	"gifthub/conf"
+	"artisons/conf"
 	"log/slog"
 
 	webpush "github.com/SherClockHolmes/webpush-go"

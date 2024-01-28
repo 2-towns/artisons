@@ -1,10 +1,10 @@
 package pages
 
 import (
-	"gifthub/addresses"
-	"gifthub/conf"
-	"gifthub/http/httperrors"
-	"gifthub/templates"
+	"artisons/addresses"
+	"artisons/conf"
+	"artisons/http/httperrors"
+	"artisons/templates"
 	"html/template"
 	"log"
 	"log/slog"

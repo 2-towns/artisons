@@ -1,8 +1,8 @@
 package admin
 
 import (
-	"gifthub/conf"
-	"gifthub/templates"
+	"artisons/conf"
+	"artisons/templates"
 	"html/template"
 	"log"
 	"log/slog"

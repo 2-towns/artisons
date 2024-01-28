@@ -2,11 +2,11 @@ package users
 
 import (
 	"context"
-	"gifthub/conf"
-	"gifthub/http/contexts"
-	"gifthub/http/cookies"
-	"gifthub/string/stringutil"
-	"gifthub/tests"
+	"artisons/conf"
+	"artisons/http/contexts"
+	"artisons/http/cookies"
+	"artisons/string/stringutil"
+	"artisons/tests"
 	"net/http"
 	"net/http/httptest"
 	"testing"
