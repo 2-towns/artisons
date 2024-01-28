@@ -51,7 +51,7 @@ xpath "//a[@href='/admin/blog/1/edit.html']" exists
 xpath "//a[@hx-post='/admin/blog/1/delete.html']" exists
 
 # Search blog by title 
-GET {{host}}/admin/blog.html?q=souris
+GET {{host}}/admin/blog.html?q=ail
 HX-Request: true
 HTTP 200
 [Asserts]

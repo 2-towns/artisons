@@ -27,7 +27,7 @@ HTTP 200
 header "HX-Redirect" == "/admin/index.html"
 
 # Editing an article without title shows an error 
-POST {{host}}/admin/blog/3/edit.html
+POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: 
@@ -41,7 +41,7 @@ header "HX-Reswap" == "innerHTML show:#title-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing an article without description shows an error 
-POST {{host}}/admin/blog/3/edit.html
+POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
@@ -55,7 +55,7 @@ header "HX-Reswap" == "innerHTML show:#description-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing an article with a bad picture shows an error 
-POST {{host}}/admin/blog/3/edit.html
+POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
@@ -69,7 +69,7 @@ header "HX-Reswap" == "innerHTML show:#image-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing an article with existing slug show an error
-POST {{host}}/admin/blog/3/edit.html
+POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
@@ -85,7 +85,7 @@ header "HX-Reswap" == "innerHTML show:#slug-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Editing an article with correct data works
-POST {{host}}/admin/blog/3/edit.html
+POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
 title: Great article
