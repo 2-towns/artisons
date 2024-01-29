@@ -104,8 +104,10 @@ func (a Article) Save(ctx context.Context) (string, error) {
 			"status", a.Status,
 			"updated_at", now,
 		)
+
 		rdb.HSetNX(ctx, key, "id", a.ID)
 		rdb.HSetNX(ctx, key, "created_at", now)
+		rdb.HSetNX(ctx, key, "type", a.Type)
 
 		return nil
 	}); err != nil {
@@ -148,7 +150,11 @@ func parse(ctx context.Context, data map[string]string) (Article, error) {
 func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "searching articles", slog.Int("offset", offset), slog.Int("num", num))
 
-	qs := fmt.Sprintf("FT.SEARCH %s @status:{online}", db.BlogIdx)
+	if q.Type == "" {
+		q.Type = "blog"
+	}
+
+	qs := fmt.Sprintf("FT.SEARCH %s @status:{online}(@type:{%s})", db.BlogIdx, q.Type)
 
 	if q.Keywords != "" {
 		k := db.SearchValue(q.Keywords)
@@ -158,10 +164,6 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 	if q.Slug != "" {
 		k := db.SearchValue(q.Slug)
 		qs += fmt.Sprintf("(@slug:{%s})", k)
-	}
-
-	if q.Type != "" {
-		qs += fmt.Sprintf("(@type:{%s})", q.Type)
 	}
 
 	qs += fmt.Sprintf(" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)

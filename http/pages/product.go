@@ -18,10 +18,9 @@ import (
 func Product(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-
 	slug := chi.URLParam(r, "slug")
-
 	query := products.Query{Slug: slug}
+
 	res, err := products.Search(ctx, query, 0, 1)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the product", slog.String("slug", slug), slog.String("error", err.Error()))
@@ -30,7 +29,7 @@ func Product(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res.Total == 0 {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot find the product", slog.String("slug", slug), slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot find the product", slog.String("slug", slug))
 		httperrors.Page(w, r.Context(), "oops the data is not found", 404)
 		return
 	}

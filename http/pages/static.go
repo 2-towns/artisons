@@ -30,7 +30,7 @@ func Static(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res.Total == 0 {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot find the article", slog.String("slug", slug), slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot find the article", slog.String("slug", slug))
 		httperrors.Page(w, r.Context(), "oops the data is not found", 404)
 		return
 	}

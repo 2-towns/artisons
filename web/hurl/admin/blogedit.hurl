@@ -62,6 +62,7 @@ title: Great article
 description: Great description
 status: online
 image:file,image.txt;
+slug:great-article-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image-error" 
@@ -88,7 +89,7 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 POST {{host}}/admin/blog/2/edit.html
 HX-Request: true
 [MultipartFormData]
-title: Great article
+title: Great great article 
 description: Great description
 status: online
 image:file,image.jpg;

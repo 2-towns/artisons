@@ -282,6 +282,7 @@ func (p Product) Save(ctx context.Context) (string, error) {
 		rdb.HSet(ctx, key, values)
 		rdb.HSetNX(ctx, key, "created_at", now)
 		rdb.HSetNX(ctx, key, "id", p.ID)
+		rdb.HSetNX(ctx, key, "type", "product")
 
 		return nil
 	}); err != nil {
@@ -331,7 +332,7 @@ func Find(ctx context.Context, pid string) (Product, error) {
 func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "searching products")
 
-	qs := fmt.Sprintf("FT.SEARCH %s \"@status:{online}", db.ProductIdx)
+	qs := fmt.Sprintf("FT.SEARCH %s \"@status:{online}@type:{product}", db.ProductIdx)
 
 	if q.Keywords != "" {
 		k := db.SearchValue(q.Keywords)

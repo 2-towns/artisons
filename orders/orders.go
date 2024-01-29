@@ -2,10 +2,6 @@
 package orders
 
 import (
-	"bytes"
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
@@ -16,6 +12,10 @@ import (
 	"artisons/tracking"
 	"artisons/users"
 	"artisons/validators"
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -221,10 +221,10 @@ func (o Order) Save(ctx context.Context) (string, error) {
 			"total", o.Total,
 			"updated_at", now.Unix(),
 			"created_at", now.Unix(),
-
-			// Use for Redis Search in order to restrict the items
-			"type", "order",
 		)
+
+		// Use for Redis Search in order to restrict the items
+		rdb.HSetNX(ctx, "order:"+oid, "type", "order")
 
 		for key, value := range o.Quantities {
 			rdb.HSet(ctx, "order:"+oid+":products", key, value)
