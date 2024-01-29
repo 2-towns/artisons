@@ -2,8 +2,8 @@ HSET "blog:1" id "1" title "Mangez de l'ail" slug "mangez-de-lail" description "
 HSET "blog:2" id "2" title "Avoir une souris ergonomique c'est important." description "pour les mains" slug "avoir-souris-ergonomique-c-est-important" status "online" image "/blog/1.jpeg" type "blog" updated_at 1705310389 
 HSET "blog:3" id "3" title "Terms and conditions" description "Some description" slug "terms-and-conditions" status "online" type "cms" updated_at 1705310389 
 HSET "blog:4" id "4" title "About us" description "About us" slug "about" status "online" type "cms" updated_at 1705310389 
-SET "blog_next_id" 4
-HSET  "bids" "mangez-de-lail" "1" "avoir-souris-ergonomique-c-est-important" "2" "terms-and-conditions" "3" "about" "4"
+HSET "blog:5" id "4" title "Non active" description "Non active" slug "non-active" status "offline" type "blog" updated_at 1705310389 
+SET "blog_next_id" 5
 HSET "seo:home" key "home" title "Home Page" description "You can access to multiple products." url "/" updated_at 1705310389 
 HSET "seo:terms" key "terms" title "Terms and conditions" description "Terms" url "terms-and-conditions" updated_at 1705310389 
 HSET "seo:about" key "about" title "About us" description "About" url "about" updated_at 1705310389 
@@ -12,7 +12,6 @@ HSET "order:ORD1" id "ORD1" delivery "home" payment "card" payment_status "payme
 HSET "order:ORD2" id "ORD2" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389  updated_at 1705310389 
 HSET "product:PDT1" id "PDT1" title "T-shirt Tester c’est douter" description "T-Shirt unisexe" slug "t-shirt-tester-c-est-douter" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" updated_at 1705310389 
 HSET "product:PDT2" id "PDT2" title "Mug Nodejs" description "Mug tendance" slug "mug-nodejs" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" updated_at 1705310389 
-HSET pids "t-shirt-tester-c-est-douter" "PDT1" "mug-nodejs" "PDT2"
 HSET "tag:mens" "key" "mens" "label" "Mens" "updated_at" 1705310389 "children" "clothes;shoes" 
 ZADD "tags:root" 1 "mens"
 ZADD "tags" 1 "mens"

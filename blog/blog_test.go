@@ -14,7 +14,7 @@ import (
 var article Article = Article{
 	Title:       "Mangez de l'ail !",
 	Description: "C'est un antiseptique.",
-	Slug:        "mangez-de-lail",
+	Slug:        db.Escape("Mangez de l'ail !"),
 	Image:       path.Join(conf.WorkingSpace, "web", "tmp", "hello"),
 	Status:      "online",
 }
@@ -28,7 +28,7 @@ func init() {
 		"id", "99",
 		"title", article.Title,
 		"status", article.Status,
-		"slug", stringutil.Slugify(article.Title),
+		"slug", stringutil.Slugify(db.Escape(article.Title)),
 		"lang", conf.DefaultLocale.String(),
 		"description", article.Description,
 		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
@@ -180,6 +180,27 @@ func TestSearchReturnsArticlesWhenDescriptionIsFound(t *testing.T) {
 	}
 }
 
+func TestSearchReturnsArticleWhenSlugIsFound(t *testing.T) {
+	c := tests.Context()
+	slug := stringutil.Slugify(db.Escape(article.Title))
+	a, err := Search(c, Query{Slug: slug}, 0, 10)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Slug: slug}) = %v, want nil`, err.Error())
+	}
+
+	if a.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, a.Total)
+	}
+
+	if len(a.Articles) == 0 {
+		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(a.Articles))
+	}
+
+	if a.Articles[0].ID == 0 {
+		t.Fatalf(`p[0].ID = %d, want > 0`, a.Articles[0].ID)
+	}
+}
+
 func TestSearchReturnsNoArticleWhenCriteriaDoNotMatch(t *testing.T) {
 	c := tests.Context()
 	a, err := Search(c, Query{Keywords: "crazy"}, 0, 10)
@@ -251,65 +272,5 @@ func TestDeletableReturnsFalseWhenTypeIsBlog(t *testing.T) {
 
 	if deletable, err := Deletable(c, 99); !deletable || err != nil {
 		t.Fatalf(`Deletable(c, c) = %v, %v, want true', nil`, !deletable, err)
-	}
-}
-
-func TestGetIDFromSlugReturnsEmptyWhenSlugDoesNotExist(t *testing.T) {
-	ctx := tests.Context()
-
-	if pid, err := GetIDFromSlug(ctx, "i-do-not-exist"); err != nil || pid != 0 {
-		t.Fatalf(`GetIDFromSlug(ctx, "i-do-not-exist") = %v, %s want not empty, nil`, pid, err)
-	}
-}
-
-func TestGetIDFromSlugReturnsPIDWhenSlugDoesExist(t *testing.T) {
-	ctx := tests.Context()
-
-	s := db.Escape("Mangez de l'ail !")
-	if pid, err := GetIDFromSlug(ctx, s); err != nil || pid == 0 {
-		t.Fatalf(`GetIDFromSlug(ctx, s = %v, %s want not false, not empty`, pid, err)
-	}
-}
-
-func TestFindBySlugReturnsErrorWhenSlugIsMissing(t *testing.T) {
-	c := tests.Context()
-	if _, err := FindBySlug(c, ""); err == nil || err.Error() != "the data is not found" {
-		t.Fatalf(`FindBySlug(c,"") = %v, want "the data is not found"`, err.Error())
-	}
-}
-
-func TestFindBySlugReturnsErrorWhenSlugDoesNotExist(t *testing.T) {
-	c := tests.Context()
-	if _, err := FindBySlug(c, "doesnotexist"); err == nil || err.Error() != "the data is not found" {
-		t.Fatalf(`FindBySlug(c, "doesnotexist") = %v, want "the data is not found"`, err.Error())
-	}
-}
-
-func TestFindBySlugReturnsArticleWhenSuccess(t *testing.T) {
-	c := tests.Context()
-	slug := db.Escape("Mangez de l'ail !")
-	a, err := FindBySlug(c, slug)
-	if err != nil {
-		t.Fatalf(`Find(c, slug) = %v, want nil`, err.Error())
-	}
-
-	if a.Description == "" {
-		t.Fatalf(`p.Description  = %v, want string`, a.Description)
-	}
-
-	if a.ID != 99 {
-		t.Fatalf(`p.ID = %d, want "99"`, a.ID)
-	}
-
-	if a.Slug == "" {
-		t.Fatalf(`p.Slug = %v, want string`, a.Slug)
-	}
-
-	if a.Status != "online" {
-		t.Fatalf(`p.Status = %v, want string`, a.Status)
-	}
-
-	if a.Title == "" {
-		t.Fatalf(`p.Title = %v, want string`, a.Title)
 	}
 }

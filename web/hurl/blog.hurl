@@ -21,3 +21,11 @@ User-Agent: {{ua}}
 HTTP 200
 [Asserts]
 xpath "//p[text()=\"Mangez de l'ail\"]" exists
+
+# The offline article returns 404
+GET {{host}}/blog/non-active.html
+HX-Request: true
+User-Agent: {{ua}}
+HTTP 404
+[Asserts]
+xpath "//h2[text()=\"Oops..You just found an error page.\"]" exists

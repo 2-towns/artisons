@@ -42,6 +42,7 @@ type SearchResults struct {
 type Query struct {
 	Keywords string
 	Type     string
+	Slug     string
 }
 
 func Deletable(ctx context.Context, id int) (bool, error) {
@@ -72,32 +73,6 @@ func (p Article) Validate(ctx context.Context) error {
 	slog.LogAttrs(ctx, slog.LevelInfo, "article validated")
 
 	return nil
-}
-
-func GetIDFromSlug(ctx context.Context, slug string) (int, error) {
-	exists, err := db.Redis.HExists(ctx, "bids", slug).Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot verify the slug existence", slog.String("error", err.Error()))
-		return 0, errors.New("something went wrong")
-	}
-
-	if !exists {
-		return 0, nil
-	}
-
-	s, err := db.Redis.HGet(ctx, "bids", slug).Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot get the slug", slog.String("error", err.Error()))
-		return 0, errors.New("something went wrong")
-	}
-
-	id, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id ", slog.String("id", s), slog.String("error", err.Error()))
-		return 0, errors.New("something went wrong")
-	}
-
-	return int(id), nil
 }
 
 func (a *Article) UpdateImage(key, value string) {
@@ -131,7 +106,6 @@ func (a Article) Save(ctx context.Context) (string, error) {
 		)
 		rdb.HSetNX(ctx, key, "id", a.ID)
 		rdb.HSetNX(ctx, key, "created_at", now)
-		rdb.HSet(ctx, "bids", a.Slug, a.ID)
 
 		return nil
 	}); err != nil {
@@ -179,6 +153,11 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 	if q.Keywords != "" {
 		k := db.SearchValue(q.Keywords)
 		qs += fmt.Sprintf("(@title:%s)|(@description:%s)|(@id:{%s})", k, k, k)
+	}
+
+	if q.Slug != "" {
+		k := db.SearchValue(q.Slug)
+		qs += fmt.Sprintf("(@slug:{%s})", k)
 	}
 
 	if q.Type != "" {
@@ -270,8 +249,8 @@ func Find(ctx context.Context, id int) (Article, error) {
 	}
 
 	if data["status"] != "online" {
-		l.LogAttrs(ctx, slog.LevelInfo, "cannot use the offline article", slog.String("error", err.Error()))
-		return Article{}, err
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot use the offline article")
+		return Article{}, errors.New("oops the data is not found")
 	}
 
 	a, err := parse(ctx, data)
@@ -281,26 +260,4 @@ func Find(ctx context.Context, id int) (Article, error) {
 	}
 
 	return a, err
-}
-
-func FindBySlug(ctx context.Context, slug string) (Article, error) {
-	l := slog.With(slog.String("slug", slug))
-	l.LogAttrs(ctx, slog.LevelInfo, "looking for article from slug")
-
-	if slug == "" {
-		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty slug")
-		return Article{}, errors.New("the data is not found")
-	}
-
-	id, err := GetIDFromSlug(ctx, slug)
-	if err != nil {
-		return Article{}, nil
-	}
-
-	if id == 0 {
-		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty id")
-		return Article{}, errors.New("the data is not found")
-	}
-
-	return Find(ctx, id)
 }

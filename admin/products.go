@@ -1,8 +1,6 @@
 package admin
 
 import (
-	"context"
-	"errors"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
@@ -12,6 +10,8 @@ import (
 	"artisons/string/stringutil"
 	"artisons/tags"
 	"artisons/templates"
+	"context"
+	"errors"
 	"html/template"
 	"log"
 	"log/slog"
@@ -217,8 +217,9 @@ func (f productsFeature) UpdateImage(p *products.Product, key, image string) {
 }
 
 func (f productsFeature) Validate(ctx context.Context, r *http.Request, data products.Product) error {
-	pid, err := products.GetPIDFromSlug(ctx, data.Slug)
-	if err != nil || (pid != "" && pid != data.ID) {
+	query := products.Query{Slug: data.Slug}
+	res, err := products.Search(ctx, query, 0, 1)
+	if err != nil || res.Total > 0 && (res.Products[0].ID != data.ID) {
 		return errors.New("input:slug")
 	}
 

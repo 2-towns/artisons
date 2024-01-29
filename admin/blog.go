@@ -1,14 +1,14 @@
 package admin
 
 import (
-	"context"
-	"errors"
 	"artisons/blog"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/string/stringutil"
 	"artisons/templates"
+	"context"
+	"errors"
 	"html/template"
 	"log"
 	"log/slog"
@@ -170,8 +170,9 @@ func (f blogFeature) UpdateImage(a *blog.Article, key, image string) {
 }
 
 func (f blogFeature) Validate(ctx context.Context, r *http.Request, data blog.Article) error {
-	id, err := blog.GetIDFromSlug(ctx, data.Slug)
-	if err != nil || (id != 0 && id != data.ID) {
+	query := blog.Query{Slug: data.Slug}
+	res, err := blog.Search(ctx, query, 0, 1)
+	if err != nil || res.Total > 0 && (res.Articles[0].ID != data.ID) {
 		return errors.New("input:slug")
 	}
 

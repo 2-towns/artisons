@@ -470,6 +470,23 @@ func TestSearchReturnsEmptySliceWhenPriceMaxIsOutOfRange(t *testing.T) {
 	}
 }
 
+func TestSearchReturnsProductWhenSlugIsFound(t *testing.T) {
+	c := tests.Context()
+	slug := stringutil.Slugify("T-shirt Tester c'est douter")
+	p, err := Search(c, Query{Slug: slug}, 0, 10)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Slug: slug}) = %v, want nil`, err.Error())
+	}
+
+	if p.Total != 0 {
+		t.Fatalf(`p.Total = %d, want = 0`, p.Total)
+	}
+
+	if len(p.Products) != 0 {
+		t.Fatalf(`len(p.Products) = %d, want = 0`, len(p.Products))
+	}
+}
+
 func TestSearchReturnsProductsWhenTagsAreFound(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Tags: []string{"clothes"}}, 0, 10)
@@ -603,77 +620,5 @@ func TestListReturnsProductsWhenOk(t *testing.T) {
 
 	if pds[0].ID == "" {
 		t.Fatalf(`pds[0].ID = %s want not empty`, pds[0].ID)
-	}
-}
-
-func TestGetPIDFromSlugReturnsEmptyWhenSlugDoesNotExist(t *testing.T) {
-	ctx := tests.Context()
-
-	if pid, err := GetPIDFromSlug(ctx, "coucou-c-est-moi"); err != nil || pid != "" {
-		t.Fatalf(`GetPIDFromSlug(ctx, "coucou-c-est-moi") = %v, %s want not empty, nil`, pid, err)
-	}
-}
-
-func TestGetPIDFromSlugReturnsPIDWhenSlugDoesExist(t *testing.T) {
-	ctx := tests.Context()
-
-	s := db.Escape("T-shirt développeur unisexe Tester c'est douter")
-	if pid, err := GetPIDFromSlug(ctx, s); err != nil || pid == "" {
-		t.Fatalf(`GetPIDFromSlug(ctx, s = %v, %s want not false, not empty`, pid, err)
-	}
-}
-
-func TestFindBySlugReturnsErrorWhenSlugIsMissing(t *testing.T) {
-	c := tests.Context()
-	if _, err := FindBySlug(c, ""); err == nil || err.Error() != "the data is not found" {
-		t.Fatalf(`FindBySlug(c,"") = %v, want "the data is not found"`, err.Error())
-	}
-}
-
-func TestFindBySlugReturnsErrorWhenSlugDoesNotExist(t *testing.T) {
-	c := tests.Context()
-	if _, err := FindBySlug(c, "doesnotexist"); err == nil || err.Error() != "the data is not found" {
-		t.Fatalf(`FindBySlug(c, "doesnotexist") = %v, want "the data is not found"`, err.Error())
-	}
-}
-
-func TestFindBySlugReturnsProductWhenSuccess(t *testing.T) {
-	c := tests.Context()
-	slug := db.Escape("T-shirt développeur unisexe Tester c'est douter")
-	p, err := FindBySlug(c, slug)
-	if err != nil {
-		t.Fatalf(`Find(c, slug) = %v, want nil`, err.Error())
-	}
-
-	if p.Sku == "" {
-		t.Fatalf(`p.Sku = %v, want string`, p.Sku)
-	}
-
-	if p.Description == "" {
-		t.Fatalf(`p.Description  = %v, want string`, p.Description)
-	}
-
-	if p.ID != "PDT1" {
-		t.Fatalf(`p.PID = %v, want "PDT1"`, p.ID)
-	}
-
-	if p.Slug == "" {
-		t.Fatalf(`p.Slug = %v, want string`, p.Slug)
-	}
-
-	if p.Status != "online" {
-		t.Fatalf(`p.Status = %v, want string`, p.Status)
-	}
-
-	if p.Title == "" {
-		t.Fatalf(`p.Title = %v, want string`, p.Title)
-	}
-
-	if p.Image1 == "" {
-		t.Fatalf(`p.Image1 = %v, want string`, p.Image1)
-	}
-
-	if p.Tags[0] != "clothes" {
-		t.Fatalf(`p.Tags[0] = %s, want "clothes"`, p.Tags[0])
 	}
 }

@@ -2,13 +2,13 @@
 package products
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/string/stringutil"
 	"artisons/validators"
+	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"path"
 	"strconv"
@@ -18,19 +18,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
 )
-
-var IndexArgs []interface{} = []interface{}{
-	"FT.CREATE", "product-idx",
-	"ON", "HASH", "PREFIX", "1", "product:", "SCHEMA",
-	"id", "TAG",
-	"title", "TEXT",
-	"sku", "TAG",
-	"description", "TEXT",
-	"price", "NUMERIC", "SORTABLE",
-	"tags", "TAG", "SEPARATOR", ";",
-	"status", "TAG",
-	"updated_at", "NUMERIC", "SORTABLE",
-}
 
 // Product is the product representation in the application
 type Product struct {
@@ -74,6 +61,7 @@ type Query struct {
 	PriceMax float32
 	Tags     []string
 	Meta     map[string][]string
+	Slug     string
 }
 
 const (
@@ -228,26 +216,6 @@ func (p Product) Validate(ctx context.Context) error {
 	return nil
 }
 
-func GetPIDFromSlug(ctx context.Context, slug string) (string, error) {
-	exists, err := db.Redis.HExists(ctx, "pids", slug).Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot verify the slug existence", slog.String("error", err.Error()))
-		return "", errors.New("something went wrong")
-	}
-
-	if !exists {
-		return "", nil
-	}
-
-	s, err := db.Redis.HGet(ctx, "pids", slug).Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot get the slug", slog.String("error", err.Error()))
-		return "", errors.New("something went wrong")
-	}
-
-	return s, nil
-}
-
 // Save a product into redis.
 // The keys are :
 // product:pid => the product data
@@ -271,7 +239,6 @@ func (p Product) Save(ctx context.Context) (string, error) {
 
 	var values []interface{}
 	values = append(values,
-		"id", p.ID,
 		"sku", db.Escape(p.Sku),
 		"title", title,
 		"slug", db.Escape(p.Slug),
@@ -314,7 +281,7 @@ func (p Product) Save(ctx context.Context) (string, error) {
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key, values)
 		rdb.HSetNX(ctx, key, "created_at", now)
-		rdb.HSet(ctx, "pids", p.Slug, p.ID)
+		rdb.HSetNX(ctx, key, "id", p.ID)
 
 		return nil
 	}); err != nil {
@@ -355,28 +322,6 @@ func Find(ctx context.Context, pid string) (Product, error) {
 	return p, err
 }
 
-func FindBySlug(ctx context.Context, slug string) (Product, error) {
-	l := slog.With(slog.String("slug", slug))
-	l.LogAttrs(ctx, slog.LevelInfo, "looking for product from slug")
-
-	if slug == "" {
-		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty slug")
-		return Product{}, errors.New("the data is not found")
-	}
-
-	pid, err := GetPIDFromSlug(ctx, slug)
-	if err != nil {
-		return Product{}, nil
-	}
-
-	if pid == "" {
-		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue with empty pid")
-		return Product{}, errors.New("the data is not found")
-	}
-
-	return Find(ctx, pid)
-}
-
 // Search is looking into Redis to find dat matching  the criteria.
 // offset are num are coming from Redis api, here is the documentation:
 // limits the results to the offset and number of results given.
@@ -391,6 +336,11 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 	if q.Keywords != "" {
 		k := db.SearchValue(q.Keywords)
 		qs += fmt.Sprintf("(@title:%s)|(@description:%s)|(@sku:{%s})|(@id:{%s})", k, k, k, k)
+	}
+
+	if q.Slug != "" {
+		k := db.SearchValue(q.Slug)
+		qs += fmt.Sprintf("(@slug:{%s})", k)
 	}
 
 	var priceMin interface{} = "-inf"

@@ -20,12 +20,21 @@ func Article(w http.ResponseWriter, r *http.Request) {
 
 	slug := chi.URLParam(r, "slug")
 
-	a, err := blog.FindBySlug(ctx, slug)
+	query := blog.Query{Slug: slug}
+	res, err := blog.Search(ctx, query, 0, 1)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the article", slog.String("slug", slug), slog.String("error", err.Error()))
-		httperrors.Page(w, r.Context(), err.Error(), 404)
+		httperrors.Page(w, r.Context(), err.Error(), 400)
 		return
 	}
+
+	if res.Total == 0 {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot find the article", slog.String("slug", slug), slog.String("error", err.Error()))
+		httperrors.Page(w, r.Context(), "oops the data is not found", 404)
+		return
+	}
+
+	a := res.Articles[0]
 
 	data := struct {
 		Lang    language.Tag
