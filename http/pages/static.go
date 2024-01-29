@@ -21,7 +21,7 @@ func Static(w http.ResponseWriter, r *http.Request) {
 	slug := strings.Replace(r.URL.Path, ".html", "", 1)
 	slug = strings.Replace(slug, "/", "", 1)
 
-	query := blog.Query{Slug: slug}
+	query := blog.Query{Slug: slug, Type: "cms"}
 	res, err := blog.Search(ctx, query, 0, 1)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the article", slog.String("slug", slug), slog.String("error", err.Error()))
