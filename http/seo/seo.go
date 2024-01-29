@@ -1,12 +1,12 @@
 package seo
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"artisons/db"
 	"artisons/http/router"
 	"artisons/validators"
+	"context"
+	"errors"
+	"fmt"
 	"log"
 	"log/slog"
 	"math"

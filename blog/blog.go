@@ -2,12 +2,12 @@
 package blog
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/validators"
+	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"path"
@@ -266,6 +266,11 @@ func Find(ctx context.Context, id int) (Article, error) {
 	data, err := db.Redis.HGetAll(ctx, fmt.Sprintf("blog:%d", id)).Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot find the article", slog.String("error", err.Error()))
+		return Article{}, err
+	}
+
+	if data["status"] != "online" {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot use the offline article", slog.String("error", err.Error()))
 		return Article{}, err
 	}
 

@@ -2,13 +2,13 @@
 package locales
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/validators"
+	"context"
+	"errors"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"

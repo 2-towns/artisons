@@ -9,20 +9,21 @@ import (
 	"artisons/templates"
 	"log/slog"
 	"net/http"
+	"strings"
 
-	"github.com/go-chi/chi/v5"
 	"golang.org/x/text/language"
 )
 
-func Article(w http.ResponseWriter, r *http.Request) {
+func Static(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	slug := chi.URLParam(r, "slug")
+	slug := strings.Replace(r.URL.Path, ".html", "", 1)
+	slug = strings.Replace(slug, "/", "", 1)
 
-	a, err := blog.FindBySlug(ctx, slug)
+	s, err := blog.FindBySlug(ctx, slug)
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot get the article", slog.String("slug", slug), slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the static page", slog.String("slug", slug), slog.String("error", err.Error()))
 		httperrors.Page(w, r.Context(), err.Error(), 404)
 		return
 	}
@@ -35,7 +36,7 @@ func Article(w http.ResponseWriter, r *http.Request) {
 	}{
 		lang,
 		shops.Data,
-		a,
+		s,
 		tags.Tree,
 	}
 

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"artisons/admin"
 	"artisons/admin/auth"
 	"artisons/cache"
@@ -16,6 +14,8 @@ import (
 	"artisons/logs"
 	"artisons/stats"
 	"artisons/users"
+	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -106,6 +106,8 @@ func main() {
 	router.R.Get("/blog.html", pages.Blog)
 	router.R.Get("/blog/{slug}.html", pages.Article)
 	router.R.Get(fmt.Sprintf("%s/:slug.html", seo.URLs["product"].URL), pages.Product)
+	router.R.Get(fmt.Sprintf("/%s.html", seo.URLs["terms"].URL), pages.Static)
+	router.R.Get(fmt.Sprintf("/%s.html", seo.URLs["about"].URL), pages.Static)
 	router.R.Get("/sso.html", auth.Form)
 	router.R.Get("/otp.html", auth.Form)
 	router.R.Get("/addresses.html", pages.Addresses)

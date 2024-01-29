@@ -1,12 +1,12 @@
 package templates
 
 import (
-	"fmt"
 	"artisons/cache"
 	"artisons/conf"
 	"artisons/http/seo"
 	"artisons/images"
 	"artisons/locales"
+	"fmt"
 	"html/template"
 	"log"
 	"slices"
@@ -123,7 +123,7 @@ func init() {
 	buildTemplate("hx-wish", []string{"hx-wish.html"})
 	buildTemplate("blog", []string{"blog.html", "hx-blog.html"})
 	buildTemplate("hx-blog", []string{"hx-blog.html"})
-	buildTemplate("article", []string{"article.html"})
+	buildTemplate("static", []string{"static.html"})
 }
 
 func Build(name string) *template.Template {
