@@ -55,4 +55,5 @@ jobs:
           go run main.go &
           sleep 2
           hurl --variable time=$(date +%s) --variables-file web/hurl/admin/.env --test web/hurl/admin/*.hurl
+          go run console/console.go -file web/redis/hurl.redis redis        
           hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/*.hurl
