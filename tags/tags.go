@@ -1,11 +1,11 @@
 package tags
 
 import (
+	"artisons/db"
+	"artisons/validators"
 	"context"
 	"errors"
 	"fmt"
-	"artisons/db"
-	"artisons/validators"
 	"log"
 	"log/slog"
 	"slices"
@@ -312,15 +312,15 @@ func tree(ctx context.Context) ([]Leaf, error) {
 		return []Leaf{}, errors.New("something went wrong")
 	}
 
-	tags, err := db.Redis.HGetAll(ctx, "tag").Result()
+	tags, err := db.Redis.ZRange(ctx, "tags", 0, 9999).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the tags", slog.String("error", err.Error()))
 		return []Leaf{}, errors.New("something went wrong")
 	}
 
 	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
-		for key := range tags {
-			rdb.HGetAll(ctx, "tag:"+key)
+		for _, val := range tags {
+			rdb.HGetAll(ctx, "tag:"+val)
 		}
 
 		return nil
@@ -343,7 +343,12 @@ func tree(ctx context.Context) ([]Leaf, error) {
 
 		val := cmd.(*redis.MapStringStringCmd).Val()
 
-		tag[val["key"]] = Tag{}
+		tag[val["key"]] = Tag{
+			Key:      val["key"],
+			Label:    val["label"],
+			Image:    val["image"],
+			Children: strings.Split(val["children"], ";"),
+		}
 	}
 
 	for _, val := range roots {
@@ -356,9 +361,9 @@ func tree(ctx context.Context) ([]Leaf, error) {
 			Branches: []*Leaf{},
 		}
 
-		branches := strings.Split(tags[val], ";")
+		for _, branch := range tag[val].Children {
+			log.Println(branch)
 
-		for _, branch := range branches {
 			l := Leaf{
 				Tag: Tag{
 					Key:   branch,
@@ -367,7 +372,7 @@ func tree(ctx context.Context) ([]Leaf, error) {
 				},
 			}
 
-			lb := strings.Split(tags[branch], ";")
+			lb := strings.Split(tag[branch].Key, ";")
 
 			for _, b := range lb {
 				l.Branches = append(l.Branches, &Leaf{
