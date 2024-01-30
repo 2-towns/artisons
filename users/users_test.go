@@ -38,6 +38,8 @@ func init() {
 		"type", "user",
 	)
 
+	db.Redis.SAdd(ctx, "admins", "hello@world.com", "lock@world.com")
+
 	db.Redis.HSet(ctx, "session:"+user.SID, "id", user.SID, "uid", user.ID, "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0", "type", "session")
 	db.Redis.Expire(ctx, "session:"+user.SID, conf.SessionDuration)
 	db.Redis.HSet(ctx, "session:will-logout", "id", "will-logout", "uid", "1", "type", "session")

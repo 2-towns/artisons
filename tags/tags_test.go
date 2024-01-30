@@ -21,15 +21,9 @@ func init() {
 
 	db.Redis.Del(ctx, "tags")
 	db.Redis.Del(ctx, "tags:root")
-	db.Redis.HSet(ctx, "tag",
-		"mens", "clothes;shoes",
-		"womens", "clothes;shoes",
-		"shoes", "baskets;boots",
-		"clothes", "shorts;pants",
-	).Result()
-	db.Redis.HSet(ctx, "tag:mens", "image", "tags/1.jpeg", "label", "Mens", "order", "1")
-	db.Redis.HSet(ctx, "tag:womens", "image", "tags/2.jpeg", "label", "Womens", "order", "2")
-	db.Redis.HSet(ctx, "tag:children", "image", "tags/3.jpeg", "label", "Children", "order", "2")
+	db.Redis.HSet(ctx, "tag:mens", "key", "mens", "image", "tags/1.jpeg", "label", "Mens", "order", "1")
+	db.Redis.HSet(ctx, "tag:womens", "key", "womens", "image", "tags/2.jpeg", "label", "Womens", "order", "2")
+	db.Redis.HSet(ctx, "tag:children", "key", "children", "image", "tags/3.jpeg", "label", "Children", "order", "2")
 
 	db.Redis.ZAdd(ctx, "tags", redis.Z{
 		Score:  float64(1),
