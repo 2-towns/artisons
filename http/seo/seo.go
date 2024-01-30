@@ -89,6 +89,8 @@ func init() {
 		}
 
 		k := val["key"]
+		log.Println(k, val["url"])
+
 		c := URLs[k]
 		c.Key = k
 		c.Title = db.Unescape(val["title"])
