@@ -2,15 +2,15 @@
 package carts
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/orders"
 	"artisons/products"
 	"artisons/tracking"
+	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"strconv"
 )
@@ -64,12 +64,14 @@ func Add(ctx context.Context, pid string, quantity int) error {
 		return errors.New("something went wrong")
 	}
 
-	tra := map[string]string{
-		"pid":      pid,
-		"quantity": fmt.Sprintf("%d", quantity),
-	}
+	if conf.EnableTrackingLog {
+		tra := map[string]string{
+			"pid":      pid,
+			"quantity": fmt.Sprintf("%d", quantity),
+		}
 
-	go tracking.Log(ctx, "cart_add", tra)
+		go tracking.Log(ctx, "cart_add", tra)
+	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "product added in the cart")
 
@@ -136,11 +138,13 @@ func (c Cart) UpdateDelivery(ctx context.Context, d string) error {
 		return errors.New("something went wrong")
 	}
 
-	tra := map[string]string{
-		"delivery": d,
-	}
+	if conf.EnableTrackingLog {
+		tra := map[string]string{
+			"delivery": d,
+		}
 
-	go tracking.Log(ctx, "cart_delivery", tra)
+		go tracking.Log(ctx, "cart_delivery", tra)
+	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the delivery is updated")
 
@@ -161,11 +165,13 @@ func (c Cart) UpdatePayment(ctx context.Context, p string) error {
 		return errors.New("something went wrong")
 	}
 
-	tra := map[string]string{
-		"payment": p,
-	}
+	if conf.EnableTrackingLog {
+		tra := map[string]string{
+			"payment": p,
+		}
 
-	go tracking.Log(ctx, "cart_payment", tra)
+		go tracking.Log(ctx, "cart_payment", tra)
+	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the payment is updated")
 

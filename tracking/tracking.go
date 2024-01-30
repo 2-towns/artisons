@@ -3,10 +3,10 @@
 package tracking
 
 import (
-	"context"
-	"fmt"
 	"artisons/conf"
 	"artisons/http/contexts"
+	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"path"

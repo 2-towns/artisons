@@ -1,3 +1,4 @@
+HSET "user:1" id "1" email "arnaud@yandex.com" created_at 1705310389  updated_at 1705310389 type "user"
 HSET "blog:1" id "1" title "Mangez de l'ail" slug "mangez-de-lail" description "c'est bon" status "online" image "blog/1.jpeg" type "blog" updated_at 1705310389 
 HSET "blog:2" id "2" title "Avoir une souris ergonomique c'est important." description "pour les mains" slug "avoir-souris-ergonomique-c-est-important" status "online" image "/blog/1.jpeg" type "blog" updated_at 1705310389 
 HSET "blog:3" id "3" title "Terms and conditions" description "Some description" slug "terms-and-conditions" status "online" type "cms" updated_at 1705310389 

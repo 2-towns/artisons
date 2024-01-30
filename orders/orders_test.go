@@ -1,19 +1,21 @@
 package orders
 
 import (
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
+	"artisons/http/contexts"
 	"artisons/products"
 	"artisons/string/stringutil"
 	"artisons/tests"
 	"artisons/users"
+	"context"
+	"fmt"
+	"log"
 	"math/rand"
 	"testing"
 	"time"
 
 	"github.com/go-faker/faker/v4"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -43,7 +45,7 @@ func init() {
 	ctx := tests.Context()
 	now := time.Now()
 	createdAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
-	updatedAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
+	updatedAt, _ := time.Parse(time.DateTime, "2023-12-10 15:04:05")
 
 	db.Redis.HSet(ctx, "order:"+order.ID,
 		"id", order.ID,
@@ -63,6 +65,29 @@ func init() {
 		"address_phone", "3345668832",
 		"updated_at", updatedAt.Unix(),
 		"created_at", createdAt.Unix(),
+	)
+
+	createdAt2, _ := time.Parse(time.DateTime, "2023-11-11 15:04:05")
+	updatedAt2, _ := time.Parse(time.DateTime, "2023-11-11 15:04:05")
+
+	db.Redis.HSet(ctx, "order:ORD2",
+		"id", "ORD2",
+		"uid", order.UID,
+		"delivery", "home",
+		"payment", "card",
+		"payment_status", "payment_progress",
+		"status", "created",
+		"total", "100.5",
+		"type", "order",
+		"address_lastname", "Arnaud",
+		"address_firstname", "Arnaud",
+		"address_city", "Lille",
+		"address_street", "Rue du moulin",
+		"address_complementary", "Appartement C",
+		"address_zipcode", "59000",
+		"address_phone", "3345668832",
+		"updated_at", updatedAt2.Unix(),
+		"created_at", createdAt2.Unix(),
 	)
 
 	db.Redis.HSet(ctx, "product:PDT111",
@@ -87,10 +112,6 @@ func init() {
 
 	db.Redis.HSet(ctx, "order:"+order.ID+":products", "PDT111", 1).Result()
 	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", order.UID), "email", "arnaud@yandex.com").Result()
-	db.Redis.ZAdd(ctx, "user:"+order.ID+" :orders", redis.Z{
-		Score:  float64(now.Unix()),
-		Member: order.ID,
-	}).Result()
 }
 
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {
@@ -368,6 +389,22 @@ func TestSearchReturnsOrdersWhenDeliveryIsFound(t *testing.T) {
 	}
 }
 
+func TestSearchReturnsOrdersWhenUIDIsFound(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{UID: 99}, 0, conf.ItemsPerPage)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{UID: 99}, conf.ItemsPerPage)) = %v, want nil`, err.Error())
+	}
+
+	if p.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	if p.Orders[0].ID == "" {
+		t.Fatalf(`p.Orders[0].ID = %s, want not empty`, p.Orders[0].ID)
+	}
+}
+
 func TestSearchReturnsNoOrdersWhenDeliveryIsCrazy(t *testing.T) {
 	c := tests.Context()
 	p, err := Search(c, Query{Keyword: "crazy"}, 0, conf.ItemsPerPage)
@@ -377,5 +414,65 @@ func TestSearchReturnsNoOrdersWhenDeliveryIsCrazy(t *testing.T) {
 
 	if p.Total != 0 {
 		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+}
+
+func TestSearchReturnUpdatedAtSortedOrdersWhenEndIsBack(t *testing.T) {
+	c := tests.Context()
+	p, err := Search(c, Query{}, 0, 999)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{}, 0, 999) = %v, want nil`, err.Error())
+	}
+
+	if p.Total <= 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	a := 0
+	b := 0
+
+	for idx, val := range p.Orders {
+		if val.ID == "ORD1" {
+			log.Println("ORD1")
+			a = idx
+		}
+
+		if val.ID == "ORD2" {
+			b = idx
+		}
+	}
+
+	if a > b {
+		t.Fatal(`a < b, want a > b`)
+	}
+}
+
+func TestSearchReturnUpdatedAtSortedOrdersWhenEndIsFront(t *testing.T) {
+	c := tests.Context()
+	c = context.WithValue(c, contexts.End, "front")
+	p, err := Search(c, Query{}, 0, 999)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{}, 0, 999) = %v, want nil`, err.Error())
+	}
+
+	if p.Total <= 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, p.Total)
+	}
+
+	a := 0
+	b := 0
+
+	for idx, val := range p.Orders {
+		if val.ID == "ORD1" {
+			a = idx
+		}
+
+		if val.ID == "ORD2" {
+			b = idx
+		}
+	}
+
+	if a < b {
+		t.Fatal(`a < b, want a > b`)
 	}
 }

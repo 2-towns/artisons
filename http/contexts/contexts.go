@@ -15,6 +15,9 @@ const UserID contextKey = "user_id"
 // Cart is the context key used to store the lang
 const Cart contextKey = "cart"
 
+// End can "front" or "back"
+const End contextKey = "end"
+
 // Demo is the context key used when the admin activated the demo mode
 const Demo contextKey = "demo"
 

@@ -1,11 +1,12 @@
 package stats
 
 import (
-	"fmt"
+	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/http/httperrors"
 	"artisons/tracking"
 	"artisons/users"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -48,13 +49,15 @@ func Middleware(next http.Handler) http.Handler {
 			Referer: r.Referer(),
 		})
 
-		data := map[string]string{
-			"url":     r.URL.Path,
-			"referer": fmt.Sprintf("'%s'", r.Referer()),
-			"ua":      fmt.Sprintf("'%s'", r.Header.Get("User-agent")),
-		}
+		if conf.EnableTrackingLog {
+			data := map[string]string{
+				"url":     r.URL.Path,
+				"referer": fmt.Sprintf("'%s'", r.Referer()),
+				"ua":      fmt.Sprintf("'%s'", r.Header.Get("User-agent")),
+			}
 
-		go tracking.Log(r.Context(), "access", data)
+			go tracking.Log(r.Context(), "access", data)
+		}
 
 		next.ServeHTTP(w, r.WithContext(r.Context()))
 	})

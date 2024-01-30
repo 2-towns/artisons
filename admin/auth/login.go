@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/http/cookies"
@@ -10,6 +9,7 @@ import (
 	"artisons/http/security"
 	"artisons/templates"
 	"artisons/users"
+	"fmt"
 	"html/template"
 	"log"
 	"log/slog"
@@ -114,7 +114,7 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	glue, err := users.Otp(ctx, email)
+	err = users.Otp(ctx, email)
 	if err != nil {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
@@ -129,10 +129,9 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		Lang      language.Tag
-		Glue      string
 		Email     string
 		CancelURL string
-	}{lang, glue, email, cancelURL}
+	}{lang, email, cancelURL}
 
 	if err = otptpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
@@ -161,10 +160,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	otp := strings.Join(r.Form["otp"], "")
-	glue := r.FormValue("glue")
+	email := r.FormValue("email")
 	device := r.Header.Get("User-Agent")
 
-	sid, err := users.Login(ctx, otp, glue, device)
+	sid, err := users.Login(ctx, email, otp, device)
 	if err != nil || sid == "" {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return

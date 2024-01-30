@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/go-faker/faker/v4"
-	"github.com/redis/go-redis/v9"
 )
 
 func init() {
@@ -43,11 +42,6 @@ func init() {
 	)
 
 	db.Redis.HSet(ctx, "pids", db.Escape("T-shirt développeur unisexe Tester c'est douter"), "PDT1")
-
-	db.Redis.ZAdd(ctx, "products", redis.Z{
-		Score:  float64(time.Now().Unix()),
-		Member: "PDT1",
-	})
 }
 
 var product = Product{

@@ -1,14 +1,15 @@
 package admin
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/http/cookies"
 	"artisons/http/httperrors"
+	"artisons/http/httpext"
 	"artisons/templates"
+	"context"
+	"errors"
+	"fmt"
 	"html/template"
 	"io"
 	"log/slog"
@@ -18,7 +19,6 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -164,28 +164,17 @@ type searchResults[T any] struct {
 }
 
 func digestList[T any](w http.ResponseWriter, r *http.Request, l list[T]) {
-	var page int = 1
-
-	ppage := r.URL.Query().Get("page")
-	if ppage != "" {
-		if d, err := strconv.ParseInt(ppage, 10, 32); err == nil && d > 0 {
-			page = int(d)
-		}
-	}
-
-	query := r.URL.Query().Get("q")
+	p := httpext.Pagination(r)
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	offset := (page - 1) * conf.ItemsPerPage
-	num := offset + conf.ItemsPerPage
 
-	res, err := l.Feature.Search(ctx, query, offset, num)
+	res, err := l.Feature.Search(ctx, p.Query, p.Offset, p.Num)
 	if err != nil {
 		httperrors.Catch(w, ctx, err.Error(), 500)
 		return
 	}
 
-	pag := templates.Paginate(page, len(res.Items), int(res.Total))
+	pag := templates.Paginate(p.Page, len(res.Items), int(res.Total))
 	pag.URL = l.URL
 	pag.Lang = lang
 

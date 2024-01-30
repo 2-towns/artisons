@@ -1,14 +1,14 @@
 package users
 
 import (
-	"context"
-	"errors"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/http/cookies"
 	"artisons/http/httperrors"
 	"artisons/string/stringutil"
+	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 )
@@ -22,7 +22,7 @@ func findBySessionID(ctx context.Context, sid string) (User, error) {
 		return User{}, errors.New("your are not authorized to process this request")
 	}
 
-	id, err := db.Redis.Get(ctx, "auth:"+sid).Result()
+	id, err := db.Redis.HGet(ctx, "session:"+sid, "uid").Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot get the auth id from redis", slog.String("error", err.Error()))
 		return User{}, errors.New("your are not authorized to process this request")
@@ -35,7 +35,7 @@ func findBySessionID(ctx context.Context, sid string) (User, error) {
 	}
 
 	m["sid"] = sid
-	u, err := parseUser(ctx, m)
+	u, err := parse(ctx, m)
 	if err != nil {
 		return User{}, errors.New("your are not authorized to process this request")
 	}
@@ -75,6 +75,7 @@ func Middleware(next http.Handler) http.Handler {
 
 		http.SetCookie(w, cookie)
 		ctx := context.WithValue(r.Context(), contexts.Cart, cid)
+		ctx = context.WithValue(ctx, contexts.End, "front")
 
 		sid, err := r.Cookie(cookies.SessionID)
 		if err != nil {
@@ -153,6 +154,7 @@ func AdminOnly(next http.Handler) http.Handler {
 		}
 
 		ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
+		ctx = context.WithValue(ctx, contexts.End, "back")
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

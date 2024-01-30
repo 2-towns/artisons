@@ -6,16 +6,13 @@ email: hello@world.com
 HTTP 200
 [Asserts]
 xpath "//form[@hx-post='/login.html']" exists
-[Captures]
-glue: xpath "normalize-space(//input[@id='glue']/@value)"
-
 # Redirect to dashboard when the otp is correct
 POST {{host}}/login.html
 HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-glue: {{glue}}
+email: hello@world.com
 otp: 1
 otp: 1
 otp: 1 

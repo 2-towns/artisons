@@ -144,7 +144,7 @@ func TestSearchReturnsArticlesWhenAtLeastOneMatching(t *testing.T) {
 	}
 }
 
-func TestSearchReturnsNoArticleWhenNoMatchi(t *testing.T) {
+func TestSearchReturnsNoArticleWhenNoMatching(t *testing.T) {
 	c := tests.Context()
 	a, err := Search(c, Query{Keywords: "crazy world"}, 0, 10)
 	if err != nil {

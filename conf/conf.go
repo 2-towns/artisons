@@ -156,3 +156,5 @@ var DefaultLocale = language.English
 const DefaultTheme = "nostyle"
 
 const AddressesFrApi = "https://api-adresse.data.gouv.fr"
+
+const EnableTrackingLog = false

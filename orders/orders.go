@@ -81,6 +81,7 @@ type Note struct {
 
 type Query struct {
 	Keyword string
+	UID     int
 }
 
 // IsValidDelivery returns true if the delivery
@@ -230,11 +231,6 @@ func (o Order) Save(ctx context.Context) (string, error) {
 			rdb.HSet(ctx, "order:"+oid+":products", key, value)
 		}
 
-		rdb.ZAdd(ctx, fmt.Sprintf("user:%d:orders", o.UID), redis.Z{
-			Score:  float64(now.Unix()),
-			Member: oid,
-		})
-
 		return nil
 	}); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot save the order in redis", slog.String("error", err.Error()))
@@ -245,7 +241,9 @@ func (o Order) Save(ctx context.Context) (string, error) {
 
 	go o.SendConfirmationEmail(ctx)
 
-	go tracking.Log(ctx, "order", tra)
+	if conf.EnableTrackingLog {
+		go tracking.Log(ctx, "order", tra)
+	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the new order is created", slog.String("oid", oid))
 
@@ -332,12 +330,14 @@ func UpdateStatus(ctx context.Context, oid, status string) error {
 		return errors.New("something went wrong")
 	}
 
-	tra := map[string]string{
-		"oid":    oid,
-		"status": status,
-	}
+	if conf.EnableTrackingLog {
+		tra := map[string]string{
+			"oid":    oid,
+			"status": status,
+		}
 
-	go tracking.Log(ctx, "order_status", tra)
+		go tracking.Log(ctx, "order_status", tra)
+	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the status is updated")
 
@@ -491,7 +491,6 @@ func AddNote(ctx context.Context, oid, note string) error {
 
 func parse(ctx context.Context, m map[string]string) (Order, error) {
 	l := slog.With(slog.String("user_id", m["uid"]))
-	l.LogAttrs(ctx, slog.LevelInfo, "parsing the order")
 
 	uid, err := strconv.ParseInt(m["uid"], 10, 64)
 	if err != nil {
@@ -516,8 +515,6 @@ func parse(ctx context.Context, m map[string]string) (Order, error) {
 		l.LogAttrs(ctx, slog.LevelError, "cannot parse the total", slog.String("total", m["total"]), slog.String("error", err.Error()))
 		return Order{}, errors.New("something went wrong")
 	}
-
-	slog.LogAttrs(ctx, slog.LevelInfo, "order parsed", slog.String("id", m["id"]))
 
 	return Order{
 		ID:            m["id"],
@@ -553,7 +550,17 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 		qs += fmt.Sprintf("(@id:{%s})|(@status:{%s})|(@delivery:{%s})|(@payment:{%s})", k, k, k, k)
 	}
 
-	qs += fmt.Sprintf(" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)
+	if q.UID != 0 {
+		qs += fmt.Sprintf("(@uid:{%d})", q.UID)
+	}
+
+	end, ok := ctx.Value(contexts.End).(string)
+	sorter := "updated_at"
+	if ok && end == "front" {
+		sorter = "created_at"
+	}
+
+	qs += fmt.Sprintf(" SORTBY %s desc LIMIT %d %d DIALECT 2", sorter, offset, num)
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "preparing redis request", slog.String("query", qs))
 

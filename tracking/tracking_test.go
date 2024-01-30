@@ -1,10 +1,10 @@
 package tracking
 
 import (
-	"fmt"
 	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/tests"
+	"fmt"
 	"os"
 	"path"
 	"strings"

@@ -2,10 +2,10 @@
 package db
 
 import (
+	"artisons/conf"
 	"context"
 	"encoding/csv"
 	"fmt"
-	"artisons/conf"
 	"log/slog"
 	"regexp"
 	"strings"
@@ -22,6 +22,8 @@ var Redis = redis.NewClient(&redis.Options{
 var ProductIdx = "product-idx"
 var OrderIdx = "order-idx"
 var BlogIdx = "blog-idx"
+var UserIdx = "user-idx"
+var SessionIdx = "session-idx"
 var LocaleIdx = "locale-idx"
 
 // ConvertMap converts the redis search result to an map
@@ -42,6 +44,8 @@ func ConvertMap(m map[interface{}]interface{}) map[string]string {
 // adding backslashes.
 func Escape(value string) string {
 	s := strings.ReplaceAll(value, "-", "\\-")
+	s = strings.ReplaceAll(s, "@", "\\@")
+	s = strings.ReplaceAll(s, ".", "\\.")
 	return strings.ReplaceAll(s, "'", "\\'")
 }
 
@@ -93,14 +97,14 @@ func SplitQuery(ctx context.Context, s string) ([]interface{}, error) {
 		log.Panicln(err)
 	}
 
-	pubsub := Redis.PSubscribe(ctx, "__key*__:auth:*")
+	pubsub := Redis.PSubscribe(ctx, "__key*__:session:*")
 	defer pubsub.Close()
 
 	for {
 		msg, err := pubsub.ReceiveMessage(ctx)
 		if err != nil {
 		}
-		parts := strings.Split(msg.Channel, "auth:")
+		parts := strings.Split(msg.Channel, "session:")
 		fmt.Println(parts[1])
 	}
 }

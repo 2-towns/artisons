@@ -1,6 +1,10 @@
 FT.DROPINDEX product-idx
 FT.CREATE product-idx ON HASH PREFIX 1 product: SCHEMA id TAG title TEXT sku TAG description TEXT slug TAG type TAG price NUMERIC SORTABLE tags TAG SEPARATOR ";" status TAG meta TAG  SEPARATOR ";" updated_at NUMERIC SORTABLE
 FT.DROPINDEX order-idx
-FT.CREATE order-idx ON HASH PREFIX 1 order: SCHEMA id TAG status TAG delivery TAG payment TAG type TAG updated_at NUMERIC SORTABLE
+FT.CREATE order-idx ON HASH PREFIX 1 order: SCHEMA id TAG status TAG delivery TAG payment TAG uid TAG type TAG created_at NUMERIC SORTABLE updated_at NUMERIC SORTABLE
 FT.DROPINDEX blog-idx
 FT.CREATE blog-idx ON HASH PREFIX 1 blog: SCHEMA id TAG status TAG title TEXT type TAG description TEXT slug TAG updated_at NUMERIC SORTABLE
+FT.DROPINDEX user-idx
+FT.CREATE user-idx ON HASH PREFIX 1 user: SCHEMA id TAG type TAG email TAG updated_at NUMERIC SORTABLE
+FT.DROPINDEX session-idx
+FT.CREATE session-idx ON HASH PREFIX 1 session: SCHEMA type TAG uid TAG updated_at NUMERIC SORTABLE

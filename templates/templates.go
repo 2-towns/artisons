@@ -124,6 +124,8 @@ func init() {
 	buildTemplate("blog", []string{"blog.html", "hx-blog.html"})
 	buildTemplate("hx-blog", []string{"hx-blog.html"})
 	buildTemplate("static", []string{"static.html"})
+	buildTemplate("orders", []string{"orders.html", "hx-orders.html"})
+	buildTemplate("hx-orders", []string{"hx-orders.html"})
 }
 
 func Build(name string) *template.Template {

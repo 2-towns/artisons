@@ -20,8 +20,6 @@ email: arnaud@yandex.com
 HTTP 200
 [Asserts]
 xpath "//form[@hx-post='/login.html']" exists
-[Captures]
-glue: xpath "normalize-space(//input[@id='glue']/@value)"
 
 # Displays an error message when requesting new OTP too quickly
 POST {{host}}/otp.html
@@ -38,7 +36,7 @@ HX-Current-URL: http://localhost:8080/otp.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-glue: {{glue}}
+email: arnaud@yandex.com
 otp: 1
 otp: 2 
 otp: 3 
@@ -55,7 +53,7 @@ HX-Current-URL: http://localhost:8080/otp.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-glue: {{glue}}
+email: arnaud@yandex.com
 otp: 1
 otp: 1
 otp: 1 

@@ -4,8 +4,6 @@ HX-Request: true
 [FormParams]
 email: lock@world.com
 HTTP 200
-[Captures]
-glue: xpath "normalize-space(//input[@id='glue']/@value)"
 
 # Displays an error for first tentative
 POST {{host}}/login.html
@@ -13,7 +11,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-glue: {{glue}}
+email: lock@world.com
 otp: 1
 otp: 2 
 otp: 3 
@@ -30,7 +28,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-glue: {{glue}}
+email: lock@world.com
 otp: 1
 otp: 2 
 otp: 3 
@@ -47,7 +45,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-glue: {{glue}}
+email: lock@world.com
 otp: 1
 otp: 2 
 otp: 3 
