@@ -102,6 +102,8 @@ func main() {
 	fs := http.FileServer(http.Dir("web/public"))
 
 	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", seo.URLs["product"].URL)
+	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", seo.URLs["terms"].URL)
+	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", seo.URLs["about"].URL)
 
 	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
 	router.R.Get("/", pages.Home)

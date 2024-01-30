@@ -7,7 +7,6 @@ HTTP 200
 [Asserts]
 xpath "//form[@hx-post='/login.html']" exists
 
-
 # Redirect to dashboard when the otp is correct
 POST {{host}}/login.html
 HX-Current-URL: http://localhost:8080/sso.html
