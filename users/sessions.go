@@ -19,7 +19,7 @@ type Session struct {
 func (u User) Sessions(ctx context.Context) ([]Session, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "searching sessions", slog.Int("uid", u.ID))
 
-	qs := fmt.Sprintf("FT.SEARCH %s @type:{session}@uid:{%d}", db.UserIdx, u.ID)
+	qs := fmt.Sprintf("FT.SEARCH %s @type:{session}@uid:{%d}", db.SessionIdx, u.ID)
 	qs += " SORTBY updated_at desc LIMIT 0 9999 DIALECT 2"
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "preparing redis request", slog.String("query", qs))

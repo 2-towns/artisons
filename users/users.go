@@ -12,7 +12,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"math/rand"
 	"strconv"
@@ -293,8 +292,6 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 		l.LogAttrs(ctx, slog.LevelError, "cannot verify email existence", slog.String("error", err.Error()))
 		return "", errors.New("something went wrong")
 	}
-
-	log.Println("res!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", res)
 
 	var uid int
 
