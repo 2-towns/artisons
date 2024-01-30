@@ -30,7 +30,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pag := templates.Paginate(p.Page, len(res.Orders), int(res.Total))
-	pag.URL = "/blog.html"
+	pag.URL = "/account/orders.html"
 	pag.Lang = lang
 
 	data := struct {

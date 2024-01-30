@@ -9,7 +9,6 @@ import (
 	"artisons/templates"
 	"artisons/users"
 	"html/template"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -68,8 +67,6 @@ func Wishes(w http.ResponseWriter, r *http.Request) {
 
 func Wish(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	log.Println("!!!!!!!!!!!!!!!!!!!!!")
 
 	id := chi.URLParam(r, "id")
 
