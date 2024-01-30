@@ -427,18 +427,6 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 	}, nil
 }
 
-func Count(ctx context.Context) (int, error) {
-	slog.LogAttrs(ctx, slog.LevelInfo, "counting products")
-
-	count, err := db.Redis.ZCount(ctx, "products", "-inf", "+inf").Result()
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot find the product", slog.String("error", err.Error()))
-		return 0, err
-	}
-
-	return int(count), nil
-}
-
 func (p Product) URL() string {
 	return conf.WebsiteURL + "/" + p.ID + "-" + p.Slug + ".html"
 }

@@ -580,20 +580,6 @@ func TestURLReturnsTheProductURLWhenSuccess(t *testing.T) {
 	}
 }
 
-func TestCountReturnPositiveWhenSuccess(t *testing.T) {
-	c := tests.Context()
-
-	count, err := Count(c)
-	if err != nil {
-		t.Fatalf(`Count(c) = %v, %s want > 0,nil`, count, err.Error())
-	}
-
-	if count == 0 {
-		t.Fatalf(`count = %d, want > 0`, count)
-	}
-
-}
-
 func TestDeleteReturnsErrorWhenIdIsEmpty(t *testing.T) {
 	c := tests.Context()
 	if err := Delete(c, ""); err == nil || err.Error() != "input:id" {
