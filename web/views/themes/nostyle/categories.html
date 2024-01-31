@@ -1,0 +1,7 @@
+{{define "body"}}
+<ul>
+    {{range .Tags}}
+    <li class="category">{{.Tag.Label}}</li>
+    {{end}}
+</ul>
+{{end}}

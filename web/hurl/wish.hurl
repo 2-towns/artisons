@@ -26,7 +26,6 @@ header "HX-Redirect" == "/account/index.html"
 
 # The wish list returns empty result
 GET {{host}}/wish.html
-HX-Request: true
 User-Agent: {{ua}}
 HTTP 200
 [Asserts]

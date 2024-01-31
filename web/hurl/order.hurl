@@ -26,7 +26,6 @@ header "HX-Redirect" == "/account/index.html"
 
 # The blog article is displayed
 GET {{host}}/account/orders/ORD1/detail.html
-HX-Request: true
 User-Agent: {{ua}}
 HTTP 200
 [Asserts]

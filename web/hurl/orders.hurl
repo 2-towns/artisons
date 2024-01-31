@@ -26,7 +26,6 @@ header "HX-Redirect" == "/account/index.html"
 
 # The orders list returns empty result
 GET {{host}}/account/orders.html
-HX-Request: true
 User-Agent: {{ua}}
 HTTP 200
 [Asserts]

@@ -126,6 +126,7 @@ func init() {
 	buildTemplate("orders", []string{"orders.html", "hx-orders.html"})
 	buildTemplate("hx-orders", []string{"hx-orders.html"})
 	buildTemplate("order", []string{"order.html"})
+	buildTemplate("categories", []string{"categories.html"})
 	buildTemplate("address", []string{
 		fmt.Sprintf("%s/web/views/address.html", conf.WorkingSpace),
 	})

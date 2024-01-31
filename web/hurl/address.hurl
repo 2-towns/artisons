@@ -26,7 +26,6 @@ header "HX-Redirect" == "/account/index.html"
 
 # The address form is displayed
 GET {{host}}/account/address.html
-HX-Request: true
 User-Agent: {{ua}}
 HTTP 200
 [Asserts]

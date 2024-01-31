@@ -96,7 +96,6 @@ func init() {
 		c.Description = db.Unescape(val["description"])
 		c.UpdatedAt = time.Unix(updatedAt, 0)
 		URLs[k] = c
-
 	}
 }
 
