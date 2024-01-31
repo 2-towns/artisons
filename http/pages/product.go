@@ -4,6 +4,7 @@ import (
 	"artisons/http/contexts"
 	"artisons/http/httperrors"
 	"artisons/products"
+	"artisons/products/filters"
 	"artisons/shops"
 	"artisons/tags"
 	"artisons/templates"
@@ -23,7 +24,6 @@ func Product(w http.ResponseWriter, r *http.Request) {
 
 	res, err := products.Search(ctx, query, 0, 1)
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot get the product", slog.String("slug", slug), slog.String("error", err.Error()))
 		httperrors.Page(w, r.Context(), err.Error(), 400)
 		return
 	}
@@ -42,18 +42,26 @@ func Product(w http.ResponseWriter, r *http.Request) {
 		wish = user.HasWish(ctx, p.ID)
 	}
 
+	f, err := filters.Actives(ctx)
+	if err != nil {
+		httperrors.Page(w, r.Context(), err.Error(), 400)
+		return
+	}
+
 	data := struct {
 		Lang    language.Tag
 		Shop    shops.Settings
 		Product products.Product
 		Tags    []tags.Leaf
 		Wish    bool
+		Filters []filters.Filter
 	}{
 		lang,
 		shops.Data,
 		p,
 		tags.Tree,
 		wish,
+		f,
 	}
 
 	if err := templates.Pages["product"].Execute(w, &data); err != nil {

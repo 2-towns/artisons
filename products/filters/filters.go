@@ -1,11 +1,11 @@
 package filters
 
 import (
+	"artisons/db"
+	"artisons/validators"
 	"context"
 	"errors"
 	"fmt"
-	"artisons/db"
-	"artisons/validators"
 	"log/slog"
 	"slices"
 	"strconv"
