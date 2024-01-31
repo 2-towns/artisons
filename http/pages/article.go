@@ -17,7 +17,6 @@ import (
 func Article(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-
 	slug := chi.URLParam(r, "slug")
 
 	query := blog.Query{Slug: slug}

@@ -10,7 +10,6 @@ import (
 	"artisons/users"
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
 	"testing"
 	"time"
@@ -433,7 +432,6 @@ func TestSearchReturnUpdatedAtSortedOrdersWhenEndIsBack(t *testing.T) {
 
 	for idx, val := range p.Orders {
 		if val.ID == "ORD1" {
-			log.Println("ORD1")
 			a = idx
 		}
 

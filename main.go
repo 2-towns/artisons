@@ -16,7 +16,6 @@ import (
 	"artisons/users"
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -101,10 +100,6 @@ func main() {
 
 	fs := http.FileServer(http.Dir("web/public"))
 
-	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", seo.URLs["product"].URL)
-	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", seo.URLs["terms"].URL)
-	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", seo.URLs["about"].URL)
-
 	router.R.Handle("/public/*", http.StripPrefix("/public/", fs))
 	router.R.Get("/", pages.Home)
 	router.R.Get("/wish.html", pages.Wishes)
@@ -121,6 +116,7 @@ func main() {
 		r.Use(users.AccountOnly)
 		r.Get("/index.html", pages.Account)
 		r.Get("/orders.html", pages.Orders)
+		r.Get("/orders/{id}/detail.html", pages.Orders)
 	})
 
 	router.R.Post("/wish/{id}/add.html", pages.Wish)

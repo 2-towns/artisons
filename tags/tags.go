@@ -362,8 +362,6 @@ func tree(ctx context.Context) ([]Leaf, error) {
 		}
 
 		for _, branch := range tag[val].Children {
-			log.Println(branch)
-
 			l := Leaf{
 				Tag: Tag{
 					Key:   branch,
