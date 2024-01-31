@@ -143,6 +143,17 @@ func (u User) Delete(ctx context.Context) error {
 	return nil
 }
 
+func (a Address) Validate(ctx context.Context) error {
+	if err := validators.V.Struct(a); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
+		field := err.(validator.ValidationErrors)[0]
+		low := strings.ToLower(field.Field())
+		return fmt.Errorf("input:%s", low)
+	}
+
+	return nil
+}
+
 func parse(ctx context.Context, m map[string]string) (User, error) {
 	l := slog.With(slog.String("user_id", m["id"]))
 
@@ -191,25 +202,18 @@ func parse(ctx context.Context, m map[string]string) (User, error) {
 	}, nil
 }
 
-// SaveAddress attachs an address to an user.
+// Save attachs an address to an user.
 // The data are stored with:
 // - user:id => the address
-func (u User) SaveAddress(ctx context.Context, a Address) error {
+func (a Address) Save(ctx context.Context, id int) error {
 	slog.LogAttrs(ctx, slog.LevelInfo, "saving the address")
 
-	if err := validators.V.Struct(a); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
-		field := err.(validator.ValidationErrors)[0]
-		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input:%s", low)
-	}
-
-	if u.ID == 0 {
+	if id == 0 {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user id while it is empty")
 		return errors.New("something went wrong")
 	}
 
-	if _, err := db.Redis.HSet(ctx, fmt.Sprintf("user:%d", u.ID),
+	if _, err := db.Redis.HSet(ctx, fmt.Sprintf("user:%d", id),
 		"firstname", a.Firstname,
 		"lastname", a.Lastname,
 		"complementary", a.Complementary,
@@ -261,7 +265,7 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 	val, err := db.Redis.HGet(ctx, "otp:"+email, "otp").Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot get the existing otp", slog.String("error", err.Error()))
-		return "", errors.New("your are not authorized to process this request")
+		return "", errors.New("you are not authorized to process this request")
 	}
 
 	if val != otp && !(conf.OtpDemo && otp == "111111") {
@@ -365,7 +369,7 @@ func (u User) Logout(ctx context.Context) error {
 
 	if u.SID == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the session id")
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	exist, err := db.Redis.Exists(ctx, "session:"+u.SID).Result()
@@ -376,13 +380,13 @@ func (u User) Logout(ctx context.Context) error {
 
 	if exist == 0 {
 		l.LogAttrs(ctx, slog.LevelInfo, "the session does not exist")
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	_, err = db.Redis.Del(ctx, "session:"+u.SID).Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot delete the session")
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	if conf.EnableTrackingLog {
@@ -398,8 +402,8 @@ func (u User) Logout(ctx context.Context) error {
 	return nil
 }
 
-// Get the user information from its id
-func Get(ctx context.Context, id int) (User, error) {
+// FindByUID the user information from its id
+func FindByUID(ctx context.Context, id int) (User, error) {
 	l := slog.With(slog.Int("user_id", id))
 	l.LogAttrs(ctx, slog.LevelInfo, "trying to get the user")
 
@@ -450,7 +454,7 @@ func (u User) ToggleDemo(ctx context.Context) (bool, error) {
 		v = "0"
 	}
 
-	_, err := db.Redis.HSet(context.Background(), fmt.Sprintf("user:%d", u.ID), "demo", v).Result()
+	_, err := db.Redis.HSet(ctx, fmt.Sprintf("user:%d", u.ID), "demo", v).Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot toggle demo mode", slog.String("error", err.Error()))
 		return u.Demo, err

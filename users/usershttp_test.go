@@ -1,12 +1,12 @@
 package users
 
 import (
-	"context"
 	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/http/cookies"
 	"artisons/string/stringutil"
 	"artisons/tests"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,7 +25,7 @@ func TestFindBySessionIDReturnsErrorWhenSidIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 	u, err := findBySessionID(ctx, "")
 
-	if err == nil || err.Error() != "your are not authorized to process this request" || u.Email != "" {
+	if err == nil || err.Error() != "you are not authorized to process this request" || u.Email != "" {
 		t.Fatalf("findBySessionID('') = %v, %v, want User{}, 'unauthorized'", u, err)
 	}
 }
@@ -34,7 +34,7 @@ func TestFindBySessionIDReturnsErrorWhenSessionIsExpired(t *testing.T) {
 	ctx := tests.Context()
 	u, err := findBySessionID(ctx, "expired")
 
-	if err == nil || err.Error() != "your are not authorized to process this request" || u.Email != "" {
+	if err == nil || err.Error() != "you are not authorized to process this request" || u.Email != "" {
 		t.Fatalf(`findBySessionID("expired") = %v, %v, want User, nil`, u, err)
 	}
 }

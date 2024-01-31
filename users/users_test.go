@@ -176,7 +176,7 @@ func TestLoginReturnsErrorWhenEmailOtpIsNotFound(t *testing.T) {
 	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
 
 	sid, err := Login(ctx, "hello@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "your are not authorized to process this request" {
+	if sid != "" || err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf(`Login(ctx, "hello@world.com", "hello-world",  'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
 	}
 }
@@ -217,30 +217,30 @@ func TestLogoutRetunsEmptyWhenSuccess(t *testing.T) {
 func TestLogoutRetunsErrorWhenSidIsMissing(t *testing.T) {
 	ctx := tests.Context()
 	err := User{}.Logout(ctx)
-	if err == nil || err.Error() != "your are not authorized to process this request" {
-		t.Fatalf("Logout(ctx, '') = %v, want 'your are not authorized to process this request'", err)
+	if err == nil || err.Error() != "you are not authorized to process this request" {
+		t.Fatalf("Logout(ctx, '') = %v, want 'you are not authorized to process this request'", err)
 	}
 }
 
 func TestLogoutRetunsErrorWhenSessionDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 	err := User{SID: "iamnotexisting"}.Logout(ctx)
-	if err == nil || err.Error() != "your are not authorized to process this request" {
-		t.Fatalf(`Logout(ctx, "iamnotexisting") = %v, want 'your are not authorized to process this request'`, err)
+	if err == nil || err.Error() != "you are not authorized to process this request" {
+		t.Fatalf(`Logout(ctx, "iamnotexisting") = %v, want 'you are not authorized to process this request'`, err)
 	}
 }
 
 func TestLogoutRetunsErrorWhenSessionIsNotFound(t *testing.T) {
 	ctx := tests.Context()
 	err := User{SID: "122"}.Logout(ctx)
-	if err == nil || err.Error() != "your are not authorized to process this request" {
+	if err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf("Logout(ctx, 124, '122') = %v, want nil", err)
 	}
 }
 
 func TestSaveAddressReturnNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, address)
+	err := address.Save(ctx, user.ID)
 	if err != nil {
 		t.Fatalf("user.SaveAddress(ctx, address) = %v, want nil", err)
 	}
@@ -251,7 +251,7 @@ func TestSaveAddressReturnNilWhenNoComplementary(t *testing.T) {
 	a.Complementary = ""
 
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, a)
+	err := a.Save(ctx, user.ID)
 	if err != nil {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want nil", err)
 	}
@@ -259,7 +259,7 @@ func TestSaveAddressReturnNilWhenNoComplementary(t *testing.T) {
 
 func TestSaveAddressReturnErrorWhenUidIsEmpty(t *testing.T) {
 	ctx := tests.Context()
-	err := User{ID: 0}.SaveAddress(ctx, address)
+	err := address.Save(ctx, 0)
 	if err == nil || err.Error() != "something went wrong" {
 		t.Fatalf("User{ID: 0}.SaveAddress(ctx, a) = %v, want 'something went wrong'", err)
 	}
@@ -270,7 +270,7 @@ func TestSaveAddressReturnErrorWhenFirstnameIsEmpty(t *testing.T) {
 	a.Firstname = ""
 
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, a)
+	err := a.Save(ctx, user.ID)
 	if err == nil || err.Error() != "input:firstname" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:firstname'", err)
 	}
@@ -281,7 +281,7 @@ func TestSaveAddressReturnErrorWhenLastnameIsEmpty(t *testing.T) {
 	a.Lastname = ""
 
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, a)
+	err := a.Save(ctx, user.ID)
 	if err == nil || err.Error() != "input:lastname" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:lastname'", err)
 	}
@@ -292,7 +292,7 @@ func TestSaveAddressReturnErrorWhenStreeIsEmpty(t *testing.T) {
 	a.Street = ""
 
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, a)
+	err := a.Save(ctx, user.ID)
 	if err == nil || err.Error() != "input:street" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:street'", err)
 	}
@@ -303,7 +303,7 @@ func TestSaveAddressReturnErrorWhenCityIsEmpty(t *testing.T) {
 	a.City = ""
 
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, a)
+	err := a.Save(ctx, user.ID)
 	if err == nil || err.Error() != "input:city" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:city'", err)
 	}
@@ -314,7 +314,7 @@ func TestSaveAddressReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
 	a.Zipcode = ""
 
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, a)
+	err := a.Save(ctx, user.ID)
 	if err == nil || err.Error() != "input:zipcode" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:zipcode'", err)
 	}
@@ -325,7 +325,7 @@ func TestSaveAddressReturnErrorWhenPhoneIsEmpty(t *testing.T) {
 	a.Phone = ""
 
 	ctx := tests.Context()
-	err := user.SaveAddress(ctx, a)
+	err := a.Save(ctx, user.ID)
 	if err == nil || err.Error() != "input:phone" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:phone'", err)
 	}
@@ -333,7 +333,7 @@ func TestSaveAddressReturnErrorWhenPhoneIsEmpty(t *testing.T) {
 
 func TestGetReturnsUserWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	user, err := Get(ctx, 1)
+	user, err := FindByUID(ctx, 1)
 	if err != nil || user.ID == 0 {
 		t.Fatalf("users.Get(ctx, 1) = %v, %v, want User, nil", user, err)
 	}
@@ -341,7 +341,7 @@ func TestGetReturnsUserWhenSuccess(t *testing.T) {
 
 func TestGetReturnsErrorWhenIdIsEmpty(t *testing.T) {
 	ctx := tests.Context()
-	user, err := Get(ctx, 0)
+	user, err := FindByUID(ctx, 0)
 	if err == nil || err.Error() != "the user is not found" || user.ID != 0 {
 		t.Fatalf("users.Get(ctx, 0) = %v, %v, wan t User{}, 'the user is not found'", user, err)
 	}
@@ -349,7 +349,7 @@ func TestGetReturnsErrorWhenIdIsEmpty(t *testing.T) {
 
 func TestGetReturnsErrorWhenUserDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	user, err := Get(ctx, 123)
+	user, err := FindByUID(ctx, 123)
 	if err == nil || err.Error() != "the user is not found" || user.ID != 0 {
 		t.Fatalf("users.Get(ctx, 0) = %v, %v, want User{}, 'the user is not found'", user, err)
 	}

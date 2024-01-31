@@ -115,8 +115,11 @@ func main() {
 	router.R.Route("/account", func(r chi.Router) {
 		r.Use(users.AccountOnly)
 		r.Get("/index.html", pages.Account)
+		r.Get("/address.html", pages.AddressForm)
 		r.Get("/orders.html", pages.Orders)
 		r.Get("/orders/{id}/detail.html", pages.Orders)
+
+		r.Post("/address.html", pages.Address)
 	})
 
 	router.R.Post("/wish/{id}/add.html", pages.Wish)

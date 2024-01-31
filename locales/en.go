@@ -15,7 +15,7 @@ func LoadEn() {
 	message.SetString(language.English, "the csv is invalid", "The csv is not valid.")
 	message.SetString(language.English, "the image extension is missing in %s", "The image extension is missing in %s.")
 	message.SetString(language.English, "the image extension %s is not supported", "The image extension %s is not supported.")
-	message.SetString(language.English, "your are not authorized to process this request", "Your are not authorized to access to this page. This will be reported.")
+	message.SetString(language.English, "you are not authorized to process this request", "Your are not authorized to access to this page. This will be reported.")
 	message.SetString(language.English, "the image %s cannot be downloaded got status %d", "The image %s cannot be downloaded, got status %d.")
 	message.SetString(language.English, "oops the data is not found", "Oops..the data is not found.")
 	message.SetString(language.English, "something went wrong", "Something went wrong, please try again later. Your request id is %s.")

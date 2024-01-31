@@ -130,7 +130,7 @@ func (c Cart) UpdateDelivery(ctx context.Context, d string) error {
 	l.LogAttrs(ctx, slog.LevelInfo, "updating the delivery")
 
 	if !orders.IsValidDelivery(ctx, d) {
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	if _, err := db.Redis.HSet(ctx, "cart:"+c.ID, "delivery", d).Result(); err != nil {
@@ -157,7 +157,7 @@ func (c Cart) UpdatePayment(ctx context.Context, p string) error {
 	l.LogAttrs(ctx, slog.LevelInfo, "updating the payment")
 
 	if !orders.IsValidPayment(ctx, p) {
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	if _, err := db.Redis.HSet(ctx, "cart:"+c.ID, "payment", p).Result(); err != nil {

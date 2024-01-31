@@ -134,11 +134,11 @@ func (o Order) Validate(ctx context.Context) error {
 	l.LogAttrs(ctx, slog.LevelInfo, "saving the order")
 
 	if !IsValidDelivery(ctx, o.Delivery) {
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	if !IsValidPayment(ctx, o.Payment) {
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	if len(o.Quantities) == 0 {

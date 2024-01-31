@@ -155,7 +155,7 @@ func TestValidateReturnsErrorWhenDeliveryIsInvalid(t *testing.T) {
 	o.Delivery = "toto"
 	ctx := tests.Context()
 
-	if err := o.Validate(ctx); err == nil || err.Error() != "your are not authorized to process this request" {
+	if err := o.Validate(ctx); err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf(`o.Validate(ctx) = %v, want string, 'unauthorized'`, err)
 	}
 }
@@ -165,7 +165,7 @@ func TestValidateReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	o.Payment = "toto"
 	ctx := tests.Context()
 
-	if err := o.Validate(ctx); err == nil || err.Error() != "your are not authorized to process this request" {
+	if err := o.Validate(ctx); err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf(`o.Save(ctx) =  %v, want string, 'unauthorized'`, err)
 	}
 }

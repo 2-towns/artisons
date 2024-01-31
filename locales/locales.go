@@ -85,6 +85,20 @@ func Translate(l language.Tag, msg string, attr ...interface{}) string {
 	return t.Sprintf(msg, attr...)
 }
 
+func UITranslate(l language.Tag, msg string, attr ...interface{}) string {
+	t := trans[l]
+
+	if t == nil {
+		t = trans[conf.DefaultLocale]
+	}
+
+	if strings.HasPrefix(msg, "dynamic") {
+		return t.Sprintf(fmt.Sprintf("%s%s", msg, attr[0]))
+	}
+
+	return t.Sprintf(msg, attr...)
+}
+
 func (v Value) Validate(ctx context.Context) error {
 	slog.LogAttrs(ctx, slog.LevelInfo, "validating a translation")
 

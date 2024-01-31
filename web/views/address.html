@@ -1,0 +1,123 @@
+{{define "body"}}
+
+<form hx-post="/account/address.html">
+    <div class="form-row" id="firstname-row">
+        <label class="input-label" for="firstname">
+            {{uitranslate .Lang "Firstname"}}
+        </label>
+
+        <input
+               id="firstname"
+               name="firstname"
+               required
+               class="input"
+               value="{{if .User.Address.Firstname}}{{.User.Address.Firstname}}{{end}}" />
+
+        <div id="firstname-error"></div>
+    </div>
+
+    <div class="form-row" id="lastname-row">
+        <label class="input-label" for="lastname">
+            {{uitranslate .Lang "Lastname"}}
+        </label>
+
+        <input
+               id="lastname"
+               name="lastname"
+               required
+               class="input"
+               value="{{if .User.Address.Lastname}}{{.User.Address.Lastname}}{{end}}" />
+
+        <div id="lastname-error"></div>
+    </div>
+
+    <div class="form-row" id="street-row">
+        <label class="input-label" for="street">
+            {{uitranslate .Lang "Street"}}
+        </label>
+
+        <input
+               id="street"
+               name="street"
+               required
+               class="input"
+               value="{{if .User.Address.Street}}{{.User.Address.Street}}{{end}}" />
+
+        <div id="street-error"></div>
+    </div>
+
+    <div class="form-row" id="complementary-row">
+        <label class="input-label" for="complementary">
+            {{uitranslate .Lang "Complementary"}}
+        </label>
+
+        <input
+               id="complementary"
+               name="complementary"
+               class="input"
+               value="{{if .User.Address.Complementary}}{{.User.Address.Complementary}}{{end}}" />
+
+        <div id="complementary-error"></div>
+    </div>
+
+    <div class="form-row" id="city-row">
+        <label class="input-label" for="city">
+            {{uitranslate .Lang "City"}}
+        </label>
+
+        <input
+               id="city"
+               name="city"
+               required
+               class="input"
+               value="{{if .User.Address.City}}{{.User.Address.City}}{{end}}" />
+
+        <div id="city-error"></div>
+    </div>
+
+    <div class="form-row" id="zipcode-row">
+        <label class="input-label" for="zipcode">
+            {{uitranslate .Lang "Zipcode"}}
+        </label>
+
+        <input
+               id="zipcode"
+               name="zipcode"
+               required
+               class="input"
+               value="{{if .User.Address.Zipcode}}{{.User.Address.Zipcode}}{{end}}" />
+
+        <div id="zipcode-error"></div>
+    </div>
+
+    <div class="form-row" id="phone-row">
+        <label class="input-label" for="phone">
+            {{uitranslate .Lang "Phone"}}
+        </label>
+
+        <input
+               id="phone"
+               name="phone"
+               typ="tel"
+               required
+               class="input"
+               value="{{if .User.Address.Phone}}{{.User.Address.Phone}}{{end}}" />
+
+        <div id="phone-error"></div>
+    </div>
+
+    <div class="card-footer box">
+        <div class="form row row-between row-gap">
+            <a href="/account/index.html" class="button row row-align fill">
+                {{uitranslate .Lang "Back"}}
+            </a>
+            <button class="button button-primary fill">
+                <div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+                {{uitranslate .Lang "Save"}}
+            </button>
+        </div>
+    </div>
+</form>
+
+{{end}}

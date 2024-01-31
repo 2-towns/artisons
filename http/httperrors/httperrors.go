@@ -1,11 +1,11 @@
 package httperrors
 
 import (
-	"context"
-	"fmt"
 	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/templates"
+	"context"
+	"fmt"
 	"html/template"
 	"log"
 	"log/slog"
@@ -57,6 +57,7 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 
 func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
+	end := ctx.Value(contexts.End).(string)
 
 	data := struct {
 		Lang    language.Tag
@@ -68,9 +69,18 @@ func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	w.Header().Set("HX-Retarget", fmt.Sprintf("#%s-error", key))
 	w.Header().Set("HX-Reswap", fmt.Sprintf("innerHTML show:#%s-row:top", key))
 
-	if err := itpl.Execute(w, &data); err != nil {
+	var t *template.Template
+
+	if end == "front" {
+		t = templates.Pages["hx-input-error"]
+	} else {
+		t = itpl
+	}
+
+	if err := t.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
+
 }
 
 // Catch an error which can come from ajax (HTMX) or from a standard

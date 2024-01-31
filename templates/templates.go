@@ -85,14 +85,11 @@ var AdminList = append(AdminUI, AdminSuccess...)
 var Pages map[string]*template.Template = map[string]*template.Template{}
 
 func buildTemplate(key string, files []string) {
-	name := "base.html"
 	folder := fmt.Sprintf("%sweb/views/themes/%s", conf.WorkingSpace, conf.DefaultTheme)
 
 	f := []string{}
 
-	if strings.HasPrefix(key, "hx") {
-		name = fmt.Sprintf("%s.html", key)
-	} else {
+	if !strings.HasPrefix(key, "hx") {
 		f = append(f, folder+"/base.html")
 	}
 
@@ -104,7 +101,9 @@ func buildTemplate(key string, files []string) {
 		}
 	}
 
-	tpl, err := Build(name).ParseFiles(f...)
+	parts := strings.Split(f[0], "/")
+
+	tpl, err := Build(parts[len(parts)-1]).ParseFiles(f...)
 
 	if err != nil {
 		log.Panicln(err)
@@ -127,11 +126,21 @@ func init() {
 	buildTemplate("orders", []string{"orders.html", "hx-orders.html"})
 	buildTemplate("hx-orders", []string{"hx-orders.html"})
 	buildTemplate("order", []string{"order.html"})
+	buildTemplate("address", []string{
+		fmt.Sprintf("%s/web/views/address.html", conf.WorkingSpace),
+	})
+	buildTemplate("hx-success", []string{
+		fmt.Sprintf("%s/web/views/success.html", conf.WorkingSpace),
+	})
+	buildTemplate("hx-input-error", []string{
+		fmt.Sprintf("%s/web/views/input-error.html", conf.WorkingSpace),
+	})
 }
 
 func Build(name string) *template.Template {
 	return template.New(name).Funcs(template.FuncMap{
 		"translate":   locales.Translate,
+		"uitranslate": locales.UITranslate,
 		"cachebuster": cache.Buster,
 		"date": func(t time.Time) string {
 			return t.Format("02 Jan 2006")

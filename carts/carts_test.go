@@ -1,12 +1,12 @@
 package carts
 
 import (
-	"context"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/string/stringutil"
 	"artisons/tests"
+	"context"
 	"testing"
 )
 
@@ -99,7 +99,7 @@ func TestUpdateDeliveryReturnsNilWhenSuccess(t *testing.T) {
 
 func TestUpdateDeliveryWhenDeliveryIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "your are not authorized to process this request" {
+	if err := cart.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf("cart.UpdateDelivery(ctx,'toto') = %v, want unauthorized", err)
 	}
 }
@@ -113,7 +113,7 @@ func TestUpdatePaymentReturnsNilWhenSuccess(t *testing.T) {
 
 func TestUpdatePaymentReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "your are not authorized to process this request" {
+	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf("cart.UpdatePayment(ctx, 'toto') = %v, want 'unauthorized'", err)
 	}
 }

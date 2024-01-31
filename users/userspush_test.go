@@ -28,7 +28,7 @@ func TestATestDeleteWPTokenReturnsNilWhenSuccess(t *testing.T) {
 
 func TestATestDeleteWPTokenReturnsErrorWhenTokenIsEmpty(t *testing.T) {
 	ctx := tests.Context()
-	if err := user.DeleteWPToken(ctx, ""); err == nil || err.Error() != "your are not authorized to process this request" {
+	if err := user.DeleteWPToken(ctx, ""); err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf("u.DeleteWPToken('') = %v, want unauthorized", err)
 	}
 }

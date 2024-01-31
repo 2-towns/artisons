@@ -41,7 +41,7 @@ func (u User) DeleteWPToken(ctx context.Context, sid string) error {
 
 	if sid == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the session id")
-		return errors.New("your are not authorized to process this request")
+		return errors.New("you are not authorized to process this request")
 	}
 
 	if _, err := db.Redis.HDel(ctx, fmt.Sprintf("session:%s", u.SID), "wptoken").Result(); err != nil {

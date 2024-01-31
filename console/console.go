@@ -1,10 +1,6 @@
 package main
 
 import (
-	"context"
-	"encoding/csv"
-	"encoding/json"
-	"flag"
 	"artisons/conf"
 	"artisons/console/parser"
 	"artisons/db"
@@ -14,6 +10,10 @@ import (
 	"artisons/orders"
 	"artisons/products"
 	"artisons/users"
+	"context"
+	"encoding/csv"
+	"encoding/json"
+	"flag"
 	"log"
 	"log/slog"
 	"os"
@@ -152,7 +152,7 @@ func main() {
 				log.Fatal()
 			}
 
-			user, err := users.Get(ctx, order.UID)
+			user, err := users.FindByUID(ctx, order.UID)
 			if err != nil {
 				slog.LogAttrs(ctx, slog.LevelError, "cannot get the user", slog.String("oid", *id), slog.String("error", err.Error()))
 				log.Fatal()
