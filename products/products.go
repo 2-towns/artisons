@@ -330,7 +330,29 @@ func Find(ctx context.Context, pid string) (Product, error) {
 // The default is 0 10, which returns 10 items starting from the first result.
 // You can use LIMIT 0 0 to count the number of documents in the result set without actually returning them.
 func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error) {
-	slog.LogAttrs(ctx, slog.LevelInfo, "searching products")
+	var attrs []slog.Attr = []slog.Attr{}
+
+	if q.PriceMin > 0 {
+		attrs = append(attrs, slog.Int("price_min", int(q.PriceMin)))
+	}
+
+	if q.PriceMax > 0 {
+		attrs = append(attrs, slog.Int("price_max", int(q.PriceMax)))
+	}
+
+	if q.Keywords != "" {
+		attrs = append(attrs, slog.String("keywords", q.Keywords))
+	}
+
+	if q.Slug != "" {
+		attrs = append(attrs, slog.String("slug", q.Slug))
+	}
+
+	if len(q.Meta) > 0 {
+		attrs = append(attrs, slog.Any("meta", q.Meta))
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "searching products", attrs...)
 
 	qs := fmt.Sprintf("FT.SEARCH %s \"@status:{online}@type:{product}", db.ProductIdx)
 

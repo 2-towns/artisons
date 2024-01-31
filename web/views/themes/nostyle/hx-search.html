@@ -1,0 +1,9 @@
+{{ if .Empty }}
+No results found.
+{{else}}
+{{ range .Products}}
+<div class="product">
+    <p>{{.ID}}</p>
+</div>
+{{end}}
+{{end}}

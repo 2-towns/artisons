@@ -10,6 +10,7 @@ import (
 	"artisons/tags"
 	"artisons/templates"
 	"artisons/users"
+	"html/template"
 	"log/slog"
 	"net/http"
 
@@ -49,7 +50,18 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 		pag,
 	}
 
-	if err := templates.Pages["orders"].Execute(w, &data); err != nil {
+	var t *template.Template
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+
+	if isHX {
+		t = templates.Pages["hx-orders"]
+	} else {
+		t = templates.Pages["orders"]
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+
+	if err := t.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }

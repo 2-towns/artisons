@@ -112,6 +112,7 @@ func main() {
 	router.R.Get("/sso.html", auth.Form)
 	router.R.Get("/otp.html", auth.Form)
 	router.R.Get("/addresses.html", pages.Addresses)
+	router.R.Get("/search.html", pages.Search)
 
 	router.R.Route("/account", func(r chi.Router) {
 		r.Use(users.AccountOnly)

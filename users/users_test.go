@@ -270,7 +270,7 @@ func TestSaveAddressReturnErrorWhenFirstnameIsEmpty(t *testing.T) {
 	a.Firstname = ""
 
 	ctx := tests.Context()
-	err := a.Save(ctx, user.ID)
+	err := a.Validate(ctx)
 	if err == nil || err.Error() != "input:firstname" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:firstname'", err)
 	}
@@ -281,7 +281,7 @@ func TestSaveAddressReturnErrorWhenLastnameIsEmpty(t *testing.T) {
 	a.Lastname = ""
 
 	ctx := tests.Context()
-	err := a.Save(ctx, user.ID)
+	err := a.Validate(ctx)
 	if err == nil || err.Error() != "input:lastname" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:lastname'", err)
 	}
@@ -292,7 +292,7 @@ func TestSaveAddressReturnErrorWhenStreeIsEmpty(t *testing.T) {
 	a.Street = ""
 
 	ctx := tests.Context()
-	err := a.Save(ctx, user.ID)
+	err := a.Validate(ctx)
 	if err == nil || err.Error() != "input:street" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:street'", err)
 	}
@@ -303,7 +303,7 @@ func TestSaveAddressReturnErrorWhenCityIsEmpty(t *testing.T) {
 	a.City = ""
 
 	ctx := tests.Context()
-	err := a.Save(ctx, user.ID)
+	err := a.Validate(ctx)
 	if err == nil || err.Error() != "input:city" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:city'", err)
 	}
@@ -314,7 +314,7 @@ func TestSaveAddressReturnErrorWhenZipcodeIsEmpty(t *testing.T) {
 	a.Zipcode = ""
 
 	ctx := tests.Context()
-	err := a.Save(ctx, user.ID)
+	err := a.Validate(ctx)
 	if err == nil || err.Error() != "input:zipcode" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:zipcode'", err)
 	}
@@ -325,7 +325,7 @@ func TestSaveAddressReturnErrorWhenPhoneIsEmpty(t *testing.T) {
 	a.Phone = ""
 
 	ctx := tests.Context()
-	err := a.Save(ctx, user.ID)
+	err := a.Validate(ctx)
 	if err == nil || err.Error() != "input:phone" {
 		t.Fatalf("user.SaveAddress(ctx, a) = %v, want 'input:phone'", err)
 	}
