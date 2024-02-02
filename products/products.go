@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"path"
 	"strconv"
@@ -291,6 +292,47 @@ func (p Product) Save(ctx context.Context) (string, error) {
 	}
 
 	return p.ID, nil
+}
+
+func FindAll(ctx context.Context, pids []string) ([]Product, error) {
+	l := slog.With(slog.Any("ids", pids))
+	l.LogAttrs(ctx, slog.LevelInfo, "looking for products")
+
+	cmds, err := db.Redis.Pipelined(ctx, func(rdb redis.Pipeliner) error {
+		for _, pid := range pids {
+			rdb.HGetAll(ctx, "product:"+pid)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the products", slog.String("error", err.Error()))
+		log.Panicln((err))
+	}
+
+	products := []Product{}
+
+	for _, cmd := range cmds {
+		key := fmt.Sprintf("%s", cmd.Args()[1])
+
+		if cmd.Err() != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot get the seo", slog.String("key", key), slog.String("error", err.Error()))
+			continue
+		}
+
+		val := cmd.(*redis.MapStringStringCmd).Val()
+
+		p, err := parse(ctx, val)
+		if err != nil {
+			l.LogAttrs(ctx, slog.LevelError, "cannot parse the product", slog.String("error", err.Error()))
+			continue
+		}
+
+		products = append(products, p)
+	}
+
+	return products, nil
 }
 
 // Find looks for a product by its product id

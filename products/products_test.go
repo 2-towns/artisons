@@ -214,6 +214,34 @@ func TestFindReturnsErrorWhenPidDoesNotExist(t *testing.T) {
 	}
 }
 
+func TestFindAllReturnsProductsWhenPidsExist(t *testing.T) {
+	c := tests.Context()
+	p, err := FindAll(c, []string{"PDT1"})
+	if err != nil {
+		t.Fatalf(`FindAll(c, []string{"PDT1"}) = %v, %v, want products, nil`, p, err.Error())
+	}
+
+	if len(p) == 0 {
+		t.Fatal(`len(p) = 0, want 1`)
+	}
+
+	if p[0].ID == "" {
+		t.Fatal(`p[0].ID = "", want "PDT1"`)
+	}
+}
+
+func TestFindAllReturnsEmptyArrayWhenPidsDoNotExist(t *testing.T) {
+	c := tests.Context()
+	p, err := FindAll(c, []string{"crazy"})
+	if err != nil {
+		t.Fatalf(`FindAll(c, []string{"crazy"}) = %v, %v, want products, nil`, p, err.Error())
+	}
+
+	if len(p) > 0 {
+		t.Fatalf(`len(p) = %d, want 0`, len(p))
+	}
+}
+
 func TestFindReturnsProductWhenSuccess(t *testing.T) {
 	c := tests.Context()
 	p, err := Find(c, "PDT1")

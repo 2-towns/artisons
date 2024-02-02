@@ -113,28 +113,31 @@ func Get(ctx context.Context) (Cart, error) {
 		return Cart{}, errors.New("something went wrong")
 	}
 
+	pids := []string{}
+	for key := range values {
+		pids = append(pids, key)
+	}
+
+	tmps, err := products.FindAll(ctx, pids)
+	if err != nil {
+		l.LogAttrs(ctx, slog.LevelError, "cannot get the products", slog.String("error", err.Error()))
+		return Cart{}, errors.New("something went wrong")
+	}
+
 	pds := []products.Product{}
-	for key, value := range values {
-		// TODO: !!!!!
-		product, err := products.Find(ctx, key)
 
-		if err != nil {
-			l.LogAttrs(ctx, slog.LevelError, "cannot get the product", slog.String("id", key), slog.String("error", err.Error()))
-			continue
-		}
-
-		q, err := strconv.ParseInt(value, 10, 32)
+	for _, p := range tmps {
+		q, err := strconv.ParseInt(values[p.ID], 10, 32)
 		if err != nil {
 			l.LogAttrs(ctx, slog.LevelError, "cannot parse the quantity", slog.String("error", err.Error()))
 			continue
 		}
 
-		product.Quantity = int(q)
-
-		pds = append(pds, product)
+		p.Quantity = int(q)
+		pds = append(pds, p)
 	}
 
-	l.LogAttrs(ctx, slog.LevelInfo, "got the cart with products", slog.Int("products", len(pds)))
+	l.LogAttrs(ctx, slog.LevelInfo, "got the cart with products", slog.Int("products", len(tmps)))
 
 	return Cart{
 		ID:       cid,
