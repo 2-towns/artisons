@@ -57,7 +57,7 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 
 func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	end := ctx.Value(contexts.End).(string)
+	end := ctx.Value(contexts.Domain).(string)
 
 	data := struct {
 		Lang    language.Tag

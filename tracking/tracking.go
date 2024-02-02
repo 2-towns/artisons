@@ -33,7 +33,7 @@ func Log(ctx context.Context, action string, data map[string]string) error {
 	}
 
 	rid := ctx.Value(middleware.RequestIDKey).(string)
-	cid := ctx.Value(contexts.Cart).(string)
+	cid := ctx.Value(contexts.Device).(string)
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	parts := []string{
 		fmt.Sprintf("time:%d", now.Unix()),

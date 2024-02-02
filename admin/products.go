@@ -4,14 +4,14 @@ import (
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
+	"artisons/http/forms"
 	"artisons/http/httperrors"
+	"artisons/http/pages"
 	"artisons/products"
 	"artisons/products/filters"
 	"artisons/string/stringutil"
 	"artisons/tags"
 	"artisons/templates"
-	"context"
-	"errors"
 	"html/template"
 	"log"
 	"log/slog"
@@ -21,15 +21,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const productsName = "Products"
-const productsURL = "/admin/products.html"
-const productsFolder = "products"
-
 var productsTpl *template.Template
 var productsHxTpl *template.Template
 var productsFormTpl *template.Template
-
-type productsFeature struct{}
 
 func init() {
 	var err error
@@ -68,50 +62,33 @@ func init() {
 	}
 }
 
-func (f productsFeature) ListTemplate(ctx context.Context) *template.Template {
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	if isHX {
-		return productsHxTpl
-	}
+func ProductSave(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	return productsTpl
-}
-
-func (f productsFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[products.Product], error) {
-	query := products.Query{}
-	if q != "" {
-		query.Keywords = db.Escape(q)
-	}
-
-	res, err := products.Search(ctx, query, offset, num)
-
-	return searchResults[products.Product]{
-		Total: res.Total,
-		Items: res.Products,
-	}, err
-}
-
-func (data productsFeature) Digest(ctx context.Context, r *http.Request) (products.Product, error) {
 	if r.FormValue("price") == "" {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the empty price")
-		return products.Product{}, errors.New("input:price")
+		httperrors.HXCatch(w, ctx, "input:price")
+		return
 	}
 
 	if r.FormValue("quantity") == "" {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the empty quantity")
-		return products.Product{}, errors.New("input:quantity")
+		httperrors.HXCatch(w, ctx, "input:quantity")
+		return
 	}
 
 	price, err := strconv.ParseFloat(r.FormValue("price"), 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the price", slog.String("price", r.FormValue("price")), slog.String("error", err.Error()))
-		return products.Product{}, errors.New("input:price")
+		httperrors.HXCatch(w, ctx, "input:price")
+		return
 	}
 
 	quantity, err := strconv.ParseInt(r.FormValue("quantity"), 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the quantity", slog.String("quantity", r.FormValue("quantity")), slog.String("error", err.Error()))
-		return products.Product{}, errors.New("input:quantity")
+		httperrors.HXCatch(w, ctx, "input:quantity")
+		return
 	}
 
 	var discount float64 = 0
@@ -119,7 +96,8 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 		val, err := strconv.ParseFloat(r.FormValue("discount"), 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the discount", slog.String("discount", r.FormValue("discount")), slog.String("error", err.Error()))
-			return products.Product{}, errors.New("input:discount")
+			httperrors.HXCatch(w, ctx, "input:discount")
+			return
 		}
 		discount = val
 	}
@@ -129,7 +107,8 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 		val, err := strconv.ParseFloat(r.FormValue("weight"), 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the weight", slog.String("weight", r.FormValue("discount")), slog.String("error", err.Error()))
-			return products.Product{}, errors.New("input:weight")
+			httperrors.HXCatch(w, ctx, "input:weight")
+			return
 		}
 		weight = val
 	}
@@ -143,7 +122,8 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 	filters, err := filters.Actives(ctx)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the filters", slog.String("error", err.Error()))
-		return products.Product{}, errors.New("something went wrong")
+		httperrors.HXCatch(w, ctx, "something went wrong")
+		return
 	}
 
 	meta := map[string][]string{}
@@ -184,78 +164,106 @@ func (data productsFeature) Digest(ctx context.Context, r *http.Request) (produc
 
 	p.ID = chi.URLParam(r, "id")
 
-	return p, nil
-}
-
-func (f productsFeature) ID(ctx context.Context, id string) (interface{}, error) {
-	return id, nil
-}
-
-func (f productsFeature) Find(ctx context.Context, id interface{}) (products.Product, error) {
-	return products.Find(ctx, id.(string))
-}
-
-func (f productsFeature) Delete(ctx context.Context, id interface{}) error {
-	return products.Delete(ctx, id.(string))
-}
-
-func (f productsFeature) IsImageRequired(p products.Product, key string) bool {
-	return p.ID == "" && key == "image_1"
-}
-
-func (f productsFeature) UpdateImage(p *products.Product, key, image string) {
-	switch key {
-	case "image_1":
-		p.Image1 = image
-	case "image_2":
-		p.Image2 = image
-	case "image_3":
-		p.Image3 = image
-	case "image_4":
-		p.Image4 = image
-	}
-}
-
-func (f productsFeature) Validate(ctx context.Context, r *http.Request, data products.Product) error {
-	query := products.Query{Slug: data.Slug}
-	res, err := products.Search(ctx, query, 0, 1)
-	if err != nil || res.Total > 0 && (res.Products[0].ID != data.ID) {
-		return errors.New("input:slug")
-	}
-
-	return nil
-}
-
-func ProductSave(w http.ResponseWriter, r *http.Request) {
-	digestSave[products.Product](w, r, save[products.Product]{
-		Name:    productsName,
-		URL:     productsURL,
-		Feature: productsFeature{},
-		Form:    multipartForm{},
-		Images:  []string{"image_1", "image_2", "image_3", "image_4"},
-		Folder:  productsFolder,
-	})
-}
-
-func ProductList(w http.ResponseWriter, r *http.Request) {
-	digestList[products.Product](w, r, list[products.Product]{
-		Name:    productsName,
-		URL:     productsURL,
-		Feature: productsFeature{},
-	})
-}
-
-func ProductForm(w http.ResponseWriter, r *http.Request) {
-	data, err := digestForm[products.Product](w, r, Form[products.Product]{
-		Name:    productsName,
-		Feature: productsFeature{},
-	})
-
+	err = p.Validate(ctx)
 	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
+	query := products.Query{Slug: p.Slug}
+	res, err := products.Search(ctx, query, 0, 1)
+	if err != nil || res.Total > 0 && (res.Products[0].ID != p.ID) {
+		httperrors.HXCatch(w, ctx, "input:slug")
+		return
+	}
+
+	images := []string{"image_1", "image_2", "image_3", "image_3"}
+	files, err := forms.Upload(r, "products", images)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	p.Image1 = files[0]
+
+	if files[1] != "" {
+		p.Image2 = files[1]
+	}
+
+	if files[2] != "" {
+		p.Image3 = files[2]
+	}
+
+	if files[3] != "" {
+		p.Image4 = files[4]
+	}
+
+	if p.ID == "" && p.Image1 == "" {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot process the empty image one")
+		httperrors.HXCatch(w, ctx, "input:image_1")
+		return
+	}
+
+	_, err = p.Save(ctx)
+	if err != nil {
+		forms.RollbackUpload(ctx, files)
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	Success(w, "/admin/products.html")
+}
+
+func ProductList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	p := ctx.Value(contexts.Pagination).(pages.Paginator)
+
+	qry := products.Query{}
+	if p.Query != "" {
+		qry.Keywords = db.Escape(p.Query)
+	}
+
+	res, err := products.Search(ctx, qry, p.Offset, p.Num)
+	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
+		return
+	}
+
+	t := productsTpl
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		t = productsHxTpl
+	}
+
+	data := pages.Datalist(ctx, res.Products)
+	data.Pagination = p.Build(ctx, res.Total, len(res.Products))
+	data.Page = "Products"
+
+	if err = t.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
+}
+
+func ProductForm(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	var product products.Product
+
+	if id != "" {
+		var err error
+		product, err = products.Find(ctx, id)
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse find the product", slog.Any("id", id), slog.String("error", err.Error()))
+			httperrors.Page(w, ctx, "oops the data is not found", 404)
+			return
+		}
+	}
+
+	data := pages.Dataform[products.Product](ctx, product)
+	data.Page = "Products"
+
 	t, err := tags.List(ctx, 0, 9999)
 	if err != nil {
 		httperrors.Catch(w, ctx, err.Error(), 500)
@@ -280,12 +288,16 @@ func ProductForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProductDelete(w http.ResponseWriter, r *http.Request) {
-	digestDelete[products.Product](w, r, delete[products.Product]{
-		list: list[products.Product]{
-			Name:    productsName,
-			URL:     productsURL,
-			Feature: productsFeature{},
-		},
-		Feature: productsFeature{},
-	})
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	err := products.Delete(ctx, id)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	pages.UpdateQuery(r)
+
+	ProductList(w, r)
 }

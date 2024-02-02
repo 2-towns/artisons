@@ -32,7 +32,7 @@ func TestSaveTrackingLogWhenSuccess(t *testing.T) {
 	}
 
 	rid := c.Value(middleware.RequestIDKey).(string)
-	cid := c.Value(contexts.Cart).(string)
+	cid := c.Value(contexts.Device).(string)
 	l := fmt.Sprintf("rid:%s cid:%s lang:en hello:world", rid, cid)
 	s := string(buf)
 	if !strings.Contains(s, l) {

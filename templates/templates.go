@@ -116,7 +116,7 @@ func init() {
 	buildTemplate("home", []string{"home.html"})
 	buildTemplate("login", []string{
 		"login.html",
-		fmt.Sprintf("%s/web/views/login/login.html", conf.WorkingSpace),
+		fmt.Sprintf("%s/web/views/login.html", conf.WorkingSpace),
 	})
 	buildTemplate("wish", []string{"wish.html", "hx-wish.html"})
 	buildTemplate("hx-wish", []string{"hx-wish.html"})
@@ -129,6 +129,8 @@ func init() {
 	buildTemplate("hx-search", []string{"hx-search.html"})
 	buildTemplate("order", []string{"order.html"})
 	buildTemplate("categories", []string{"categories.html"})
+	buildTemplate("cart", []string{"cart.html", "hx-cart.html"})
+	buildTemplate("hx-cart", []string{"hx-cart.html"})
 	buildTemplate("address", []string{
 		fmt.Sprintf("%s/web/views/address.html", conf.WorkingSpace),
 	})

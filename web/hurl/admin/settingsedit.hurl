@@ -83,6 +83,7 @@ email: contact@shop.com
 address: 18 street mysupershop.com 
 city: Oran
 zipcode: 31000
+phone: 123456
 logo:file,image.jpg;
 HTTP 200
 [Asserts]

@@ -33,6 +33,7 @@ lang: en
 description: 100 % coton pour les couleurs unies
 status: online
 image:file,image.jpg;
+slug: blog-add-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#title-error" 
@@ -52,21 +53,6 @@ HTTP 200
 [Asserts]
 header "HX-Retarget" == "#description-error" 
 header "HX-Reswap" == "innerHTML show:#description-row:top" 
-xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
-
-# Adding an article without file shows an error 
-POST {{host}}/admin/blog/add.html
-HX-Request: true
-[MultipartFormData]
-title: Great article
-lang: en
-description: Great description
-status: online
-slug:blog-without-file-{{time}}
-HTTP 200
-[Asserts]
-header "HX-Retarget" == "#image-error" 
-header "HX-Reswap" == "innerHTML show:#image-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Adding an article with a bad picture shows an error 

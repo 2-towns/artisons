@@ -1,11 +1,11 @@
 package admin
 
 import (
-	"context"
-	"errors"
 	"artisons/conf"
 	"artisons/http/contexts"
+	"artisons/http/forms"
 	"artisons/http/httperrors"
+	"artisons/http/pages"
 	"artisons/tags"
 	"artisons/templates"
 	"html/template"
@@ -17,15 +17,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const tagsName = "Tags"
-const tagsURL = "/admin/tags.html"
-const tagsFolder = "tags"
-
 var tagsTpl *template.Template
 var tagsHxTpl *template.Template
 var tagsFormTpl *template.Template
-
-type tagsFeature struct{}
 
 func init() {
 	var err error
@@ -62,62 +56,22 @@ func init() {
 	}
 }
 
-func (f tagsFeature) ListTemplate(ctx context.Context) *template.Template {
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	if isHX {
-		return tagsHxTpl
-	}
+func TagSave(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	return tagsTpl
-}
-
-func (f tagsFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[tags.Tag], error) {
-	res, err := tags.List(ctx, offset, num)
-
-	return searchResults[tags.Tag]{
-		Total: res.Total,
-		Items: res.Tags,
-	}, err
-}
-
-func (f tagsFeature) Validate(ctx context.Context, r *http.Request, data tags.Tag) error {
-	key := chi.URLParam(r, "id")
-	if key == "" {
-		key := r.FormValue("key")
-		exists, err := tags.Exists(ctx, key)
-		if err != nil {
-			return err
-		}
-
-		if exists {
-			return errors.New("the tag exists already")
-		}
-	}
-
-	eligible, err := tags.AreEligible(ctx, data.Children)
-	if err != nil {
-		return err
-	}
-
-	if !eligible {
-		return errors.New("the children cannot be root tags")
-	}
-
-	return nil
-}
-
-func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, error) {
 	var score int = 0
 	if r.FormValue("score") != "" {
 		val, err := strconv.ParseInt(r.FormValue("score"), 10, 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the score", slog.String("score", r.FormValue("score")), slog.String("error", err.Error()))
-			return tags.Tag{}, errors.New("input:score")
+			httperrors.HXCatch(w, ctx, "input:score")
+			return
 		}
 		score = int(val)
 	}
 
-	key := chi.URLParam(r, "id")
+	id := chi.URLParam(r, "id")
+	key := id
 	if key == "" {
 		key = r.FormValue("key")
 	}
@@ -130,58 +84,100 @@ func (data tagsFeature) Digest(ctx context.Context, r *http.Request) (tags.Tag, 
 		Score:    score,
 	}
 
-	return t, nil
-}
-
-func (f tagsFeature) ID(ctx context.Context, id string) (interface{}, error) {
-	return id, nil
-}
-
-func (f tagsFeature) Find(ctx context.Context, id interface{}) (tags.Tag, error) {
-	return tags.Find(ctx, id.(string))
-}
-
-func (f tagsFeature) Delete(ctx context.Context, id interface{}) error {
-	return tags.Delete(ctx, id.(string))
-}
-
-func (f tagsFeature) IsImageRequired(a tags.Tag, key string) bool {
-	return false
-}
-
-func (f tagsFeature) UpdateImage(a *tags.Tag, key, image string) {
-}
-
-func TagsSave(w http.ResponseWriter, r *http.Request) {
-	digestSave[tags.Tag](w, r, save[tags.Tag]{
-		Name:    tagsName,
-		URL:     tagsURL,
-		Feature: tagsFeature{},
-		Form:    multipartForm{},
-		Images:  []string{"image"},
-		Folder:  tagsFolder,
-	})
-}
-
-func TagsList(w http.ResponseWriter, r *http.Request) {
-	digestList[tags.Tag](w, r, list[tags.Tag]{
-		Name:    tagsName,
-		URL:     tagsURL,
-		Feature: tagsFeature{},
-	})
-}
-
-func TagsForm(w http.ResponseWriter, r *http.Request) {
-	data, err := digestForm[tags.Tag](w, r, Form[tags.Tag]{
-		Name:    tagsName,
-		Feature: tagsFeature{},
-	})
-
+	err := t.Validate(ctx)
 	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
+	if id == "" {
+		exists, err := tags.Exists(ctx, key)
+		if err != nil {
+			httperrors.HXCatch(w, ctx, "input:slug")
+			return
+		}
+
+		if exists {
+			httperrors.HXCatch(w, ctx, "the tag exists already")
+			return
+		}
+	}
+
+	eligible, err := tags.AreEligible(ctx, t.Children)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	if !eligible {
+		httperrors.HXCatch(w, ctx, "the children cannot be root tags")
+		return
+	}
+
+	images := []string{"image"}
+	files, err := forms.Upload(r, "tags", images)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	t.Image = files[0]
+
+	_, err = t.Save(ctx)
+	if err != nil {
+		forms.RollbackUpload(ctx, files)
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	Success(w, "/admin/tags.html")
+}
+
+func TagList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	p := ctx.Value(contexts.Pagination).(pages.Paginator)
+
+	res, err := tags.List(ctx, p.Offset, p.Num)
+	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
+		return
+	}
+
+	t := tagsTpl
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		t = tagsHxTpl
+	}
+
+	data := pages.Datalist(ctx, res.Tags)
+	data.Pagination = p.Build(ctx, res.Total, len(res.Tags))
+	data.Page = "Tags"
+
+	if err = t.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
+}
+
+func TagForm(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	var tag tags.Tag
+
+	if id != "" {
+		var err error
+		tag, err = tags.Find(ctx, id)
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
+			httperrors.Page(w, ctx, "oops the data is not found", 404)
+			return
+		}
+	}
+
+	data := pages.Dataform[tags.Tag](ctx, tag)
+	data.Page = "Tags"
+
 	t, err := tags.List(ctx, 0, 9999)
 	if err != nil {
 		httperrors.Catch(w, ctx, err.Error(), 500)
@@ -194,13 +190,17 @@ func TagsForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func TagsDelete(w http.ResponseWriter, r *http.Request) {
-	digestDelete[tags.Tag](w, r, delete[tags.Tag]{
-		list: list[tags.Tag]{
-			Name:    tagsName,
-			URL:     tagsURL,
-			Feature: tagsFeature{},
-		},
-		Feature: tagsFeature{},
-	})
+func TagDelete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	err := tags.Delete(ctx, id)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	pages.UpdateQuery(r)
+
+	TagList(w, r)
 }

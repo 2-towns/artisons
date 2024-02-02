@@ -5,7 +5,7 @@ HTTP 302
 header "Location" == "/sso.html"
 
 # Returns error when trying to post a non htmx request
-POST {{host}}/otp
+POST {{host}}/otp.html
 [FormParams]
 email: hello@world.com
 HTTP 400

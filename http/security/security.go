@@ -3,7 +3,6 @@ package security
 import (
 	"artisons/http/contexts"
 	"artisons/http/httperrors"
-	"context"
 	"log/slog"
 	"net/http"
 	"time"
@@ -11,19 +10,16 @@ import (
 
 func Csrf(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "POST" && r.Header.Get("HX-Request") != "true" {
+		ctx := r.Context()
+		isHX, _ := ctx.Value(contexts.HX).(bool)
+
+		if !isHX {
 			slog.Info(r.Method + " " + r.Header.Get("HX-Request"))
 			httperrors.Page(w, r.Context(), "you are not authorized to process this request", 400)
 			return
 		}
 
-		if r.Header.Get("HX-Request") == "true" {
-			ctx := context.WithValue(r.Context(), contexts.HX, true)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		} else {
-			ctx := context.WithValue(r.Context(), contexts.HX, false)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		}
+		next.ServeHTTP(w, r)
 	})
 }
 

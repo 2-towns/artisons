@@ -53,28 +53,6 @@ func TestMiddlewareSetHeadersWhenRequestIsComing(t *testing.T) {
 	}
 }
 
-func TestCsrfReturns200WhenGetMethod(t *testing.T) {
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ctx := tests.Context()
-
-	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
-	rr := httptest.NewRecorder()
-	handler := Csrf(testHandler)
-
-	handler.ServeHTTP(rr, req.WithContext(ctx))
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Fatalf(`status = %d, want %d`, status, http.StatusOK)
-	}
-}
-
 func TestCsrfReturns400WhenPostMethodWithoutHxHeader(t *testing.T) {
 	req, err := http.NewRequest("POST", "/", nil)
 	if err != nil {

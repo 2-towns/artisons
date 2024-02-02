@@ -4,7 +4,7 @@
 	<div class="row row-align box card-header">
 		<div>
 			<h3 class="card-title">
-				{{if .ID }}
+				{{if .Data.ID }}
 				{{translate .Lang "Edit"}}
 				{{else}}
 				{{translate .Lang "Add"}}
@@ -14,7 +14,7 @@
 	</div>
 
 	<form
-		  hx-post="{{if .ID }}/admin/products/{{.ID}}/edit.html{{else}}/admin/products/add.html{{end}}"
+		  hx-post="{{if .Data.ID }}/admin/products/{{.Data.ID}}/edit.html{{else}}/admin/products/add.html{{end}}"
 		  enctype="multipart/form-data">
 		<div class="form box">
 			<div class="form-row" id="title-row">
@@ -263,7 +263,7 @@
 					   class="input-file input-full"
 					   type="file"
 					   accept="image/png, image/jpeg, image/jpg"
-					   {{if.ID}}{{else}}required{{end}} />
+					   {{if.Data.ID}}{{else}}required{{end}} />
 
 				<small class="input-help">
 					{{translate .Lang "The extensions allowed are .jpg, .jpeg .png."}}

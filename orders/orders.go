@@ -80,8 +80,8 @@ type Note struct {
 }
 
 type Query struct {
-	Keyword string
-	UID     int
+	Keywords string
+	UID      int
 }
 
 // IsValidDelivery returns true if the delivery
@@ -545,8 +545,8 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 
 	qs := fmt.Sprintf("FT.SEARCH %s @type:{order}", db.OrderIdx)
 
-	if q.Keyword != "" {
-		k := db.SearchValue(q.Keyword)
+	if q.Keywords != "" {
+		k := db.SearchValue(q.Keywords)
 		qs += fmt.Sprintf("(@id:{%s})|(@status:{%s})|(@delivery:{%s})|(@payment:{%s})", k, k, k, k)
 	}
 
@@ -554,7 +554,7 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 		qs += fmt.Sprintf("(@uid:{%d})", q.UID)
 	}
 
-	end, ok := ctx.Value(contexts.End).(string)
+	end, ok := ctx.Value(contexts.Domain).(string)
 	sorter := "updated_at"
 	if ok && end == "front" {
 		sorter = "created_at"

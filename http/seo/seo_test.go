@@ -3,11 +3,8 @@ package seo
 import (
 	"artisons/conf"
 	"artisons/db"
-	"artisons/http/router"
 	"artisons/tests"
 	"log"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -17,11 +14,6 @@ var content = Content{
 	URL:         "/test.html",
 	Title:       "The social networks are evil.",
 	Description: "Buh the social networks.",
-}
-
-func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("coucou"))
 }
 
 func init() {
@@ -43,8 +35,6 @@ func init() {
 	}
 
 	URLs[content.Key] = content
-
-	router.R.Get(content.URL, healthCheckHandler)
 }
 
 func TestValidateReturnsErrorWhenKeyIsEmpty(t *testing.T) {
@@ -112,62 +102,4 @@ func TestGetReturnsErrorContentWhenSeoDoesNotExist(t *testing.T) {
 	if _, err := Find(ctx, "jenexistepas"); err == nil || err.Error() != "the data is not found" {
 		t.Fatalf(`Find(ctx,"jenexistepas",conf.DefaultLocale.String()) = _, %s, want _, "the data is not found"`, err)
 	}
-}
-
-func TestSaveReturnsNoErrorWhenDataAreOk(t *testing.T) {
-	svr := httptest.NewServer(router.R)
-	defer svr.Close()
-
-	res, err := http.Get(svr.URL + "/test.html")
-
-	if err != nil {
-		t.Fatalf(`http.Get(svr.URL + "/test.html") = _, %v, want _, nil`, err.Error())
-	}
-
-	if res.StatusCode != http.StatusOK {
-		t.Fatalf(`res.StatusCode = %d, want %d`, res.StatusCode, http.StatusOK)
-	}
-
-	res, err = http.Get(svr.URL + "/test-modified.html")
-
-	if err != nil {
-		t.Fatalf(`http.Get(svr.URL + "/test-modified.html") = _, %v, want _, nil`, err.Error())
-	}
-
-	if res.StatusCode != http.StatusNotFound {
-		t.Fatalf(`res.StatusCode = %d, want %d`, res.StatusCode, http.StatusNotFound)
-	}
-
-	ctx := tests.Context()
-	c := Content{
-		Key:         "test",
-		URL:         "/test-modified.html",
-		Title:       "The social networks are evil.",
-		Description: "Buh the social networks.",
-	}
-
-	if _, err := c.Save(ctx); err != nil {
-		t.Fatalf(`c.Save(ctx) = %s, want nil`, err.Error())
-	}
-
-	res, err = http.Get(svr.URL + "/test.html")
-
-	if err != nil {
-		t.Fatalf(`http.Get(svr.URL + "/testr.html") = _, %v, want _, nil`, err.Error())
-	}
-
-	if res.StatusCode != http.StatusNotFound {
-		t.Fatalf(`res.StatusCode = %d, want %d`, res.StatusCode, http.StatusNotFound)
-	}
-
-	res, err = http.Get(svr.URL + "/test-modified.html")
-
-	if err != nil {
-		t.Fatalf(`http.Get(svr.URL + "/test-modified.html") = _, %v, want _, nil`, err.Error())
-	}
-
-	if res.StatusCode != http.StatusOK {
-		t.Fatalf(`res.StatusCode = %d, want %d`, res.StatusCode, http.StatusOK)
-	}
-
 }

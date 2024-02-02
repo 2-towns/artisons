@@ -515,3 +515,17 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 		Users: users,
 	}, nil
 }
+
+func (u User) RefreshSession(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "refreshing session", slog.String("sid", u.SID))
+
+	_, err := db.Redis.Expire(ctx, "session:"+u.SID, conf.SessionDuration).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the blog", slog.String("sid", u.SID), slog.String("error", err.Error()))
+		return errors.New("something went wrong")
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "session refreshed", slog.String("sid", u.SID))
+
+	return nil
+}

@@ -5,29 +5,21 @@ import (
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
+	"artisons/http/forms"
+	"artisons/http/httperrors"
+	"artisons/http/pages"
 	"artisons/string/stringutil"
 	"artisons/templates"
-	"context"
-	"errors"
 	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
 )
-
-const blogName = "CMS"
-const blogURL = "/admin/blog.html"
-const blogFolder = "blog"
 
 var blogTpl *template.Template
 var blogHxTpl *template.Template
 var blogFormTpl *template.Template
 var blogCspPolicy = ""
-
-type blogFeature struct{}
 
 func init() {
 	var err error
@@ -72,53 +64,23 @@ func init() {
 	blogCspPolicy += " https://maxcdn.bootstrapcdn.com/font-awesome/latest/fonts/fontawesome-webfont.woff"
 }
 
-func (f blogFeature) ListTemplate(ctx context.Context) *template.Template {
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	if isHX {
-		return blogHxTpl
-	}
-
-	return blogTpl
-}
-
-func (f blogFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[blog.Article], error) {
-	query := blog.Query{}
-	if q != "" {
-		query.Keywords = db.Escape(q)
-	}
-
-	res, err := blog.Search(ctx, query, offset, num)
-
-	return searchResults[blog.Article]{
-		Total: res.Total,
-		Items: res.Articles,
-	}, err
-}
-
-func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blog.Article, error) {
-	status := "online"
-
-	if r.FormValue("status") != "on" {
-		status = "offline"
-	}
+func BlogSave(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
 	a := blog.Article{
 		Title:       r.FormValue("title"),
 		Description: r.FormValue("description"),
-		Status:      status,
 		Type:        "blog",
+		Status:      "online",
 	}
 
-	id := chi.URLParam(r, "id")
-	if id != "" {
-		i, err := strconv.ParseInt(id, 10, 64)
+	if r.FormValue("status") != "on" {
+		a.Status = "offline"
+	}
 
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
-			return blog.Article{}, errors.New("input:id")
-		}
-
-		a.ID = int(i)
+	id, _ := ctx.Value(contexts.ID).(int)
+	if id > 0 {
+		a.ID = id
 	}
 
 	if r.FormValue("slug") != "" {
@@ -127,86 +89,87 @@ func (data blogFeature) Digest(ctx context.Context, r *http.Request) (blog.Artic
 		a.Slug = stringutil.Slugify(a.Title)
 	}
 
-	return a, nil
-}
-
-func (f blogFeature) ID(ctx context.Context, id string) (interface{}, error) {
-	if id == "" {
-		return 0, nil
-	}
-
-	val, err := strconv.ParseInt(id, 10, 64)
+	err := a.Validate(ctx)
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.String("id", id), slog.String("error", err.Error()))
-		return 0, errors.New("oops the data is not found")
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
 	}
 
-	return int(val), nil
-}
-
-func (f blogFeature) Find(ctx context.Context, id interface{}) (blog.Article, error) {
-	return blog.Find(ctx, id.(int))
-}
-
-func (f blogFeature) Delete(ctx context.Context, id interface{}) error {
-	deletable, err := blog.Deletable(ctx, id.(int))
-	if err != nil {
-		return err
-	}
-
-	if !deletable {
-		return errors.New("the item cannot be deleted")
-	}
-
-	return blog.Delete(ctx, id.(int))
-}
-
-func (f blogFeature) IsImageRequired(a blog.Article, key string) bool {
-	return a.ID == 0
-}
-
-func (f blogFeature) UpdateImage(a *blog.Article, key, image string) {
-	a.Image = image
-}
-
-func (f blogFeature) Validate(ctx context.Context, r *http.Request, data blog.Article) error {
-	query := blog.Query{Slug: data.Slug}
+	query := blog.Query{Slug: a.Slug}
 	res, err := blog.Search(ctx, query, 0, 1)
-	if err != nil || res.Total > 0 && (res.Articles[0].ID != data.ID) {
-		return errors.New("input:slug")
+	if err != nil || (res.Total > 0 && (res.Articles[0].ID != a.ID)) {
+		httperrors.HXCatch(w, ctx, "input:slug")
+		return
 	}
 
-	return nil
-}
+	images := []string{"image"}
+	files, err := forms.Upload(r, "blog", images)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
 
-func BlogSave(w http.ResponseWriter, r *http.Request) {
-	digestSave[blog.Article](w, r, save[blog.Article]{
-		Name:    blogName,
-		URL:     blogURL,
-		Feature: blogFeature{},
-		Form:    multipartForm{},
-		Images:  []string{"image"},
-		Folder:  blogFolder,
-	})
+	a.Image = files[0]
+
+	_, err = a.Save(ctx)
+	if err != nil {
+		forms.RollbackUpload(ctx, files)
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	Success(w, "/admin/blog.html")
 }
 
 func BlogList(w http.ResponseWriter, r *http.Request) {
-	digestList[blog.Article](w, r, list[blog.Article]{
-		Name:    blogName,
-		URL:     blogURL,
-		Feature: blogFeature{},
-	})
+	ctx := r.Context()
+	p := ctx.Value(contexts.Pagination).(pages.Paginator)
+
+	qry := blog.Query{}
+	if p.Query != "" {
+		qry.Keywords = db.Escape(p.Query)
+	}
+
+	res, err := blog.Search(ctx, qry, p.Offset, p.Num)
+	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
+		return
+	}
+
+	t := blogTpl
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		t = blogHxTpl
+	}
+
+	data := pages.Datalist(ctx, res.Articles)
+	data.Pagination = p.Build(ctx, res.Total, len(res.Articles))
+	data.Page = "CMS"
+
+	if err = t.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
 func BlogForm(w http.ResponseWriter, r *http.Request) {
-	data, err := digestForm[blog.Article](w, r, Form[blog.Article]{
-		Name:    blogName,
-		Feature: blogFeature{},
-	})
+	ctx := r.Context()
+	id, _ := ctx.Value(contexts.ID).(int)
 
-	if err != nil {
-		return
+	var article blog.Article
+
+	if id != 0 {
+		var err error
+		article, err = blog.Find(ctx, id)
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
+			httperrors.Page(w, ctx, "oops the data is not found", 404)
+			return
+		}
 	}
+
+	data := pages.Dataform[blog.Article](ctx, article)
+	data.Page = "CMS"
 
 	w.Header().Set("Content-Security-Policy", blogCspPolicy)
 
@@ -216,12 +179,16 @@ func BlogForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func BlogDelete(w http.ResponseWriter, r *http.Request) {
-	digestDelete[blog.Article](w, r, delete[blog.Article]{
-		list: list[blog.Article]{
-			Name:    blogName,
-			URL:     blogURL,
-			Feature: blogFeature{},
-		},
-		Feature: blogFeature{},
-	})
+	ctx := r.Context()
+	id := ctx.Value(contexts.ID).(int)
+
+	err := blog.Delete(ctx, id)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	pages.UpdateQuery(r)
+
+	BlogList(w, r)
 }

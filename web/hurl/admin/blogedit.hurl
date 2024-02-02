@@ -32,6 +32,7 @@ title:
 description: 100 % coton pour les couleurs unies
 status: online
 image_1:file,image.jpg;
+slug: blog-edit-{{time}}
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#title-error" 

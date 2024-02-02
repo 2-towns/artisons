@@ -1,11 +1,11 @@
 package stats
 
 import (
-	"fmt"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/string/stringutil"
 	"artisons/tests"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -165,7 +165,7 @@ func TestVisitIncrementsDataWhenSuccess(t *testing.T) {
 		t.Fatalf(`pageviews:all = %s, want %d`, u, iunique+1)
 	}
 
-	exists, _ := db.Redis.SIsMember(ctx, "stats:visits:members:"+now, ctx.Value(contexts.Cart)).Result()
+	exists, _ := db.Redis.SIsMember(ctx, "stats:visits:members:"+now, ctx.Value(contexts.Device)).Result()
 	if !exists {
 		t.Fatalf(`exists = %v, want true`, exists)
 	}
@@ -204,7 +204,7 @@ func TestVisitDoesNotIncrementUniqueWhenAlreadyVisited(t *testing.T) {
 	ctx := tests.Context()
 	ua := useragent.Parse("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36")
 	now := time.Now().Format("20060102")
-	db.Redis.SAdd(ctx, "stats:visits:members:"+now, ctx.Value(contexts.Cart))
+	db.Redis.SAdd(ctx, "stats:visits:members:"+now, ctx.Value(contexts.Device))
 	uniques, _ := db.Redis.Get(ctx, "stats:visits:unique:"+now).Result()
 
 	err := Visit(ctx, ua, VisitData{URL: "/index.html", Referer: ""})

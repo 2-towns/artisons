@@ -2,10 +2,10 @@
 package tests
 
 import (
-	"context"
-	"fmt"
 	"artisons/http/contexts"
 	"artisons/string/stringutil"
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -20,5 +20,5 @@ func Context() context.Context {
 	ctx = context.WithValue(ctx, middleware.RequestIDKey, rid)
 	ctx = context.WithValue(ctx, contexts.Demo, true)
 
-	return context.WithValue(ctx, contexts.Cart, fmt.Sprintf("%d", time.Now().UnixMilli()))
+	return context.WithValue(ctx, contexts.Device, fmt.Sprintf("%d", time.Now().UnixMilli()))
 }

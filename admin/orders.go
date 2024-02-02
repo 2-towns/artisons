@@ -1,11 +1,11 @@
 package admin
 
 import (
-	"context"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/http/httperrors"
+	"artisons/http/pages"
 	"artisons/orders"
 	"artisons/templates"
 	"html/template"
@@ -17,16 +17,11 @@ import (
 	"golang.org/x/text/language"
 )
 
-const ordersName = "Orders"
-const ordersURL = "/admin/orders.html"
-
 var ordersTpl *template.Template
 var ordersHxTpl *template.Template
 var ordersFormTpl *template.Template
 var ordersUpdateStatusTpl *template.Template
 var ordersNoteAddStatusTpl *template.Template
-
-type ordersFeature struct{}
 
 func init() {
 	var err error
@@ -79,69 +74,63 @@ func init() {
 	}
 }
 
-func (f ordersFeature) ListTemplate(ctx context.Context) *template.Template {
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	if isHX {
-		return ordersHxTpl
+func OrderList(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	p := ctx.Value(contexts.Pagination).(pages.Paginator)
+
+	qry := orders.Query{}
+	if p.Query != "" {
+		qry.Keywords = db.Escape(p.Query)
 	}
 
-	return ordersTpl
-}
-
-func (f ordersFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[orders.Order], error) {
-	query := orders.Query{}
-	if q != "" {
-		query.Keyword = db.Escape(q)
-	}
-
-	res, err := orders.Search(ctx, query, offset, num)
-
-	return searchResults[orders.Order]{
-		Total: res.Total,
-		Items: res.Orders,
-	}, err
-}
-
-func (f ordersFeature) Find(ctx context.Context, id interface{}) (orders.Order, error) {
-	return orders.Find(ctx, id.(string))
-}
-
-func (f ordersFeature) ID(ctx context.Context, id string) (interface{}, error) {
-	return id, nil
-}
-
-func OrdersList(w http.ResponseWriter, r *http.Request) {
-	digestList[orders.Order](w, r, list[orders.Order]{
-		Name:    ordersName,
-		URL:     ordersURL,
-		Feature: ordersFeature{},
-	})
-}
-
-func OrdersForm(w http.ResponseWriter, r *http.Request) {
-	data, err := digestForm[orders.Order](w, r, Form[orders.Order]{
-		Name:    ordersName,
-		Feature: ordersFeature{},
-	})
-
+	res, err := orders.Search(ctx, qry, p.Offset, p.Num)
 	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
 		return
 	}
+
+	t := ordersTpl
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		t = ordersHxTpl
+	}
+
+	data := pages.Datalist(ctx, res.Orders)
+	data.Pagination = p.Build(ctx, res.Total, len(res.Orders))
+	data.Page = "Orders"
+
+	if err = t.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
+}
+
+func OrderForm(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	var order orders.Order
+
+	if id != "" {
+		var err error
+		order, err = orders.Find(ctx, id)
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot find the order", slog.Any("id", id), slog.String("error", err.Error()))
+			httperrors.Page(w, ctx, "oops the data is not found", 404)
+			return
+		}
+	}
+
+	data := pages.Dataform[orders.Order](ctx, order)
+	data.Page = "Orders"
 
 	if err := ordersFormTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }
 
-func OrdersUpdateStatus(w http.ResponseWriter, r *http.Request) {
+func OrderUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	if err := r.ParseForm(); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "something went wrong")
-		return
-	}
-
 	oid := chi.URLParam(r, "id")
 	status := r.FormValue("status")
 
@@ -166,15 +155,8 @@ func OrdersUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func OrdersAddNote(w http.ResponseWriter, r *http.Request) {
+func OrderAddNote(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	if err := r.ParseForm(); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "something went wrong")
-		return
-	}
-
 	oid := chi.URLParam(r, "id")
 	note := r.FormValue("note")
 

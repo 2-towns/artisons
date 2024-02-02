@@ -6,11 +6,11 @@ import (
 	"artisons/http/contexts"
 	"artisons/http/cookies"
 	"artisons/http/httperrors"
-	"artisons/string/stringutil"
 	"context"
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 func findBySessionID(ctx context.Context, sid string) (User, error) {
@@ -50,32 +50,7 @@ func findBySessionID(ctx context.Context, sid string) (User, error) {
 // user into the context.
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var cid string
-		c, err := r.Cookie(cookies.CartID)
-		if err != nil || c.Value == "" {
-			cid, err = stringutil.Random()
-			if err != nil {
-				slog.LogAttrs(r.Context(), slog.LevelError, "cannot generate cart id", slog.String("error", err.Error()))
-				httperrors.Page(w, r.Context(), err.Error(), 500)
-				return
-			}
-		} else {
-			cid = c.Value
-		}
-
-		cookie := &http.Cookie{
-			Name:     cookies.CartID,
-			Value:    cid,
-			MaxAge:   int(conf.Cookie.MaxAge),
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   conf.Cookie.Secure,
-			Domain:   conf.Cookie.Domain,
-		}
-
-		http.SetCookie(w, cookie)
-		ctx := context.WithValue(r.Context(), contexts.Cart, cid)
-		ctx = context.WithValue(ctx, contexts.End, "front")
+		ctx := r.Context()
 
 		sid, err := r.Cookie(cookies.SessionID)
 		if err != nil {
@@ -100,6 +75,12 @@ func Middleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		} else {
+			err := user.RefreshSession(ctx)
+			if err != nil {
+				httperrors.Page(w, r.Context(), err.Error(), 500)
+				return
+			}
+
 			cookie := &http.Cookie{
 				Name:     cookies.SessionID,
 				Value:    sid.Value,
@@ -136,6 +117,20 @@ func AccountOnly(next http.Handler) http.Handler {
 	})
 }
 
+func Domain(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		if strings.HasPrefix(r.URL.Path, "/admin") {
+			ctx = context.WithValue(ctx, contexts.Domain, "back")
+		} else {
+			ctx = context.WithValue(ctx, contexts.Domain, "front")
+		}
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -154,7 +149,6 @@ func AdminOnly(next http.Handler) http.Handler {
 		}
 
 		ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
-		ctx = context.WithValue(ctx, contexts.End, "back")
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

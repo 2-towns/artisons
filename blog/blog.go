@@ -99,11 +99,14 @@ func (a Article) Save(ctx context.Context) (string, error) {
 		rdb.HSet(ctx, key,
 			"title", db.Escape(a.Title),
 			"description", db.Escape(a.Description),
-			"image", a.Image,
 			"slug", db.Escape(a.Slug),
 			"status", a.Status,
 			"updated_at", now,
 		)
+
+		if a.Image != "" {
+			rdb.HSet(ctx, key, "image", a.Image)
+		}
 
 		rdb.HSetNX(ctx, key, "id", a.ID)
 		rdb.HSetNX(ctx, key, "created_at", now)

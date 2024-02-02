@@ -9,7 +9,7 @@ xpath "//form[@hx-post='/login.html']" exists
 
 # Redirect to account when the otp is correct
 POST {{host}}/login.html
-HX-Current-URL: http://localhost:8080/otp.html
+HX-Current-URL: http:/localhost:8080/otp.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
@@ -25,22 +25,23 @@ HTTP 200
 header "HX-Redirect" == "/account/index.html"
 
 # The wish list returns empty result
-GET {{host}}/wish.html
+GET {{host}}/account/wish.html
 User-Agent: {{ua}}
 HTTP 200
 [Asserts]
 body contains "No results found."
 
 # Add item to the wish list
-POST {{host}}/wish/PDT1/add.html
+POST {{host}}/account/wish/PDT1/add.html
 HX-Request: true
 User-Agent: {{ua}}
 HTTP 200
 [Asserts]
+body not contains "No results found."
 xpath "//div[@class='wishlist-card']" exists
 
 # Delete item to the wish list
-POST {{host}}/wish/PDT1/delete.html
+POST {{host}}/account/wish/PDT1/delete.html
 HX-Request: true
 User-Agent: {{ua}}
 HTTP 200

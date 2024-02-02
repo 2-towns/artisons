@@ -2,7 +2,6 @@ package seo
 
 import (
 	"artisons/db"
-	"artisons/http/router"
 	"artisons/validators"
 	"context"
 	"errors"
@@ -120,8 +119,8 @@ func (c Content) Save(ctx context.Context) (string, error) {
 
 	key := "seo:" + c.Key
 	now := time.Now()
-	prv := URLs[c.Key]
-	routes := router.R.Routes()
+	// prv := URLs[c.Key]
+	// routes := router.R.Routes()
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		rdb.HSet(ctx, key,
@@ -131,21 +130,21 @@ func (c Content) Save(ctx context.Context) (string, error) {
 			"updated_at", now.Unix(),
 		)
 
-		for _, route := range routes {
-			if route.Pattern == prv.URL {
+		// for _, route := range routes {
+		// 	if route.Pattern == prv.URL {
 
-				handler, ok := route.Handlers["GET"].(http.HandlerFunc)
-				if !ok {
-					slog.LogAttrs(ctx, slog.LevelError, "cannot make type asserting for the handler", slog.String("url", prv.URL))
-					return errors.New("something went wrong")
-				}
+		// 		handler, ok := route.Handlers["GET"].(http.HandlerFunc)
+		// 		if !ok {
+		// 			slog.LogAttrs(ctx, slog.LevelError, "cannot make type asserting for the handler", slog.String("url", prv.URL))
+		// 			return errors.New("something went wrong")
+		// 		}
 
-				router.R.Get(prv.URL, http.NotFound)
-				router.R.Get(c.URL, handler)
+		// 		router.R.Get(prv.URL, http.NotFound)
+		// 		router.R.Get(c.URL, handler)
 
-				l.LogAttrs(ctx, slog.LevelInfo, "previous route is replace", slog.String("previous", prv.URL), slog.String("url", c.URL))
-			}
-		}
+		// 		l.LogAttrs(ctx, slog.LevelInfo, "previous route is replace", slog.String("previous", prv.URL), slog.String("url", c.URL))
+		// 	}
+		// }
 
 		rdb.SAdd(ctx, "seo", c.Key)
 

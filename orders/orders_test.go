@@ -342,7 +342,7 @@ func TestTotalReturnsTheOrderTotalWhenSuccess(t *testing.T) {
 
 func TestSearchReturnsOrdersWhenStatusIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keyword: "created"}, 0, conf.DashboardMostItems)
+	p, err := Search(c, Query{Keywords: "created"}, 0, conf.DashboardMostItems)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keyword: "created"}, 0, conf.DashboardMostItems) = %v, want nil`, err.Error())
 	}
@@ -358,7 +358,7 @@ func TestSearchReturnsOrdersWhenStatusIsFound(t *testing.T) {
 
 func TestSearchReturnsOrdersWhenPaymentIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keyword: "card"}, 0, conf.DashboardMostItems)
+	p, err := Search(c, Query{Keywords: "card"}, 0, conf.DashboardMostItems)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keyword: "card"}, 0, conf.DashboardMostItems) = %v, want nil`, err.Error())
 	}
@@ -374,7 +374,7 @@ func TestSearchReturnsOrdersWhenPaymentIsFound(t *testing.T) {
 
 func TestSearchReturnsOrdersWhenDeliveryIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keyword: "home"}, 0, conf.ItemsPerPage)
+	p, err := Search(c, Query{Keywords: "home"}, 0, conf.ItemsPerPage)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keyword: "home"}, conf.ItemsPerPage)) = %v, want nil`, err.Error())
 	}
@@ -406,7 +406,7 @@ func TestSearchReturnsOrdersWhenUIDIsFound(t *testing.T) {
 
 func TestSearchReturnsNoOrdersWhenDeliveryIsCrazy(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keyword: "crazy"}, 0, conf.ItemsPerPage)
+	p, err := Search(c, Query{Keywords: "crazy"}, 0, conf.ItemsPerPage)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keyword: "crazy"}, 0, conf.ItemsPerPage) = %v, want nil`, err.Error())
 	}
@@ -447,7 +447,7 @@ func TestSearchReturnUpdatedAtSortedOrdersWhenEndIsBack(t *testing.T) {
 
 func TestSearchReturnUpdatedAtSortedOrdersWhenEndIsFront(t *testing.T) {
 	c := tests.Context()
-	c = context.WithValue(c, contexts.End, "front")
+	c = context.WithValue(c, contexts.Domain, "front")
 	p, err := Search(c, Query{}, 0, 999)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{}, 0, 999) = %v, want nil`, err.Error())

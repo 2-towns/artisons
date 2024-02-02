@@ -1,15 +1,15 @@
 package stats
 
 import (
-	"cmp"
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/http/referer"
 	"artisons/string/stringutil"
+	"cmp"
+	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"math/rand"
 	"slices"
@@ -362,8 +362,8 @@ func Visit(ctx context.Context, ua useragent.UserAgent, data VisitData) error {
 	l.LogAttrs(ctx, slog.LevelInfo, "get range statistics")
 
 	now := time.Now().Format("20060102")
-	cid := ctx.Value(contexts.Cart).(string)
-	hasVisited, err := db.Redis.SIsMember(ctx, "stats:visits:members:"+now, cid).Result()
+	did := ctx.Value(contexts.Device).(string)
+	hasVisited, err := db.Redis.SIsMember(ctx, "stats:visits:members:"+now, did).Result()
 
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get is member", slog.String("error", err.Error()))
@@ -399,9 +399,9 @@ func Visit(ctx context.Context, ua useragent.UserAgent, data VisitData) error {
 
 	if !hasVisited {
 		pipe.Incr(ctx, "stats:visits:unique:"+now)
-		pipe.SAdd(ctx, "stats:visits:members:"+now, cid)
+		pipe.SAdd(ctx, "stats:visits:members:"+now, did)
 		pipe.Expire(ctx, "stats:visits:members:"+now, time.Hour*24)
-		l.LogAttrs(ctx, slog.LevelInfo, "unique visite stat added to pipe", slog.String("cid", cid))
+		l.LogAttrs(ctx, slog.LevelInfo, "unique visite stat added to pipe", slog.String("cid", did))
 	}
 
 	pipe.Incr(ctx, "stats:pageviews:all:"+now)

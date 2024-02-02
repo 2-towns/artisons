@@ -5,7 +5,7 @@ HTTP 302
 header "Location" == "/otp.html"
 
 # Returns error when trying to post a non htmx request
-POST {{host}}/otp
+POST {{host}}/otp.html
 [FormParams]
 email: arnaud@yandex.com
 HTTP 400

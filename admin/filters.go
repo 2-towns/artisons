@@ -1,10 +1,10 @@
 package admin
 
 import (
-	"context"
-	"errors"
 	"artisons/conf"
 	"artisons/http/contexts"
+	"artisons/http/httperrors"
+	"artisons/http/pages"
 	"artisons/products/filters"
 	"artisons/templates"
 	"html/template"
@@ -16,14 +16,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const filtersName = "Filters"
-const filtersURL = "/admin/filters.html"
-
 var filtersTpl *template.Template
 var filtersHxTpl *template.Template
 var filtersFormTpl *template.Template
-
-type filtersFeature struct{}
 
 func init() {
 	var err error
@@ -60,53 +55,22 @@ func init() {
 	}
 }
 
-func (f filtersFeature) ListTemplate(ctx context.Context) *template.Template {
-	isHX, _ := ctx.Value(contexts.HX).(bool)
-	if isHX {
-		return filtersHxTpl
-	}
+func FilterSave(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	return filtersTpl
-}
-
-func (f filtersFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[filters.Filter], error) {
-	res, err := filters.List(ctx, offset, num)
-
-	return searchResults[filters.Filter]{
-		Total: res.Total,
-		Items: res.Filters,
-	}, err
-}
-
-func (f filtersFeature) Validate(ctx context.Context, r *http.Request, data filters.Filter) error {
-	key := chi.URLParam(r, "id")
-
-	if key == "" {
-		key = r.FormValue("key")
-		exists, err := filters.Exists(ctx, key)
-		if err != nil {
-			return err
-		}
-
-		if exists {
-			return errors.New("the filter exists already")
-		}
-	}
-	return nil
-}
-
-func (data filtersFeature) Digest(ctx context.Context, r *http.Request) (filters.Filter, error) {
 	var score int = 0
 	if r.FormValue("score") != "" {
 		val, err := strconv.ParseInt(r.FormValue("score"), 10, 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the score", slog.String("score", r.FormValue("score")), slog.String("error", err.Error()))
-			return filters.Filter{}, errors.New("input:score")
+			httperrors.HXCatch(w, ctx, "input:score")
+			return
 		}
 		score = int(val)
 	}
 
-	key := chi.URLParam(r, "id")
+	id := chi.URLParam(r, "id")
+	key := id
 	if key == "" {
 		key = r.FormValue("key")
 	}
@@ -119,78 +83,106 @@ func (data filtersFeature) Digest(ctx context.Context, r *http.Request) (filters
 		Values: r.Form["values"],
 	}
 
-	return f, nil
-}
-
-func (f filtersFeature) ID(ctx context.Context, id string) (interface{}, error) {
-	return id, nil
-}
-
-func (f filtersFeature) Find(ctx context.Context, id interface{}) (filters.Filter, error) {
-	return filters.Find(ctx, id.(string))
-}
-
-func (f filtersFeature) Delete(ctx context.Context, id interface{}) error {
-	editable, err := filters.Editable(ctx, id.(string))
+	err := f.Validate(ctx)
 	if err != nil {
-		return err
-	}
-
-	if !editable {
-		return errors.New("the filter cannot be editable")
-	}
-
-	return filters.Delete(ctx, id.(string))
-}
-
-func (f filtersFeature) IsImageRequired(a filters.Filter, key string) bool {
-	return false
-}
-
-func (f filtersFeature) UpdateImage(a *filters.Filter, key, image string) {
-}
-
-func FiltersSave(w http.ResponseWriter, r *http.Request) {
-	digestSave[filters.Filter](w, r, save[filters.Filter]{
-		Name:    filtersName,
-		URL:     filtersURL,
-		Feature: filtersFeature{},
-		Form:    urlEncodedForm{},
-		Images:  []string{},
-		Folder:  "",
-	})
-}
-
-func FiltersList(w http.ResponseWriter, r *http.Request) {
-	digestList[filters.Filter](w, r, list[filters.Filter]{
-		Name:    filtersName,
-		URL:     filtersURL,
-		Feature: filtersFeature{},
-	})
-}
-
-func FiltersForm(w http.ResponseWriter, r *http.Request) {
-	data, err := digestForm[filters.Filter](w, r, Form[filters.Filter]{
-		Name:    filtersName,
-		Feature: filtersFeature{},
-	})
-
-	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
+
+	if id == "" {
+		exists, err := filters.Exists(ctx, key)
+		if err != nil {
+			httperrors.HXCatch(w, ctx, err.Error())
+			return
+		}
+
+		if exists {
+			httperrors.HXCatch(w, ctx, "the filter exists already")
+			return
+		}
+	}
+
+	_, err = f.Save(ctx)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	Success(w, "/admin/filters.html")
+}
+
+func FilterList(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	p := ctx.Value(contexts.Pagination).(pages.Paginator)
+
+	res, err := filters.List(ctx, p.Offset, p.Num)
+	if err != nil {
+		httperrors.Catch(w, ctx, err.Error(), 500)
+		return
+	}
+
+	t := filtersTpl
+	isHX, _ := ctx.Value(contexts.HX).(bool)
+	if isHX {
+		t = filtersHxTpl
+	}
+
+	data := pages.Datalist(ctx, res.Filters)
+	data.Pagination = p.Build(ctx, res.Total, len(res.Filters))
+	data.Page = "Filters"
+
+	if err = t.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
+}
+
+func FilterForm(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	var filter filters.Filter
+
+	if id != "" {
+		var err error
+		filter, err = filters.Find(ctx, id)
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
+			httperrors.Page(w, ctx, "oops the data is not found", 404)
+			return
+		}
+	}
+
+	data := pages.Dataform[filters.Filter](ctx, filter)
+	data.Page = "Filtres"
 
 	if err := filtersFormTpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }
 
-func FiltersDelete(w http.ResponseWriter, r *http.Request) {
-	digestDelete[filters.Filter](w, r, delete[filters.Filter]{
-		list: list[filters.Filter]{
-			Name:    filtersName,
-			URL:     filtersURL,
-			Feature: filtersFeature{},
-		},
-		Feature: filtersFeature{},
-	})
+func FilterDelete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	editable, err := filters.Editable(ctx, id)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	if !editable {
+		httperrors.HXCatch(w, ctx, "the filter cannot be editable")
+		return
+	}
+
+	err = filters.Delete(ctx, id)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	pages.UpdateQuery(r)
+
+	FilterList(w, r)
 }

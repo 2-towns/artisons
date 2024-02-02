@@ -1,9 +1,10 @@
 package admin
 
 import (
-	"context"
 	"artisons/conf"
 	"artisons/http/contexts"
+	"artisons/http/httperrors"
+	"artisons/http/pages"
 	"artisons/http/seo"
 	"artisons/templates"
 	"html/template"
@@ -14,14 +15,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const seoName = "SEO"
-const seoURL = "/admin/seo.html"
-
 var seoTpl *template.Template
 var seoHxTpl *template.Template
 var seoFormTpl *template.Template
-
-type seoFeature struct{}
 
 func init() {
 	var err error
@@ -55,38 +51,54 @@ func init() {
 	}
 }
 
-func (f seoFeature) ListTemplate(ctx context.Context) *template.Template {
+func SeoList(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	p := ctx.Value(contexts.Pagination).(pages.Paginator)
+
+	res := seo.List(ctx, p.Offset, p.Num)
+
+	t := seoTpl
 	isHX, _ := ctx.Value(contexts.HX).(bool)
 	if isHX {
-		return seoHxTpl
+		t = seoHxTpl
 	}
 
-	return seoTpl
+	data := pages.Datalist(ctx, res.Content)
+	data.Pagination = p.Build(ctx, res.Total, len(res.Content))
+	data.Page = "SEO"
+
+	if err := t.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
-func (f seoFeature) Search(ctx context.Context, q string, offset, num int) (searchResults[seo.Content], error) {
+func SeoForm(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
 
-	res := seo.List(ctx, offset, num)
+	var content seo.Content
 
-	return searchResults[seo.Content]{
-		Total: res.Total,
-		Items: res.Content,
-	}, nil
+	if id != "" {
+		var err error
+		content, err = seo.Find(ctx, id)
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
+			httperrors.Page(w, ctx, "oops the data is not found", 404)
+			return
+		}
+	}
+
+	data := pages.Dataform[seo.Content](ctx, content)
+	data.Page = "SEO"
+
+	if err := seoFormTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
-func (f seoFeature) Find(ctx context.Context, id interface{}) (seo.Content, error) {
-	return seo.Find(ctx, id.(string))
-}
-
-func (f seoFeature) ID(ctx context.Context, id string) (interface{}, error) {
-	return id, nil
-}
-
-func (f seoFeature) Validate(ctx context.Context, r *http.Request, data seo.Content) error {
-	return nil
-}
-
-func (data seoFeature) Digest(ctx context.Context, r *http.Request) (seo.Content, error) {
+func SeoSave(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	key := chi.URLParam(r, "id")
 
 	c := seo.Content{
@@ -96,46 +108,17 @@ func (data seoFeature) Digest(ctx context.Context, r *http.Request) (seo.Content
 		Description: r.FormValue("description"),
 	}
 
-	return c, nil
-}
-
-func (f seoFeature) IsImageRequired(a seo.Content, key string) bool {
-	return false
-}
-
-func (f seoFeature) UpdateImage(a *seo.Content, key, image string) {
-}
-
-func SeoList(w http.ResponseWriter, r *http.Request) {
-	digestList[seo.Content](w, r, list[seo.Content]{
-		Name:    seoName,
-		URL:     seoURL,
-		Feature: seoFeature{},
-	})
-}
-
-func SeoForm(w http.ResponseWriter, r *http.Request) {
-	data, err := digestForm[seo.Content](w, r, Form[seo.Content]{
-		Name:    seoName,
-		Feature: seoFeature{},
-	})
-
+	err := c.Validate(ctx)
 	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
-	if err := seoFormTpl.Execute(w, &data); err != nil {
-		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	_, err = c.Save(ctx)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
 	}
-}
 
-func SeoSave(w http.ResponseWriter, r *http.Request) {
-	digestSave[seo.Content](w, r, save[seo.Content]{
-		Name:    seoName,
-		URL:     seoURL,
-		Feature: seoFeature{},
-		Form:    urlEncodedForm{},
-		Images:  []string{},
-		Folder:  "",
-	})
+	Success(w, "/admin/seo.html")
 }

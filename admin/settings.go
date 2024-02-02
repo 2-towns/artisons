@@ -1,12 +1,14 @@
 package admin
 
 import (
-	"context"
-	"errors"
 	"artisons/conf"
 	"artisons/http/contexts"
+	"artisons/http/forms"
+	"artisons/http/httperrors"
+	"artisons/http/pages"
 	"artisons/shops"
 	"artisons/templates"
+	"context"
 	"html/template"
 	"log"
 	"log/slog"
@@ -17,16 +19,8 @@ import (
 	"golang.org/x/text/language"
 )
 
-const settingsName = "Settings"
-const settingsURL = "/admin/settings.html"
-const settingsFolder = "settings"
-
 var settingsTpl *template.Template
 var settingsAlertTpl *template.Template
-
-type settingsFeature struct{}
-type settingsShopFeature struct{}
-type settingsContactFeature struct{}
 
 func init() {
 	var err error
@@ -48,15 +42,20 @@ func init() {
 	}
 }
 
-func (f settingsFeature) Find(ctx context.Context, id interface{}) (shops.Settings, error) {
-	return shops.Data, nil
+func SettingsForm(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	data := pages.Dataform[shops.Settings](ctx, shops.Data)
+	data.Page = "Settings"
+
+	if err := settingsTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
-func (f settingsFeature) ID(ctx context.Context, id string) (interface{}, error) {
-	return "settings", nil
-}
+func SettingsShopSave(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-func (data settingsShopFeature) Digest(ctx context.Context, r *http.Request) (shops.ShopSettings, error) {
 	s := shops.ShopSettings{
 		GmapKey:          r.FormValue("gmap_key"),
 		Color:            r.FormValue("color"),
@@ -76,7 +75,8 @@ func (data settingsShopFeature) Digest(ctx context.Context, r *http.Request) (sh
 		if err != nil {
 			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image width", slog.String("image_width", width), slog.String("error", err.Error()))
-			return shops.ShopSettings{}, errors.New("input:image_width")
+			httperrors.HXCatch(w, ctx, "input:image_width")
+			return
 		}
 
 		s.ImageWidth = int(val)
@@ -88,7 +88,8 @@ func (data settingsShopFeature) Digest(ctx context.Context, r *http.Request) (sh
 		if err != nil {
 			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image height", slog.String("image_height", height), slog.String("error", err.Error()))
-			return shops.ShopSettings{}, errors.New("input:image_height")
+			httperrors.HXCatch(w, ctx, "input:image_height")
+			return
 		}
 
 		s.ImageHeight = int(val)
@@ -100,8 +101,8 @@ func (data settingsShopFeature) Digest(ctx context.Context, r *http.Request) (sh
 		if err != nil {
 			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 			slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the items value", slog.String("items", items))
-			return shops.ShopSettings{}, errors.New("input:items")
-
+			httperrors.HXCatch(w, ctx, "input:items")
+			return
 		}
 
 		s.Items = int(val)
@@ -113,20 +114,48 @@ func (data settingsShopFeature) Digest(ctx context.Context, r *http.Request) (sh
 		if err != nil {
 			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 			slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the min value", slog.String("min", min))
-			return shops.ShopSettings{}, errors.New("input:min")
+			httperrors.HXCatch(w, ctx, "input:min")
+			return
 		}
 
 		s.Min = int(val)
 	}
 
-	return s, nil
+	err := s.Validate(ctx)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	_, err = s.Save(ctx)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	w.Header().Set("HX-Reswap", "innerHTML show:#alert:top")
+
+	lang := ctx.Value(contexts.Locale).(language.Tag)
+	rid, _ := ctx.Value(middleware.RequestIDKey).(string)
+
+	data := struct {
+		Flash string
+		Lang  language.Tag
+		RID   string
+	}{
+		"The data has been saved successfully.",
+		lang,
+		rid,
+	}
+
+	if err := settingsAlertTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }
 
-func (f settingsContactFeature) Validate(ctx context.Context, r *http.Request, data shops.Contact) error {
-	return nil
-}
+func SettingsContactSave(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-func (data settingsContactFeature) Digest(ctx context.Context, r *http.Request) (shops.Contact, error) {
 	s := shops.Contact{
 		Name:    r.FormValue("name"),
 		Address: r.FormValue("address"),
@@ -148,99 +177,46 @@ func (data settingsContactFeature) Digest(ctx context.Context, r *http.Request) 
 		s.Banner3 = "-"
 	}
 
-	return s, nil
-}
-
-func (f settingsContactFeature) IsImageRequired(s shops.Contact, key string) bool {
-	return shops.Data.Logo == ""
-}
-
-func (f settingsContactFeature) UpdateImage(s *shops.Contact, key, image string) {
-	switch key {
-	case "logo":
-		s.Logo = image
-	case "banner_1":
-		s.Banner1 = image
-	case "banner_2":
-		s.Banner2 = image
-	case "banner_3":
-		s.Banner3 = image
-	}
-}
-
-func (f settingsShopFeature) IsImageRequired(a shops.ShopSettings, key string) bool {
-	return false
-}
-
-func (f settingsShopFeature) UpdateImage(a *shops.ShopSettings, key, image string) {
-
-}
-
-func (f settingsShopFeature) Validate(ctx context.Context, r *http.Request, data shops.ShopSettings) error {
-	return nil
-}
-
-func SettingsForm(w http.ResponseWriter, r *http.Request) {
-	data, err := digestForm[shops.Settings](w, r, Form[shops.Settings]{
-		Name:    settingsName,
-		Feature: settingsFeature{},
-	})
-
+	err := s.Validate(ctx)
 	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
 
-	if err := settingsTpl.Execute(w, &data); err != nil {
-		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	images := []string{"logo", "banner_1", "banner_2", "banner_3"}
+	files, err := forms.Upload(r, "blog", images)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
 	}
-}
 
-func SettingsShopSave(w http.ResponseWriter, r *http.Request) {
-	digestSave[shops.ShopSettings](w, r, save[shops.ShopSettings]{
-		Name:       settingsName,
-		URL:        settingsURL,
-		Feature:    settingsShopFeature{},
-		Form:       urlEncodedForm{},
-		Images:     []string{},
-		Folder:     "",
-		NoRedirect: true,
-	})
+	if shops.Data.Logo == "" && files[0] != "" {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot process the empty logo")
+		httperrors.HXCatch(w, ctx, "input:logo")
+		return
+	}
+
+	if files[1] != "" {
+		s.Banner1 = files[1]
+	}
+
+	if files[2] != "" {
+		s.Banner2 = files[2]
+	}
+
+	if files[3] != "" {
+		s.Banner3 = files[3]
+	}
+
+	_, err = s.Save(ctx)
+	if err != nil {
+		forms.RollbackUpload(ctx, files)
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
 
 	w.Header().Set("HX-Reswap", "innerHTML show:#alert:top")
 
-	ctx := r.Context()
-	lang := ctx.Value(contexts.Locale).(language.Tag)
-	rid, _ := ctx.Value(middleware.RequestIDKey).(string)
-
-	data := struct {
-		Flash string
-		Lang  language.Tag
-		RID   string
-	}{
-		"The data has been saved successfully.",
-		lang,
-		rid,
-	}
-
-	if err := settingsAlertTpl.Execute(w, &data); err != nil {
-		slog.Error("cannot render the template", slog.String("error", err.Error()))
-	}
-}
-
-func SettingsContactSave(w http.ResponseWriter, r *http.Request) {
-	digestSave[shops.Contact](w, r, save[shops.Contact]{
-		Name:       settingsName,
-		URL:        settingsURL,
-		Feature:    settingsContactFeature{},
-		Form:       multipartForm{},
-		Images:     []string{"logo", "banner_1", "banner_2", "banner_3"},
-		Folder:     settingsFolder,
-		NoRedirect: true,
-	})
-
-	w.Header().Set("HX-Reswap", "innerHTML show:#alert:top")
-
-	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	rid, _ := ctx.Value(middleware.RequestIDKey).(string)
 

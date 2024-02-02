@@ -4,7 +4,6 @@ import (
 	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/http/cookies"
-	"artisons/string/stringutil"
 	"artisons/tests"
 	"context"
 	"net/http"
@@ -36,114 +35,6 @@ func TestFindBySessionIDReturnsErrorWhenSessionIsExpired(t *testing.T) {
 
 	if err == nil || err.Error() != "you are not authorized to process this request" || u.Email != "" {
 		t.Fatalf(`findBySessionID("expired") = %v, %v, want User, nil`, u, err)
-	}
-}
-
-func TestMiddlewareSetCartIdWhenNotExisting(t *testing.T) {
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ctx := tests.Context()
-
-	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
-	rr := httptest.NewRecorder()
-	handler := Middleware(testHandler)
-
-	handler.ServeHTTP(rr, req.WithContext(ctx))
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Fatalf(`status = %d, want %d`, status, http.StatusOK)
-	}
-
-	cks := rr.Result().Cookies()
-	if len(cks) != 1 {
-		t.Fatalf(`len(cookies) = %d, want 1`, len(cks))
-	}
-
-	c := cks[0]
-
-	if c.Name != cookies.CartID {
-		t.Fatalf(`c.Name = %s, want %s`, c.Name, cookies.CartID)
-	}
-
-	if c.Value == "" {
-		t.Fatalf(`c.Value = "", want not empty`)
-	}
-
-	if c.Secure != conf.Cookie.Secure {
-		t.Fatalf(`c.Secure = false, want %v`, conf.Cookie.Secure)
-	}
-
-	if c.HttpOnly == false {
-		t.Fatalf(`c.HttpOnly = false, want true`)
-	}
-
-	if c.Path != "/" {
-		t.Fatalf(`c.Path = %s, want '/'`, c.Path)
-	}
-
-	if c.MaxAge <= 0 {
-		t.Fatalf(`c.MaxAge = %d, want > 0`, c.MaxAge)
-	}
-}
-
-func TestMiddlewareRefreshCartIdWhenExisting(t *testing.T) {
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	cid, err := stringutil.Random()
-	if err != nil {
-		t.Fatalf(`err = %s, want nil`, err.Error())
-	}
-
-	cookie := &http.Cookie{
-		Name:     cookies.CartID,
-		Value:    cid,
-		MaxAge:   int(conf.Cookie.MaxAge),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   conf.Cookie.Secure,
-		Domain:   conf.Cookie.Domain,
-	}
-
-	req.AddCookie(cookie)
-
-	ctx := tests.Context()
-
-	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
-	rr := httptest.NewRecorder()
-
-	handler := Middleware(testHandler)
-
-	handler.ServeHTTP(rr, req.WithContext(ctx))
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Fatalf(`status = %d, want %d`, status, http.StatusOK)
-	}
-
-	cks := rr.Result().Cookies()
-	if len(cks) != 1 {
-		t.Fatalf(`len(cookies) = %d, want 1`, len(cks))
-	}
-
-	c := cks[0]
-
-	if c.Name != cookies.CartID {
-		t.Fatalf(`c.Name = %s, want %s`, c.Name, cookies.CartID)
-	}
-
-	if c.Value != cid {
-		t.Fatalf(`c.Value = %s, want %s`, c.Value, cid)
 	}
 }
 
@@ -182,11 +73,16 @@ func TestMiddlewareDestroySessionIdWhenItIsNotFound(t *testing.T) {
 	}
 
 	cks := rr.Result().Cookies()
-	if len(cks) != 2 {
-		t.Fatalf(`len(cookies) = %d, want 2`, len(cks))
+	var c *http.Cookie
+	for _, val := range cks {
+		if val.Name == cookies.SessionID {
+			c = val
+		}
 	}
 
-	c := cks[1]
+	if c.Name == "" {
+		t.Fatalf(`c.Name is empty, want 'wsid'`)
+	}
 
 	if c.Name != cookies.SessionID {
 		t.Fatalf(`c.Name = %s, want %s`, c.Name, cookies.SessionID)

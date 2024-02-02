@@ -29,7 +29,7 @@ func init() {
 	tpl, err = templates.Build("base.html").ParseFiles([]string{
 		"web/views/admin/base.html",
 		"web/views/admin/simple.html",
-		"web/views/login/login.html",
+		"web/views/login.html",
 		"web/views/admin/icons/logo.svg",
 	}...)
 
@@ -38,7 +38,7 @@ func init() {
 	}
 
 	hxtpl, err = templates.Build("login.html").ParseFiles([]string{
-		"web/views/login/login.html",
+		"web/views/login.html",
 	}...)
 
 	if err != nil {
@@ -46,7 +46,7 @@ func init() {
 	}
 
 	otptpl, err = templates.Build("otp.html").ParseFiles(
-		"web/views/login/otp.html",
+		"web/views/otp.html",
 	)
 
 	if err != nil {
@@ -60,6 +60,7 @@ func Form(w http.ResponseWriter, r *http.Request) {
 	isHX, _ := ctx.Value(contexts.HX).(bool)
 
 	_, ok := ctx.Value(contexts.User).(users.User)
+
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
 

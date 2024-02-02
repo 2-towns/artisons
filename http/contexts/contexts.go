@@ -9,17 +9,33 @@ type contextKey string
 // User is the context key used to store the lang
 const User contextKey = "user"
 
+// TODO: delete
 // User is the context key used to store the lang
 const UserID contextKey = "user_id"
+
+// ID is the current entity id
+const ID contextKey = "id"
+
+// Form is the current form object
+const Form contextKey = "form"
 
 // Cart is the context key used to store the lang
 const Cart contextKey = "cart"
 
-// End can "front" or "back"
-const End contextKey = "end"
+// Device is the context key used to store the lang
+const Device contextKey = "device"
+
+// Domain can "front", "back" or "static"
+const Domain contextKey = "end"
 
 // Demo is the context key used when the admin activated the demo mode
 const Demo contextKey = "demo"
+
+// Pagination
+const Pagination contextKey = "pagination"
+
+// Flash
+const Flash contextKey = "flash"
 
 // Locale is the context key used to store the lang
 const Locale contextKey = "lang"

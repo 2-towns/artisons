@@ -405,3 +405,19 @@ func TestSearchReturnsNoUserWhenNoMatching(t *testing.T) {
 		t.Fatalf(`len(p.Articles) = %d, want == 0`, len(a.Users))
 	}
 }
+
+func TestRefreshSessionReturnsNilWhenOK(t *testing.T) {
+	ctx := tests.Context()
+	u := User{SID: "crazy"}
+
+	db.Redis.Expire(ctx, "session:crazy", 10)
+
+	if err := u.RefreshSession(ctx); err != nil {
+		t.Fatalf("u.RefreshSession(ctx) = %s, want nil", err.Error())
+	}
+
+	ttl, err := db.Redis.TTL(ctx, "session:crazy").Result()
+	if ttl >= conf.SessionDuration || err != nil {
+		t.Fatalf(`db.Redis.TTL(ctx,"session:crazy") = %d, %v, want %d, nil`, ttl, err, conf.SessionDuration)
+	}
+}
