@@ -19,6 +19,7 @@ import (
 	"artisons/users"
 	"context"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 
@@ -92,7 +93,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("web/public"))
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
-
+	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!", seo.URLs["terms"].URL)
 	router.Group(func(r chi.Router) {
 		// router.Use(middleware.RealIP)
 		r.Use(httplog.RequestLogger(&l))
