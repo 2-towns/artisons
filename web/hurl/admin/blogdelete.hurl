@@ -41,7 +41,7 @@ HTTP 200
 xpath "//td[text()='{{id}}']" not exists
 
 # Destroy the article does not work for cms
-POST {{host}}/admin/blog/3/delete.html
+POST {{host}}/admin/blog/5/delete.html
 HX-Request: true
 User-Agent: {{ua}}
 HTTP 200

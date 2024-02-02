@@ -54,5 +54,5 @@ jobs:
         run: |
           go run main.go &
           sleep 2
-          # hurl --variable time=$(date +%s) --variables-file web/hurl/admin/.env --test web/hurl/admin/*.hurl
+          hurl --variable time=$(date +%s) --variables-file web/hurl/admin/.env --test web/hurl/admin/*.hurl
           hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/*.hurl

@@ -19,7 +19,6 @@ import (
 	"artisons/users"
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -109,7 +108,6 @@ func main() {
 
 		r.Mount("/admin", adminRouter())
 
-		log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!", fmt.Sprintf("/%s.html", seo.URLs["terms"].URL))
 		r.With(stats.Middleware).Get("/", pages.Home)
 		r.With(stats.Middleware).Get("/blog.html", pages.Blog)
 		r.With(stats.Middleware).Get("/blog/{slug}.html", pages.Article)
