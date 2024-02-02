@@ -9,8 +9,7 @@ type contextKey string
 // User is the context key used to store the lang
 const User contextKey = "user"
 
-// TODO: delete
-// User is the context key used to store the lang
+// UserID ise used only for tracking log to avoid cycling imports
 const UserID contextKey = "user_id"
 
 // ID is the current entity id

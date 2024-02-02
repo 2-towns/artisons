@@ -331,7 +331,7 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 		key := fmt.Sprintf("user:%d", uid)
 		rdb.HSet(ctx, key,
 			"updated_at", now.Unix(),
-			// @todo get the lang from the browser and match with the ones on the server
+			// TODO: get the lang from the browser and match with the ones on the server
 			"lang", conf.DefaultLocale.String(),
 		)
 		rdb.HSetNX(ctx, key, "id", uid)
