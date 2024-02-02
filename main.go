@@ -93,7 +93,7 @@ func main() {
 
 	fs := http.FileServer(http.Dir("web/public"))
 	router.Handle("/public/*", http.StripPrefix("/public/", fs))
-	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!", fmt.Sprintf("/%s.html", seo.URLs["terms"].URL))
+
 	router.Group(func(r chi.Router) {
 		// router.Use(middleware.RealIP)
 		r.Use(httplog.RequestLogger(&l))
@@ -109,6 +109,7 @@ func main() {
 
 		r.Mount("/admin", adminRouter())
 
+		log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!", fmt.Sprintf("/%s.html", seo.URLs["terms"].URL))
 		r.With(stats.Middleware).Get("/", pages.Home)
 		r.With(stats.Middleware).Get("/blog.html", pages.Blog)
 		r.With(stats.Middleware).Get("/blog/{slug}.html", pages.Article)

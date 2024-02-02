@@ -7,7 +7,6 @@ import (
 	"artisons/shops"
 	"artisons/tags"
 	"artisons/templates"
-	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -16,7 +15,6 @@ import (
 )
 
 func Static(w http.ResponseWriter, r *http.Request) {
-	log.Println("!!!!!!!!!!!!!!!!!")
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
