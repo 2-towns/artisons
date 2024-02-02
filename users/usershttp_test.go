@@ -144,11 +144,12 @@ func TestMiddlewareRefreshesSessionIdWhenItExists(t *testing.T) {
 	}
 
 	cks := rr.Result().Cookies()
-	if len(cks) != 2 {
-		t.Fatalf(`len(cookies) = %d, want 2`, len(cks))
+	var c *http.Cookie
+	for _, val := range cks {
+		if val.Name == cookies.SessionID {
+			c = val
+		}
 	}
-
-	c := cks[1]
 
 	if c.Name != cookies.SessionID {
 		t.Fatalf(`c.Name = %s, want %s`, c.Name, cookies.SessionID)

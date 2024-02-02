@@ -1,6 +1,7 @@
 package security
 
 import (
+	"artisons/http/htmx"
 	"artisons/tests"
 	"net/http"
 	"net/http/httptest"
@@ -90,7 +91,7 @@ func TestCsrfReturns200WhenPostMethodWithHxHeader(t *testing.T) {
 	})
 
 	rr := httptest.NewRecorder()
-	handler := Csrf(testHandler)
+	handler := htmx.Middleware(Csrf(testHandler))
 
 	handler.ServeHTTP(rr, req.WithContext(ctx))
 
