@@ -35,7 +35,8 @@ a:visited {
 
 
 
-.header.home {
+.header.home,
+.header.blog {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -554,4 +555,41 @@ option {
 	}
 
 
+}
+
+.blog-container {
+	width: 85%;
+	margin: auto;
+	margin-top: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+
+	.blog-item {
+		border-radius: var(--border-radius-2);
+		background: var(--gray-light);
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 100%;
+		max-width: 100%;
+		margin-top: 1rem;
+		align-items: center;
+
+		.blog-img {
+			width: 100%;
+			height: 10rem;
+			border-radius: var(--border-radius-2);
+		}
+
+		.blog-info {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+
+
+		}
+
+	}
 }
