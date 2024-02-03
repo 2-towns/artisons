@@ -17,28 +17,10 @@ POST {{host}}/otp.html
 HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 [FormParams]
-email: arnaud@yandex.com
+email: arnaudz@yandex.com
 HTTP 200
 [Asserts]
 body contains "<div class=\"form-error\">The data is invalid.</div>"
-
-# Display otp form when the correct email is used
-POST {{host}}/otp.html
-HX-Request: true
-[FormParams]
-email: hello@world.com
-HTTP 200
-[Asserts]
-xpath "//form[@hx-post='/login.html']" exists
-
-# Displays an error message when requesting new OTP too quickly
-POST {{host}}/otp.html
-HX-Request: true
-[FormParams]
-email: hello@world.com
-HTTP 200
-[Asserts]
-body contains "You need to wait before asking another OTP."
 
 # Displays an error when otp is not correct
 POST {{host}}/login.html
@@ -73,6 +55,12 @@ otp: 1
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/index.html"
+cookie "wsid" exists
+cookie "wsid[HttpOnly]" exists
+cookie "wsid[Max-Age]" exists
+cookie "wsid[Max-Age]" exists
+cookie "wsid[SameSite]" == "Strict"
+cookie "wsid[Path]" == "/"
 
 # Redirect when the admin is connected and try to access to auth
 GET {{host}}/sso.html

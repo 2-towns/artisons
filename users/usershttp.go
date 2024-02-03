@@ -70,6 +70,7 @@ func Middleware(next http.Handler) http.Handler {
 				HttpOnly: true,
 				Secure:   conf.Cookie.Secure,
 				Domain:   conf.Cookie.Domain,
+				SameSite: http.SameSiteStrictMode,
 			}
 			http.SetCookie(w, cookie)
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -89,6 +90,7 @@ func Middleware(next http.Handler) http.Handler {
 				HttpOnly: true,
 				Secure:   conf.Cookie.Secure,
 				Domain:   conf.Cookie.Domain,
+				SameSite: http.SameSiteStrictMode,
 			}
 			http.SetCookie(w, cookie)
 		}

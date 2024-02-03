@@ -110,7 +110,7 @@ func init() {
 	)
 
 	db.Redis.HSet(ctx, "order:"+order.ID+":products", "PDT111", 1).Result()
-	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", order.UID), "email", "arnaud@yandex.com").Result()
+	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", order.UID), "email", "arnaudz@yandex.com").Result()
 }
 
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {

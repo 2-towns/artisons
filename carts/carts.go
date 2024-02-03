@@ -31,8 +31,7 @@ type Cart struct {
 	Products []products.Product
 }
 
-func cartExists(ctx context.Context) bool {
-	cid := ctx.Value(contexts.Cart).(string)
+func cartExists(ctx context.Context, cid string) bool {
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(ctx, slog.LevelInfo, "checking if the car exists")
 
@@ -99,11 +98,16 @@ func Add(ctx context.Context, pid string, quantity int) (string, error) {
 
 // Get the full session cart.
 func Get(ctx context.Context) (Cart, error) {
-	cid := ctx.Value(contexts.Cart).(string)
+	cid, ok := ctx.Value(contexts.Cart).(string)
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(ctx, slog.LevelInfo, "get the cart")
 
-	if !cartExists(ctx) {
+	if !ok {
+		l.LogAttrs(ctx, slog.LevelInfo, "the cid does not exist")
+		return Cart{}, nil
+	}
+
+	if !cartExists(ctx, cid) {
 		return Cart{}, nil
 	}
 

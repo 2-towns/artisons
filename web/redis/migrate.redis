@@ -5,6 +5,6 @@ FT.CREATE order-idx ON HASH PREFIX 1 order: SCHEMA id TAG status TAG delivery TA
 FT.DROPINDEX blog-idx
 FT.CREATE blog-idx ON HASH PREFIX 1 blog: SCHEMA id TAG status TAG title TEXT type TAG description TEXT slug TAG updated_at NUMERIC SORTABLE
 FT.DROPINDEX user-idx
-FT.CREATE user-idx ON HASH PREFIX 1 user: SCHEMA id TAG type TAG email TAG updated_at NUMERIC SORTABLE
+FT.CREATE user-idx ON HASH PREFIX 1 user: SCHEMA id TAG type TAG role TAG email TAG updated_at NUMERIC SORTABLE
 FT.DROPINDEX session-idx
 FT.CREATE session-idx ON HASH PREFIX 1 session: SCHEMA type TAG uid TAG updated_at NUMERIC SORTABLE

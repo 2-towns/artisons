@@ -1,30 +1,3 @@
-# Display otp form when the correct email is used
-POST {{host}}/otp.html
-HX-Request: true
-[FormParams]
-email: hello@world.com
-HTTP 200
-[Asserts]
-xpath "//form[@hx-post='/login.html']" exists
-
-
-# Redirect to dashboard when the otp is correct
-POST {{host}}/login.html
-HX-Current-URL: http://localhost:8080/sso.html
-HX-Request: true
-User-Agent: {{ua}}
-[FormParams]
-email:hello@world.com
-otp: 1
-otp: 1
-otp: 1 
-otp: 1 
-otp: 1
-otp: 1 
-HTTP 200
-[Asserts]
-header "HX-Redirect" == "/admin/index.html"
-
 # Editing a locale without key shows an error 
 POST {{host}}/admin/locale.html
 HX-Request: true

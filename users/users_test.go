@@ -28,17 +28,26 @@ func init() {
 		"created_at", now.Unix(),
 		"updated_at", now.Unix(),
 		"type", "user",
+		"role", "user",
 	)
 
-	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", 98),
+	db.Redis.HSet(ctx, "user:98",
 		"id", 98,
 		"email", faker.Email(),
 		"created_at", now.Unix(),
 		"updated_at", now.Unix(),
 		"type", "user",
+		"role", "user",
 	)
 
-	db.Redis.SAdd(ctx, "admins", "hello@world.com", "lock@world.com")
+	db.Redis.HSet(ctx, "user:100",
+		"id", 100,
+		"email", "hello@world.com",
+		"created_at", now.Unix(),
+		"updated_at", now.Unix(),
+		"type", "user",
+		"role", "admin",
+	)
 
 	db.Redis.HSet(ctx, "session:"+user.SID, "id", user.SID, "uid", user.ID, "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0", "type", "session")
 	db.Redis.Expire(ctx, "session:"+user.SID, conf.SessionDuration)
@@ -56,14 +65,6 @@ var address Address = Address{
 	Zipcode:       ra.PostalCode,
 	Phone:         faker.Phonenumber(),
 }
-
-// func TestListReturnsUsersWhenSuccess(t *testing.T) {
-// 	ctx := tests.Context()
-// 	users, err := List(ctx, 0)
-// 	if err != nil || len(users) == 0 || users[0].ID == 0 {
-// 		t.Fatalf("List(ctx, 0) = '%v', %v, want User, nil", users, err)
-// 	}
-// }
 
 func TestOtpCodeReturnsCodeWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
@@ -374,7 +375,27 @@ func TestSearchReturnsUserWhenEmailMatching(t *testing.T) {
 	c := tests.Context()
 	u, err := Search(c, Query{Email: user.Email}, 0, 10)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Keywords: user.Email}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Email: user.Email}) = %v, want nil`, err.Error())
+	}
+
+	if u.Total == 0 {
+		t.Fatalf(`p.Total = %d, want > 0`, u.Total)
+	}
+
+	if len(u.Users) == 0 {
+		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(u.Users))
+	}
+
+	if u.Users[0].ID != user.ID {
+		t.Fatalf(`%d != %d`, u.Users[0].ID, user.ID)
+	}
+}
+
+func TestSearchReturnsUserWhenEmailAndRoleching(t *testing.T) {
+	c := tests.Context()
+	u, err := Search(c, Query{Email: user.Email, Role: "user"}, 0, 10)
+	if err != nil {
+		t.Fatalf(`Search(c, Query{Email: user.Email, Role: "user"}}) = %v, want nil`, err.Error())
 	}
 
 	if u.Total == 0 {

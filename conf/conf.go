@@ -66,10 +66,6 @@ const OtpInterval = time.Minute / 10
 // OtpAttempts is the maximum attemps for an otp
 const OtpAttempts = 3
 
-// OtpDemo allows to use 111111 as otp.
-// It should be used only for testing purpose.
-const OtpDemo = true
-
 // AppURL is the application root URL
 const AppURL = "http://localhost:8080"
 

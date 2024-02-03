@@ -52,6 +52,7 @@ func TestMiddlewareDestroySessionIdWhenItIsNotFound(t *testing.T) {
 		HttpOnly: true,
 		Secure:   conf.Cookie.Secure,
 		Domain:   conf.Cookie.Domain,
+		SameSite: http.SameSiteStrictMode,
 	}
 
 	req.AddCookie(cookie)
@@ -123,6 +124,7 @@ func TestMiddlewareRefreshesSessionIdWhenItExists(t *testing.T) {
 		HttpOnly: true,
 		Secure:   conf.Cookie.Secure,
 		Domain:   conf.Cookie.Domain,
+		SameSite: http.SameSiteStrictMode,
 	}
 
 	req.AddCookie(cookie)

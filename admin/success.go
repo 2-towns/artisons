@@ -16,6 +16,7 @@ func Success(w http.ResponseWriter, url string) {
 		HttpOnly: true,
 		Secure:   conf.Cookie.Secure,
 		Domain:   conf.Cookie.Domain,
+		SameSite: http.SameSiteStrictMode,
 	}
 
 	http.SetCookie(w, cookie)

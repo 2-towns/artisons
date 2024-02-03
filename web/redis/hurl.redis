@@ -1,4 +1,14 @@
-HSET "user:1" id "1" email "arnaud@yandex.com" created_at 1705310389  updated_at 1705310389 type "user"
+
+HSET "otp:hello@world.com" otp "111111" 
+HSET "otp:arnaudz@yandex.com" otp "111111" 
+HSET "user:1" id "1" email "arnaudz@yandex.com" created_at 1705310389  updated_at 1705310389 type "user" role "user"
+HSET "user:2" id "2" email "hello@world.com" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
+HSET "user:3" id "3" email "lock@world.comm" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
+SET "user_next_id" 3
+HSET "session:123456789" "uid" "2" "id" "123456789" "device" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "type" "session"
+HSET "session:987654321" "uid" "1" "id" "987654321" "device" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "type" "session"
+EXPIRE "session:123456789" 3600
+EXPIRE "session:987654321" 3600
 HSET "blog:1" id "1" title "Mangez de l'ail" slug "mangez-de-lail" description "c'est bon" status "online" image "blog/1.jpeg" type "blog" updated_at 1705310389 
 HSET "blog:2" id "2" title "Avoir une souris ergonomique c'est important." description "pour les mains" slug "avoir-souris-ergonomique-c-est-important" status "online" image "/blog/1.jpeg" type "blog" updated_at 1705310389 
 HSET "blog:3" id "3" title "Terms and conditions" description "Some description" slug "terms-and-conditions" status "online" type "cms" updated_at 1705310389 

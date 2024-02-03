@@ -55,6 +55,7 @@ type Address struct {
 
 type Query struct {
 	Email string
+	Role  string
 }
 
 type SearchResults struct {
@@ -268,7 +269,7 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 		return "", errors.New("you are not authorized to process this request")
 	}
 
-	if val != otp && !(conf.OtpDemo && otp == "111111") {
+	if val != otp {
 		l.LogAttrs(ctx, slog.LevelInfo, "the otp do not match", slog.String("val", val), slog.String("otp", otp))
 
 		attempts, err := db.Redis.HIncrBy(ctx, "otp:"+email, "attempts", 1).Result()
@@ -434,15 +435,16 @@ func IsAdmin(ctx context.Context, email string) bool {
 	l := slog.With(slog.String("email", email))
 	l.LogAttrs(ctx, slog.LevelInfo, "trying to known if the user is admin")
 
-	is, err := db.Redis.SIsMember(ctx, "admins", email).Result()
+	qry := Query{Email: email, Role: "admin"}
+	u, err := Search(ctx, qry, 0, 1)
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot retrieve admins from redis", slog.String("error", err.Error()))
 		return false
 	}
 
-	l.LogAttrs(ctx, slog.LevelInfo, "the user is admin", slog.Bool("yes", is))
+	l.LogAttrs(ctx, slog.LevelInfo, "the user is admin", slog.Bool("yes", u.Total > 0))
 
-	return is
+	return u.Total > 0
 }
 
 func (u User) ToggleDemo(ctx context.Context) (bool, error) {
@@ -472,6 +474,10 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 
 	if q.Email != "" {
 		qs += fmt.Sprintf("(@email:{%s})", db.Escape(q.Email))
+	}
+
+	if q.Role != "" {
+		qs += fmt.Sprintf("(@role:{%s})", db.Escape(q.Role))
 	}
 
 	qs += fmt.Sprintf(" SORTBY updated_at desc LIMIT %d %d DIALECT 2", offset, num)

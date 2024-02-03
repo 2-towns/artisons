@@ -4,6 +4,17 @@ HX-Request: true
 [FormParams]
 email: lock@world.com
 HTTP 200
+[Asserts]
+xpath "//form[@hx-post='/login.html']" exists
+
+# Displays an error message when requesting new OTP too quickly
+POST {{host}}/otp.html
+HX-Request: true
+[FormParams]
+email: lock@world.com
+HTTP 200
+[Asserts]
+body contains "You need to wait before asking another OTP."
 
 # Displays an error for first tentative
 POST {{host}}/login.html
