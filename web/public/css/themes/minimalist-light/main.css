@@ -607,10 +607,13 @@ option {
 .article-container {
 	width: 85%;
 	margin: auto;
-	margin-top: 1.5rem;
+	margin-bottom: 5rem;
+	padding: 1.5rem;
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
+	background: var(--gray-light);
+	border-radius: var(--border-radius-2);
 
 	.article-title {
 		font-size: 1.5rem;
@@ -632,17 +635,8 @@ option {
 		font-size: 1rem;
 		font-weight: 450;
 		white-space: pre-line;
+		margin: auto;
 	}
-
-
-
-
-
-
-
-
-
-
 
 }
 
