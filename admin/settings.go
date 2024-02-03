@@ -190,7 +190,7 @@ func SettingsContactSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if shops.Data.Logo == "" && files[0] != "" {
+	if shops.Data.Logo == "" && files[0] == "" {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot process the empty logo")
 		httperrors.HXCatch(w, ctx, "input:logo")
 		return

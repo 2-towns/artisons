@@ -181,3 +181,66 @@ func TestDeleteReturnsNilWhenQuantityIsMoreThanTheCart(t *testing.T) {
 		t.Fatalf(`qty = %s, want ''`, qty)
 	}
 }
+
+func TestMergeReturnsErrorWhenUserIdDoesNotExist(t *testing.T) {
+	ctx := tests.Context()
+	exp := "you are not authorized to process this request"
+
+	if err := Merge(ctx); err == nil || err.Error() != exp {
+		t.Fatalf(`Merge(ctx) = %v, want '%s'`, err, exp)
+	}
+}
+
+func TestMergeReturnsErrorWhenCartIdDoesNotExist(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.UserID, 1)
+	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
+
+	db.Redis.HSet(ctx, "cart:CAR1", "PDT1", "2")
+	db.Redis.HSet(ctx, "cart:CAR1", "PDT2", "1")
+	db.Redis.HSet(ctx, "cart:1", "PDT1", "1")
+	db.Redis.HSet(ctx, "cart:1", "PDT2", "")
+
+	if err := Merge(ctx); err != nil {
+		t.Fatalf(`Merge(ctx) = %v, want nil`, err)
+	}
+
+	val, _ := db.Redis.HGetAll(ctx, "cart:1").Result()
+
+	if val["PDT1"] != "3" {
+		t.Fatalf(`val["PDT1"] = %s, want '3'`, val["PDT1"])
+	}
+
+	if val["PDT2"] != "1" {
+		t.Fatalf(`val["PDT2"] = %s, want '1'`, val["PDT2"])
+	}
+}
+
+func TestExistsReturnsFalseWhenTheCartNotInContext(t *testing.T) {
+	ctx := tests.Context()
+
+	if res := Exists(ctx, "crazy"); res {
+		t.Fatalf(`Exists(ctx, "crazy") = true, want false`)
+	}
+}
+
+func TestExistsReturnsFalseWhenTheCartDoesNotExist(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
+
+	if res := Exists(ctx, "CAR1"); res {
+		t.Fatalf(`Exists(ctx, "CAR1") = true, want false`)
+	}
+}
+
+func TestExistsReturnsTrueWhenTheCartExists(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
+
+	db.Redis.HSet(ctx, "cart:CAR1", "PDT1", "1")
+	db.Redis.Expire(ctx, "cart:CAR1", conf.CartDuration)
+
+	if res := Exists(ctx, "CAR1"); !res {
+		t.Fatalf(`Exists(ctx, "CAR1") = false, want true`)
+	}
+}

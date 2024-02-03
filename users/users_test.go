@@ -123,9 +123,9 @@ func TestLoginReturnsSidWhenSuccess(t *testing.T) {
 	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 0)
 	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
 
-	sid, err := Login(ctx, "hellow@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid == "" || err != nil {
-		t.Fatalf(`Login(ctx, "hellow@world.com", "hello-world", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	sid, uid, err := Login(ctx, "hellow@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid == "" || uid == 0 || err != nil {
+		t.Fatalf(`Login(ctx, "hellow@world.com", "hello-world", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s',%d,  %v, want string, int, nil`, sid, uid, err)
 	}
 }
 
@@ -134,9 +134,9 @@ func TestLoginReturnsErrorWhenEmailIsEmpty(t *testing.T) {
 
 	otp := "hello-world"
 
-	sid, err := Login(ctx, "", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "input:email" {
-		t.Fatalf(`Login(ctx, "", otp, 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	sid, uid, err := Login(ctx, "", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || uid != 0 || err == nil || err.Error() != "input:email" {
+		t.Fatalf(`Login(ctx, "", otp, 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %d, %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
@@ -148,9 +148,9 @@ func TestLoginReturnsErrorWhenOtpDoesNotMatch(t *testing.T) {
 	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 0)
 	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
 
-	sid, err := Login(ctx, "hellow@world.com", "hello", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "the OTP does not match" {
-		t.Fatalf(`Login(ctx, "hellow@world.com", "hello", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	sid, uid, err := Login(ctx, "hellow@world.com", "hello", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || uid != 0 || err == nil || err.Error() != "the OTP does not match" {
+		t.Fatalf(`Login(ctx, "hellow@world.com", "hello", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s',%d, %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
@@ -162,9 +162,9 @@ func TestLoginReturnsErrorWhenOtpIsBlocked(t *testing.T) {
 	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 2)
 	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
 
-	sid, err := Login(ctx, "hellow@world.com", "hello", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "you reached the max tentatives" {
-		t.Fatalf(`Login(ctx, "hellow@world.com", "hello", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	sid, uid, err := Login(ctx, "hellow@world.com", "hello", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || uid != 0 || err == nil || err.Error() != "you reached the max tentatives" {
+		t.Fatalf(`Login(ctx, "hellow@world.com", "hello", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %d, %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
@@ -176,33 +176,33 @@ func TestLoginReturnsErrorWhenEmailOtpIsNotFound(t *testing.T) {
 	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 0)
 	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
 
-	sid, err := Login(ctx, "crazy@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf(`Login(ctx, "crazy@world.com", "hello-world",  'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+	sid, uid, err := Login(ctx, "crazy@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || uid != 0 || err == nil || err.Error() != "you are not authorized to process this request" {
+		t.Fatalf(`Login(ctx, "crazy@world.com", "hello-world",  'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s',%d,  %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenDeviceIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, err := Login(ctx, "hello@world.com", "otp", "")
-	if sid != "" || err == nil || err.Error() != "your are not authorized to access to this page" {
-		t.Fatalf(`Login(ctx, "hello@world.com", "otp", "") = '%s', %v, want '', 'your are not authorized to access to this page'`, sid, err)
+	sid, uid, err := Login(ctx, "hello@world.com", "otp", "")
+	if sid != "" || uid != 0 || err == nil || err.Error() != "your are not authorized to access to this page" {
+		t.Fatalf(`Login(ctx, "hello@world.com", "otp", "") = '%s', %d, %v, want '', 0, 'your are not authorized to access to this page'`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, err := Login(ctx, "hello@world.com", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil || err.Error() != "input:otp" {
-		t.Fatalf(`Login(ctx, "hello@world.com", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0") = '%s', %v, want '', 'input:otp'`, sid, err)
+	sid, uid, err := Login(ctx, "hello@world.com", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || uid != 0 || err == nil || err.Error() != "input:otp" {
+		t.Fatalf(`Login(ctx, "hello@world.com", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0") = '%s', %d,%v, want '', 0, 'input:otp'`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	sid, err := Login(ctx, "hello@world.com", "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
-	if sid != "" || err == nil {
-		t.Fatalf(`Login(ctx, "hello@world.com", 'titi') = '%s', %v, want '', 'input:otp'`, sid, err)
+	sid, uid, err := Login(ctx, "hello@world.com", "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	if sid != "" || uid != 0 || err == nil {
+		t.Fatalf(`Login(ctx, "hello@world.com", 'titi') = '%s', %d, %v, want '', 0, 'input:otp'`, sid, uid, err)
 	}
 }
 

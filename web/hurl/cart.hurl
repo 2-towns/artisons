@@ -43,4 +43,3 @@ User-Agent: {{ua}}
 HTTP 200
 [Asserts]
 body contains "The cart is empty"
-

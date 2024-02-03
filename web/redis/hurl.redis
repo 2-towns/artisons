@@ -1,35 +1,50 @@
 
 HSET "otp:hello@world.com" otp "111111" 
 HSET "otp:arnaudz@yandex.com" otp "111111" 
+HSET "otp:merge@artisons.me" otp "111111" 
+
 HSET "user:1" id "1" email "arnaudz@yandex.com" created_at 1705310389  updated_at 1705310389 type "user" role "user"
 HSET "user:2" id "2" email "hello@world.com" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
 HSET "user:3" id "3" email "lock@world.comm" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
-SET "user_next_id" 3
+HSET "user:4" id "4" email "merge@artisons.me" created_at 1705310389  updated_at 1705310389 type "user" role "user"
+SET "user_next_id" 4
+
 HSET "session:123456789" "uid" "2" "id" "123456789" "device" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "type" "session"
 HSET "session:987654321" "uid" "1" "id" "987654321" "device" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "type" "session"
+HSET "session:444444444" "uid" "4" "id" "987654321" "device" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "type" "session"
 EXPIRE "session:123456789" 3600
 EXPIRE "session:987654321" 3600
+EXPIRE "session:444444444" 3600
+
 HSET "blog:1" id "1" title "Mangez de l'ail" slug "mangez-de-lail" description "c'est bon" status "online" image "blog/1.jpeg" type "blog" updated_at 1705310389 
 HSET "blog:2" id "2" title "Avoir une souris ergonomique c'est important." description "pour les mains" slug "avoir-souris-ergonomique-c-est-important" status "online" image "/blog/1.jpeg" type "blog" updated_at 1705310389 
 HSET "blog:3" id "3" title "Terms and conditions" description "Some description" slug "terms-and-conditions" status "online" type "cms" updated_at 1705310389 
 HSET "blog:4" id "4" title "About us" description "About us" slug "about" status "online" type "cms" updated_at 1705310389 
 HSET "blog:5" id "5" title "Non active" description "Non active" slug "non-active" status "offline" type "blog" updated_at 1705310389 
 SET "blog_next_id" 5
+
 HSET "shop" logo "shops/logo.jpg" active "1" guest "1" name "My Shop" city "Oran" address "Hay Yasmine" zipcode "31244" phone "0559682532" updated_at 1705310389 
+
 HSET "seo:home" key "home" title "Home Page" description "You can access to multiple products." url "/" updated_at 1705310389 
 HSET "seo:terms" key "terms" title "Terms and conditions" description "Terms" url "terms-and-conditions" updated_at 1705310389 
 HSET "seo:about" key "about" title "About us" description "About" url "about" updated_at 1705310389 
 HSET "seo:product" key "product" title "Product" description "About" url "product" updated_at 1705310389 
 HSET "seo:categories" key "categories" title "categories" description "categories" url "categories" updated_at 1705310389 
 SADD "seo" 1 "home" 1 "terms" "about" 1 "product" 1 "categories" 1
+
 HSET "order:ORD1" id "ORD1" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389 
 HSET "order:ORD2" id "ORD2" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389  updated_at 1705310389 
+
 HSET "product:PDT1" id "PDT1" type "product" title "T-shirt Tester c’est douter" description "T-Shirt unisexe" slug "t-shirt-tester-c-est-douter" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" meta "color_blue" updated_at 1705310389 
 HSET "product:PDT2" id "PDT2" type "product" title "Mug Nodejs" description "Mug tendance" slug "mug-nodejs" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" updated_at 1705310389 
 HSET "product:PDT3" id "PDT3" type "product" title "Mug Nodejs" description "Mug tendance" slug "offline" price "100.5" quantity "2" status "offline" weight "500" tags "clothes" sku "SKU3" image_1 "products/PDT3.jpeg" updated_at 1705310389 
+
+HSET "cart:4" "PDT2" "1"
+
 HSET "tag:mens" "key" "mens" "label" "Mens" "updated_at" 1705310389 "children" "clothes;shoes" 
 ZADD "tags:root" 1 "mens"
 ZADD "tags" 1 "mens"
+
 HSET "filter:colors" "key" "colors" "label" "Colors" "editable" "0" "values" "red;yellow;white;pink;blue;green" "updated_at" 1705310389
 HSET "filter:sizes" "key" "sizes" "label" "Sizes" "editable" "1" "values" "S;M" "updated_at" 1705310389
 ZADD "filters" 1 "colors" 1 "sizes" 

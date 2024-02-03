@@ -7,6 +7,15 @@ User-Agent: {{ua}}
 quantity: 99
 HTTP 200
 
+# Delete a product to the cart from the empty page
+POST {{host}}/cart/PDT2/delete.html
+HX-Current-Url: /product/t-shirt-tester-c-est-douter.html
+HX-Request: true
+User-Agent: {{ua}}
+[FormParams]
+quantity: 99
+HTTP 200
+
 
 # The cart list returns empty result
 GET {{host}}/cart.html

@@ -31,7 +31,7 @@ type Cart struct {
 	Products []products.Product
 }
 
-func cartExists(ctx context.Context, cid string) bool {
+func Exists(ctx context.Context, cid string) bool {
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(ctx, slog.LevelInfo, "checking if the car exists")
 
@@ -182,7 +182,7 @@ func Get(ctx context.Context) (Cart, error) {
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(ctx, slog.LevelInfo, "get the cart")
 
-	if !cartExists(ctx, cid) {
+	if !Exists(ctx, cid) {
 		return Cart{}, nil
 	}
 
@@ -295,4 +295,64 @@ func RefreshCID(ctx context.Context, cid string) (string, error) {
 	l.LogAttrs(ctx, slog.LevelInfo, "the cart is refreshed")
 
 	return cid, nil
+}
+
+func Merge(ctx context.Context) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "merging cart")
+
+	uid, ok := ctx.Value(contexts.UserID).(int)
+	if !ok {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the user id")
+		return errors.New("you are not authorized to process this request")
+	}
+
+	cid, ok := ctx.Value(contexts.Cart).(string)
+	if !ok {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the cart id")
+		return errors.New("something went wrong")
+	}
+
+	acart, err := db.Redis.HGetAll(ctx, "cart:"+cid).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the anonymous cart items")
+		return errors.New("something went wrong")
+	}
+
+	ucart, err := db.Redis.HGetAll(ctx, fmt.Sprintf("cart:%d", uid)).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the anonymous cart items")
+		return errors.New("something went wrong")
+	}
+
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		for key, val := range acart {
+			a, err := strconv.ParseInt(val, 10, 64)
+			if err != nil {
+				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the anonymous quantity", slog.String("quantity", val))
+				continue
+			}
+
+			if ucart[key] != "" {
+				b, err := strconv.ParseInt(ucart[key], 10, 64)
+				if err != nil {
+					slog.LogAttrs(ctx, slog.LevelError, "cannot parse the existing quantity", slog.String("quantity", val))
+					continue
+				}
+
+				rdb.HSet(ctx, fmt.Sprintf("cart:%d", uid), key, a+b)
+			} else {
+				rdb.HSet(ctx, fmt.Sprintf("cart:%d", uid), key, a)
+			}
+		}
+
+		rdb.Del(ctx, "cart:"+cid)
+		return nil
+	}); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot merge the cart into redis", slog.String("error", err.Error()))
+		return err
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "cart  merged")
+
+	return nil
 }

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"artisons/carts"
 	"artisons/conf"
 	"artisons/http/contexts"
 	"artisons/http/cookies"
@@ -9,6 +10,7 @@ import (
 	"artisons/http/security"
 	"artisons/templates"
 	"artisons/users"
+	"context"
 	"fmt"
 	"html/template"
 	"log"
@@ -164,11 +166,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	device := r.Header.Get("User-Agent")
 
-	sid, err := users.Login(ctx, email, otp, device)
+	sid, uid, err := users.Login(ctx, email, otp, device)
 	if err != nil || sid == "" {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}
+
+	ctx = context.WithValue(ctx, contexts.UserID, uid)
 
 	cookie := &http.Cookie{
 		Name:     cookies.SessionID,
@@ -186,8 +190,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
 		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
 	} else {
+		cid, ok := ctx.Value(contexts.Cart).(string)
+		if !ok || !carts.Exists(ctx, cid) {
+			httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+			return
+		}
+
+		if err := carts.Merge(ctx); err != nil {
+			httperrors.HXCatch(w, ctx, err.Error())
+			return
+		}
+
 		httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

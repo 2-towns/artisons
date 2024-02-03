@@ -2,7 +2,7 @@ package main
 
 import (
 	"artisons/admin"
-	"artisons/admin/auth"
+	"artisons/auth"
 	"artisons/cache"
 	"artisons/carts"
 	"artisons/conf"

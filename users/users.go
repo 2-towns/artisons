@@ -244,29 +244,29 @@ func (a Address) Save(ctx context.Context, id int) error {
 // The data are stored with:
 // - user:id => the user data
 // An extra data is stored in order to retreive all the sessions for an user.
-func Login(ctx context.Context, email, otp, device string) (string, error) {
+func Login(ctx context.Context, email, otp, device string) (string, int, error) {
 	l := slog.With(slog.String("otp", otp))
 	l.LogAttrs(ctx, slog.LevelInfo, "trying to login", slog.String("device", device))
 
 	if err := validators.V.Var(email, "required,email"); err != nil {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the email", slog.String("error", err.Error()))
-		return "", errors.New("input:email")
+		return "", 0, errors.New("input:email")
 	}
 
 	if otp == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the otp code")
-		return "", errors.New("input:otp")
+		return "", 0, errors.New("input:otp")
 	}
 
 	if device == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the device")
-		return "", errors.New("your are not authorized to access to this page")
+		return "", 0, errors.New("your are not authorized to access to this page")
 	}
 
 	val, err := db.Redis.HGet(ctx, "otp:"+email, "otp").Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot get the existing otp", slog.String("error", err.Error()))
-		return "", errors.New("you are not authorized to process this request")
+		return "", 0, errors.New("you are not authorized to process this request")
 	}
 
 	if val != otp {
@@ -275,27 +275,27 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 		attempts, err := db.Redis.HIncrBy(ctx, "otp:"+email, "attempts", 1).Result()
 		if err != nil {
 			l.LogAttrs(ctx, slog.LevelError, "cannot increment the otp attempt", slog.String("error", err.Error()))
-			return "", errors.New("something went wrong")
+			return "", 0, errors.New("something went wrong")
 		}
 
 		if attempts >= conf.OtpAttempts {
 			if _, err := db.Redis.Del(ctx, "otp:"+email).Result(); err != nil {
 				l.LogAttrs(ctx, slog.LevelError, "cannot destory the otp", slog.String("error", err.Error()))
-				return "", errors.New("something went wrong")
+				return "", 0, errors.New("something went wrong")
 			}
 
 			l.LogAttrs(ctx, slog.LevelInfo, "max attempts reached", slog.Int64("attempts", attempts))
-			return "", errors.New("you reached the max tentatives")
+			return "", 0, errors.New("you reached the max tentatives")
 		}
 
-		return "", errors.New("the OTP does not match")
+		return "", 0, errors.New("the OTP does not match")
 	}
 
 	q := Query{Email: email}
 	res, err := Search(ctx, q, 0, 1)
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot verify email existence", slog.String("error", err.Error()))
-		return "", errors.New("something went wrong")
+		return "", 0, errors.New("something went wrong")
 	}
 
 	var uid int
@@ -305,7 +305,7 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 
 		if err != nil {
 			l.LogAttrs(ctx, slog.LevelError, "cannot get the next id", slog.String("error", err.Error()))
-			return "", errors.New("something went wrong")
+			return "", 0, errors.New("something went wrong")
 		}
 
 		uid = int(val)
@@ -316,7 +316,7 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 	sid, err := stringutil.Random()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot generated the session id", slog.String("error", err.Error()))
-		return "", errors.New("something went wrong")
+		return "", 0, errors.New("something went wrong")
 	}
 
 	now := time.Now()
@@ -345,7 +345,7 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 		return nil
 	}); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot store the data", slog.String("sid", sid), slog.Int("user_id", uid), slog.String("error", err.Error()))
-		return "", errors.New("something went wrong")
+		return "", 0, errors.New("something went wrong")
 	}
 
 	if role != "admin" && conf.EnableTrackingLog {
@@ -360,7 +360,7 @@ func Login(ctx context.Context, email, otp, device string) (string, error) {
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the login is successful", slog.String("device", device), slog.String("sid", sid), slog.Int("user_id", uid))
 
-	return sid, nil
+	return sid, uid, nil
 }
 
 // Logout destroys the user session.
