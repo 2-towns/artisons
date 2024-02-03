@@ -36,7 +36,8 @@ a:visited {
 
 
 .header.home,
-.header.blog {
+.header.blog,
+.header.article {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -568,7 +569,6 @@ option {
 	.blog-item {
 		border-radius: var(--border-radius-2);
 		background: var(--gray-light);
-		padding: 1rem;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -580,16 +580,129 @@ option {
 		.blog-img {
 			width: 100%;
 			height: 10rem;
-			border-radius: var(--border-radius-2);
+			border-top-right-radius: var(--border-radius-2);
+			border-top-left-radius: var(--border-radius-2);
+
 		}
 
-		.blog-info {
+		.blog-text {
+			width: 100%;
+			padding: 1rem;
 			display: flex;
 			align-items: center;
-			gap: 1rem;
-
-
+			justify-content: space-between;
 		}
 
+
+
+		.btn-more {
+			padding: initial;
+			font-size: .875rem;
+			flex: 0 0 auto;
+		}
+
+	}
+}
+
+.article-container {
+	width: 85%;
+	margin: auto;
+	margin-top: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+
+	.article-title {
+		font-size: 1.5rem;
+		font-weight: bold;
+	}
+
+	.article-date {
+		font-size: .875rem;
+		font-weight: 450;
+	}
+
+	.article-img {
+		width: 100%;
+		border-radius: var(--border-radius-2);
+	}
+
+
+	.article-content {
+		font-size: 1rem;
+		font-weight: 450;
+		white-space: pre-line;
+	}
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+/* Media queries */
+
+@media screen and (min-width: 768px) {
+
+	.header.home,
+	.header.blog {
+		width: 40%;
+	}
+
+	.header.account,
+	.header.address,
+	.header.payment-methods,
+	.header.card,
+	.header.wishlist,
+	.header.categories {
+		width: 40%;
+	}
+
+	.search-container {
+		width: 40%;
+	}
+
+	.categories-preview-container {
+		width: 40%;
+	}
+
+	.best-selling-cards,
+	.new-products-cards {
+		width: 40%;
+	}
+
+	.account,
+	.address,
+	.card {
+		form {
+			width: 40%;
+		}
+	}
+
+	.payment-methods {
+		width: 40%;
+	}
+
+	.categories {
+		width: 40%;
+	}
+
+	.wishlist {
+		width: 40%;
+	}
+
+	.store-info {
+		width: 40%;
+	}
+
+	.blog-container {
+		width: 40%;
 	}
 }
