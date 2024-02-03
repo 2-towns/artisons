@@ -29,7 +29,7 @@ func TestAddReturnsNilWhenSuccess(t *testing.T) {
 	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
 	quantity := 1
 
-	if cid, err := Add(ctx, "PDT97", quantity); cid == "" || err != nil {
+	if _, err := Add(ctx, "PDT97", quantity); err != nil {
 		t.Fatalf(`Add(ctx, "PDT97", quantity), %v, want nil, error`, err)
 	}
 }
@@ -105,5 +105,79 @@ func TestUpdatePaymentReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf("cart.UpdatePayment(ctx, 'toto') = %v, want 'unauthorized'", err)
+	}
+}
+
+func TestGetIDReturnsUserIDWhenTheUserIsSignedIn(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.UserID, 123)
+
+	cid, err := GetCID(ctx)
+	if err != nil || cid != "123" {
+		t.Fatalf(" getCID(ctx) = %s, %v, want '123', nil", cid, err)
+	}
+}
+
+func TestGetIDReturnsCartIDWhenTheUserIsNotSignedIn(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, "1221XLS")
+
+	cid, err := GetCID(ctx)
+	if err != nil || cid != "1221XLS" {
+		t.Fatalf(" getCID(ctx) = %s, %v, want '1221XLS', nil", cid, err)
+	}
+}
+
+func TestDeleteReturnsNilWhenQuantityIsLowerThanTheCart(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
+	quantity := 1
+
+	db.Redis.HSet(ctx, "cart:"+cart.ID, "abc", 2).Result()
+
+	if err := Delete(ctx, "abc", quantity); err != nil {
+		t.Fatalf(`Delete(ctx, "abc", quantity) = %v, want nil`, err)
+	}
+
+	qty, _ := db.Redis.HGet(ctx, "cart:"+cart.ID, "abc").Result()
+
+	if qty != "1" {
+		t.Fatalf(`qty = %s, want '1'`, qty)
+	}
+}
+
+func TestDeleteReturnsNilWhenQuantityIsSameThanTheCart(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
+	quantity := 2
+
+	db.Redis.HSet(ctx, "cart:"+cart.ID, "abc", 2).Result()
+
+	if err := Delete(ctx, "abc", quantity); err != nil {
+		t.Fatalf(`Delete(ctx, "abc", quantity) = %v, want nil`, err)
+	}
+
+	qty, _ := db.Redis.HGet(ctx, "cart:"+cart.ID, "abc").Result()
+
+	if qty != "" {
+		t.Fatalf(`qty = %s, want ''`, qty)
+	}
+}
+
+func TestDeleteReturnsNilWhenQuantityIsMoreThanTheCart(t *testing.T) {
+	ctx := tests.Context()
+	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
+	quantity := 3
+
+	db.Redis.HSet(ctx, "cart:"+cart.ID, "abc", 2).Result()
+
+	if err := Delete(ctx, "abc", quantity); err != nil {
+		t.Fatalf(`Delete(ctx, "abc", quantity) = %v, want nil`, err)
+	}
+
+	qty, _ := db.Redis.HGet(ctx, "cart:"+cart.ID, "abc").Result()
+
+	if qty != "" {
+		t.Fatalf(`qty = %s, want ''`, qty)
 	}
 }

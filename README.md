@@ -108,7 +108,8 @@ ZZZ étant la cause du renvoi de cette donnée par le test.
 ```
 hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/otp/*.hurl
 hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/admin/cookies.txt --test web/hurl/admin/*.hurl
-hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/cookies.txt --test web/hurl/*.hurl
+hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/user/cookies.txt --test web/hurl/user/*.hurl
+hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/*.hurl
 ```
 
 ## Terminal

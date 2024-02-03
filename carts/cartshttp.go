@@ -5,6 +5,7 @@ import (
 	"artisons/http/contexts"
 	"artisons/http/cookies"
 	"context"
+	"log/slog"
 	"net/http"
 )
 
@@ -30,7 +31,9 @@ func Middleware(next http.Handler) http.Handler {
 		}
 		http.SetCookie(w, cookie)
 
-		ctx = context.WithValue(ctx, contexts.Cart, cid)
+		ctx = context.WithValue(ctx, contexts.Cart, cid.Value)
+
+		slog.LogAttrs(ctx, slog.LevelInfo, "cart id detected", slog.String("cid", cid.Value))
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

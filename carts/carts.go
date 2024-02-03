@@ -46,21 +46,42 @@ func cartExists(ctx context.Context, cid string) bool {
 	return ttl.Nanoseconds() > 0
 }
 
+func GetCID(ctx context.Context) (string, error) {
+	uid, ok := ctx.Value(contexts.UserID).(int)
+	if ok {
+		return fmt.Sprintf("%d", uid), nil
+	}
+
+	cid, ok := ctx.Value(contexts.Cart).(string)
+	if !ok {
+		return "", nil
+	}
+
+	return cid, nil
+}
+
 // Add a product into a cart with its quantity
 // Verify that the cart and the product exists.
 func Add(ctx context.Context, pid string, quantity int) (string, error) {
 	l := slog.With(slog.String("product_id", pid), slog.Int("quantity", quantity))
 	l.LogAttrs(ctx, slog.LevelInfo, "adding a product to the cart")
 
-	cid, ok := ctx.Value(contexts.Cart).(string)
-	if !ok {
-		var err error
+	cid, err := GetCID(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	new := false
+	if cid == "" {
+		new = true
+
 		cid, err = stringutil.Random()
 		if err != nil {
-			l.LogAttrs(ctx, slog.LevelError, "cannot generate random string")
+			slog.LogAttrs(ctx, slog.LevelError, "cannot generate random string")
+			return "", err
 		}
 
-		ctx = context.WithValue(ctx, contexts.Cart, cid)
+		slog.LogAttrs(ctx, slog.LevelInfo, "new cart id generated", slog.String("cid", cid))
 	}
 
 	if !products.Available(ctx, pid) {
@@ -77,11 +98,6 @@ func Add(ctx context.Context, pid string, quantity int) (string, error) {
 		return "", err
 	}
 
-	if _, err := db.Redis.HIncrBy(ctx, "cart:"+cid, pid, int64(quantity)).Result(); err != nil {
-		l.LogAttrs(ctx, slog.LevelError, " cannot store the product", slog.String("error", err.Error()))
-		return "", errors.New("something went wrong")
-	}
-
 	if conf.EnableTrackingLog {
 		tra := map[string]string{
 			"pid":      pid,
@@ -93,19 +109,78 @@ func Add(ctx context.Context, pid string, quantity int) (string, error) {
 
 	l.LogAttrs(ctx, slog.LevelInfo, "product added in the cart")
 
-	return cid, nil
+	if new {
+		return cid, nil
+	}
+
+	return "", nil
+}
+
+func Delete(ctx context.Context, pid string, quantity int) error {
+	l := slog.With(slog.String("product_id", pid), slog.Int("quantity", quantity))
+	l.LogAttrs(ctx, slog.LevelInfo, "adding a product to the cart")
+
+	cid, err := GetCID(ctx)
+	if err != nil {
+		return err
+	}
+
+	if cid == "" {
+		slog.LogAttrs(ctx, slog.LevelInfo, "cannot remove from cart because the cid is empty")
+		return errors.New("you are not authorized to process this request")
+	}
+
+	q, err := db.Redis.HGet(ctx, "cart:"+cid, pid).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the quantity", slog.String("error", err.Error()))
+		return err
+	}
+
+	qty, err := strconv.ParseInt(q, 10, 64)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the quantity", slog.String("error", err.Error()))
+		return err
+	}
+
+	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
+		if qty > int64(quantity) {
+			rdb.HIncrBy(ctx, "cart:"+cid, pid, -int64(quantity))
+		} else {
+			rdb.HDel(ctx, "cart:"+cid, pid)
+		}
+
+		rdb.Expire(ctx, "cart:"+cid, conf.CartDuration)
+
+		return nil
+	}); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot store the cart", slog.String("error", err.Error()))
+		return err
+	}
+
+	if conf.EnableTrackingLog {
+		tra := map[string]string{
+			"pid":      pid,
+			"quantity": fmt.Sprintf("%d", -quantity),
+		}
+
+		go tracking.Log(ctx, "cart_remove", tra)
+	}
+
+	l.LogAttrs(ctx, slog.LevelInfo, "product removed from the cart")
+
+	return nil
 }
 
 // Get the full session cart.
 func Get(ctx context.Context) (Cart, error) {
-	cid, ok := ctx.Value(contexts.Cart).(string)
+	cid, err := GetCID(ctx)
+	if err != nil || cid == "" {
+		slog.LogAttrs(ctx, slog.LevelInfo, "no cart id detected")
+		return Cart{}, err
+	}
+
 	l := slog.With(slog.String("cid", cid))
 	l.LogAttrs(ctx, slog.LevelInfo, "get the cart")
-
-	if !ok {
-		l.LogAttrs(ctx, slog.LevelInfo, "the cid does not exist")
-		return Cart{}, nil
-	}
 
 	if !cartExists(ctx, cid) {
 		return Cart{}, nil

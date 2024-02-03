@@ -119,3 +119,15 @@ HTTP 200
 header "HX-Retarget" == "#image_height-error" 
 header "HX-Reswap" == "innerHTML show:#image_height-row:top" 
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
+
+# Editing the shop settings shows success 
+POST {{host}}/admin/shop-settings.html
+HX-Request: true
+[FormParams]
+items: 10
+min: 10
+last: 10 
+active: on
+HTTP 200
+[Asserts]
+xpath "normalize-space(//b[@class='alert-success-title alert-title']/text())" == "Success" 

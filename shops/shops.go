@@ -1,12 +1,12 @@
 package shops
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/validators"
+	"context"
+	"errors"
+	"fmt"
 	"log"
 	"log/slog"
 	"path"
@@ -218,6 +218,8 @@ func (s Contact) Save(ctx context.Context) (string, error) {
 		return "", errors.New("something went wrong")
 	}
 
+	Data.Contact = s
+
 	return "", nil
 }
 
@@ -281,6 +283,8 @@ func (s ShopSettings) Save(ctx context.Context) (string, error) {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
 		return "", errors.New("something went wrong")
 	}
+
+	Data.ShopSettings = s
 
 	return "", nil
 }

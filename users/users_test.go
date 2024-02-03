@@ -176,9 +176,9 @@ func TestLoginReturnsErrorWhenEmailOtpIsNotFound(t *testing.T) {
 	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 0)
 	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
 
-	sid, err := Login(ctx, "hello@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, err := Login(ctx, "crazy@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf(`Login(ctx, "hello@world.com", "hello-world",  'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
+		t.Fatalf(`Login(ctx, "crazy@world.com", "hello-world",  'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %v, want string, nil`, sid, err)
 	}
 }
 

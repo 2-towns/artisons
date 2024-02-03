@@ -1,5 +1,7 @@
 {{ if .Empty }}
 The cart is empty.
 {{else}}
-coucou !!
+{{range .Cart.Products}}
+<p class="product">{{.ID}}</p>
+{{end}}
 {{end}}

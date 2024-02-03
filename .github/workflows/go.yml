@@ -56,4 +56,5 @@ jobs:
           sleep 2
           hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/otp/*.hurl
           hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/admin/cookies.txt --test web/hurl/admin/*.hurl
-          hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/cookies.txt --test web/hurl/*.hurl
+          hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/user/cookies.txt --test web/hurl/user/*.hurl
+          hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/*.hurl

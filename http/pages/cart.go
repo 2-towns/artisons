@@ -82,8 +82,7 @@ func CartAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, ok := ctx.Value(contexts.Cart).(string)
-	if c == "" || !ok {
+	if cid != "" {
 		cookie := &http.Cookie{
 			Name:     cookies.CartID,
 			Value:    cid,
@@ -96,6 +95,43 @@ func CartAdd(w http.ResponseWriter, r *http.Request) {
 		}
 
 		http.SetCookie(w, cookie)
+	}
+
+	if r.Header.Get("HX-Current-URL") == "/cart.html" {
+		Cart(w, r)
+		return
+	}
+
+	if shops.Data.Redirect {
+		w.Header().Set("HX-Redirect", "/cart.html")
+		w.Write([]byte(""))
+		return
+	}
+
+	w.Write([]byte(""))
+}
+
+func CartDelete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	if err := r.ParseForm(); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
+		httperrors.HXCatch(w, ctx, "something went wrong")
+		return
+	}
+
+	qty, err := strconv.ParseInt(r.FormValue("quantity"), 10, 64)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the quantity", slog.String("error", err.Error()))
+		httperrors.HXCatch(w, ctx, "input:quantity")
+		return
+	}
+
+	err = carts.Delete(ctx, id, int(qty))
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
 	}
 
 	if r.Header.Get("HX-Current-URL") == "/cart.html" {

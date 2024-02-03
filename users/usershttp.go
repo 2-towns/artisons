@@ -54,6 +54,7 @@ func Middleware(next http.Handler) http.Handler {
 
 		sid, err := r.Cookie(cookies.SessionID)
 		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
 			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
@@ -73,7 +74,8 @@ func Middleware(next http.Handler) http.Handler {
 				SameSite: http.SameSiteStrictMode,
 			}
 			http.SetCookie(w, cookie)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			httperrors.HXCatch(w, ctx, "you are not authorized to process this request")
+
 			return
 		} else {
 			err := user.RefreshSession(ctx)
