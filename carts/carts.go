@@ -227,22 +227,27 @@ func Get(ctx context.Context) (Cart, error) {
 }
 
 // UpdateDelivery update the delivery mode in Redis.
-func (c Cart) UpdateDelivery(ctx context.Context, d string) error {
-	l := slog.With(slog.String("cid", c.ID), slog.String("delivery", d))
+func UpdateDelivery(ctx context.Context, del string) error {
+	l := slog.With(slog.String("delivery", del))
 	l.LogAttrs(ctx, slog.LevelInfo, "updating the delivery")
 
-	if !orders.IsValidDelivery(ctx, d) {
+	cid, err := GetCID(ctx)
+	if err != nil {
+		return err
+	}
+
+	if !orders.IsValidDelivery(ctx, del) {
 		return errors.New("you are not authorized to process this request")
 	}
 
-	if _, err := db.Redis.HSet(ctx, "cart:"+c.ID, "delivery", d).Result(); err != nil {
+	if _, err := db.Redis.HSet(ctx, "cart:"+cid, "delivery", del).Result(); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot update the delivery", slog.String("err", err.Error()))
 		return errors.New("something went wrong")
 	}
 
 	if conf.EnableTrackingLog {
 		tra := map[string]string{
-			"delivery": d,
+			"delivery": del,
 		}
 
 		go tracking.Log(ctx, "cart_delivery", tra)

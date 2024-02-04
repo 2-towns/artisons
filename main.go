@@ -76,7 +76,7 @@ func adminRouter() http.Handler {
 	r.With(security.Csrf).With(forms.ParseForm).Post("/orders/{id}/note.html", admin.OrderAddNote)
 	r.With(security.Csrf).With(forms.ParseMultipartForm).Post("/contact-settings.html", admin.SettingsContactSave)
 	r.With(security.Csrf).With(forms.ParseForm).Post("/shop-settings.html", admin.SettingsShopSave)
-	r.With(security.Csrf).Post("/locale.html", admin.EditLocale)
+	r.With(security.Csrf).With(forms.ParseForm).Post("/locale.html", admin.EditLocale)
 	r.With(security.Csrf).With(forms.ParseForm).Post("/seo/{id}/edit.html", admin.SeoSave)
 
 	return r
@@ -119,13 +119,15 @@ func main() {
 		r.With(stats.Middleware).With(pages.Paginate).Get("/search.html", pages.Search)
 		r.With(stats.Middleware).With(users.Middleware).Get("/cart.html", pages.Cart)
 		r.With(users.Middleware).Get("/sso.html", auth.Form)
-		r.With(users.Middleware).With(stats.Middleware).Get("/otp.html", auth.Form)
+		r.With(stats.Middleware).With(users.Middleware).Get("/otp.html", auth.Form)
+		r.With(carts.Redirect).Get("/delivery.html", pages.Delivery)
 
 		r.With(security.Csrf).With(users.Middleware).Post("/cart/{id}/add.html", pages.CartAdd)
 		r.With(security.Csrf).With(users.Middleware).Post("/cart/{id}/delete.html", pages.CartDelete)
-		r.With(security.Csrf).Post("/otp.html", auth.Otp)
-		r.With(security.Csrf).Post("/login.html", auth.Login)
+		r.With(security.Csrf).With(forms.ParseForm).Post("/otp.html", auth.Otp)
+		r.With(security.Csrf).With(forms.ParseForm).Post("/login.html", auth.Login)
 		r.With(security.Csrf).Post("/logout.html", auth.Logout)
+		r.With(security.Csrf).With(forms.ParseForm).Post("/delivery.html", pages.DeliverySet)
 
 		r.Route("/account", func(r chi.Router) {
 			r.Use(users.Middleware)

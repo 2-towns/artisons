@@ -7,6 +7,7 @@ import (
 	"artisons/http/contexts"
 	"artisons/notifications/mails"
 	"artisons/products"
+	"artisons/shops"
 	"artisons/stats"
 	"artisons/string/stringutil"
 	"artisons/tracking"
@@ -92,7 +93,12 @@ func IsValidDelivery(ctx context.Context, d string) bool {
 	l := slog.With(slog.String("delivery", d))
 	l.LogAttrs(ctx, slog.LevelInfo, "checking delivery validity")
 
-	if err := validators.V.Var(d, "oneof=collect home"); err != nil {
+	del, err := shops.Deliveries(ctx)
+	if err != nil {
+		return false
+	}
+
+	if err := validators.V.Var(d, "oneof="+strings.Join(del, " ")); err != nil {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
 		return false
 	}

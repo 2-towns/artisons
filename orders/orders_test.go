@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/go-faker/faker/v4"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -111,6 +112,14 @@ func init() {
 
 	db.Redis.HSet(ctx, "order:"+order.ID+":products", "PDT111", 1).Result()
 	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", order.UID), "email", "arnaud@artisons.me").Result()
+
+	db.Redis.ZAdd(ctx, "deliveries", redis.Z{
+		Score:  1,
+		Member: "colissimo",
+	}, redis.Z{
+		Score:  2,
+		Member: "collect",
+	})
 }
 
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {

@@ -1,10 +1,12 @@
 package shops
 
 import (
+	"artisons/db"
 	"artisons/tests"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
+	"github.com/redis/go-redis/v9"
 )
 
 var ra faker.RealAddress = faker.GetRealAddress()
@@ -17,6 +19,15 @@ var shop Contact = Contact{
 	City:    ra.City,
 	Zipcode: ra.PostalCode,
 	Phone:   faker.Phonenumber(),
+}
+
+func init() {
+	ctx := tests.Context()
+
+	db.Redis.ZAdd(ctx, "deliveries", redis.Z{
+		Score:  1,
+		Member: "colissimo",
+	})
 }
 
 func TestSaveReturnErrorWhenNameIsEmpty(t *testing.T) {
@@ -61,4 +72,14 @@ func TestSaveReturnErrorWhenEmailIsInvalid(t *testing.T) {
 	if err == nil || err.Error() != "input:email" {
 		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:email'", err)
 	}
+}
+
+func TestDeliveriesReturnsColissimo(t *testing.T) {
+	ctx := tests.Context()
+
+	del, err := Deliveries(ctx)
+	if err != nil || len(del) == 0 {
+		t.Fatalf(`Deliveries(ctx) = '%v' %v, want []string{"colissimo"}, nil`, del, err)
+	}
+
 }

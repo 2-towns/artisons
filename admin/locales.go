@@ -34,12 +34,6 @@ func init() {
 func EditLocale(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	if err := r.ParseForm(); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-		httperrors.HXCatch(w, ctx, "something went wrong")
-		return
-	}
-
 	v := locales.Value{
 		Key:   r.FormValue("key"),
 		Value: r.FormValue("value"),

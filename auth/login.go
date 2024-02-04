@@ -104,19 +104,13 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		httperrors.Alert(w, ctx, err.Error())
-		return
-	}
-
 	email := r.FormValue("email")
 	if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") && !users.IsAdmin(ctx, email) {
 		httperrors.InputMessage(w, ctx, "input:email")
 		return
 	}
 
-	err = users.Otp(ctx, email)
+	err := users.Otp(ctx, email)
 	if err != nil {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
@@ -135,7 +129,7 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 		CancelURL string
 	}{lang, email, cancelURL}
 
-	if err = otptpl.Execute(w, &data); err != nil {
+	if err := otptpl.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
 	}
 }
@@ -152,12 +146,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("HX-Redirect", "/account/index.html")
 		}
 
-		return
-	}
-
-	err := r.ParseForm()
-	if err != nil {
-		httperrors.Alert(w, ctx, err.Error())
 		return
 	}
 

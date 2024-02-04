@@ -107,6 +107,9 @@ func init() {
 	buildTemplate("hx-input-error", []string{
 		fmt.Sprintf("%s/web/views/input-error.html", conf.WorkingSpace),
 	})
+	buildTemplate("delivery", []string{
+		fmt.Sprintf("%s/web/views/delivery.html", conf.WorkingSpace),
+	})
 }
 
 func Build(name string) *template.Template {

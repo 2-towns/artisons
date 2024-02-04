@@ -25,6 +25,8 @@ SET "blog_next_id" 5
 
 HSET "shop" logo "shops/logo.jpg" active "1" guest "1" name "My Shop" city "Oran" address "Hay Yasmine" zipcode "31244" phone "0559682532" updated_at 1705310389 
 
+ZADD "deliveries" 1 "colissimo" 2 "collect" 
+
 HSET "seo:home" key "home" title "Home Page" description "You can access to multiple products." url "/" updated_at 1705310389 
 HSET "seo:terms" key "terms" title "Terms and conditions" description "Terms" url "terms-and-conditions" updated_at 1705310389 
 HSET "seo:about" key "about" title "About us" description "About" url "about" updated_at 1705310389 

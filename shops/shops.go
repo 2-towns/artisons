@@ -288,3 +288,17 @@ func (s ShopSettings) Save(ctx context.Context) (string, error) {
 
 	return "", nil
 }
+
+func Deliveries(ctx context.Context) ([]string, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "getting deliveries")
+
+	del, err := db.Redis.ZRange(ctx, "deliveries", 0, 999).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
+		return []string{}, errors.New("something went wrong")
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "got deliveries", slog.Int("length", len(del)))
+
+	return del, nil
+}

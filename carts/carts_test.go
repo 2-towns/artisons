@@ -81,15 +81,19 @@ func TestGetReturnsCartWhenSuccess(t *testing.T) {
 
 func TestUpdateDeliveryReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdateDelivery(ctx, "collect"); err != nil {
-		t.Fatalf("cart.UpdateDelivery(ctx,'collect') = %v, want nil", err)
+	ctx = context.WithValue(ctx, contexts.Cart, "123")
+
+	if err := UpdateDelivery(ctx, "collect"); err != nil {
+		t.Fatalf(`cart.UpdateDelivery(ctx, cid, "collect") = %v, want nil`, err)
 	}
 }
 
 func TestUpdateDeliveryWhenDeliveryIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if err := cart.UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf("cart.UpdateDelivery(ctx,'toto') = %v, want unauthorized", err)
+	ctx = context.WithValue(ctx, contexts.Cart, "123")
+
+	if err := UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
+		t.Fatalf(`cart.UpdateDelivery(ctx, cid, "toto") = %v, want unauthorized`, err)
 	}
 }
 

@@ -232,4 +232,6 @@ func LoadEn() {
 	message.SetString(language.English, "Let it empty to generate one automatically.", "Let it empty to generate one automatically.")
 	message.SetString(language.English, "The URL has to be unique.", "The URL has to be unique.")
 	message.SetString(language.English, "Fill with auto generated value.", "Fill with auto generated value.")
+	message.SetString(language.English, "the delivery is invalid", "The delivery is invalid.")
+
 }
