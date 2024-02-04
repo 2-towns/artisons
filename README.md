@@ -25,7 +25,7 @@ Installer [HURL](https://hurl.dev).
 Récupérer les dépendances à l'aide de la commande suivante:
 
 ```sh
-go get
+go install .
 ```
 
 ## Lancer le serveur
