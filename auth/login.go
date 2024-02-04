@@ -190,16 +190,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("HX-Redirect", "/admin/index.html")
 	} else {
 		cid, ok := ctx.Value(contexts.Cart).(string)
-		if !ok || !carts.Exists(ctx, cid) {
+		if ok && carts.Exists(ctx, cid) {
+			if err := carts.Merge(ctx); err != nil {
+				httperrors.HXCatch(w, ctx, err.Error())
+				return
+			}
+		}
+
+		if r.Header.Get("HX-Current-URL") == "/cart.html" {
+			w.Write([]byte(""))
+		} else {
 			w.Header().Set("HX-Redirect", "/account/index.html")
-			return
+			w.Write([]byte(""))
 		}
-
-		if err := carts.Merge(ctx); err != nil {
-			httperrors.HXCatch(w, ctx, err.Error())
-			return
-		}
-
-		w.Header().Set("HX-Redirect", "/account/index.html")
 	}
 }
