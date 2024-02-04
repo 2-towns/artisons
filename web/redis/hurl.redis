@@ -1,11 +1,11 @@
 
-HSET "otp:hello@world.com" otp "111111" 
-HSET "otp:arnaudz@yandex.com" otp "111111" 
+HSET "otp:hello@artisons.me" otp "111111" 
+HSET "otp:arnaud@artisons.me" otp "111111" 
 HSET "otp:merge@artisons.me" otp "111111" 
 
-HSET "user:1" id "1" email "arnaudz@yandex.com" created_at 1705310389  updated_at 1705310389 type "user" role "user"
-HSET "user:2" id "2" email "hello@world.com" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
-HSET "user:3" id "3" email "lock@world.comm" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
+HSET "user:1" id "1" email "arnaud@artisons.me" created_at 1705310389  updated_at 1705310389 type "user" role "user"
+HSET "user:2" id "2" email "hello@artisons.me" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
+HSET "user:3" id "3" email "lock@artisons.me" created_at 1705310389  updated_at 1705310389 type "user" role "admin"
 HSET "user:4" id "4" email "merge@artisons.me" created_at 1705310389  updated_at 1705310389 type "user" role "user"
 SET "user_next_id" 4
 

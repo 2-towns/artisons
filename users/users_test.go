@@ -31,18 +31,9 @@ func init() {
 		"role", "user",
 	)
 
-	db.Redis.HSet(ctx, "user:98",
-		"id", 98,
-		"email", faker.Email(),
-		"created_at", now.Unix(),
-		"updated_at", now.Unix(),
-		"type", "user",
-		"role", "user",
-	)
-
-	db.Redis.HSet(ctx, "user:100",
-		"id", 100,
-		"email", "hello@world.com",
+	db.Redis.HSet(ctx, "user:97",
+		"id", "97",
+		"email", "hello@artisons.me",
 		"created_at", now.Unix(),
 		"updated_at", now.Unix(),
 		"type", "user",
@@ -184,25 +175,25 @@ func TestLoginReturnsErrorWhenEmailOtpIsNotFound(t *testing.T) {
 
 func TestLoginReturnsErrorWhenDeviceIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, uid, err := Login(ctx, "hello@world.com", "otp", "")
+	sid, uid, err := Login(ctx, "hello@artisons.me", "otp", "")
 	if sid != "" || uid != 0 || err == nil || err.Error() != "your are not authorized to access to this page" {
-		t.Fatalf(`Login(ctx, "hello@world.com", "otp", "") = '%s', %d, %v, want '', 0, 'your are not authorized to access to this page'`, sid, uid, err)
+		t.Fatalf(`Login(ctx, "hello@artisons.me", "otp", "") = '%s', %d, %v, want '', 0, 'your are not authorized to access to this page'`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, uid, err := Login(ctx, "hello@world.com", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, "hello@artisons.me", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || uid != 0 || err == nil || err.Error() != "input:otp" {
-		t.Fatalf(`Login(ctx, "hello@world.com", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0") = '%s', %d,%v, want '', 0, 'input:otp'`, sid, uid, err)
+		t.Fatalf(`Login(ctx, "hello@artisons.me", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0") = '%s', %d,%v, want '', 0, 'input:otp'`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	sid, uid, err := Login(ctx, "hello@world.com", "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, "hello@artisons.me", "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
 	if sid != "" || uid != 0 || err == nil {
-		t.Fatalf(`Login(ctx, "hello@world.com", 'titi') = '%s', %d, %v, want '', 0, 'input:otp'`, sid, uid, err)
+		t.Fatalf(`Login(ctx, "hello@artisons.me", 'titi') = '%s', %d, %v, want '', 0, 'input:otp'`, sid, uid, err)
 	}
 }
 
@@ -366,8 +357,8 @@ func TestIsAdminReturnsFalseWhenUserIsNotAdmin(t *testing.T) {
 
 func TestIsAdminReturnsTrueWhenUserIsAdmin(t *testing.T) {
 	ctx := tests.Context()
-	if !IsAdmin(ctx, "hello@world.com") {
-		t.Fatalf("user.IsAdmin(ctx)= false, want true")
+	if !IsAdmin(ctx, "hello@artisons.me") {
+		t.Fatalf("user.IsAdmin(ctx) = false, want true")
 	}
 }
 

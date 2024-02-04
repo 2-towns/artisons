@@ -21,7 +21,6 @@ func init() {
 
 	db.Redis.Del(ctx, "tags")
 	db.Redis.Del(ctx, "tags:root")
-
 	db.Redis.HSet(ctx, "tag:mens", "key", "mens", "image", "tags/1.jpeg", "label", "Mens", "order", "1", "children", "clothes;shoes")
 	db.Redis.HSet(ctx, "tag:womens", "key", "womens", "image", "tags/2.jpeg", "label", "Womens", "order", "2", "children", "clothes;shoes")
 	db.Redis.HSet(ctx, "tag:children", "key", "children", "image", "tags/3.jpeg", "label", "Children", "order", "2")

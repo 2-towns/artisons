@@ -2,7 +2,7 @@
 POST {{host}}/otp.html
 HX-Request: true
 [FormParams]
-email: lock@world.com
+email: lock@artisons.me
 HTTP 200
 [Asserts]
 xpath "//form[@hx-post='/login.html']" exists
@@ -11,7 +11,7 @@ xpath "//form[@hx-post='/login.html']" exists
 POST {{host}}/otp.html
 HX-Request: true
 [FormParams]
-email: lock@world.com
+email: lock@artisons.me
 HTTP 200
 [Asserts]
 body contains "You need to wait before asking another OTP."
@@ -22,7 +22,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-email: lock@world.com
+email: lock@artisons.me
 otp: 1
 otp: 2 
 otp: 3 
@@ -39,7 +39,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-email: lock@world.com
+email: lock@artisons.me
 otp: 1
 otp: 2 
 otp: 3 
@@ -56,7 +56,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-email: lock@world.com
+email: lock@artisons.me
 otp: 1
 otp: 2 
 otp: 3 

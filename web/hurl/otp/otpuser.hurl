@@ -7,7 +7,7 @@ header "Location" == "/otp.html"
 # Returns error when trying to post a non htmx request
 POST {{host}}/otp.html
 [FormParams]
-email: hello@world.com
+email: hello@artisons.me
 HTTP 400
 [Asserts]
 body contains "Your are not authorized to access to this page. This will be reported."
@@ -18,7 +18,7 @@ HX-Current-URL: http://localhost:8080/otp.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-email: arnaudz@yandex.com
+email: arnaud@artisons.me
 otp: 1
 otp: 2 
 otp: 3 
@@ -35,7 +35,7 @@ HX-Current-URL: http://localhost:8080/otp.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-email: arnaudz@yandex.com
+email: arnaud@artisons.me
 otp: 1
 otp: 1
 otp: 1 

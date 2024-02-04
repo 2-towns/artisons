@@ -1,8 +1,7 @@
-SADD admins hello@world.com lock@world.com
+SADD admins hello@artisons.me lock@artisons.me
 HSET "blog:1" id "1" title "Terms and conditions" description "Some description" slug "terms-and-conditions" status "online" type "cms" updated_at 1705310389 
 HSET "blog:2" id "2" title "About us" description "About us" slug "about" status "online" type "cms" updated_at 1705310389 
 SET "blog_next_id" 2
-HSET "bids" "terms-and-conditions" "1" "about" "2"
 HSET "shop" logo "shops/logo.jpg" active "1" guest "1" name "My Shop" city "Oran" address "Hay Yasmine" zipcode "31244" phone "0559682532" updated_at 1705310389 
 HSET "seo:home" key "home" title "Home Page" description "You can access to multiple products." url "/" updated_at 1705310389 
 HSET "seo:wishes" key "wishes" title "Wish Page" description "You can access to multiple products." url "/wishes.html" updated_at 1705310389 

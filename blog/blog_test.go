@@ -5,7 +5,6 @@ import (
 	"artisons/db"
 	"artisons/string/stringutil"
 	"artisons/tests"
-	"os"
 	"path"
 	"testing"
 	"time"
@@ -23,7 +22,6 @@ func init() {
 	ctx := tests.Context()
 	now := time.Now()
 
-	db.Redis.Del(ctx, "blog")
 	db.Redis.HSet(ctx, "blog:99",
 		"id", "99",
 		"title", article.Title,
@@ -36,26 +34,8 @@ func init() {
 		"type", "blog",
 	)
 
-	db.Redis.HSet(ctx, "bids", db.Escape(article.Title), "99")
-
-	db.Redis.HSet(ctx, "blog:98",
-		"id", "98",
-		"title", article.Title,
-		"status", article.Status,
-		"lang", conf.DefaultLocale.String(),
-		"slug", stringutil.Slugify(article.Title+"-bis"),
-		"description", article.Description,
-		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
-		"type", "blog",
-		"updated_at", now.Unix(),
-	)
-
 	db.Redis.HSet(ctx, "blog:97",
 		"id", "97",
-		"title", "Terms of Sales",
-		"status", "online",
-		"lang", conf.DefaultLocale.String(),
-		"description", "Hello !",
 		"type", "cms",
 		"updated_at", now.Unix(),
 	)
@@ -97,8 +77,6 @@ func TestValidReturnsErrorWhenSlugIsEmpty(t *testing.T) {
 func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
-	os.Create(path.Join(conf.WorkingSpace, "web", "tmp", "hello"))
-
 	if err := article.Validate(c); err != nil {
 		t.Fatalf(`a.Validate(c) = %v, want nil`, err.Error())
 	}
@@ -106,6 +84,7 @@ func TestValidateReturnsNilWhenSuccess(t *testing.T) {
 
 func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 	c := tests.Context()
+
 	a, err := Search(c, Query{Keywords: "Mangez de l'ail"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: "Mangez de l'ail"}) = %v, want nil`, err.Error())
@@ -119,7 +98,7 @@ func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(a.Articles))
 	}
 
-	if a.Articles[0].ID == 99 {
+	if a.Articles[0].ID != 99 {
 		t.Fatalf(`p[0].ID = %d, want = 99`, a.Articles[0].ID)
 	}
 }
@@ -139,7 +118,7 @@ func TestSearchReturnsArticlesWhenAtLeastOneMatching(t *testing.T) {
 		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(a.Articles))
 	}
 
-	if a.Articles[0].ID == 99 {
+	if a.Articles[0].ID != 99 {
 		t.Fatalf(`p[0].ID = %d, want = 99`, a.Articles[0].ID)
 	}
 }
@@ -219,9 +198,6 @@ func TestSearchReturnsNoArticleWhenCriteriaDoNotMatch(t *testing.T) {
 
 func TestDeleteReturnNilSuccess(t *testing.T) {
 	c := tests.Context()
-
-	image := path.Join(conf.ImgProxy.Path, "blog", "98")
-	os.Create(image)
 
 	if err := Delete(c, 98); err != nil {
 		t.Fatalf(`a.Delete(c, 98) = %v, want nil`, err.Error())

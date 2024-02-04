@@ -134,7 +134,7 @@ func main() {
 			r.Get("/index.html", pages.Account)
 			r.Get("/address.html", pages.AddressForm)
 			r.With(pages.Paginate).Get("/orders.html", pages.Orders)
-			r.Get("/orders/{id}/detail.html", pages.Orders)
+			r.Get("/orders/{id}/detail.html", pages.Order)
 			r.With(stats.Middleware).Get("/wish.html", pages.Wishes)
 
 			r.With(security.Csrf).Post("/address.html", pages.Address)

@@ -14,7 +14,6 @@ func init() {
 	ctx := tests.Context()
 
 	db.Redis.HSet(ctx, "cart:99", "cid", "CAR99")
-	db.Redis.Expire(ctx, "cart:99", conf.CartDuration)
 
 	db.Redis.HSet(ctx, "product:PDT97",
 		"id", "PDT97",

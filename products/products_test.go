@@ -40,8 +40,6 @@ func init() {
 		"updated_at", now,
 		"type", "product",
 	)
-
-	db.Redis.HSet(ctx, "pids", db.Escape("T-shirt développeur unisexe Tester c'est douter"), "PDT1")
 }
 
 var product = Product{

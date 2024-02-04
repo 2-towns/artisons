@@ -7,7 +7,7 @@ header "Location" == "/sso.html"
 # Returns error when trying to post a non htmx request
 POST {{host}}/otp.html
 [FormParams]
-email: hello@world.com
+email: hello@artisons.me
 HTTP 400
 [Asserts]
 body contains "Your are not authorized to access to this page. This will be reported."
@@ -17,7 +17,7 @@ POST {{host}}/otp.html
 HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 [FormParams]
-email: arnaudz@yandex.com
+email: arnaud@artisons.me
 HTTP 200
 [Asserts]
 body contains "<div class=\"form-error\">The data is invalid.</div>"
@@ -28,7 +28,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-email: hello@world.com
+email: hello@artisons.me
 otp: 1
 otp: 2 
 otp: 3 
@@ -45,7 +45,7 @@ HX-Current-URL: http://localhost:8080/sso.html
 HX-Request: true
 User-Agent: {{ua}}
 [FormParams]
-email: hello@world.com
+email: hello@artisons.me
 otp: 1
 otp: 1
 otp: 1 

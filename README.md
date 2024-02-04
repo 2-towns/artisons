@@ -63,7 +63,7 @@ Afin de pouvoir utiliser la recherche, il faut lancer le script de migration:
 go run console/console.go -file web/redis/migrate.redis redis
 ```
 
-L'admin est accessible à l'adresse suivante: `/admin/index.html`. Un compte utilisateur admin existe avec l'adresse suivante: `hello@world.com`. L'OTP est affiché dans les traces du serveur.
+L'admin est accessible à l'adresse suivante: `/admin/index.html`. Un compte utilisateur admin existe avec l'adresse suivante: `hello@artisons.me`. L'OTP est affiché dans les traces du serveur.
 
 Pour préparer l'environnement pour les tests fonctionnels, il faut lancer: 
 
