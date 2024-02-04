@@ -109,14 +109,14 @@ func main() {
 		r.Mount("/admin", adminRouter())
 
 		r.With(stats.Middleware).Get("/", pages.Home)
-		r.With(stats.Middleware).Get("/blog.html", pages.Blog)
+		r.With(stats.Middleware).With(pages.Paginate).Get("/blog.html", pages.Blog)
 		r.With(stats.Middleware).Get("/blog/{slug}.html", pages.Article)
 		r.With(stats.Middleware).Get(fmt.Sprintf("/%s/{slug}.html", seo.URLs["product"].URL), pages.Product)
 		r.With(stats.Middleware).Get(fmt.Sprintf("/%s.html", seo.URLs["terms"].URL), pages.Static)
 		r.With(stats.Middleware).Get(fmt.Sprintf("/%s.html", seo.URLs["about"].URL), pages.Static)
 		r.With(stats.Middleware).Get(fmt.Sprintf("/%s.html", seo.URLs["categories"].URL), pages.Categories)
 		r.With(stats.Middleware).Get("/addresses.html", pages.Addresses)
-		r.With(stats.Middleware).Get("/search.html", pages.Search)
+		r.With(stats.Middleware).With(pages.Paginate).Get("/search.html", pages.Search)
 		r.With(stats.Middleware).With(users.Middleware).Get("/cart.html", pages.Cart)
 		r.With(users.Middleware).Get("/sso.html", auth.Form)
 		r.With(users.Middleware).With(stats.Middleware).Get("/otp.html", auth.Form)
@@ -133,7 +133,7 @@ func main() {
 
 			r.Get("/index.html", pages.Account)
 			r.Get("/address.html", pages.AddressForm)
-			r.Get("/orders.html", pages.Orders)
+			r.With(pages.Paginate).Get("/orders.html", pages.Orders)
 			r.Get("/orders/{id}/detail.html", pages.Orders)
 			r.With(stats.Middleware).Get("/wish.html", pages.Wishes)
 

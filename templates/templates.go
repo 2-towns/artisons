@@ -12,40 +12,7 @@ import (
 	"slices"
 	"strings"
 	"time"
-
-	"golang.org/x/text/language"
 )
-
-type Pagination struct {
-	// True if the page is the first page in the pagination
-	IsFirst bool
-
-	// True if the page is the lastg page in the pagination
-	IsLast bool
-
-	// Pagination numbers availables
-	Items []int
-
-	// The max page number
-	Max int
-
-	// The current page
-	Page int
-
-	// The URL used to retrieve the previous / next page
-	URL string
-
-	// The corresponding start number of items displayed
-	Start int
-
-	// The corresponding end number of items displayed
-	End int
-
-	// The total items available across all the pages
-	Total int
-
-	Lang language.Tag
-}
 
 type Image struct {
 	Name  string
@@ -185,54 +152,4 @@ func Build(name string) *template.Template {
 			return strings.Replace(seo.URLs[key].URL, "{{id}}", id, 1)
 		},
 	})
-}
-
-// Paginate provides data for pagination template.
-// The page parameter is the current page.
-// The loaded parameter is the number of loaded items returned by Redis.
-// The total is the total items available.
-func Paginate(page int, loaded int, total int) Pagination {
-	items := []int{}
-
-	if page > 2 {
-		items = append(items, page-2)
-	}
-
-	if page > 1 {
-		items = append(items, page-1)
-	}
-
-	items = append(items, page)
-
-	maxp := total / conf.ItemsPerPage
-
-	if total%conf.ItemsPerPage > 0 {
-		maxp++
-	}
-
-	if page+1 <= maxp {
-		items = append(items, page+1)
-	}
-
-	if page+2 <= maxp {
-		items = append(items, page+2)
-	}
-
-	start := (page - 1) * conf.ItemsPerPage
-	end := start + loaded
-
-	if loaded > 0 {
-		start++
-	}
-
-	return Pagination{
-		IsFirst: page == 1,
-		IsLast:  page == maxp,
-		Items:   items,
-		Max:     maxp,
-		Page:    page,
-		Start:   start,
-		End:     end,
-		Total:   total,
-	}
 }

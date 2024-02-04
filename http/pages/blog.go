@@ -5,7 +5,6 @@ import (
 	"artisons/blog"
 	"artisons/http/contexts"
 	"artisons/http/httperrors"
-	"artisons/http/httpext"
 	"artisons/shops"
 	"artisons/tags"
 	"artisons/templates"
@@ -19,7 +18,7 @@ import (
 func Blog(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	p := httpext.Pagination(r)
+	p := ctx.Value(contexts.Pagination).(Paginator)
 
 	query := blog.Query{
 		Keywords: p.Query,
@@ -32,16 +31,14 @@ func Blog(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pag := templates.Paginate(p.Page, len(res.Articles), int(res.Total))
-	pag.URL = "/blog.html"
-	pag.Lang = lang
+	pag := p.Build(ctx, res.Total, len(res.Articles))
 
 	data := struct {
 		Lang       language.Tag
 		Shop       shops.Settings
 		Articles   []blog.Article
 		Empty      bool
-		Pagination templates.Pagination
+		Pagination Pagination
 		Tags       []tags.Leaf
 	}{
 		lang,

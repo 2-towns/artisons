@@ -6,7 +6,6 @@ import (
 	"artisons/http/contexts"
 	"artisons/http/cookies"
 	"artisons/http/httperrors"
-	"artisons/http/httpext"
 	"artisons/http/security"
 	"artisons/templates"
 	"artisons/users"
@@ -67,9 +66,9 @@ func Form(w http.ResponseWriter, r *http.Request) {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
 
 		if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
-			httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+			http.Redirect(w, r, "/admin/index.html", http.StatusFound)
 		} else {
-			httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+			http.Redirect(w, r, "/account/index.html", http.StatusFound)
 		}
 
 		return
@@ -101,7 +100,7 @@ func Otp(w http.ResponseWriter, r *http.Request) {
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
-		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+		w.Header().Set("HX-Redirect", "/admin/index.html")
 		return
 	}
 
@@ -148,9 +147,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "the user is already connected")
 		if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
-			httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+			w.Header().Set("HX-Redirect", "/admin/index.html")
 		} else {
-			httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+			w.Header().Set("HX-Redirect", "/account/index.html")
 		}
 
 		return
@@ -188,11 +187,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 
 	if strings.HasSuffix(r.Header.Get("HX-Current-URL"), "sso.html") {
-		httpext.Redirect(w, r, "/admin/index.html", http.StatusFound)
+		w.Header().Set("HX-Redirect", "/admin/index.html")
 	} else {
 		cid, ok := ctx.Value(contexts.Cart).(string)
 		if !ok || !carts.Exists(ctx, cid) {
-			httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+			w.Header().Set("HX-Redirect", "/account/index.html")
 			return
 		}
 
@@ -201,6 +200,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httpext.Redirect(w, r, "/account/index.html", http.StatusFound)
+		w.Header().Set("HX-Redirect", "/account/index.html")
 	}
 }

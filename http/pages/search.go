@@ -4,7 +4,6 @@ package pages
 import (
 	"artisons/http/contexts"
 	"artisons/http/httperrors"
-	"artisons/http/httpext"
 	"artisons/products"
 	"artisons/shops"
 	"artisons/tags"
@@ -20,6 +19,7 @@ import (
 func Search(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	lang := ctx.Value(contexts.Locale).(language.Tag)
+	p := ctx.Value(contexts.Pagination).(Paginator)
 
 	q := r.URL.Query()
 	var min float32 = 0
@@ -52,7 +52,6 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		Tags:     q["tags"],
 		Meta:     meta,
 	}
-	p := httpext.Pagination(r)
 
 	res, err := products.Search(ctx, query, p.Offset, p.Num)
 	if err != nil {
@@ -60,9 +59,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pag := templates.Paginate(p.Page, len(res.Products), int(res.Total))
-	pag.URL = r.URL.Path
-	pag.Lang = lang
+	pag := p.Build(ctx, res.Total, len(res.Products))
 
 	data := struct {
 		Lang       language.Tag
@@ -70,7 +67,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		Tags       []tags.Leaf
 		Products   []products.Product
 		Empty      bool
-		Pagination templates.Pagination
+		Pagination Pagination
 	}{
 		lang,
 		shops.Data,

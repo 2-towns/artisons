@@ -4,7 +4,6 @@ package pages
 import (
 	"artisons/http/contexts"
 	"artisons/http/httperrors"
-	"artisons/http/httpext"
 	"artisons/orders"
 	"artisons/shops"
 	"artisons/tags"
@@ -22,7 +21,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	user := ctx.Value(contexts.User).(users.User)
 	query := orders.Query{UID: user.ID}
-	p := httpext.Pagination(r)
+	p := ctx.Value(contexts.Pagination).(Paginator)
 
 	res, err := orders.Search(ctx, query, p.Offset, p.Num)
 	if err != nil {
@@ -30,9 +29,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pag := templates.Paginate(p.Page, len(res.Orders), int(res.Total))
-	pag.URL = "/account/orders.html"
-	pag.Lang = lang
+	pag := p.Build(ctx, res.Total, len(res.Orders))
 
 	data := struct {
 		Lang       language.Tag
@@ -40,7 +37,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 		Tags       []tags.Leaf
 		Orders     []orders.Order
 		Empty      bool
-		Pagination templates.Pagination
+		Pagination Pagination
 	}{
 		lang,
 		shops.Data,
