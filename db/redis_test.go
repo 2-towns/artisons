@@ -1,7 +1,7 @@
 package db
 
 import (
-	"artisons/tests"
+	"context"
 	"testing"
 )
 
@@ -41,7 +41,7 @@ func TestSearchValueWhenDoesContainSpace(t *testing.T) {
 }
 
 func TestSplitQueryReturnsStringSplitted(t *testing.T) {
-	ctx := tests.Context()
+	ctx := context.Background()
 	s := "hello \"hello with space\""
 
 	if args, err := SplitQuery(ctx, s); err != nil || len(args) != 2 {

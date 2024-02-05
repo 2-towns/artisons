@@ -93,6 +93,18 @@ func generateDemoData(ctx context.Context) error {
 	return err
 }
 
+func getPrefix(ctx context.Context) string {
+	demo, ok := ctx.Value(contexts.Demo).(bool)
+
+	if demo && ok {
+		slog.LogAttrs(ctx, slog.LevelInfo, "demo is activated")
+		return "demo:"
+	}
+
+	return ""
+
+}
+
 // MostValues returns the most values statistics.
 // The keys available are:
 // - stats:pageviews - the most visited pages
@@ -112,12 +124,10 @@ func generateDemoData(ctx context.Context) error {
 // The product titles of the most sold products and most share are loaded from redis
 // at the end of the function.
 func MostValues(ctx context.Context, days int) ([][]MostValue, error) {
-	prefix := ""
-	demo, ok := ctx.Value(contexts.Demo).(bool)
+	prefix := getPrefix(ctx)
 	values := [][]MostValue{}
 
-	if demo && ok {
-		prefix = "demo:"
+	if prefix == "demo:" {
 		if err := generateDemoData(ctx); err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
 			return values, errors.New("something went wrong")
@@ -133,7 +143,7 @@ func MostValues(ctx context.Context, days int) ([][]MostValue, error) {
 		prefix + "stats:products:shared",
 	}
 
-	l := slog.With(slog.Any("key", keys), slog.Int("days", days), slog.Bool("demo", demo))
+	l := slog.With(slog.Any("key", keys), slog.Int("days", days))
 	l.LogAttrs(ctx, slog.LevelInfo, "get range statistics")
 
 	now := time.Now()
@@ -269,17 +279,15 @@ func GetAll(ctx context.Context, days int) (Data, error) {
 		{Value: []int{}},
 		{Value: []int{}},
 	}
-	prefix := ""
-	demo, ok := ctx.Value(contexts.Demo).(bool)
-	if demo && ok {
-		prefix = "demo:"
+	prefix := getPrefix(ctx)
+	if prefix == "demo:" {
 		if err := generateDemoData(ctx); err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot get most values", slog.String("error", err.Error()))
 			return values, errors.New("something went wrong")
 		}
 	}
 
-	l := slog.With(slog.Int("days", days), slog.Bool("demo", demo))
+	l := slog.With(slog.Int("days", days))
 	l.LogAttrs(ctx, slog.LevelInfo, "get all statistics")
 
 	now := time.Now()
@@ -374,37 +382,39 @@ func Visit(ctx context.Context, ua useragent.UserAgent, data VisitData) error {
 
 	r := referer.Parse(data.Referer)
 
+	prefix := getPrefix(ctx)
+
 	if r.Referer != "" {
-		pipe.Incr(ctx, "stats:visits:"+now)
+		pipe.Incr(ctx, prefix+"stats:visits:"+now)
 
 		l.LogAttrs(ctx, slog.LevelInfo, "visits stat added to pipe")
 
 		r := referer.Parse(data.Referer)
-		pipe.ZIncrBy(ctx, "stats:referers:"+now, 1, r.Referer)
+		pipe.ZIncrBy(ctx, prefix+"stats:referers:"+now, 1, r.Referer)
 		l.LogAttrs(ctx, slog.LevelInfo, "referer stat added to pipe", slog.String("referer", r.Referer))
 	}
 
-	pipe.ZIncrBy(ctx, "stats:pageviews:"+now, 1, data.URL)
+	pipe.ZIncrBy(ctx, prefix+"stats:pageviews:"+now, 1, data.URL)
 	l.LogAttrs(ctx, slog.LevelInfo, "pageviews stat added to pipe", slog.String("url", data.URL))
 
 	if ua.Name != "" {
-		pipe.ZIncrBy(ctx, "stats:browsers:"+now, 1, ua.Name)
+		pipe.ZIncrBy(ctx, prefix+"stats:browsers:"+now, 1, ua.Name)
 		l.LogAttrs(ctx, slog.LevelInfo, "browsers stat added to pipe", slog.String("browser", ua.Name))
 	}
 
 	if ua.OS != "" {
-		pipe.ZIncrBy(ctx, "stats:systems:"+now, 1, ua.Name)
+		pipe.ZIncrBy(ctx, prefix+"stats:systems:"+now, 1, ua.Name)
 		l.LogAttrs(ctx, slog.LevelInfo, "systems stat added to pipe", slog.String("system", ua.OS))
 	}
 
 	if !hasVisited {
-		pipe.Incr(ctx, "stats:visits:unique:"+now)
-		pipe.SAdd(ctx, "stats:visits:members:"+now, did)
-		pipe.Expire(ctx, "stats:visits:members:"+now, time.Hour*24)
+		pipe.Incr(ctx, prefix+"stats:visits:unique:"+now)
+		pipe.SAdd(ctx, prefix+"stats:visits:members:"+now, did)
+		pipe.Expire(ctx, prefix+"stats:visits:members:"+now, time.Hour*24)
 		l.LogAttrs(ctx, slog.LevelInfo, "unique visite stat added to pipe", slog.String("cid", did))
 	}
 
-	pipe.Incr(ctx, "stats:pageviews:all:"+now)
+	pipe.Incr(ctx, prefix+"stats:pageviews:all:"+now)
 	l.LogAttrs(ctx, slog.LevelInfo, "pageview stats added to pipe")
 
 	_, err = pipe.Exec(ctx)

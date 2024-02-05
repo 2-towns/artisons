@@ -2,9 +2,7 @@ package users
 
 import (
 	"artisons/conf"
-	"artisons/db"
 	"artisons/tests"
-	"fmt"
 	"testing"
 	"time"
 
@@ -12,38 +10,9 @@ import (
 )
 
 var user User = User{
-	ID:    99,
-	SID:   "SES99",
-	Email: faker.Email(),
-}
-
-func init() {
-	ctx := tests.Context()
-
-	now := time.Now()
-
-	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", user.ID),
-		"id", user.ID,
-		"email", user.Email,
-		"created_at", now.Unix(),
-		"updated_at", now.Unix(),
-		"type", "user",
-		"role", "user",
-	)
-
-	db.Redis.HSet(ctx, "user:97",
-		"id", "97",
-		"email", "hello@artisons.me",
-		"created_at", now.Unix(),
-		"updated_at", now.Unix(),
-		"type", "user",
-		"role", "admin",
-	)
-
-	db.Redis.HSet(ctx, "session:"+user.SID, "id", user.SID, "uid", user.ID, "device", "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0", "type", "session")
-	db.Redis.Expire(ctx, "session:"+user.SID, conf.SessionDuration)
-	db.Redis.HSet(ctx, "session:will-logout", "id", "will-logout", "uid", "1", "type", "session")
-	db.Redis.Expire(ctx, "session:will-logout", conf.SessionDuration)
+	ID:    tests.UserID1,
+	SID:   tests.UserSID,
+	Email: tests.UserEmail,
 }
 
 var ra faker.RealAddress = faker.GetRealAddress()
@@ -84,17 +53,17 @@ func TestOtpCodeReturnsErrorWhenEmailIsEmpty(t *testing.T) {
 
 func TestOtpCodeReturnsErrorWhenEmailIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	err := Otp(ctx, "toto")
+	err := Otp(ctx, tests.DoesNotExist)
 	if err == nil || err.Error() != "input:email" {
-		t.Fatalf("OtpCode(ctx, 'toto') = %v, want input:email", err)
+		t.Fatalf("OtpCode(ctx, tests.DoesNotExist) = %v, want input:email", err)
 	}
 }
 
 func TestDeleteReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	err := User{ID: 2}.Delete(ctx)
+	err := User{ID: tests.UserToDeleteID}.Delete(ctx)
 	if err != nil {
-		t.Fatalf("User{ID: 2}.Delete(ctx) = %v, want nil", err)
+		t.Fatalf("User{ID: test.UserToDeleteID}.Delete(ctx) = %v, want nil", err)
 	}
 }
 
@@ -109,98 +78,76 @@ func TestDeleteReturnsErrorWhenUserDoesNotExist(t *testing.T) {
 func TestLoginReturnsSidWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	otp := "hello-world"
-
-	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 0)
-	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
-
-	sid, uid, err := Login(ctx, "hellow@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, tests.AdminEmail, tests.Otp, tests.UA)
 	if sid == "" || uid == 0 || err != nil {
-		t.Fatalf(`Login(ctx, "hellow@world.com", "hello-world", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s',%d,  %v, want string, int, nil`, sid, uid, err)
+		t.Fatalf(`Login(ctx, tests.AdminEmail,  tests.Otp, tests.UA) = '%s',%d,  %v, want string, int, nil`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenEmailIsEmpty(t *testing.T) {
 	ctx := tests.Context()
 
-	otp := "hello-world"
-
-	sid, uid, err := Login(ctx, "", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, "", tests.Otp, tests.UA)
 	if sid != "" || uid != 0 || err == nil || err.Error() != "input:email" {
-		t.Fatalf(`Login(ctx, "", otp, 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %d, %v, want '', 0, nil`, sid, uid, err)
+		t.Fatalf(`Login(ctx, "", tests.Otp, tests.UA) = '%s', %d, %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpDoesNotMatch(t *testing.T) {
 	ctx := tests.Context()
 
-	otp := "hello-world"
-
-	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 0)
-	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
-
-	sid, uid, err := Login(ctx, "hellow@world.com", "hello", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, tests.OtpNotMatching, "123457", tests.UA)
 	if sid != "" || uid != 0 || err == nil || err.Error() != "the OTP does not match" {
-		t.Fatalf(`Login(ctx, "hellow@world.com", "hello", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s',%d, %v, want '', 0, nil`, sid, uid, err)
+		t.Fatalf(`Login(ctx, tests.OtpNotMatching, "123457", tests.UA) = '%s',%d, %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpIsBlocked(t *testing.T) {
 	ctx := tests.Context()
 
-	otp := "hello-world"
-
-	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 2)
-	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
-
-	sid, uid, err := Login(ctx, "hellow@world.com", "hello", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, tests.AdminBlockedEmail, "1234567", tests.UA)
 	if sid != "" || uid != 0 || err == nil || err.Error() != "you reached the max tentatives" {
-		t.Fatalf(`Login(ctx, "hellow@world.com", "hello", 'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s', %d, %v, want '', 0, nil`, sid, uid, err)
+		t.Fatalf(`Login(ctx, tests.AdminBlockedEmail, "1234567", tests.UA) = '%s', %d, %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenEmailOtpIsNotFound(t *testing.T) {
 	ctx := tests.Context()
 
-	otp := "hello-world"
-
-	db.Redis.HSet(ctx, "otp:hellow@world.com", "otp", otp, "attempts", 0)
-	db.Redis.Expire(ctx, "otp:hellow@world.com", conf.SessionDuration)
-
-	sid, uid, err := Login(ctx, "crazy@world.com", otp, "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, tests.EmailDoesNotExist, tests.Otp, tests.UA)
 	if sid != "" || uid != 0 || err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf(`Login(ctx, "crazy@world.com", "hello-world",  'Mozilla/5.0 Gecko/20100101 Firefox/115.0') = '%s',%d,  %v, want '', 0, nil`, sid, uid, err)
+		t.Fatalf(`Login(ctx, tests.EmailDoesNotExist, tests.Otp,  tests.UA) = '%s',%d,  %v, want '', 0, nil`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenDeviceIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, uid, err := Login(ctx, "hello@artisons.me", "otp", "")
+	sid, uid, err := Login(ctx, tests.AdminEmail, tests.Otp, "")
 	if sid != "" || uid != 0 || err == nil || err.Error() != "your are not authorized to access to this page" {
-		t.Fatalf(`Login(ctx, "hello@artisons.me", "otp", "") = '%s', %d, %v, want '', 0, 'your are not authorized to access to this page'`, sid, uid, err)
+		t.Fatalf(`Login(ctx, tests.AdminEmail, tests.Otp, "") = '%s', %d, %v, want '', 0, 'your are not authorized to access to this page'`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpIsMissing(t *testing.T) {
 	ctx := tests.Context()
-	sid, uid, err := Login(ctx, "hello@artisons.me", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, tests.AdminEmail, "", tests.UA)
 	if sid != "" || uid != 0 || err == nil || err.Error() != "input:otp" {
-		t.Fatalf(`Login(ctx, "hello@artisons.me", "", "Mozilla/5.0 Gecko/20100101 Firefox/115.0") = '%s', %d,%v, want '', 0, 'input:otp'`, sid, uid, err)
+		t.Fatalf(`Login(ctx, tests.AdminEmail, "", tests.UA) = '%s', %d,%v, want '', 0, 'input:otp'`, sid, uid, err)
 	}
 }
 
 func TestLoginReturnsErrorWhenOtpDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	sid, uid, err := Login(ctx, "hello@artisons.me", "titi", "Mozilla/5.0 Gecko/20100101 Firefox/115.0")
+	sid, uid, err := Login(ctx, tests.AdminEmail, tests.DoesNotExist, tests.UA)
 	if sid != "" || uid != 0 || err == nil {
-		t.Fatalf(`Login(ctx, "hello@artisons.me", 'titi') = '%s', %d, %v, want '', 0, 'input:otp'`, sid, uid, err)
+		t.Fatalf(`Login(ctx, tests.AdminEmail, tests.DoesNotExist) = '%s', %d, %v, want '', 0, 'input:otp'`, sid, uid, err)
 	}
 }
 
 func TestLogoutRetunsEmptyWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 
-	err := User{SID: "will-logout"}.Logout(ctx)
+	err := User{SID: tests.UserSIDSignedIn}.Logout(ctx)
 	if err != nil {
 		t.Fatalf("Logout(ctx, u.SID) = %v, want nil", err)
 	}
@@ -216,17 +163,9 @@ func TestLogoutRetunsErrorWhenSidIsMissing(t *testing.T) {
 
 func TestLogoutRetunsErrorWhenSessionDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	err := User{SID: "iamnotexisting"}.Logout(ctx)
+	err := User{SID: tests.DoesNotExist}.Logout(ctx)
 	if err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf(`Logout(ctx, "iamnotexisting") = %v, want 'you are not authorized to process this request'`, err)
-	}
-}
-
-func TestLogoutRetunsErrorWhenSessionIsNotFound(t *testing.T) {
-	ctx := tests.Context()
-	err := User{SID: "122"}.Logout(ctx)
-	if err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf("Logout(ctx, 124, '122') = %v, want nil", err)
+		t.Fatalf(`Logout(ctx, tests.DoesNotExist) = %v, want 'you are not authorized to process this request'`, err)
 	}
 }
 
@@ -341,9 +280,9 @@ func TestGetReturnsErrorWhenIdIsEmpty(t *testing.T) {
 
 func TestGetReturnsErrorWhenUserDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	user, err := FindByUID(ctx, 123)
+	user, err := FindByUID(ctx, tests.IDDoesNotExist)
 	if err == nil || err.Error() != "the user is not found" || user.ID != 0 {
-		t.Fatalf("users.Get(ctx, 0) = %v, %v, want User{}, 'the user is not found'", user, err)
+		t.Fatalf("users.Get(ctx, tests.IDDoesNotExist) = %v, %v, want User{}, 'the user is not found'", user, err)
 	}
 }
 
@@ -357,8 +296,8 @@ func TestIsAdminReturnsFalseWhenUserIsNotAdmin(t *testing.T) {
 
 func TestIsAdminReturnsTrueWhenUserIsAdmin(t *testing.T) {
 	ctx := tests.Context()
-	if !IsAdmin(ctx, "hello@artisons.me") {
-		t.Fatalf("user.IsAdmin(ctx) = false, want true")
+	if !IsAdmin(ctx, tests.AdminEmail) {
+		t.Fatalf("user.IsAdmin(ctx, tests.AdminEmail) = false, want true")
 	}
 }
 
@@ -404,9 +343,9 @@ func TestSearchReturnsUserWhenEmailAndRoleching(t *testing.T) {
 
 func TestSearchReturnsNoUserWhenNoMatching(t *testing.T) {
 	c := tests.Context()
-	a, err := Search(c, Query{Email: "crazy@world.com"}, 0, 10)
+	a, err := Search(c, Query{Email: tests.EmailDoesNotExist}, 0, 10)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{Keywords: ""crazy world"}) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{Keywords: tests.EmailDoesNotExist}) = %v, want nil`, err.Error())
 	}
 
 	if a.Total > 0 {
@@ -420,16 +359,14 @@ func TestSearchReturnsNoUserWhenNoMatching(t *testing.T) {
 
 func TestRefreshSessionReturnsNilWhenOK(t *testing.T) {
 	ctx := tests.Context()
-	u := User{SID: "crazy"}
-
-	db.Redis.Expire(ctx, "session:crazy", 10)
+	u := User{SID: tests.UserRefreshSID}
 
 	if err := u.RefreshSession(ctx); err != nil {
 		t.Fatalf("u.RefreshSession(ctx) = %s, want nil", err.Error())
 	}
 
-	ttl, err := db.Redis.TTL(ctx, "session:crazy").Result()
-	if ttl >= conf.SessionDuration || err != nil {
-		t.Fatalf(`db.Redis.TTL(ctx,"session:crazy") = %d, %v, want %d, nil`, ttl, err, conf.SessionDuration)
+	ttl := tests.TTL(ctx, "session:"+tests.UserRefreshSID)
+	if ttl <= time.Minute {
+		t.Fatalf(`ttl = %d want %d`, ttl, conf.SessionDuration)
 	}
 }

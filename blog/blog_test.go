@@ -1,44 +1,15 @@
 package blog
 
 import (
-	"artisons/conf"
-	"artisons/db"
-	"artisons/string/stringutil"
 	"artisons/tests"
-	"path"
 	"testing"
-	"time"
 )
 
 var article Article = Article{
-	Title:       "Mangez de l'ail !",
-	Description: "C'est un antiseptique.",
-	Slug:        db.Escape("Mangez de l'ail !"),
-	Image:       path.Join(conf.WorkingSpace, "web", "tmp", "hello"),
+	Title:       tests.ArticleTitle,
+	Description: tests.ArticleDescription,
+	Slug:        tests.ArticleSlug,
 	Status:      "online",
-}
-
-func init() {
-	ctx := tests.Context()
-	now := time.Now()
-
-	db.Redis.HSet(ctx, "blog:99",
-		"id", "99",
-		"title", article.Title,
-		"status", article.Status,
-		"slug", stringutil.Slugify(db.Escape(article.Title)),
-		"lang", conf.DefaultLocale.String(),
-		"description", article.Description,
-		"image", path.Join(conf.WorkingSpace, "web", "images", "blog", "99.jpeg"),
-		"updated_at", now.Unix(),
-		"type", "blog",
-	)
-
-	db.Redis.HSet(ctx, "blog:97",
-		"id", "97",
-		"type", "cms",
-		"updated_at", now.Unix(),
-	)
 }
 
 func TestValidateReturnsErrorWhenTitleIsEmpty(t *testing.T) {
@@ -98,13 +69,14 @@ func TestSearchReturnsArticlesWhenTitleIsFound(t *testing.T) {
 		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(a.Articles))
 	}
 
-	if a.Articles[0].ID != 99 {
-		t.Fatalf(`p[0].ID = %d, want = 99`, a.Articles[0].ID)
+	if a.Articles[0].ID != tests.ArticleID {
+		t.Fatalf(`p[0].ID = %d, want = tests.ArticleID`, a.Articles[0].ID)
 	}
 }
 
 func TestSearchReturnsArticlesWhenAtLeastOneMatching(t *testing.T) {
 	c := tests.Context()
+
 	a, err := Search(c, Query{Keywords: "hello ail"}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keywords: ""hello ail"}) = %v, want nil`, err.Error())
@@ -118,8 +90,8 @@ func TestSearchReturnsArticlesWhenAtLeastOneMatching(t *testing.T) {
 		t.Fatalf(`len(p.Articles) = %d, want > 0`, len(a.Articles))
 	}
 
-	if a.Articles[0].ID != 99 {
-		t.Fatalf(`p[0].ID = %d, want = 99`, a.Articles[0].ID)
+	if a.Articles[0].ID != tests.ArticleID {
+		t.Fatalf(`p[0].ID = %d, want = tests.ArticleID`, a.Articles[0].ID)
 	}
 }
 
@@ -161,7 +133,7 @@ func TestSearchReturnsArticlesWhenDescriptionIsFound(t *testing.T) {
 
 func TestSearchReturnsArticleWhenSlugIsFound(t *testing.T) {
 	c := tests.Context()
-	slug := stringutil.Slugify(db.Escape(article.Title))
+	slug := article.Slug
 	a, err := Search(c, Query{Slug: slug}, 0, 10)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Slug: slug}) = %v, want nil`, err.Error())
@@ -213,9 +185,9 @@ func TestFindReturnsErrorWhenIdsMissing(t *testing.T) {
 
 func TestFindReturnsArticleWhenSuccess(t *testing.T) {
 	c := tests.Context()
-	p, err := Find(c, 99)
+	p, err := Find(c, tests.ArticleID)
 	if err != nil {
-		t.Fatalf(`Find(c, "99") = %v, want nil`, err.Error())
+		t.Fatalf(`Find(c, tests.ArticleID) = %v, want nil`, err.Error())
 	}
 
 	if p.Title == "" {
@@ -238,15 +210,15 @@ func TestFindReturnsArticleWhenSuccess(t *testing.T) {
 func TestDeletableReturnsFalseWhenTypeIsCms(t *testing.T) {
 	c := tests.Context()
 
-	if deletable, err := Deletable(c, 97); deletable || err != nil {
-		t.Fatalf(`Deletable(c, 97) = %v, %v, want false', nil`, deletable, err)
+	if deletable, err := Deletable(c, tests.ArticleCmsID); deletable || err != nil {
+		t.Fatalf(`Deletable(c, tests.ArticleCmsID) = %v, %v, want false', nil`, deletable, err)
 	}
 }
 
 func TestDeletableReturnsFalseWhenTypeIsBlog(t *testing.T) {
 	c := tests.Context()
 
-	if deletable, err := Deletable(c, 99); !deletable || err != nil {
-		t.Fatalf(`Deletable(c, c) = %v, %v, want true', nil`, !deletable, err)
+	if deletable, err := Deletable(c, tests.ArticleID); !deletable || err != nil {
+		t.Fatalf(`Deletable(c, tests.ArticleID) = %v, %v, want true', nil`, !deletable, err)
 	}
 }

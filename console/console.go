@@ -17,54 +17,10 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 
 	"golang.org/x/text/message"
 )
-
-func parseRedisFile(ctx context.Context, file string) [][]interface{} {
-	f, err := os.ReadFile(file)
-	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot open the file", slog.String("error", err.Error()))
-		log.Fatal(err)
-
-	}
-
-	cmds := strings.Split(string(f), "\n")
-	lines := [][]interface{}{}
-
-	for _, line := range cmds {
-		if line == "" {
-			continue
-		}
-
-		args := []interface{}{}
-
-		r := csv.NewReader(strings.NewReader(line))
-		r.Comma = ' '
-		fields, err := r.Read()
-
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "error when parsing line", slog.String("line", line), slog.String("error", err.Error()))
-			log.Fatalln(err)
-		}
-
-		for _, val := range fields {
-			if val != "" {
-				args = append(args, val)
-			}
-		}
-
-		if strings.Contains(line, "updated_at") && !strings.Contains(line, "FT.CREATE") {
-			args = append(args, "updated_at", time.Now().Unix())
-		}
-
-		lines = append(lines, args)
-	}
-
-	return lines
-}
 
 func main() {
 	logs.Init()
@@ -116,11 +72,11 @@ func main() {
 
 			flag.Parse()
 
-			lines := parseRedisFile(ctx, *file)
+			lines := db.ParseData(ctx, *file)
 			pipe := db.Redis.Pipeline()
 
 			for _, line := range lines {
-				pipe.Do(ctx, line...).Result()
+				pipe.Do(ctx, line...)
 			}
 
 			_, err := pipe.Exec(ctx)

@@ -182,7 +182,18 @@ func BlogDelete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := ctx.Value(contexts.ID).(int)
 
-	err := blog.Delete(ctx, id)
+	b, err := blog.Deletable(ctx, id)
+	if err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	if !b {
+		httperrors.HXCatch(w, ctx, "you are not authorized to process this request")
+		return
+	}
+
+	err = blog.Delete(ctx, id)
 	if err != nil {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return

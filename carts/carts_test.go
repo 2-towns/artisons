@@ -1,35 +1,23 @@
 package carts
 
 import (
-	"artisons/conf"
-	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/string/stringutil"
 	"artisons/tests"
 	"context"
+	"fmt"
 	"testing"
 )
 
-func init() {
-	ctx := tests.Context()
-
-	db.Redis.HSet(ctx, "cart:99", "cid", "CAR99")
-
-	db.Redis.HSet(ctx, "product:PDT97",
-		"id", "PDT97",
-		"status", "online",
-	)
-}
-
-var cart Cart = Cart{ID: "99"}
+var cart Cart = Cart{ID: tests.CartID}
 
 func TestAddReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
 	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
 	quantity := 1
 
-	if _, err := Add(ctx, "PDT97", quantity); err != nil {
-		t.Fatalf(`Add(ctx, "PDT97", quantity), %v, want nil, error`, err)
+	if _, err := Add(ctx, tests.CartProductID, quantity); err != nil {
+		t.Fatalf(`Add(ctx, tests.CartProductID, quantity), %v, want nil, error`, err)
 	}
 }
 
@@ -37,8 +25,8 @@ func TestAddReturnsSuccessWhenCidDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 	quantity := 1
 
-	if cid, err := Add(ctx, "PDT97", quantity); cid == "" || err != nil {
-		t.Fatalf(`Add(ctx, "PDT97", quantity), %v, want nil, error`, err)
+	if cid, err := Add(ctx, tests.CartProductID, quantity); cid == "" || err != nil {
+		t.Fatalf(`Add(ctx, tests.CartProductID, quantity), %v, want nil, error`, err)
 	}
 }
 
@@ -54,7 +42,7 @@ func TestAddReturnsErrorWhenPidIsInvalid(t *testing.T) {
 
 func TestRefreshCIDReturnsCidWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	cid, err := RefreshCID(ctx, "CAR99")
+	cid, err := RefreshCID(ctx, tests.CartID)
 	if cid == "" || err != nil {
 		t.Fatalf("UpdateCID(ctx, '') = %s, %v, not want ', error", cid, err)
 	}
@@ -81,7 +69,7 @@ func TestGetReturnsCartWhenSuccess(t *testing.T) {
 
 func TestUpdateDeliveryReturnsNilWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "123")
+	ctx = context.WithValue(ctx, contexts.Cart, tests.CartID)
 
 	if err := UpdateDelivery(ctx, "collect"); err != nil {
 		t.Fatalf(`cart.UpdateDelivery(ctx, cid, "collect") = %v, want nil`, err)
@@ -90,7 +78,7 @@ func TestUpdateDeliveryReturnsNilWhenSuccess(t *testing.T) {
 
 func TestUpdateDeliveryWhenDeliveryIsInvalid(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "123")
+	ctx = context.WithValue(ctx, contexts.Cart, tests.CartID)
 
 	if err := UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
 		t.Fatalf(`cart.UpdateDelivery(ctx, cid, "toto") = %v, want unauthorized`, err)
@@ -113,21 +101,21 @@ func TestUpdatePaymentReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 
 func TestGetIDReturnsUserIDWhenTheUserIsSignedIn(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.UserID, 123)
+	ctx = context.WithValue(ctx, contexts.UserID, tests.UserID1)
 
 	cid, err := GetCID(ctx)
-	if err != nil || cid != "123" {
-		t.Fatalf(" getCID(ctx) = %s, %v, want '123', nil", cid, err)
+	if err != nil || cid != fmt.Sprintf("%d", tests.UserID1) {
+		t.Fatalf(" getCID(ctx) = %s, %v, want '%s', nil", cid, err, tests.CartID)
 	}
 }
 
 func TestGetIDReturnsCartIDWhenTheUserIsNotSignedIn(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "1221XLS")
+	ctx = context.WithValue(ctx, contexts.Cart, tests.CartID)
 
 	cid, err := GetCID(ctx)
-	if err != nil || cid != "1221XLS" {
-		t.Fatalf(" getCID(ctx) = %s, %v, want '1221XLS', nil", cid, err)
+	if err != nil || cid != tests.CartID {
+		t.Fatalf(" getCID(ctx) = %s, %v, want '%s', nil", cid, err, tests.CartID)
 	}
 }
 
@@ -136,13 +124,13 @@ func TestDeleteReturnsNilWhenQuantityIsLowerThanTheCart(t *testing.T) {
 	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
 	quantity := 1
 
-	db.Redis.HSet(ctx, "cart:"+cart.ID, "abc", 2).Result()
+	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
 
-	if err := Delete(ctx, "abc", quantity); err != nil {
-		t.Fatalf(`Delete(ctx, "abc", quantity) = %v, want nil`, err)
+	if err := Delete(ctx, tests.ProductID1, quantity); err != nil {
+		t.Fatalf(`Delete(ctx, tests.ProductID1, quantity) = %v, want nil`, err)
 	}
 
-	qty, _ := db.Redis.HGet(ctx, "cart:"+cart.ID, "abc").Result()
+	qty := tests.Quantity(ctx, cart.ID, tests.ProductID1)
 
 	if qty != "1" {
 		t.Fatalf(`qty = %s, want '1'`, qty)
@@ -154,13 +142,13 @@ func TestDeleteReturnsNilWhenQuantityIsSameThanTheCart(t *testing.T) {
 	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
 	quantity := 2
 
-	db.Redis.HSet(ctx, "cart:"+cart.ID, "abc", 2).Result()
+	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
 
-	if err := Delete(ctx, "abc", quantity); err != nil {
-		t.Fatalf(`Delete(ctx, "abc", quantity) = %v, want nil`, err)
+	if err := Delete(ctx, tests.ProductID1, quantity); err != nil {
+		t.Fatalf(`Delete(ctx, tests.ProductID1, quantity) = %v, want nil`, err)
 	}
 
-	qty, _ := db.Redis.HGet(ctx, "cart:"+cart.ID, "abc").Result()
+	qty := tests.Quantity(ctx, cart.ID, tests.ProductID1)
 
 	if qty != "" {
 		t.Fatalf(`qty = %s, want ''`, qty)
@@ -172,13 +160,13 @@ func TestDeleteReturnsNilWhenQuantityIsMoreThanTheCart(t *testing.T) {
 	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
 	quantity := 3
 
-	db.Redis.HSet(ctx, "cart:"+cart.ID, "abc", 2).Result()
+	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
 
-	if err := Delete(ctx, "abc", quantity); err != nil {
-		t.Fatalf(`Delete(ctx, "abc", quantity) = %v, want nil`, err)
+	if err := Delete(ctx, tests.ProductID1, quantity); err != nil {
+		t.Fatalf(`Delete(ctx, tests.ProductID1, quantity) = %v, want nil`, err)
 	}
 
-	qty, _ := db.Redis.HGet(ctx, "cart:"+cart.ID, "abc").Result()
+	qty := tests.Quantity(ctx, cart.ID, tests.ProductID1)
 
 	if qty != "" {
 		t.Fatalf(`qty = %s, want ''`, qty)
@@ -196,54 +184,44 @@ func TestMergeReturnsErrorWhenUserIdDoesNotExist(t *testing.T) {
 
 func TestMergeReturnsErrorWhenCartIdDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.UserID, 1)
-	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
+	ctx = context.WithValue(ctx, contexts.UserID, tests.UserID1)
+	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
+	ucart := fmt.Sprintf("%d", tests.UserID1)
 
-	db.Redis.HSet(ctx, "cart:CAR1", "PDT1", "2")
-	db.Redis.HSet(ctx, "cart:CAR1", "PDT2", "1")
-	db.Redis.HSet(ctx, "cart:1", "PDT1", "1")
-	db.Redis.HSet(ctx, "cart:1", "PDT2", "")
+	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
+	tests.AddToCart(ctx, cart.ID, tests.ProductID2, "1")
+	tests.AddToCart(ctx, ucart, tests.ProductID1, "1")
+	tests.AddToCart(ctx, ucart, tests.ProductID2, "")
 
 	if err := Merge(ctx); err != nil {
 		t.Fatalf(`Merge(ctx) = %v, want nil`, err)
 	}
 
-	val, _ := db.Redis.HGetAll(ctx, "cart:1").Result()
-
-	if val["PDT1"] != "3" {
-		t.Fatalf(`val["PDT1"] = %s, want '3'`, val["PDT1"])
+	qty1 := tests.Quantity(ctx, ucart, tests.ProductID1)
+	if qty1 != "3" {
+		t.Fatalf(`qty1 = %s, want '3'`, qty1)
 	}
 
-	if val["PDT2"] != "1" {
-		t.Fatalf(`val["PDT2"] = %s, want '1'`, val["PDT2"])
+	qty2 := tests.Quantity(ctx, ucart, tests.ProductID2)
+	if qty2 != "1" {
+		t.Fatalf(`qty2 = %s, want '1'`, qty2)
 	}
 }
 
 func TestExistsReturnsFalseWhenTheCartNotInContext(t *testing.T) {
 	ctx := tests.Context()
 
-	if res := Exists(ctx, "crazy"); res {
-		t.Fatalf(`Exists(ctx, "crazy") = true, want false`)
-	}
-}
-
-func TestExistsReturnsFalseWhenTheCartDoesNotExist(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
-
-	if res := Exists(ctx, "CAR1"); res {
-		t.Fatalf(`Exists(ctx, "CAR1") = true, want false`)
+	if res := Exists(ctx, tests.CartID); res {
+		t.Fatalf(`Exists(ctx, tests.DoesNotExist) = true, want false`)
 	}
 }
 
 func TestExistsReturnsTrueWhenTheCartExists(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, "CAR1")
 
-	db.Redis.HSet(ctx, "cart:CAR1", "PDT1", "1")
-	db.Redis.Expire(ctx, "cart:CAR1", conf.CartDuration)
+	tests.AddToCart(ctx, tests.CartID, tests.ProductID1, "1")
 
-	if res := Exists(ctx, "CAR1"); !res {
-		t.Fatalf(`Exists(ctx, "CAR1") = false, want true`)
+	if res := Exists(ctx, tests.CartID); !res {
+		t.Fatalf(`Exists(ctx, tests.CartID,) = false, want true`)
 	}
 }

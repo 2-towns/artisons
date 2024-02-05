@@ -6,9 +6,12 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
+	"log"
 	"log/slog"
+	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -90,6 +93,47 @@ func SplitQuery(ctx context.Context, s string) ([]interface{}, error) {
 	}
 
 	return args, nil
+}
+
+func ParseData(ctx context.Context, file string) [][]interface{} {
+	f, err := os.ReadFile(file)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot open the file", slog.String("error", err.Error()))
+		log.Fatal(err)
+	}
+
+	cmds := strings.Split(string(f), "\n")
+	lines := [][]interface{}{}
+
+	for _, line := range cmds {
+		if line == "" {
+			continue
+		}
+
+		args := []interface{}{}
+
+		l := strings.Replace(line, "20060102", time.Now().Format("20060102"), -1)
+		l = strings.Replace(l, "1136160000", fmt.Sprintf("%d", time.Now().Unix()), -1)
+
+		r := csv.NewReader(strings.NewReader(l))
+		r.Comma = ' '
+		fields, err := r.Read()
+
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "error when parsing line", slog.String("line", line), slog.String("error", err.Error()))
+			log.Fatalln(err)
+		}
+
+		for _, val := range fields {
+			if val != "" {
+				args = append(args, val)
+			}
+		}
+
+		lines = append(lines, args)
+	}
+
+	return lines
 }
 
 /*func SubscribeToExpireKeys() {

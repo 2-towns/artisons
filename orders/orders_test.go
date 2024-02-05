@@ -2,7 +2,6 @@ package orders
 
 import (
 	"artisons/conf"
-	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/products"
 	"artisons/string/stringutil"
@@ -10,27 +9,25 @@ import (
 	"artisons/users"
 	"context"
 	"fmt"
-	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/go-faker/faker/v4"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
 var order Order = Order{
-	ID:       "ORD1",
-	UID:      99,
+	ID:       tests.OrderID,
+	UID:      tests.UserID1,
 	Delivery: "collect",
 	Payment:  "cash",
+	Total:    tests.OrderTotal,
 	Quantities: map[string]int{
-		"PDT111": 1,
+		tests.ProductID1: 1,
 	},
 	DeliveryCost: 5,
 	Address: users.Address{
-		Firstname:     "Arnaud",
+		Firstname:     tests.OrderFirstName,
 		Lastname:      "Arnaud",
 		City:          "Oran",
 		Street:        "Hay Yasmine",
@@ -41,98 +38,17 @@ var order Order = Order{
 	CreatedAt: time.Unix(1699628645, 0),
 }
 
-func init() {
-	ctx := tests.Context()
-	now := time.Now()
-	createdAt, _ := time.Parse(time.DateTime, "2023-11-10 15:04:05")
-	updatedAt, _ := time.Parse(time.DateTime, "2023-12-10 15:04:05")
-
-	db.Redis.HSet(ctx, "order:"+order.ID,
-		"id", order.ID,
-		"uid", order.UID,
-		"delivery", "home",
-		"payment", "card",
-		"payment_status", "payment_progress",
-		"status", "created",
-		"total", "100.5",
-		"type", "order",
-		"address_lastname", "Arnaud",
-		"address_firstname", "Arnaud",
-		"address_city", "Lille",
-		"address_street", "Rue du moulin",
-		"address_complementary", "Appartement C",
-		"address_zipcode", "59000",
-		"address_phone", "3345668832",
-		"updated_at", updatedAt.Unix(),
-		"created_at", createdAt.Unix(),
-	)
-
-	createdAt2, _ := time.Parse(time.DateTime, "2023-11-11 15:04:05")
-	updatedAt2, _ := time.Parse(time.DateTime, "2023-11-11 15:04:05")
-
-	db.Redis.HSet(ctx, "order:ORD2",
-		"id", "ORD2",
-		"uid", order.UID,
-		"delivery", "home",
-		"payment", "card",
-		"payment_status", "payment_progress",
-		"status", "created",
-		"total", "100.5",
-		"type", "order",
-		"address_lastname", "Arnaud",
-		"address_firstname", "Arnaud",
-		"address_city", "Lille",
-		"address_street", "Rue du moulin",
-		"address_complementary", "Appartement C",
-		"address_zipcode", "59000",
-		"address_phone", "3345668832",
-		"updated_at", updatedAt2.Unix(),
-		"created_at", createdAt2.Unix(),
-	)
-
-	db.Redis.HSet(ctx, "product:PDT111",
-		"id", "PDT111",
-		"sku", "SKU111",
-		"title", db.Escape("T-shirt Tester c'est douter"),
-		"description", db.Escape("T-shirt développeur unisexe Tester c'est douter"),
-		"slug", stringutil.Slugify(db.Escape("T-shirt Tester c'est douter")),
-		"currency", "EUR",
-		"price", 100.5,
-		"quantity", rand.Intn(10),
-		"status", "online",
-		"weight", rand.Float32(),
-		"mid", faker.Phonenumber(),
-		"tags", "clothes",
-		"image_1", "PDT1.jpeg",
-		"image_2", "PDT1.jpeg",
-		"links", "",
-		"created_at", now.Unix(),
-		"updated_at", now.Unix(),
-	)
-
-	db.Redis.HSet(ctx, "order:"+order.ID+":products", "PDT111", 1).Result()
-	db.Redis.HSet(ctx, fmt.Sprintf("user:%d", order.UID), "email", "arnaud@artisons.me").Result()
-
-	db.Redis.ZAdd(ctx, "deliveries", redis.Z{
-		Score:  1,
-		Member: "colissimo",
-	}, redis.Z{
-		Score:  2,
-		Member: "collect",
-	})
-}
-
 func TestIsValidDeliveryTrueWhenValid(t *testing.T) {
 	ctx := tests.Context()
 	if valid := IsValidDelivery(ctx, "collect"); !valid {
-		t.Fatalf(`IsValidDelivery(ctx, "collect") = %v want true`, valid)
+		t.Fatalf(`valid = %v want true`, valid)
 	}
 }
 
 func TestIsValidDeliveryFalseWhenInvalid(t *testing.T) {
 	ctx := tests.Context()
-	if valid := IsValidDelivery(ctx, "toto"); valid {
-		t.Fatalf(`IsValidDelivery(ctx, "toto") = %v want false`, valid)
+	if valid := IsValidDelivery(ctx, tests.DoesNotExist); valid {
+		t.Fatalf(`IsValidDelivery(ctx, tests.DoesNotExist) = %v want false`, valid)
 	}
 }
 
@@ -171,7 +87,7 @@ func TestValidateReturnsErrorWhenDeliveryIsInvalid(t *testing.T) {
 
 func TestValidateReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
 	o := order
-	o.Payment = "toto"
+	o.Payment = tests.DoesNotExist
 	ctx := tests.Context()
 
 	if err := o.Validate(ctx); err == nil || err.Error() != "you are not authorized to process this request" {
@@ -191,7 +107,7 @@ func TestValidateReturnsErrorWhenProductsIsEmpty(t *testing.T) {
 
 func TestSaveReturnsErrorWhenProductsAreUnavailable(t *testing.T) {
 	o := order
-	o.Quantities = map[string]int{"toto12": 1}
+	o.Quantities = map[string]int{tests.DoesNotExist: 1}
 	ctx := tests.Context()
 
 	if oid, err := o.Save(ctx); oid != "" || err == nil || err.Error() != "the cart is empty" {
@@ -218,8 +134,8 @@ func TestUpdateStatusReturnsErrorWhenStatusIsEmpty(t *testing.T) {
 func TestUpdateStatusReturnsErrorWhenStatusIsInvalid(t *testing.T) {
 	ctx := tests.Context()
 	o := order
-	if err := UpdateStatus(ctx, o.ID, "toto"); err == nil || err.Error() != "input:status" {
-		t.Fatalf(`UpdateStatus(ctx, o.ID, "toto") = '%s', want 'input:status'`, err.Error())
+	if err := UpdateStatus(ctx, o.ID, tests.DoesNotExist); err == nil || err.Error() != "input:status" {
+		t.Fatalf(`UpdateStatus(ctx, o.ID, tests.DoesNotExist) = '%s', want 'input:status'`, err.Error())
 	}
 }
 
@@ -269,8 +185,8 @@ func TestAddNoteReturnsErrorWhenNoteIsEmpty(t *testing.T) {
 func TestAddNoteReturnsErrorWhenOrderDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 
-	if err := AddNote(ctx, "123", "Useless"); err == nil || err.Error() != "oops the data is not found" {
-		t.Fatalf(`orders.AddNote(ctx, "123", "Useless") = '%s', want 'oops the data is not found'`, err.Error())
+	if err := AddNote(ctx, tests.DoesNotExist, "Useless"); err == nil || err.Error() != "oops the data is not found" {
+		t.Fatalf(`orders.AddNote(ctx, tests.DoesNotExist, "Useless") = '%s', want 'oops the data is not found'`, err.Error())
 	}
 }
 
@@ -299,7 +215,7 @@ func TestProductsReturnsProductsWhenSuccess(t *testing.T) {
 
 func TestSendConfirmationEmailReturnsEmailContentWhenSuccess(t *testing.T) {
 	ctx := tests.Context()
-
+	//
 	message.SetString(language.English, "email_order_confirmation", "Hi %s,\nWoo hoo! Your order is on its way. Your order details can be found below.\n\n")
 	message.SetString(language.English, "email_order_confirmationid", "Order ID: %s\n")
 	message.SetString(language.English, "email_order_confirmationdate", "Order date: %s\n")
@@ -324,13 +240,13 @@ Woo hoo! Your order is on its way. Your order details can be found below.
 
 Order ID: ` + order.ID + `
 Order date: Friday, November 11
-Order total: 105.50
+Order total: ` + fmt.Sprintf("%.2f", order.Total) + `
 
-+-----------------------------+----------+-------+-------+----------------------------------------------------------+
-| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                     |
-+-----------------------------+----------+-------+-------+----------------------------------------------------------+
-| T-shirt Tester c'est douter |        1 | 100.5 | 100.5 | http://localhost/PDT111-t-shirt-tester-c-est-douter.html |
-+-----------------------------+----------+-------+-------+----------------------------------------------------------+
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
+| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                   |
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
+| T-shirt Tester c'est douter |        1 | 100.5 | 100.5 | http://localhost/PDT1-t-shirt-tester-c-est-douter.html |
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
 
 See you around,
 The Customer Experience Team at artisons shop`
@@ -399,9 +315,9 @@ func TestSearchReturnsOrdersWhenDeliveryIsFound(t *testing.T) {
 
 func TestSearchReturnsOrdersWhenUIDIsFound(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{UID: 99}, 0, conf.ItemsPerPage)
+	p, err := Search(c, Query{UID: tests.UserID1}, 0, conf.ItemsPerPage)
 	if err != nil {
-		t.Fatalf(`Search(c, Query{UID: 99}, conf.ItemsPerPage)) = %v, want nil`, err.Error())
+		t.Fatalf(`Search(c, Query{UID:  tests.UserID1}, conf.ItemsPerPage)) = %v, want nil`, err.Error())
 	}
 
 	if p.Total == 0 {
@@ -413,9 +329,9 @@ func TestSearchReturnsOrdersWhenUIDIsFound(t *testing.T) {
 	}
 }
 
-func TestSearchReturnsNoOrdersWhenDeliveryIsCrazy(t *testing.T) {
+func TestSearchReturnsNoOrdersWhenDeliveryIsInvalid(t *testing.T) {
 	c := tests.Context()
-	p, err := Search(c, Query{Keywords: "crazy"}, 0, conf.ItemsPerPage)
+	p, err := Search(c, Query{Keywords: tests.DoesNotExist}, 0, conf.ItemsPerPage)
 	if err != nil {
 		t.Fatalf(`Search(c, Query{Keyword: "crazy"}, 0, conf.ItemsPerPage) = %v, want nil`, err.Error())
 	}
@@ -440,11 +356,11 @@ func TestSearchReturnUpdatedAtSortedOrdersWhenEndIsBack(t *testing.T) {
 	b := 0
 
 	for idx, val := range p.Orders {
-		if val.ID == "ORD1" {
+		if val.ID == tests.OrderID {
 			a = idx
 		}
 
-		if val.ID == "ORD2" {
+		if val.ID == tests.OrderID2 {
 			b = idx
 		}
 	}
@@ -470,11 +386,11 @@ func TestSearchReturnUpdatedAtSortedOrdersWhenEndIsFront(t *testing.T) {
 	b := 0
 
 	for idx, val := range p.Orders {
-		if val.ID == "ORD1" {
+		if val.ID == tests.OrderID {
 			a = idx
 		}
 
-		if val.ID == "ORD2" {
+		if val.ID == tests.OrderID2 {
 			b = idx
 		}
 	}

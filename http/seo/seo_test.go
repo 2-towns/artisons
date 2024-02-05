@@ -1,40 +1,15 @@
 package seo
 
 import (
-	"artisons/conf"
-	"artisons/db"
 	"artisons/tests"
-	"log"
 	"testing"
-	"time"
 )
 
 var content = Content{
-	Key:         "test",
-	URL:         "/test.html",
-	Title:       "The social networks are evil.",
-	Description: "Buh the social networks.",
-}
-
-func init() {
-	ctx := tests.Context()
-	pipe := db.Redis.Pipeline()
-	now := time.Now().Unix()
-
-	pipe.HSet(ctx, "seo:"+content.Key,
-		"title", db.Escape(content.Title),
-		"description", db.Escape(content.Description),
-		"url", db.Escape(content.URL),
-		"key", content.Key,
-		"lang", conf.DefaultLocale.String(),
-		"updated_at", now,
-	)
-
-	if _, err := pipe.Exec(ctx); err != nil {
-		log.Panicln(err)
-	}
-
-	URLs[content.Key] = content
+	Key:         tests.SeoKey,
+	URL:         tests.SeoURL,
+	Title:       tests.SeoTitle,
+	Description: tests.SeoDescription,
 }
 
 func TestValidateReturnsErrorWhenKeyIsEmpty(t *testing.T) {
@@ -73,10 +48,10 @@ func TestValidateReturnsErrorWhenURLIsEmpty(t *testing.T) {
 func TestGetReturnsContentWhenSeoExists(t *testing.T) {
 	ctx := tests.Context()
 
-	c, err := Find(ctx, "test")
+	c, err := Find(ctx, content.Key)
 
 	if err != nil {
-		t.Fatalf(`Find(ctx,"test",conf.DefaultLocale.String()) = _, %s, want _, nil`, err.Error())
+		t.Fatalf(`Find(ctx, content.Key, conf.DefaultLocale.String()) = _, %s, want _, nil`, err.Error())
 	}
 
 	if c.Key == "" {
@@ -99,7 +74,7 @@ func TestGetReturnsContentWhenSeoExists(t *testing.T) {
 func TestGetReturnsErrorContentWhenSeoDoesNotExist(t *testing.T) {
 	ctx := tests.Context()
 
-	if _, err := Find(ctx, "jenexistepas"); err == nil || err.Error() != "the data is not found" {
-		t.Fatalf(`Find(ctx,"jenexistepas",conf.DefaultLocale.String()) = _, %s, want _, "the data is not found"`, err)
+	if _, err := Find(ctx, tests.DoesNotExist); err == nil || err.Error() != "the data is not found" {
+		t.Fatalf(`Find(ctx, tests.DoesNotExist, conf.DefaultLocale.String()) = _, %s, want _, "the data is not found"`, err)
 	}
 }

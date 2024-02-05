@@ -1,12 +1,9 @@
 package tags
 
 import (
-	"artisons/db"
 	"artisons/tests"
 	"testing"
 	"time"
-
-	"github.com/redis/go-redis/v9"
 )
 
 var tag Tag = Tag{
@@ -14,41 +11,6 @@ var tag Tag = Tag{
 	Label:     "Phones",
 	Root:      false,
 	UpdatedAt: time.Now(),
-}
-
-func init() {
-	ctx := tests.Context()
-
-	db.Redis.Del(ctx, "tags")
-	db.Redis.Del(ctx, "tags:root")
-	db.Redis.HSet(ctx, "tag:mens", "key", "mens", "image", "tags/1.jpeg", "label", "Mens", "order", "1", "children", "clothes;shoes")
-	db.Redis.HSet(ctx, "tag:womens", "key", "womens", "image", "tags/2.jpeg", "label", "Womens", "order", "2", "children", "clothes;shoes")
-	db.Redis.HSet(ctx, "tag:children", "key", "children", "image", "tags/3.jpeg", "label", "Children", "order", "2")
-	db.Redis.HSet(ctx, "tag:clothes", "key", "clothes", "image", "tags/3.jpeg", "label", "Clothes", "order", "2")
-	db.Redis.HSet(ctx, "tag:shoes", "key", "shoes", "image", "tags/3.jpeg", "label", "Shoes", "order", "2")
-
-	db.Redis.ZAdd(ctx, "tags", redis.Z{
-		Score:  float64(1),
-		Member: "mens",
-	}, redis.Z{
-		Score:  float64(2),
-		Member: "womens",
-	}, redis.Z{
-		Score:  float64(2),
-		Member: "shoes",
-	}, redis.Z{
-		Score:  float64(2),
-		Member: "clothes",
-	})
-
-	db.Redis.ZAdd(ctx, "tags:root", redis.Z{
-		Score:  float64(1),
-		Member: "mens",
-	}, redis.Z{
-		Score:  float64(2),
-		Member: "womens",
-	})
-
 }
 
 func TestValidateReturnsErrorWhenTheKeyIsEmpty(t *testing.T) {
@@ -87,10 +49,10 @@ func TestValidateReturnsErrorWhenTheLabelIsEmpty(t *testing.T) {
 func TestFindReturnsTagWhenTheKeyExists(t *testing.T) {
 	c := tests.Context()
 
-	tag, err := Find(c, "mens")
+	tag, err := Find(c, tests.Tag)
 
 	if err != nil {
-		t.Fatalf(`Find(c, "mens") = %v, want nil`, err.Error())
+		t.Fatalf(`Find(c, tests.Tag) = %v, want nil`, err.Error())
 	}
 
 	if tag.Key == "" {
@@ -105,8 +67,8 @@ func TestFindReturnsTagWhenTheKeyExists(t *testing.T) {
 func TestFindReturnsEmptyTagWhenTheKeyDoesNotExist(t *testing.T) {
 	c := tests.Context()
 
-	if _, err := Find(c, "hello"); err == nil || err.Error() != "oops the data is not found" {
-		t.Fatalf(`Find(c, "hello") = %v, want nil`, err.Error())
+	if _, err := Find(c, tests.DoesNotExist); err == nil || err.Error() != "oops the data is not found" {
+		t.Fatalf(`Find(c, tests.DoesNotExist) = %v, want nil`, err.Error())
 	}
 }
 
@@ -123,7 +85,7 @@ func TestListReturnsTags(t *testing.T) {
 
 	r, err := List(c, 0, 10)
 	if err != nil {
-		t.Fatalf(`List(c) = %v, want nil`, err)
+		t.Fatalf(`List(c, 0, 10) = %v, want nil`, err)
 	}
 
 	if r.Total == 0 {
@@ -145,36 +107,35 @@ func TestDeleteReturnsErrorWhenKeyIsEmpty(t *testing.T) {
 	c := tests.Context()
 
 	if err := Delete(c, ""); err == nil || err.Error() != "input:key" {
-		t.Fatalf(`Delete(c) = %v, want 'input:key'`, err)
+		t.Fatalf(`Delete(c, "") = %v, want 'input:key'`, err)
 	}
 }
 
 func TestDeleteReturnsNilWhenSuccess(t *testing.T) {
 	c := tests.Context()
 
-	if err := Delete(c, "children"); err != nil {
-		t.Fatalf(`Delete(c) = %v, want nil`, err)
+	if err := Delete(c, tests.TagToDelete); err != nil {
+		t.Fatalf(`Delete(c, tests.TagToDelete) = %v, want nil`, err)
 	}
 }
 
 func TestExistsReturnsTrueWhenTagExists(t *testing.T) {
 	c := tests.Context()
 
-	if exists, err := Exists(c, "mens"); exists == false || err != nil {
-		t.Fatalf(`Exists(c, "mens") = %v, %v, want true, nil`, exists, err)
+	if exists, err := Exists(c, tests.Tag); exists == false || err != nil {
+		t.Fatalf(`Exists(c, tests.Tag) = %v, %v, want true, nil`, exists, err)
 	}
 }
 
 func TestExistsReturnsFalseWhenTagDoesNotExist(t *testing.T) {
 	c := tests.Context()
 
-	if exists, err := Exists(c, "hello"); exists == true || err != nil {
-		t.Fatalf(`Exists(c, "hello") = %v, %v, want false', nil`, exists, err)
+	if exists, err := Exists(c, tests.DoesNotExist); exists == true || err != nil {
+		t.Fatalf(`Exists(c, tests.DoesNotExist) = %v, %v, want false', nil`, exists, err)
 	}
 }
 
 func TestTreeReturnsTags(t *testing.T) {
-	//
 	c := tests.Context()
 
 	tree, err := tree(c)
@@ -189,25 +150,25 @@ func TestTreeReturnsTags(t *testing.T) {
 
 	mens := tree[0]
 
-	if mens.Key != "mens" {
-		t.Fatalf(`mens.Name = %v, want 'mens'`, mens.Key)
+	if mens.Key != tests.Tag {
+		t.Fatalf(`mens.Name = %v, want '%s'`, mens.Key, tests.Tag)
 	}
 
 	if len(mens.Branches) != 2 {
 		t.Fatalf(`len(mens.Branches) = %v, want 2`, len(mens.Branches))
 	}
 
-	if mens.Branches[0].Key != "clothes" {
-		t.Fatalf(`mens.Branches[0].Name = %v, want 'clothes'`, mens.Branches[0].Key)
+	if mens.Branches[0].Key != tests.Branch1 {
+		t.Fatalf(`mens.Branches[0].Name = %v, want '%s'`, mens.Branches[0].Key, tests.Branch1)
 	}
 
-	if mens.Branches[1].Key != "shoes" {
-		t.Fatalf(`mens.Branches[0].Name = %v, want 'shoes'`, mens.Branches[1].Key)
+	if mens.Branches[1].Key != tests.Branch2 {
+		t.Fatalf(`mens.Branches[0].Name = %v, want '%s'`, mens.Branches[1].Key, tests.Branch2)
 	}
 
 	womens := tree[1]
 
-	if womens.Key != "womens" {
+	if womens.Key != tests.Tag2 {
 		t.Fatalf(`womens.Name = %v, want 'womens'`, womens.Key)
 	}
 
@@ -215,27 +176,27 @@ func TestTreeReturnsTags(t *testing.T) {
 		t.Fatalf(`len(womens.Branches) = %v, want 2`, len(womens.Branches))
 	}
 
-	if womens.Branches[0].Key != "clothes" {
-		t.Fatalf(`womens.Branches[0].Name = %v, want 'clothes'`, womens.Branches[0].Key)
+	if womens.Branches[0].Key != tests.Branch1 {
+		t.Fatalf(`womens.Branches[0].Name = %v, want '%s'`, womens.Branches[0].Key, tests.Branch1)
 	}
 
-	if womens.Branches[1].Key != "shoes" {
-		t.Fatalf(`womens.Branches[0].Name = %v, want 'shoes'`, womens.Branches[1].Key)
+	if womens.Branches[1].Key != tests.Branch2 {
+		t.Fatalf(`womens.Branches[0].Name = %v, want '%s'`, womens.Branches[1].Key, tests.Branch2)
 	}
 }
 
 func TestEligibleReturnsNilWhenTagsAreNotRooot(t *testing.T) {
 	c := tests.Context()
 
-	if eligible, err := AreEligible(c, []string{"clothes", "shoes"}); !eligible || err != nil {
-		t.Fatalf(`AreEligible(c, []string{"clothes", "shoes"}) = %v, %v, want true, nil`, eligible, err)
+	if eligible, err := AreEligible(c, []string{tests.Branch1, tests.Branch2}); !eligible || err != nil {
+		t.Fatalf(`AreEligible(c, []string{tests.Branch1, tests.Branch2}) = %v, %v, want true, nil`, eligible, err)
 	}
 }
 
 func TestEligibleReturnsErrorWhenTagsAreRoot(t *testing.T) {
 	c := tests.Context()
 
-	if eligible, err := AreEligible(c, []string{"mens"}); eligible || err != nil {
-		t.Fatalf(`AreEligible(c, []string{"mens"}) = %v, %v, want false, nil`, eligible, err)
+	if eligible, err := AreEligible(c, []string{tests.Tag}); eligible || err != nil {
+		t.Fatalf(`AreEligible(c, []string{tests.Tag}) = %v, %v, want false, nil`, eligible, err)
 	}
 }

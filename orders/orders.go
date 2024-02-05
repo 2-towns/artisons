@@ -596,7 +596,7 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 
 		order, err := parse(ctx, data)
 		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot order the product", slog.Any("order", data), slog.String("error", err.Error()))
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the order", slog.Any("order", data), slog.String("error", err.Error()))
 			continue
 		}
 

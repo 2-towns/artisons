@@ -16,7 +16,6 @@ User-Agent: {{ua}}
 quantity: 99
 HTTP 200
 
-
 # The cart list returns empty result
 GET {{host}}/cart.html
 User-Agent: {{ua}}
