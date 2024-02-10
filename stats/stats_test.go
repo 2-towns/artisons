@@ -1,12 +1,16 @@
 package stats
 
 import (
+	"artisons/http/contexts"
 	"artisons/tests"
+	"artisons/users"
+	"context"
 	"testing"
 )
 
 func TestGetAll(t *testing.T) {
 	c := tests.Context()
+	c = context.WithValue(c, contexts.User, users.User{Demo: true})
 
 	data, err := GetAll(c, 14)
 
