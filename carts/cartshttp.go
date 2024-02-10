@@ -11,6 +11,7 @@ import (
 	"artisons/tags/tree"
 	"artisons/templates"
 	"artisons/tracking"
+	"artisons/users"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -23,9 +24,9 @@ import (
 func get(r *http.Request) Cart {
 	ctx := r.Context()
 
-	uid, ok := ctx.Value(contexts.UserID).(int)
+	u, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
-		return Cart{ID: fmt.Sprintf("%d", uid)}
+		return Cart{ID: fmt.Sprintf("%d", u.ID)}
 	}
 
 	id, err := r.Cookie(cookies.CartID)

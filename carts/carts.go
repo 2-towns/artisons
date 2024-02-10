@@ -8,6 +8,7 @@ import (
 	"artisons/orders"
 	"artisons/products"
 	"artisons/string/stringutil"
+	"artisons/users"
 	"context"
 	"errors"
 	"fmt"
@@ -256,7 +257,7 @@ func RefreshCID(ctx context.Context, cid string) (string, error) {
 func Merge(ctx context.Context, cid string) error {
 	slog.LogAttrs(ctx, slog.LevelInfo, "merging cart")
 
-	uid, ok := ctx.Value(contexts.UserID).(int)
+	u, ok := ctx.Value(contexts.User).(users.User)
 	if !ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the user id")
 		return errors.New("you are not authorized to process this request")
@@ -268,7 +269,7 @@ func Merge(ctx context.Context, cid string) error {
 		return errors.New("something went wrong")
 	}
 
-	ucart, err := db.Redis.HGetAll(ctx, fmt.Sprintf("cart:%d", uid)).Result()
+	ucart, err := db.Redis.HGetAll(ctx, fmt.Sprintf("cart:%d", u.ID)).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the anonymous cart items")
 		return errors.New("something went wrong")
@@ -289,9 +290,9 @@ func Merge(ctx context.Context, cid string) error {
 					continue
 				}
 
-				rdb.HSet(ctx, fmt.Sprintf("cart:%d", uid), key, a+b)
+				rdb.HSet(ctx, fmt.Sprintf("cart:%d", u.ID), key, a+b)
 			} else {
-				rdb.HSet(ctx, fmt.Sprintf("cart:%d", uid), key, a)
+				rdb.HSet(ctx, fmt.Sprintf("cart:%d", u.ID), key, a)
 			}
 		}
 

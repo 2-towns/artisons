@@ -164,7 +164,7 @@ func Loginhandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{"sid": u.SID, "otp": otp, "email": email}
 	go tracking.Log(ctx, "login", data)
 
-	ctx = context.WithValue(ctx, contexts.UserID, u.ID)
+	ctx = context.WithValue(ctx, contexts.User, u)
 
 	cookie := httphelpers.NewCookie(cookies.SessionID, u.SID, int(conf.Cookie.MaxAge))
 	http.SetCookie(w, &cookie)

@@ -6,6 +6,7 @@ import (
 	"artisons/http/contexts"
 	"artisons/http/referer"
 	"artisons/string/stringutil"
+	"artisons/users"
 	"cmp"
 	"context"
 	"errors"
@@ -94,9 +95,9 @@ func generateDemoData(ctx context.Context) error {
 }
 
 func getPrefix(ctx context.Context) string {
-	demo, ok := ctx.Value(contexts.Demo).(bool)
+	u, ok := ctx.Value(contexts.User).(users.User)
 
-	if demo && ok {
+	if ok && u.Demo {
 		slog.LogAttrs(ctx, slog.LevelInfo, "demo is activated")
 		return "demo:"
 	}

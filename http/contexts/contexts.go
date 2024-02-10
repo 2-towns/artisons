@@ -9,17 +9,11 @@ type ContextKey string
 // User is the context key used to store the lang
 const User ContextKey = "user"
 
-// UserID ise used only for tracking log to avoid cycling imports
-const UserID ContextKey = "user_id"
-
 // Form is the current form object
 const Form ContextKey = "form"
 
 // Device is the context key used to store the lang
 const Device ContextKey = "device"
-
-// Demo is the context key used when the admin activated the demo mode
-const Demo ContextKey = "demo"
 
 // Locale is the context key used to store the lang
 const Locale ContextKey = "lang"

@@ -5,6 +5,7 @@ package tracking
 import (
 	"artisons/conf"
 	"artisons/http/contexts"
+	"artisons/users"
 	"context"
 	"fmt"
 	"log/slog"
@@ -46,9 +47,9 @@ func Log(ctx context.Context, action string, data map[string]string) error {
 		fmt.Sprintf("lang:%s", lang),
 	}
 
-	uid, ok := ctx.Value(contexts.UserID).(int)
-	if ok && uid > 0 {
-		parts = append(parts, fmt.Sprintf("uid:%d", uid))
+	u, ok := ctx.Value(contexts.User).(users.User)
+	if ok {
+		parts = append(parts, fmt.Sprintf("uid:%d", u.ID))
 	}
 
 	for key, value := range data {

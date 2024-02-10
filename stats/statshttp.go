@@ -90,7 +90,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	isHX, _ := ctx.Value(contexts.HX).(bool)
-	demo := ctx.Value(contexts.Demo).(bool)
+	u, ok := ctx.Value(contexts.User).(users.User)
+	demo := ok && u.Demo
 	data := struct {
 		Lang           language.Tag
 		Page           string

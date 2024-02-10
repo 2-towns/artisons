@@ -58,7 +58,6 @@ func Context() context.Context {
 
 	rid, _ := stringutil.Random()
 	ctx = context.WithValue(ctx, contexts.RequestID, rid)
-	ctx = context.WithValue(ctx, contexts.Demo, true)
 
 	return context.WithValue(ctx, contexts.Device, fmt.Sprintf("%d", time.Now().UnixMilli()))
 }

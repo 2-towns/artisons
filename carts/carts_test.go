@@ -4,6 +4,7 @@ import (
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/tests"
+	"artisons/users"
 	"context"
 	"path"
 	"runtime"
@@ -189,7 +190,7 @@ func TestMerge(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		ctx := tests.Context()
-		ctx = context.WithValue(ctx, contexts.UserID, 1)
+		ctx = context.WithValue(ctx, contexts.User, users.User{ID: 1})
 
 		if err := Merge(ctx, "CAR1"); err != nil {
 			t.Fatalf(`Merge(ctx) = %v, want nil`, err)

@@ -75,8 +75,6 @@ func Context(r *http.Request, w http.ResponseWriter) context.Context {
 	}
 
 	ctx = context.WithValue(ctx, contexts.User, user)
-	ctx = context.WithValue(ctx, contexts.UserID, user.ID)
-	ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
 
 	return ctx
 }

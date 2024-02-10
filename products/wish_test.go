@@ -52,7 +52,7 @@ func TestHasWish(t *testing.T) {
 		pid  string
 		b    bool
 	}{
-		{"success", "PDT1", true},
+		{"success", "PDT2", true},
 		{"pid=idontexist", "idontexist", false},
 	}
 
