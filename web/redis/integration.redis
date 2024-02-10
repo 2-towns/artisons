@@ -15,17 +15,17 @@ HSET "session:444444" "uid" "4" "id" "444444" "device" "Mozilla/5.0 (Windows NT 
 EXPIRE "session:444444" 3600
 
 HSET "otp:user@artisons.me" otp "123456" "attempts" "0" 
-EXPIRE "otp:user@artisons.me" 5
+EXPIRE "otp:user@artisons.me" 30
 HSET "otp:admin@artisons.me" otp "123456" "attempts" "0" 
-EXPIRE "otp:admin@artisons.me" 5
+EXPIRE "otp:admin@artisons.me" 30
 
 HSET "otp:otp@artisons.me" otp "123456" "attempts" "0" 
-EXPIRE "otp:otp@artisons.me" 5
+EXPIRE "otp:otp@artisons.me" 30
 HSET "otp:login-user@artisons.me" otp "123456" "attempts" "0" 
-EXPIRE "otp:login-user@artisons.me" 5
+EXPIRE "otp:login-user@artisons.me" 30
 HSET "user:5" id "5" email "login-admin@artisons.me" created_at 1705310389  created_at 1136160000 updated_at 1136160000  type "user" role "admin"
 HSET "otp:login-admin@artisons.me" otp "123456" "attempts" "0" 
-EXPIRE "otp:login-admin@artisons.me" 5
+EXPIRE "otp:login-admin@artisons.me" 30
 
 SET "user_next_id" 5
 

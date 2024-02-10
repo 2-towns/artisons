@@ -43,13 +43,13 @@ jobs:
         run: go build -v ./...
       - name: Run the unit tests
         run: go test -v ./...
-      - name: Populating data
-        run: go run console/console.go -file web/redis/integration.redis redis
       - name: Install HURL
         shell: bash
         run: |
           curl --location --remote-name https://github.com/Orange-OpenSource/hurl/releases/download/4.0.0/hurl_4.0.0_amd64.deb
           sudo apt update && sudo apt install ./hurl_4.0.0_amd64.deb
+      - name: Populating data
+        run: go run console/console.go -file web/redis/integration.redis redis
       - name: Run the functional tests
         run: |
           go run main.go &

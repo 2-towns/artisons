@@ -61,7 +61,7 @@ const CartDuration = time.Hour * 24 * 7
 const OtpDuration = time.Minute * 5
 
 // OtpInterval is the time minimum between two otp attemps
-const OtpInterval = time.Minute / 10
+const OtpInterval = 30
 
 // OtpAttempts is the maximum attemps for an otp
 const OtpAttempts = 3

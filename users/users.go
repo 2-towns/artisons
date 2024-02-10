@@ -83,7 +83,7 @@ func Otp(ctx context.Context, email string) error {
 		return errors.New("something went wrong")
 	}
 
-	if ttl > conf.OtpInterval {
+	if conf.OtpDuration-ttl < conf.OtpInterval {
 		l.LogAttrs(ctx, slog.LevelInfo, "the ttl exceed the otp interval", slog.Duration("ttl", ttl), slog.Duration("interval", conf.OtpInterval))
 		return errors.New("you need to wait before asking another otp")
 	}
