@@ -2,7 +2,7 @@
 
 ## Go
 
-Installer la version Go 1.21 (suivre la documentation officielle).
+Installer la version Go 1.22 (suivre la documentation officielle).
 
 ## Redis
 
@@ -54,22 +54,16 @@ Démarrer le serveur imgproxy:
 Pour peupler les données, lancer la commande suivante:
 
 ```
-go run console/console.go -file web/redis/populate.redis redis
+redis-cli -h localhost -p 6379 < web/redis/integration.redis
 ```
 
 Afin de pouvoir utiliser la recherche, il faut lancer le script de migration:
 
 ```
-go run console/console.go -file web/redis/migrate.redis redis
+redis-cli -h localhost -p 6379 < web/redis/migrate.redis
 ```
 
-L'admin est accessible à l'adresse suivante: `/admin/index.html`. Un compte utilisateur admin existe avec l'adresse suivante: `hello@artisons.me`. L'OTP est affiché dans les traces du serveur.
-
-Pour préparer l'environnement pour les tests fonctionnels, il faut lancer: 
-
-```
-go run console/console.go -file web/redis/hurl.redis redis
-```
+L'admin est accessible à l'adresse suivante: `/admin/index`. Un compte utilisateur admin existe avec l'adresse suivante: `admin@artisons.me`. L'OTP est affiché dans les traces du serveur.
 
 ## Tester
 
@@ -106,10 +100,7 @@ ZZZ étant la cause du renvoi de cette donnée par le test.
 ### Tests functionnels
 
 ```
-hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/otp/*.hurl
-hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/admin/cookies.txt --test web/hurl/admin/*.hurl
-hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/user/cookies.txt --test web/hurl/user/*.hurl
-hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/*.hurl
+./hurl.sh
 ```
 
 ## Terminal

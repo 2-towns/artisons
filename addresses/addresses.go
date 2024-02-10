@@ -1,16 +1,34 @@
 package addresses
 
 import (
+	"artisons/conf"
+	"artisons/http/httperrors"
+	"artisons/templates"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"artisons/conf"
+	"html/template"
 	"io"
+	"log"
 	"log/slog"
 	"net/http"
 	"net/url"
 )
+
+var addressesTpl *template.Template
+
+func init() {
+	var err error
+
+	addressesTpl, err = templates.Build("addresses.html").ParseFiles(
+		conf.WorkingSpace + "web/views/addresses.html",
+	)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+}
 
 type geometry struct {
 	Type        string    `json:"type"`
@@ -74,4 +92,34 @@ func Get(ctx context.Context, pattern string, limit int) ([]string, error) {
 	}
 
 	return addresses, nil
+}
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := r.URL.Query().Get("q")
+
+	var addresses []string = []string{}
+
+	if len(q) < 3 {
+		slog.LogAttrs(ctx, slog.LevelInfo, "the query is too short", slog.String("q", q))
+	} else {
+		var err error
+		addresses, err = Get(ctx, q, 10)
+		if err != nil {
+			httperrors.HXCatch(w, ctx, err.Error())
+			return
+		}
+	}
+
+	data := struct {
+		Data []string
+	}{
+		addresses,
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+
+	if err := addressesTpl.Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }

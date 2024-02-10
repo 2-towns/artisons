@@ -82,7 +82,7 @@ func main() {
 			_, err := pipe.Exec(ctx)
 
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "got error when populatin", slog.String("error", err.Error()))
+				slog.LogAttrs(ctx, slog.LevelError, "got error when population", slog.String("error", err.Error()))
 				if err.Error() != "Unknown Index name" {
 					log.Fatal(err)
 				}

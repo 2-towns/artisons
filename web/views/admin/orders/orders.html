@@ -19,7 +19,7 @@
 				<input
 					   type="search"
 					   class="input"
-					   hx-get="/admin/orders.html?page={{.Pagination.Page}}"
+					   hx-get="/admin/orders?page={{.Pagination.Page}}"
 					   hx-trigger="input changed delay:500ms, search"
 					   hx-target="#table"
 					   hx-indicator="#spinner"

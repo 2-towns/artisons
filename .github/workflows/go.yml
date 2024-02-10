@@ -32,9 +32,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21.x"
-      - name: COUCOU
-        run: ls
+          go-version: "1.22.x"
       - name: Install dependencies
         run: go install .
       - name: Create folder
@@ -46,7 +44,7 @@ jobs:
       - name: Run the unit tests
         run: go test -v ./...
       - name: Populating data
-        run: go run console/console.go -file web/redis/hurl.redis redis
+        run: go run console/console.go -file web/redis/integration.redis redis
       - name: Install HURL
         shell: bash
         run: |
@@ -56,7 +54,4 @@ jobs:
         run: |
           go run main.go &
           sleep 2
-          hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/otp/*.hurl
-          hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/admin/cookies.txt --test web/hurl/admin/*.hurl
-          hurl --variable time=$(date +%s) --variables-file web/hurl/.env --cookie web/hurl/user/cookies.txt --test web/hurl/user/*.hurl
-          hurl --variable time=$(date +%s) --variables-file web/hurl/.env --test web/hurl/*.hurl
+          hurl --variable time=$(date +%s) --variable host=http://localhost:8080 --test **/**/*.hurl

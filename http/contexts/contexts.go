@@ -4,45 +4,34 @@ package contexts
 // ContextKey is the type of key used for the context.
 // It is necessary to create a specific type for the context, but
 // it does not bring added value.
-type contextKey string
+type ContextKey string
 
 // User is the context key used to store the lang
-const User contextKey = "user"
+const User ContextKey = "user"
 
 // UserID ise used only for tracking log to avoid cycling imports
-const UserID contextKey = "user_id"
-
-// ID is the current entity id
-const ID contextKey = "id"
+const UserID ContextKey = "user_id"
 
 // Form is the current form object
-const Form contextKey = "form"
-
-// Cart is the context key used to store the lang
-const Cart contextKey = "cart"
+const Form ContextKey = "form"
 
 // Device is the context key used to store the lang
-const Device contextKey = "device"
-
-// Domain can "front", "back" or "static"
-const Domain contextKey = "end"
+const Device ContextKey = "device"
 
 // Demo is the context key used when the admin activated the demo mode
-const Demo contextKey = "demo"
-
-// Pagination
-const Pagination contextKey = "pagination"
-
-// Flash
-const Flash contextKey = "flash"
+const Demo ContextKey = "demo"
 
 // Locale is the context key used to store the lang
-const Locale contextKey = "lang"
+const Locale ContextKey = "lang"
 
 // HX true if the request is htmx request
-const HX contextKey = "hx"
+const HX ContextKey = "hx"
+
+const RequestID ContextKey = "request-id"
 
 // HXTarget is used to change the default target of alert message
-const HXTarget contextKey = "hx-target"
+const HXTarget ContextKey = "hx-target"
 
-const AlertTarget contextKey = "alert"
+const AlertTarget ContextKey = "alert"
+
+const Tracking ContextKey = "tracking"

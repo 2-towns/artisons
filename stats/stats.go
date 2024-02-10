@@ -50,7 +50,7 @@ func generateDemoData(ctx context.Context) error {
 	products := []string{"PDT1", "PDT2", "PDT3", "PDT4", "PDT5"}
 	browsers := []string{"Chrome", "Safari", "Firefox", "Edge"}
 	systems := []string{"Windows", "Android", "iOS", "Linux"}
-	urls := []string{"index.html", "/super-article-du-blog.html", "/PDT2-sweat-a-capuche-uniforme.html", "/cgv.html", "/panier.html", "/coucou.html"}
+	urls := []string{"/", "/super-article-du-blog", "/PDT2-sweat-a-capuche-uniforme", "/cgv", "/panier", "/coucou"}
 
 	for i := 0; i < 30; i++ {
 		i := rand.Intn(30)
@@ -366,14 +366,11 @@ func GetAll(ctx context.Context, days int) (Data, error) {
 }
 
 func Visit(ctx context.Context, ua useragent.UserAgent, data VisitData) error {
-	l := slog.With()
-	l.LogAttrs(ctx, slog.LevelInfo, "get range statistics")
-
 	now := time.Now().Format("20060102")
 	did := ctx.Value(contexts.Device).(string)
 	hasVisited, err := db.Redis.SIsMember(ctx, "stats:visits:members:"+now, did).Result()
 
-	if err != nil {
+	if err != nil && err.Error() != "redis: nil" {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get is member", slog.String("error", err.Error()))
 		return err
 	}
@@ -387,39 +384,33 @@ func Visit(ctx context.Context, ua useragent.UserAgent, data VisitData) error {
 	if r.Referer != "" {
 		pipe.Incr(ctx, prefix+"stats:visits:"+now)
 
-		l.LogAttrs(ctx, slog.LevelInfo, "visits stat added to pipe")
-
 		r := referer.Parse(data.Referer)
 		pipe.ZIncrBy(ctx, prefix+"stats:referers:"+now, 1, r.Referer)
-		l.LogAttrs(ctx, slog.LevelInfo, "referer stat added to pipe", slog.String("referer", r.Referer))
 	}
 
 	pipe.ZIncrBy(ctx, prefix+"stats:pageviews:"+now, 1, data.URL)
-	l.LogAttrs(ctx, slog.LevelInfo, "pageviews stat added to pipe", slog.String("url", data.URL))
 
 	if ua.Name != "" {
 		pipe.ZIncrBy(ctx, prefix+"stats:browsers:"+now, 1, ua.Name)
-		l.LogAttrs(ctx, slog.LevelInfo, "browsers stat added to pipe", slog.String("browser", ua.Name))
 	}
 
 	if ua.OS != "" {
 		pipe.ZIncrBy(ctx, prefix+"stats:systems:"+now, 1, ua.Name)
-		l.LogAttrs(ctx, slog.LevelInfo, "systems stat added to pipe", slog.String("system", ua.OS))
 	}
 
 	if !hasVisited {
 		pipe.Incr(ctx, prefix+"stats:visits:unique:"+now)
 		pipe.SAdd(ctx, prefix+"stats:visits:members:"+now, did)
 		pipe.Expire(ctx, prefix+"stats:visits:members:"+now, time.Hour*24)
-		l.LogAttrs(ctx, slog.LevelInfo, "unique visite stat added to pipe", slog.String("cid", did))
 	}
 
 	pipe.Incr(ctx, prefix+"stats:pageviews:all:"+now)
-	l.LogAttrs(ctx, slog.LevelInfo, "pageview stats added to pipe")
 
 	_, err = pipe.Exec(ctx)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot add statistics", slog.String("error", err.Error()))
+	} else {
+		slog.Log(ctx, slog.LevelInfo, "visit stat added to redis")
 	}
 
 	return nil

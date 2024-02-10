@@ -8,7 +8,6 @@ import (
 	"artisons/orders"
 	"artisons/products"
 	"artisons/string/stringutil"
-	"artisons/tracking"
 	"context"
 	"errors"
 	"fmt"
@@ -31,9 +30,16 @@ type Cart struct {
 	Products []products.Product
 }
 
+// Exists is not linked as a cart method because
+// of merge method.
 func Exists(ctx context.Context, cid string) bool {
 	l := slog.With(slog.String("cid", cid))
-	l.LogAttrs(ctx, slog.LevelInfo, "checking if the car exists")
+	l.LogAttrs(ctx, slog.LevelInfo, "checking if the cart exists")
+
+	if cid == "" {
+		l.LogAttrs(ctx, slog.LevelInfo, "the cid is empty")
+		return false
+	}
 
 	ttl, err := db.Redis.TTL(ctx, "cart:"+cid).Result()
 	if err != nil {
@@ -46,46 +52,27 @@ func Exists(ctx context.Context, cid string) bool {
 	return ttl.Nanoseconds() > 0
 }
 
-func GetCID(ctx context.Context) (string, error) {
-	uid, ok := ctx.Value(contexts.UserID).(int)
-	if ok {
-		return fmt.Sprintf("%d", uid), nil
-	}
-
-	cid, ok := ctx.Value(contexts.Cart).(string)
-	if !ok {
-		return "", nil
-	}
-
-	return cid, nil
-}
-
 // Add a product into a cart with its quantity
 // Verify that the cart and the product exists.
-func Add(ctx context.Context, pid string, quantity int) (string, error) {
+func (c Cart) Add(ctx context.Context, pid string, quantity int) (string, error) {
 	l := slog.With(slog.String("product_id", pid), slog.Int("quantity", quantity))
 	l.LogAttrs(ctx, slog.LevelInfo, "adding a product to the cart")
 
-	cid, err := GetCID(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	new := false
+	cid := c.ID
 	if cid == "" {
-		new = true
-
-		cid, err = stringutil.Random()
+		id, err := stringutil.Random()
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot generate random string")
 			return "", err
 		}
 
+		cid = id
+
 		slog.LogAttrs(ctx, slog.LevelInfo, "new cart id generated", slog.String("cid", cid))
 	}
 
 	if !products.Available(ctx, pid) {
-		return "", errors.New("product_not_found")
+		return "", errors.New("oops the data is not found")
 	}
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
@@ -98,41 +85,27 @@ func Add(ctx context.Context, pid string, quantity int) (string, error) {
 		return "", err
 	}
 
-	if conf.EnableTrackingLog {
-		tra := map[string]string{
-			"pid":      pid,
-			"quantity": fmt.Sprintf("%d", quantity),
-		}
-
-		go tracking.Log(ctx, "cart_add", tra)
-	}
-
 	l.LogAttrs(ctx, slog.LevelInfo, "product added in the cart")
 
-	if new {
+	if c.ID == "" {
 		return cid, nil
 	}
 
 	return "", nil
 }
 
-func Delete(ctx context.Context, pid string, quantity int) error {
+func (c Cart) Delete(ctx context.Context, pid string, quantity int) error {
 	l := slog.With(slog.String("product_id", pid), slog.Int("quantity", quantity))
-	l.LogAttrs(ctx, slog.LevelInfo, "adding a product to the cart")
+	l.LogAttrs(ctx, slog.LevelInfo, "deleting a product to the cart")
 
-	cid, err := GetCID(ctx)
-	if err != nil {
-		return err
-	}
-
-	if cid == "" {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot remove from cart because the cid is empty")
-		return errors.New("you are not authorized to process this request")
-	}
-
-	q, err := db.Redis.HGet(ctx, "cart:"+cid, pid).Result()
+	q, err := db.Redis.HGet(ctx, "cart:"+c.ID, pid).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot get the quantity", slog.String("error", err.Error()))
+
+		if err.Error() == "redis: nil" {
+			return errors.New("oops the data is not found")
+		}
+
 		return err
 	}
 
@@ -144,26 +117,17 @@ func Delete(ctx context.Context, pid string, quantity int) error {
 
 	if _, err := db.Redis.TxPipelined(ctx, func(rdb redis.Pipeliner) error {
 		if qty > int64(quantity) {
-			rdb.HIncrBy(ctx, "cart:"+cid, pid, -int64(quantity))
+			rdb.HIncrBy(ctx, "cart:"+c.ID, pid, -int64(quantity))
 		} else {
-			rdb.HDel(ctx, "cart:"+cid, pid)
+			rdb.HDel(ctx, "cart:"+c.ID, pid)
 		}
 
-		rdb.Expire(ctx, "cart:"+cid, conf.CartDuration)
+		rdb.Expire(ctx, "cart:"+c.ID, conf.CartDuration)
 
 		return nil
 	}); err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot store the cart", slog.String("error", err.Error()))
 		return err
-	}
-
-	if conf.EnableTrackingLog {
-		tra := map[string]string{
-			"pid":      pid,
-			"quantity": fmt.Sprintf("%d", -quantity),
-		}
-
-		go tracking.Log(ctx, "cart_remove", tra)
 	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "product removed from the cart")
@@ -172,21 +136,20 @@ func Delete(ctx context.Context, pid string, quantity int) error {
 }
 
 // Get the full session cart.
-func Get(ctx context.Context) (Cart, error) {
-	cid, err := GetCID(ctx)
-	if err != nil || cid == "" {
-		slog.LogAttrs(ctx, slog.LevelInfo, "no cart id detected")
-		return Cart{}, err
-	}
-
-	l := slog.With(slog.String("cid", cid))
+func (c Cart) Get(ctx context.Context) (Cart, error) {
+	l := slog.With(slog.String("cid", c.ID))
 	l.LogAttrs(ctx, slog.LevelInfo, "get the cart")
 
-	if !Exists(ctx, cid) {
+	if c.ID == "" {
 		return Cart{}, nil
 	}
 
-	values, err := db.Redis.HGetAll(ctx, "cart:"+cid).Result()
+	if !Exists(ctx, c.ID) {
+		slog.LogAttrs(ctx, slog.LevelInfo, "the cart is empty or does not exist")
+		return Cart{}, nil
+	}
+
+	values, err := db.Redis.HGetAll(ctx, "cart:"+c.ID).Result()
 	if err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot get the cart", slog.String("error", err.Error()))
 		return Cart{}, errors.New("something went wrong")
@@ -219,7 +182,7 @@ func Get(ctx context.Context) (Cart, error) {
 	l.LogAttrs(ctx, slog.LevelInfo, "got the cart with products", slog.Int("products", len(tmps)))
 
 	return Cart{
-		ID:       cid,
+		ID:       c.ID,
 		Delivery: values["delivery"],
 		Payment:  values["payment"],
 		Products: pds,
@@ -227,30 +190,17 @@ func Get(ctx context.Context) (Cart, error) {
 }
 
 // UpdateDelivery update the delivery mode in Redis.
-func UpdateDelivery(ctx context.Context, del string) error {
+func (c Cart) UpdateDelivery(ctx context.Context, del string) error {
 	l := slog.With(slog.String("delivery", del))
 	l.LogAttrs(ctx, slog.LevelInfo, "updating the delivery")
-
-	cid, err := GetCID(ctx)
-	if err != nil {
-		return err
-	}
 
 	if !orders.IsValidDelivery(ctx, del) {
 		return errors.New("you are not authorized to process this request")
 	}
 
-	if _, err := db.Redis.HSet(ctx, "cart:"+cid, "delivery", del).Result(); err != nil {
+	if _, err := db.Redis.HSet(ctx, "cart:"+c.ID, "delivery", del).Result(); err != nil {
 		l.LogAttrs(ctx, slog.LevelError, "cannot update the delivery", slog.String("err", err.Error()))
 		return errors.New("something went wrong")
-	}
-
-	if conf.EnableTrackingLog {
-		tra := map[string]string{
-			"delivery": del,
-		}
-
-		go tracking.Log(ctx, "cart_delivery", tra)
 	}
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the delivery is updated")
@@ -260,7 +210,7 @@ func UpdateDelivery(ctx context.Context, del string) error {
 
 // UpdatePayment update the payment mode in Redis.
 func (c Cart) UpdatePayment(ctx context.Context, p string) error {
-	l := slog.With(slog.String("cid", c.ID), slog.String("payment", p))
+	l := slog.With(slog.String("payment", p))
 	l.LogAttrs(ctx, slog.LevelInfo, "updating the payment")
 
 	if !orders.IsValidPayment(ctx, p) {
@@ -272,13 +222,14 @@ func (c Cart) UpdatePayment(ctx context.Context, p string) error {
 		return errors.New("something went wrong")
 	}
 
-	if conf.EnableTrackingLog {
-		tra := map[string]string{
-			"payment": p,
-		}
+	// TODO move to the payment route
+	// if conf.EnableTrackingLog {
+	// 	tra := map[string]string{
+	// 		"payment": p,
+	// 	}
 
-		go tracking.Log(ctx, "cart_payment", tra)
-	}
+	// 	go tracking.Log(ctx, "cart_payment", tra)
+	// }
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the payment is updated")
 
@@ -302,19 +253,13 @@ func RefreshCID(ctx context.Context, cid string) (string, error) {
 	return cid, nil
 }
 
-func Merge(ctx context.Context) error {
+func Merge(ctx context.Context, cid string) error {
 	slog.LogAttrs(ctx, slog.LevelInfo, "merging cart")
 
 	uid, ok := ctx.Value(contexts.UserID).(int)
 	if !ok {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the user id")
 		return errors.New("you are not authorized to process this request")
-	}
-
-	cid, ok := ctx.Value(contexts.Cart).(string)
-	if !ok {
-		slog.LogAttrs(ctx, slog.LevelInfo, "cannot get the cart id")
-		return errors.New("something went wrong")
 	}
 
 	acart, err := db.Redis.HGetAll(ctx, "cart:"+cid).Result()
@@ -333,7 +278,7 @@ func Merge(ctx context.Context) error {
 		for key, val := range acart {
 			a, err := strconv.ParseInt(val, 10, 64)
 			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the anonymous quantity", slog.String("quantity", val))
+				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the anonymous quantity", slog.String("product", key), slog.String("quantity", val))
 				continue
 			}
 

@@ -9,6 +9,7 @@
 			   href="#"
 			   hx-get="{{.URL}}?page=0"
 			   hx-target="#table"
+			   hx-push-url="true"
 			   hx-swap="outerHTML">
 				{{template "arrow-left.svg"}}
 			</a>
@@ -34,6 +35,7 @@
 			   class="table-pagination-link"
 			   href="#"
 			   hx-get="{{$.URL}}?page={{.}}"
+			   hx-push-url="true"
 			   hx-target="#table"
 			   hx-swap="outerHTML">{{.}}</a>
 
@@ -48,6 +50,7 @@
 			   class="table-pagination-link {{if .IsLast}} table-pagination-link-disabled {{end}}"
 			   href="#"
 			   hx-get="{{.URL}}?page={{.Max}}"
+			   hx-push-url="true"
 			   hx-target="#table"
 			   hx-swap="outerHTML">
 				{{template "arrow-right.svg"}}

@@ -1,0 +1,15 @@
+Hi Arnaud,
+Woo hoo! Your order is on its way. Your order details can be found below.
+        
+Order ID: ORD1
+Order date: Friday, November 11
+Order total: 105.50
+        
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
+| TITLE                       | QUANTITY | PRICE | TOTAL | LINK                                                   |
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
+| T-shirt Tester c’est douter |        1 | 100.5 | 100.5 | http://localhost/PDT1-t-shirt-tester-c-est-douter.html |
++-----------------------------+----------+-------+-------+--------------------------------------------------------+
+        
+See you around,
+The Customer Experience Team at artisons shop

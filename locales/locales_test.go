@@ -2,6 +2,9 @@ package locales
 
 import (
 	"artisons/tests"
+	"errors"
+	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -10,34 +13,31 @@ var value = Value{
 	Value: "coucou",
 }
 
-func TestValidateReturnsErrorWhenKeyIsEmpty(t *testing.T) {
-	c := tests.Context()
+func TestValidate(t *testing.T) {
+	ctx := tests.Context()
 
-	v := value
-	v.Key = ""
-
-	if err := v.Validate(c); err == nil || err.Error() != "input:key" {
-		t.Fatalf(`v.Validate(c) = %v, want not "input:key"`, err.Error())
+	var tests = []struct {
+		name  string
+		field string
+		value string
+		err   error
+	}{
+		{"key", "Key", "", errors.New("input:key")},
+		{"value", "Value", "", errors.New("input:value")},
+		{"success", "", "", nil},
 	}
-}
 
-func TestValidateReturnsErrorWhenValueIsEmpty(t *testing.T) {
-	c := tests.Context()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := value
 
-	v := value
-	v.Value = ""
+			if tt.field != "" {
+				reflect.ValueOf(&v).Elem().FieldByName(tt.field).SetString(tt.value)
+			}
 
-	if err := v.Validate(c); err == nil || err.Error() != "input:value" {
-		t.Fatalf(`v.Validate(c) = %v, want not "input:value"`, err.Error())
-	}
-}
-
-func TestSaveReturnsNoError(t *testing.T) {
-	c := tests.Context()
-
-	v := value
-
-	if err := v.Save(c); err != nil {
-		t.Fatalf(`v.Validate(c) = %s, want not nil`, err.Error())
+			if err := v.Validate(ctx); fmt.Sprintf("%s", err) != fmt.Sprintf("%s", tt.err) {
+				t.Fatalf(`err = %v, want %s`, err, tt.err)
+			}
+		})
 	}
 }

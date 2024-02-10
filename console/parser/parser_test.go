@@ -2,6 +2,8 @@ package parser
 
 import (
 	"artisons/conf"
+	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -13,363 +15,240 @@ var line = []string{
 
 var header = []string{"sku", "title", "price", "currency", "quantity", "status", "description", "images", "weight", "tags", "links", "options"}
 
-func TestImportReturnsErrorWhenHeadersAreMissing(t *testing.T) {
-	h := make([]string, 3)
-	copy(h, header)
-
-	csv := lines{h}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err == nil || count != 0 || err.Error() != "the csv is invalid" {
-		t.Fatalf(`Import = %d, %v, want 0, 'the csv is invalid'`, count, err)
+func TestImport(t *testing.T) {
+	var tests = []struct {
+		name   string
+		header func(h []string) []string
+		line   func(l []string) []string
+		count  int
+		err    error
+	}{
+		{
+			"header missing",
+			func(h []string) []string { return []string{} },
+			func(l []string) []string { return l },
+			0,
+			errors.New("the csv is invalid"),
+		},
+		{
+			"first cell invalid",
+			func(h []string) []string { return []string{"id"} },
+			func(l []string) []string { return l },
+			0,
+			errors.New("the csv is invalid"),
+		},
+		{
+			"miss required fields",
+			func(h []string) []string { return h },
+			func(l []string) []string { return l[1:3] },
+			0,
+			nil,
+		},
+		{
+			"bad sku",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[0] = "sku!"; return l },
+			0,
+			nil,
+		},
+		{
+			"title missing",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[1] = ""; return l },
+			0,
+			nil,
+		},
+		{
+			"slug missing",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[2] = ""; return l },
+			0,
+			nil,
+		},
+		{
+			"price missing",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[3] = ""; return l },
+			0,
+			nil,
+		},
+		{
+			"price invalid",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[3] = "invalid"; return l },
+			0,
+			nil,
+		},
+		{
+			"quantiy missing",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[5] = ""; return l },
+			0,
+			nil,
+		},
+		{
+			"quantiy invalid",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[5] = "invalid"; return l },
+			0,
+			nil,
+		},
+		{
+			"status invalid",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[6] = "invalid"; return l },
+			0,
+			nil,
+		},
+		{
+			"description missing",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[7] = ""; return l },
+			0,
+			nil,
+		},
+		{
+			"image missing",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[8] = ""; return l },
+			0,
+			nil,
+		},
+		{
+			"image invalid",
+			func(h []string) []string { return h },
+			func(l []string) []string { l[8] = "invalid"; return l },
+			0,
+			nil,
+		},
+		{
+			"image not found",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[8] = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1_toto.png"
+				return l
+			},
+			0,
+			nil,
+		},
+		{
+			"image bad extension",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[8] = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.svg"
+				return l
+			},
+			0,
+			nil,
+		},
+		{
+			"image local bad extension",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[8] = "../../web/data/product.svg"
+				return l
+			},
+			0,
+			nil,
+		},
+		{
+			"image local not found",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[8] = "../../web/data/toto.png"
+				return l
+			},
+			0,
+			nil,
+		},
+		{
+			"weight invalid",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[9] = "toto"
+				return l
+			},
+			0,
+			nil,
+		},
+		{
+			"options invalid",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[12] = "toto"
+				return l
+			},
+			0,
+			nil,
+		},
+		{
+			"count=1",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				return l
+			},
+			1,
+			nil,
+		},
+		{
+			"local image",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[8] = "../../web/data/product.png"
+				return l
+			},
+			1,
+			nil,
+		},
+		{
+			"no option",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[12] = ""
+				return l
+			},
+			1,
+			nil,
+		},
+		{
+			"no link",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[11] = ""
+				return l
+			},
+			1,
+			nil,
+		},
+		{
+			"no weight",
+			func(h []string) []string { return h },
+			func(l []string) []string {
+				l[9] = ""
+				return l
+			},
+			1,
+			nil,
+		},
 	}
-}
 
-func TestImportReturnsErrorWhenFirstCellIsInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	h[0] = "id"
-
-	csv := lines{h}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err == nil || count != 0 || err.Error() != "the csv is invalid" {
-		t.Fatalf(`Import = %d, %v, want 0, 'the csv is invalid'`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenFieldsAreMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, 3)
-	copy(l, line)
-
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenSkuIsInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[0] = "sku!"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenTitleIsMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[1] = ""
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenSlugIsMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[2] = ""
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenPriceIsMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[3] = ""
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenPriceIsInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[3] = "toto"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenQuantityIsMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[5] = ""
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenQuantityIsInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[5] = "toto"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenStatusIsInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[6] = "toto"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenDescriptionIsMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[7] = ""
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroImagesAreInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[8] = "toto"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenSkuImagesAreMissing(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[8] = ""
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenImagesAreNotFound(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-
-	const image = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1_toto.png"
-	l[8] = image
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenImageHaveBadExtension(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-
-	const image = "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.svg"
-	l[8] = image
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenLocalImageHaveBadExtension(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[8] = "../../web/data/product.svg"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenLocalImageIsNotFound(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[8] = "../../web/data/toto.png"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenWeightIsInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[9] = "toto"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsCountZeroWhenOptionsAreInvalid(t *testing.T) {
-	h := make([]string, len(header))
-	copy(h, header)
-
-	l := make([]string, len(line))
-	copy(l, line)
-	l[12] = "toto"
-	csv := lines{h, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 0 {
-		t.Fatalf(`Import = %d, %v, want 0, nil`, count, err)
-	}
-}
-
-func TestImportReturnsOneCountWhenSuccess(t *testing.T) {
-	csv := lines{header, line}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
-	}
-}
-
-func TestImportReturnsOneCountWhenLocalImageAndSuccess(t *testing.T) {
-	l := make([]string, len(line))
-	copy(l, line)
-
-	l[8] = "../../web/data/product.png"
-	csv := lines{header, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
-	}
-}
-
-func TestImportReturnsOneCountWhenNoOptionsAndSuccess(t *testing.T) {
-	l := make([]string, len(line))
-	copy(l, line)
-
-	l[12] = ""
-	csv := lines{header, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
-	}
-}
-
-func TestImportReturnsOneCountWhenNoLinksAndSuccess(t *testing.T) {
-	l := make([]string, len(line))
-	copy(l, line)
-
-	l[11] = ""
-	csv := lines{header, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
-	}
-}
-
-func TestImportReturnsOneCountWhenNoWeightAndSuccess(t *testing.T) {
-	l := make([]string, len(line))
-	copy(l, line)
-
-	l[9] = ""
-	csv := lines{header, l}
-
-	count, err := Import(csv, conf.DefaultMID)
-	if err != nil || count != 1 {
-		t.Fatalf(`Import = %d, %v, want 1, nil`, count, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := make([]string, len(header))
+			copy(h, header)
+
+			l := make([]string, len(line))
+			copy(l, line)
+			csv := lines{tt.header(h), tt.line(l)}
+
+			count, err := Import(csv, conf.DefaultMID)
+			if fmt.Sprintf("%v", err) != fmt.Sprintf("%v", tt.err) {
+				t.Fatalf(`err = %v, want %v`, err, tt.err)
+			}
+
+			if count != tt.count {
+				t.Fatalf(`count = %d, want %d`, count, tt.count)
+			}
+		})
 	}
 }

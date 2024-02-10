@@ -58,7 +58,7 @@
                     <td class="box td">
                         <div class="row row-align row-gap">
                             <a
-                               href="/admin/filters/{{.Key}}/edit.html"
+                               href="/admin/filters/{{.Key}}/edit"
                                class="button table-button">
                                 <span class="button-icon"> {{template "edit.svg"}} </span>
                             </a>
@@ -75,7 +75,7 @@
                                 </a>
 
                                 <a
-                                   hx-post="/admin/filters/{{.Key}}/delete.html"
+                                   hx-post="/admin/filters/{{.Key}}/delete"
                                    hx-include="[name='page']"
                                    hx-target="#table"
                                    class="button table-button table-delete-confirm-button">

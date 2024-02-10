@@ -5,23 +5,34 @@ import (
 	"testing"
 )
 
-func TestSessionsReturnsSessionsWhenUserHasSession(t *testing.T) {
+func TestSessions(t *testing.T) {
 	ctx := tests.Context()
-	sessions, err := user.Sessions(ctx)
-	if len(sessions) == 0 || err != nil {
-		t.Fatalf("user.Session(ctx) = %v, %v, want not empty, nil", sessions, err)
+
+	tests.Del(ctx, "session")
+	tests.ImportData(ctx, cur+"testdata/sessions.redis")
+
+	var tests = []struct {
+		name     string
+		id       int
+		sessions int
+	}{
+		{"id=1", 1, 1},
+		{"id=2", 2, 0},
 	}
 
-	session := sessions[0]
-	if session.ID == "" || session.Device == "" || session.TTL == 0 {
-		t.Fatalf("sessions[0] = %v, want Session", session)
-	}
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := User{ID: tt.id}
 
-func TestSessionsReturnsEmptySliceWhenUserDoesNotHaveSession(t *testing.T) {
-	ctx := tests.Context()
-	sessions, err := User{ID: 98}.Sessions(ctx)
-	if len(sessions) != 0 || err != nil {
-		t.Fatalf("User{ID: 98}.Session(ctx) = %v, %v, want []Session, nil", sessions, err)
+			sessions, err := u.Sessions(ctx)
+
+			if err != nil {
+				t.Fatalf("err =  %v, want nil", err)
+			}
+
+			if len(sessions) != tt.sessions {
+				t.Fatalf("len(sessions) = %d , want %d", len(sessions), tt.sessions)
+			}
+		})
 	}
 }

@@ -11,7 +11,7 @@
 			hx-target="#dashboard"
 			hx-swap="outerHTML"
 			hx-indicator="#spinner"
-			hx-get="/admin/index.html">
+			hx-get="/admin/index">
 		<option value="7">{{translate .Lang "Last 7 days"}}</option>
 		<option value="14">{{translate .Lang "Last 14 days"}}</option>
 		<option value="30">{{translate .Lang "Last 30 days"}}</option>
@@ -20,7 +20,7 @@
 	<a
 	   hx-swap="outerHTML"
 	   hx-indicator="#spinner"
-	   hx-post="/admin/demo.html"
+	   hx-post="/admin/demo"
 	   href="#"
 	   class="button button-primary">
 		{{if .Demo }}

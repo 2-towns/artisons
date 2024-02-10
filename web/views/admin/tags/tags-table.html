@@ -41,7 +41,7 @@
                     <td class="box td">
                         <div class="row row-align row-gap">
                             <a
-                               href="/admin/tags/{{.Key}}/edit.html"
+                               href="/admin/tags/{{.Key}}/edit"
                                class="button table-button">
                                 <span class="button-icon"> {{template "edit.svg"}} </span>
                             </a>
@@ -57,7 +57,7 @@
                                 </a>
 
                                 <a
-                                   hx-post="/admin/tags/{{.Key}}/delete.html"
+                                   hx-post="/admin/tags/{{.Key}}/delete"
                                    hx-include="[name='page']"
                                    hx-target="#table"
                                    class="button table-button table-delete-confirm-button">

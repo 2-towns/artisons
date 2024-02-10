@@ -6,11 +6,17 @@ import (
 	"artisons/http/contexts"
 	"artisons/http/cookies"
 	"artisons/http/httperrors"
+	"artisons/http/httphelpers"
+	"artisons/shops"
+	"artisons/tags/tree"
+	"artisons/templates"
 	"context"
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
-	"strings"
+
+	"golang.org/x/text/language"
 )
 
 func findBySessionID(ctx context.Context, sid string) (User, error) {
@@ -45,104 +51,67 @@ func findBySessionID(ctx context.Context, sid string) (User, error) {
 	return u, err
 }
 
-// Middleware detects the session ID in the cookies.
-// If the session ID exists, it will load the current
-// user into the context.
-func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+func Context(r *http.Request, w http.ResponseWriter) context.Context {
+	ctx := r.Context()
 
-		sid, err := r.Cookie(cookies.SessionID)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
-			next.ServeHTTP(w, r.WithContext(ctx))
-			return
-		}
+	sid, err := r.Cookie(cookies.SessionID)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
+		return ctx
+	}
 
-		user, err := findBySessionID(ctx, sid.Value)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelInfo, "session id not found so destroying it", slog.String("sid", sid.Value))
+	user, err := findBySessionID(ctx, sid.Value)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelInfo, "session id not found so destroying it", slog.String("sid", sid.Value))
 
-			cookie := &http.Cookie{
-				Name:     cookies.SessionID,
-				Value:    sid.Value,
-				MaxAge:   -1,
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   conf.Cookie.Secure,
-				Domain:   conf.Cookie.Domain,
-				SameSite: http.SameSiteStrictMode,
-			}
-			http.SetCookie(w, cookie)
-			httperrors.HXCatch(w, ctx, "you are not authorized to process this request")
+		c := httphelpers.NewCookie(cookies.SessionID, sid.Value, -1)
+		http.SetCookie(w, &c)
 
-			return
-		} else {
-			err := user.RefreshSession(ctx)
-			if err != nil {
-				httperrors.Page(w, r.Context(), err.Error(), 500)
-				return
-			}
+		return ctx
+	} else {
+		// Refresh the cookie
+		c := httphelpers.NewCookie(cookies.SessionID, sid.Value, int(conf.Cookie.MaxAge))
+		http.SetCookie(w, &c)
+	}
 
-			cookie := &http.Cookie{
-				Name:     cookies.SessionID,
-				Value:    sid.Value,
-				MaxAge:   int(conf.Cookie.MaxAge),
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   conf.Cookie.Secure,
-				Domain:   conf.Cookie.Domain,
-				SameSite: http.SameSiteStrictMode,
-			}
-			http.SetCookie(w, cookie)
-		}
+	ctx = context.WithValue(ctx, contexts.User, user)
+	ctx = context.WithValue(ctx, contexts.UserID, user.ID)
+	ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
 
-		ctx = context.WithValue(ctx, contexts.User, user)
-		ctx = context.WithValue(ctx, contexts.UserID, user.ID)
-
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+	return ctx
 }
 
 func AccountOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+		ctx := Context(r, w)
 		user, ok := ctx.Value(contexts.User).(User)
 
 		if !ok {
 			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
-			http.Redirect(w, r, "/otp.html", http.StatusFound)
+			//httperrors.Catch(w, ctx, "you are not authorized to process this request", 401)
+			http.Redirect(w, r, "/otp", http.StatusFound)
 			return
 		}
 
-		ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
-
 		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
 
-func Domain(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		if strings.HasPrefix(r.URL.Path, "/admin") {
-			ctx = context.WithValue(ctx, contexts.Domain, "back")
-		} else {
-			ctx = context.WithValue(ctx, contexts.Domain, "front")
+		err := user.RefreshSession(ctx)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot refresh the session", slog.String("error", err.Error()))
 		}
-
-		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
+		ctx := Context(r, w)
+
 		user, ok := ctx.Value(contexts.User).(User)
 
 		if !ok {
 			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
-			http.Redirect(w, r, "/sso.html", http.StatusFound)
+			//httperrors.Catch(w, ctx, "you are not authorized to process this request", 401)
+			http.Redirect(w, r, "/sso", http.StatusFound)
 			return
 		}
 
@@ -152,8 +121,99 @@ func AdminOnly(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, contexts.Demo, user.Demo)
-
+		w.Header().Set("X-Robots-Tag", "noindex")
 		next.ServeHTTP(w, r.WithContext(ctx))
+
+		log.Println("admin donene !!!")
+
+		err := user.RefreshSession(ctx)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot refresh the session", slog.String("error", err.Error()))
+		}
 	})
+}
+
+func AccountHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	lang := ctx.Value(contexts.Locale).(language.Tag)
+
+	data := struct {
+		Lang language.Tag
+		Shop shops.Settings
+		Tags []tree.Leaf
+	}{
+		lang,
+		shops.Data,
+		tree.Tree,
+	}
+
+	if err := templates.Pages["account"].Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
+}
+
+func AddressFormHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	lang := ctx.Value(contexts.Locale).(language.Tag)
+	user := ctx.Value(contexts.User).(User)
+
+	data := struct {
+		Lang language.Tag
+		Shop shops.Settings
+		Tags []tree.Leaf
+		User User
+	}{
+		lang,
+		shops.Data,
+		tree.Tree,
+		user,
+	}
+
+	if err := templates.Pages["address"].Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
+}
+
+func AddressHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	lang := ctx.Value(contexts.Locale).(language.Tag)
+	user := ctx.Value(contexts.User).(User)
+
+	if err := r.ParseForm(); err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
+		httperrors.HXCatch(w, ctx, "something went wrong")
+		return
+	}
+
+	a := Address{
+		Firstname:     r.FormValue("firstname"),
+		Lastname:      r.FormValue("lastname"),
+		Street:        r.FormValue("street"),
+		Complementary: r.FormValue("complementary"),
+		City:          r.FormValue("city"),
+		Zipcode:       r.FormValue("zipcode"),
+		Phone:         r.FormValue("phone"),
+	}
+
+	if err := a.Validate(ctx); err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	if err := a.Save(ctx, user.ID); err != nil {
+		httperrors.HXCatch(w, ctx, err.Error())
+		return
+	}
+
+	data := struct {
+		Lang           language.Tag
+		SuccessMessage string
+	}{
+		lang,
+		"The address has been saved successfully.",
+	}
+
+	if err := templates.Pages["hx-success"].Execute(w, &data); err != nil {
+		slog.Error("cannot render the template", slog.String("error", err.Error()))
+	}
 }

@@ -1,0 +1,13 @@
+HSET "user:1" id "1" email "arnaud@artisons.me" created_at 1705310389  created_at 1136160000 updated_at 1136160000  type "user" role "user"
+HSET "user:2" id "2" email "hello@artisons.me" created_at 1705310389  created_at 1136160000 updated_at 1136160000  type "user" role "admin"
+
+HSET "otp:hello@artisons.me" otp "123456" 
+HSET "otp:otp@artisons.me" otp "123456" 
+HSET "otp:blocked@artisons.me" otp "123456" "attempts" "2"
+
+HSET "session:123456789" "uid" "1" "id" "123456789" "device" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "type" "session"
+HSET "session:987654321" "uid" "2" "id" "987654321" "device" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" "type" "session"
+
+HSET "product:PDT1" id "PDT1" type "product" title "T-shirt Tester c’est douter" description "T-Shirt unisexe" slug "t-shirt-tester-c-est-douter" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" meta "color_blue" updated_at 1705310389 
+
+ZADD wish:1 1 "PDT2"

@@ -14,7 +14,7 @@
     </div>
 
     <form
-          hx-post="{{if .Data.Key }}/admin/filters/{{.Data.Key}}/edit.html{{else}}/admin/filters/add.html{{end}}">
+          hx-post="{{if .Data.Key }}/admin/filters/{{.Data.Key}}/edit{{else}}/admin/filters/add{{end}}">
         <div class="form box">
             <div class="form-row" id="key-row">
                 <label class="input-label" for="key">
@@ -137,7 +137,7 @@
 
         <div class="card-footer box">
             <div class="form row row-between row-gap">
-                <a href="/admin/filters.html" class="button row row-align fill">
+                <a href="/admin/filters" class="button row row-align fill">
                     {{translate .Lang "Back"}}
                 </a>
                 <button class="button button-primary fill">

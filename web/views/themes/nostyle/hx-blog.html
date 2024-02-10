@@ -1,9 +1,3 @@
-{{ if .Empty }}
-No results found.
-{{else}}
-{{ range .Articles}}
-<div class="blog-card">
-    <p>{{.Title}}</p>
-</div>
-{{end}}
-{{end}}
+{{ if .Empty }}No results found.{{else}}{{ range .Articles}}<div class="blog-card">
+    <p>{{.ID}} {{.Title}}</p>
+</div>{{end}}{{end}}

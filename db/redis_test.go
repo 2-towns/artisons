@@ -5,47 +5,50 @@ import (
 	"testing"
 )
 
-func TestReturnsEncodedStringWhenUsingQuote(t *testing.T) {
+func TestEscape(t *testing.T) {
 	exp := "c\\'est"
 	arg := "c'est"
 	if s := Escape(arg); s != exp {
-		t.Fatalf(`Escape('%s') = '%s', want '%s'`, arg, s, exp)
+		t.Fatalf(`s = %s, want c\\'est`, s)
 	}
 }
 
-func TestUnescapeWhenContainsQuote(t *testing.T) {
+func TestUnescape(t *testing.T) {
 	exp := "c'est"
 	arg := "c\\'est"
 
 	if s := Unescape(arg); s != exp {
-		t.Fatalf(`Unescape('%s') = '%s', want '%s'`, arg, s, exp)
+		t.Fatalf(`s = %s, want c'est`, s)
 	}
 }
 
-func TestSearchValueWhenDoesNotContainSpace(t *testing.T) {
+func TestSearchValue(t *testing.T) {
 	exp := "hello"
 	arg := "hello"
 
-	if s := SearchValue(arg); s != exp {
-		t.Fatalf(`Unescape('%s') = '%s', want '%s'`, arg, s, exp)
-	}
+	t.Run("hello", func(t *testing.T) {
+		if s := SearchValue(arg); s != exp {
+			t.Fatalf(`s = %s, want hello`, s)
+		}
+	})
+
+	t.Run("hello world", func(t *testing.T) {
+		exp := "hello|world"
+		arg := "hello world"
+
+		if s := SearchValue(arg); s != exp {
+			t.Fatalf(`s = %s, want hello|world`, s)
+		}
+	})
+
 }
 
-func TestSearchValueWhenDoesContainSpace(t *testing.T) {
-	exp := "hello|world"
-	arg := "hello world"
-
-	if s := SearchValue(arg); s != exp {
-		t.Fatalf(`Unescape('%s') = '%s', want '%s'`, arg, s, exp)
-	}
-}
-
-func TestSplitQueryReturnsStringSplitted(t *testing.T) {
+func TestSplitQuery(t *testing.T) {
 	ctx := context.Background()
 	s := "hello \"hello with space\""
 
 	if args, err := SplitQuery(ctx, s); err != nil || len(args) != 2 {
-		t.Fatalf(`SplitQuery(ctx, s) = '%v' %v, want [hello "hello with space"], nil`, args, err)
+		t.Fatalf(`len(args) = %d, %v, want 2, nil`, len(args), err)
 	}
 
 }

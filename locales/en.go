@@ -55,7 +55,7 @@ func LoadEn() {
 
 	// Texts
 	message.SetString(language.English, "The data has been saved successfully.", "The data has been saved successfully.")
-	message.SetString(language.English, "The cart is empty.", "The cart is empty.")
+	message.SetString(language.English, "the cart is empty.", "The cart is empty.")
 	message.SetString(language.English, "Activate demo", "Activate demo")
 	message.SetString(language.English, "Disable demo", "Disable demo")
 	message.SetString(language.English, "Take me home", "Take me home")

@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <form hx-post="/admin/seo/{{.ID}}/edit.html">
+    <form hx-post="/admin/seo/{{.ID}}/edit">
         <div class="form box">
             <div class="form-row" id="key-row">
                 <label class="input-label" for="key">
@@ -87,7 +87,7 @@
 
         <div class="card-footer box">
             <div class="form row row-between row-gap">
-                <a href="/admin/seo.html" class="button row row-align fill">
+                <a href="/admin/seo" class="button row row-align fill">
                     {{translate .Lang "Back"}}
                 </a>
                 <button class="button button-primary fill">

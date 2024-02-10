@@ -31,7 +31,7 @@
 							</div>
 						</div>
 						<a
-						   href="/admin/products/{{.ID}}/edit.html"
+						   href="/admin/products/{{.ID}}/edit"
 						   target="_blank"
 						   class="link">
 							{{template "anchor.svg"}}
@@ -122,7 +122,7 @@
 					</div>
 				</div>
 				<div class="card-footer box row row-start">
-					<a href="/admin/orders.html" class="button row row-align">
+					<a href="/admin/orders" class="button row row-align">
 						{{translate .Lang "Back"}}
 					</a>
 				</div>
@@ -131,7 +131,7 @@
 		<div class="fill">
 			<article class="card card-separator">
 				<form
-					  hx-post="/admin/orders/{{.Data.ID}}/status.html"
+					  hx-post="/admin/orders/{{.Data.ID}}/status"
 					  hx-target="#alert">
 					<div class="box">
 						<h3 class="card-title">

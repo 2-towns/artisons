@@ -2,6 +2,7 @@ package shops
 
 import (
 	"artisons/tests"
+	"reflect"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
@@ -19,56 +20,34 @@ var shop Contact = Contact{
 	Phone:   faker.Phonenumber(),
 }
 
-func TestSaveReturnErrorWhenNameIsEmpty(t *testing.T) {
-	s := shop
-	s.Name = ""
-
+func TestSave(t *testing.T) {
 	ctx := tests.Context()
-	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input:name" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:name'", err)
+
+	var tests = []struct{ name, field, value, want string }{
+		{"name=", "Name", "", "input:name"},
+		{"phone=", "Phone", "", "input:phone"},
+		{"email=", "Email", "", "input:email"},
+		{"email=hello", "Email", "hello", "input:email"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := shop
+
+			reflect.ValueOf(&s).Elem().FieldByName(tt.field).SetString(tt.value)
+
+			if err := s.Validate(ctx); err == nil || err.Error() != tt.want {
+				t.Fatalf(`err = %v, want %s`, err, tt.want)
+			}
+		})
 	}
 }
 
-func TestSaveReturnErrorWhenPhoneIsEmpty(t *testing.T) {
-	s := shop
-	s.Phone = ""
-
-	ctx := tests.Context()
-	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input:phone" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:phone'", err)
-	}
-}
-
-func TestSaveReturnErrorWhenEmailIsEmpty(t *testing.T) {
-	s := shop
-	s.Email = ""
-
-	ctx := tests.Context()
-	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input:email" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:email'", err)
-	}
-}
-
-func TestSaveReturnErrorWhenEmailIsInvalid(t *testing.T) {
-	s := shop
-	s.Email = "hello"
-
-	ctx := tests.Context()
-	err := s.Validate(ctx)
-	if err == nil || err.Error() != "input:email" {
-		t.Fatalf("s.Validate(ctx, a) = '%v', want 'input:email'", err)
-	}
-}
-
-func TestDeliveriesReturnsColissimo(t *testing.T) {
+func TestDeliveries(t *testing.T) {
 	ctx := tests.Context()
 
 	del, err := Deliveries(ctx)
 	if err != nil || len(del) == 0 {
-		t.Fatalf(`Deliveries(ctx) = '%v' %v, want []string{"%s"}, nil`, del, err, tests.Delivery)
+		t.Fatalf(`err = %v, want nil`, err)
 	}
-
 }

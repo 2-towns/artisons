@@ -13,11 +13,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/text/language"
 )
 
 func Log(ctx context.Context, action string, data map[string]string) error {
+	tracking, ok := ctx.Value(contexts.Tracking).(bool)
+	if !tracking || !ok {
+		return nil
+	}
+
 	l := slog.With(slog.String("action", action))
 	l.LogAttrs(ctx, slog.LevelInfo, "writing tracking log")
 
@@ -32,7 +36,7 @@ func Log(ctx context.Context, action string, data map[string]string) error {
 		return err
 	}
 
-	rid := ctx.Value(middleware.RequestIDKey).(string)
+	rid := ctx.Value(contexts.RequestID).(string)
 	cid := ctx.Value(contexts.Device).(string)
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 	parts := []string{

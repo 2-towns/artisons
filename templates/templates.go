@@ -3,9 +3,9 @@ package templates
 import (
 	"artisons/cache"
 	"artisons/conf"
-	"artisons/http/seo"
 	"artisons/images"
 	"artisons/locales"
+	"artisons/seo/urls"
 	"fmt"
 	"html/template"
 	"log"
@@ -47,7 +47,7 @@ var AdminSuccess = []string{
 	conf.WorkingSpace + "web/views/admin/alert-success.html",
 }
 
-var AdminList = append(AdminUI, AdminSuccess...)
+var AdminListHandler = append(AdminUI, AdminSuccess...)
 
 var Pages map[string]*template.Template = map[string]*template.Template{}
 
@@ -91,11 +91,13 @@ func init() {
 	buildTemplate("hx-blog", []string{"hx-blog.html"})
 	buildTemplate("static", []string{"static.html"})
 	buildTemplate("orders", []string{"orders.html", "hx-orders.html"})
+	buildTemplate("account", []string{"account.html"})
 	buildTemplate("hx-orders", []string{"hx-orders.html"})
 	buildTemplate("search", []string{"search.html", "hx-search.html"})
 	buildTemplate("hx-search", []string{"hx-search.html"})
 	buildTemplate("order", []string{"order.html"})
 	buildTemplate("categories", []string{"categories.html"})
+	buildTemplate("product", []string{"product.html"})
 	buildTemplate("cart", []string{"cart.html", "hx-cart.html"})
 	buildTemplate("hx-cart", []string{"hx-cart.html"})
 	buildTemplate("address", []string{
@@ -141,18 +143,7 @@ func Build(name string) *template.Template {
 			})
 		},
 		"meta": func(key string, t string, id string) string {
-			if t == "title" {
-				return strings.Replace(seo.URLs[key].Title, "{{key}}", id, 1)
-			}
-
-			return strings.Replace(seo.URLs[key].Description, "{{key}}", id, 1)
-		},
-		"url": func(key string, id string) string {
-			if id == "" {
-				return seo.URLs[key].URL
-			}
-
-			return strings.Replace(seo.URLs[key].URL, "{{id}}", id, 1)
+			return strings.Replace(urls.Get(key, t), "{{key}}", id, 1)
 		},
 	})
 }

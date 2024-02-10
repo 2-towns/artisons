@@ -1,3 +1,0 @@
-time=2023-12-31T18:58:11.564+01:00 level=INFO msg="files loaded" folder=web/public/js/admin length=2
-time=2023-12-31T18:58:11.565+01:00 level=INFO msg="files loaded" folder=web/public/css/admin length=2
-time=2023-12-31T18:58:11.565+01:00 level=INFO msg="starting server on addr" addr=:8080

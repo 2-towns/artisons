@@ -1,3 +1,0 @@
-localhost	FALSE	/	TRUE	2338051310	wsid	123456789
-127.0.0.1	FALSE	/	TRUE	2338051310	wsid	123456789
-                                    

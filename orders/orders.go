@@ -10,7 +10,6 @@ import (
 	"artisons/shops"
 	"artisons/stats"
 	"artisons/string/stringutil"
-	"artisons/tracking"
 	"artisons/users"
 	"artisons/validators"
 	"bytes"
@@ -83,6 +82,7 @@ type Note struct {
 type Query struct {
 	Keywords string
 	UID      int
+	Sorter   string
 }
 
 // IsValidDelivery returns true if the delivery
@@ -247,9 +247,8 @@ func (o Order) Save(ctx context.Context) (string, error) {
 
 	go o.SendConfirmationEmail(ctx)
 
-	if conf.EnableTrackingLog {
-		go tracking.Log(ctx, "order", tra)
-	}
+	// TODO tracking
+	// go tracking.Log(ctx, "order", tra)
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the new order is created", slog.String("oid", oid))
 
@@ -336,14 +335,9 @@ func UpdateStatus(ctx context.Context, oid, status string) error {
 		return errors.New("something went wrong")
 	}
 
-	if conf.EnableTrackingLog {
-		tra := map[string]string{
-			"oid":    oid,
-			"status": status,
-		}
-
-		go tracking.Log(ctx, "order_status", tra)
-	}
+	// TODO tracking
+	// tra := map[string]string{"oid": oid, "status": status}
+	// go tracking.Log(ctx, "order_status", tra)
 
 	l.LogAttrs(ctx, slog.LevelInfo, "the status is updated")
 
@@ -390,7 +384,7 @@ func Find(ctx context.Context, oid string) (Order, error) {
 
 	if oid == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty id")
-		return Order{}, errors.New("input:id")
+		return Order{}, errors.New("oops the data is not found")
 	}
 
 	if exists, err := db.Redis.Exists(ctx, "order:"+oid).Result(); exists == 0 || err != nil {
@@ -560,9 +554,8 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 		qs += fmt.Sprintf("(@uid:{%d})", q.UID)
 	}
 
-	end, ok := ctx.Value(contexts.Domain).(string)
 	sorter := "updated_at"
-	if ok && end == "front" {
+	if q.Sorter == "created_at" {
 		sorter = "created_at"
 	}
 

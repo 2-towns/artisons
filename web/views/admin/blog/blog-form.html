@@ -15,7 +15,7 @@
 
 
 	<form
-		  hx-post="{{if .Data.ID }}/admin/blog/{{.Data.ID}}/edit.html{{else}}/admin/blog/add.html{{end}}"
+		  hx-post="{{if .Data.ID }}/admin/blog/{{.Data.ID}}/edit{{else}}/admin/blog/add{{end}}"
 		  enctype="multipart/form-data">
 		<div class="form box">
 			<div class="form-row" id="title-row">
@@ -51,7 +51,7 @@
 						<div class="row row-gap row-align">
 							<a
 							   href="#"
-							   hx-get="/admin/slug.html"
+							   hx-get="/admin/slug"
 							   hx-include="input[name=title]"
 							   hx-swap="outerHTML"
 							   hx-target="#slug">
@@ -139,7 +139,7 @@
 
 		<div class="card-footer box">
 			<div class="form row row-between row-gap">
-				<a href="/admin/blog.html" class="button row row-align fill">
+				<a href="/adminblog" class="button row row-align fill">
 					{{translate .Lang "Back"}}
 				</a>
 				<button class="button button-primary fill">

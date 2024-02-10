@@ -1,0 +1,5 @@
+HSET "order:ORD1" id "ORD1" delivery "home" payment "card" payment_status "payment_progress" status "created" total "100.5" type "order" address_lastname "Arnaud" address_firstname "Arnaud" address_city "Lille" address_street "Rue du moulin" address_complementary "Appartement C" address_phone "3345668832" uid "1" created_at 1705310389 updated_at 1705310389 
+
+HSET "product:PDT1" id "PDT1" type "product" title "T-shirt Tester c’est douter" description "T-Shirt unisexe" slug "t-shirt-tester-c-est-douter" price "100.5" quantity "2" status "online" weight "500" tags "clothes" sku "SKU1" image_1 "products/PDT1.jpeg" image_2 "products/PDT1.jpeg" meta "color_blue" updated_at 1705310389 
+
+HSET "order:ORD1:products" "PDT1" "1"

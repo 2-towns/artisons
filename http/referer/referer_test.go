@@ -246,7 +246,7 @@ var testData = []struct {
 	},
 }
 
-func TestRefererParser(t *testing.T) {
+func TestParse(t *testing.T) {
 	for _, tdata := range testData {
 		res := Parse(tdata.uri)
 		res.SetCurrent("https://www.snowplowanalytics.com/")

@@ -1,85 +1,164 @@
 package main
 
 import (
-	"artisons/admin"
+	"artisons/addresses"
 	"artisons/auth"
+	"artisons/blog"
 	"artisons/cache"
 	"artisons/carts"
 	"artisons/conf"
-	"artisons/http/flash"
-	"artisons/http/forms"
-	"artisons/http/htmx"
-	"artisons/http/httperrors"
-	"artisons/http/pages"
+	"artisons/http/contexts"
+	"artisons/http/cookies"
+	"artisons/http/httphelpers"
 	"artisons/http/security"
-	"artisons/http/seo"
 	"artisons/locales"
 	"artisons/logs"
+	"artisons/orders"
+	"artisons/products"
+	"artisons/products/filters"
+	"artisons/seo"
+	"artisons/seo/urls"
+	"artisons/shops"
+	"artisons/shops/website"
 	"artisons/stats"
+	"artisons/string/slughttp"
+	"artisons/tags"
 	"artisons/users"
 	"context"
-	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
+	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/httplog/v2"
+	"github.com/google/uuid"
 )
 
-var l httplog.Logger = httplog.Logger{
-	Logger:  slog.Default(),
-	Options: httplog.Options{},
+func handler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := uuid.New()
+		ctx := context.WithValue(r.Context(), contexts.RequestID, id.String())
+		ctx = context.WithValue(ctx, contexts.Locale, conf.DefaultLocale)
+		ctx = context.WithValue(ctx, contexts.HX, r.Header.Get("HX-Request") == "true")
+		ctx = context.WithValue(ctx, contexts.Tracking, conf.EnableTrackingLog)
+
+		slog.LogAttrs(
+			ctx,
+			slog.LevelInfo,
+			"new request",
+			slog.String("path", r.URL.Path),
+			slog.String("ua", r.Header.Get("User-Agent")),
+			slog.String("referer", r.Header.Get("Referer")),
+		)
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Powered-By", "WordPress")
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set(
+			"Accept-CH",
+			"Sec-CH-Prefers-Color-Scheme, Device-Memory, Downlink, ECT",
+		)
+		w.Header().Set("Referrer-Policy", "strict-origin")
+		w.Header().Set("X-Frame-Options", "deny")
+		w.Header().Set(
+			"Strict-Transport-Security",
+			"max-age=63072000; includeSubDomains; preload",
+		)
+		w.Header().Set("Date", time.Now().Format(time.RFC1123))
+		w.Header().Set("Content-Security-Policy", "default-src 'self'")
+		w.Header().Set("X-XSS-Protection", "1")
+
+		if conf.Debug {
+			w.Header().Set("X-Robots-Tag", "noindex")
+		}
+
+		cid, err := r.Cookie(cookies.CartID)
+		if err == nil {
+			slog.LogAttrs(ctx, slog.LevelInfo, "cart id detected", slog.String("cid", cid.Value))
+			c := httphelpers.NewCookie(cookies.CartID, cid.Value, int(conf.Cookie.MaxAge))
+			http.SetCookie(w, &c)
+		}
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
-func adminRouter() http.Handler {
-	r := chi.NewRouter()
-	r.NotFound(httperrors.NotFound)
+func adminMux() *http.ServeMux {
+	admin := http.NewServeMux()
+	admin.HandleFunc("GET /admin/index", stats.Handler)
+	admin.HandleFunc("GET /admin/products", products.AdminListHandlerHandler)
+	admin.HandleFunc("GET /admin/products/add", products.AdminFormHandler)
+	admin.HandleFunc("GET /admin/products/{id}/edit", products.AdminFormHandler)
+	admin.HandleFunc("GET /admin/slug", slughttp.Handler)
+	admin.HandleFunc("GET /admin/blog", blog.AdminListHandler)
+	admin.HandleFunc("GET /admin/blog/add", blog.AdminFormHandler)
+	admin.HandleFunc("GET /admin/blog/{id}/edit", blog.AdminFormHandler)
+	admin.HandleFunc("GET /admin/tags", tags.AdminListHandler)
+	admin.HandleFunc("GET /admin/tags/add", tags.AdminFormHandler)
+	admin.HandleFunc("GET /admin/tags/{id}/edit", tags.AdminFormHandler)
+	admin.HandleFunc("GET /admin/filters", filters.AdminListHandler)
+	admin.HandleFunc("GET /admin/filters/add", filters.AdminFormHandler)
+	admin.HandleFunc("GET /admin/filters/{id}/edit", filters.AdminFormHandler)
+	admin.HandleFunc("GET /admin/orders", orders.OrderListHandler)
+	admin.HandleFunc("GET /admin/orders/{id}/edit", orders.OrderFormHandler)
+	admin.HandleFunc("GET /admin/settings", shops.SettingsFormHandler)
+	admin.HandleFunc("GET /admin/seo", seo.AdminListHandler)
+	admin.HandleFunc("GET /admin/seo/{id}/edit", seo.AdminFormHandler)
+	admin.HandleFunc("POST /admin/demo", stats.DemoHandler)
+	admin.HandleFunc("POST /admin/products/add", products.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/products/{id}/edit", products.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/products/{id}/delete", products.AdminDeleteHandler)
+	admin.HandleFunc("POST /admin/tags/add", tags.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/tags/{id}/edit", tags.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/tags/{id}/delete", tags.AdminDeleteHandler)
+	admin.HandleFunc("POST /admin/filters/add", filters.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/filters/{id}/edit", filters.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/filters/{id}/delete", filters.AdminDeleteHandler)
+	admin.HandleFunc("POST /admin/blog/add", blog.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/blog/{id}/edit", blog.AdminSaveHandler)
+	admin.HandleFunc("POST /admin/blog/{id}/delete", blog.AdminDeleteHandler)
+	admin.HandleFunc("POST /admin/orders/{id}/status", orders.OrderUpdateStatus)
+	admin.HandleFunc("POST /admin/orders/{id}/note", orders.OrderAddNote)
+	admin.HandleFunc("POST /admin/contact-settings", shops.SettingsContactSave)
+	admin.HandleFunc("POST /admin/shop-settings", shops.SettingsShopSave)
+	admin.HandleFunc("POST /admin/seo/{id}/edit", seo.AdminSaveHandler)
+	// csrf.With(forms.ParseForm).Post("/locale", admin.EditLocale)
 
-	r.Use(users.Middleware)
-	r.Use(users.AdminOnly)
-	r.Use(seo.BlockRobots)
+	return admin
+}
 
-	r.Get("/index.html", admin.Dashboard)
-	r.With(pages.Paginate).With(flash.Middleware).Get("/products.html", admin.ProductList)
-	r.Get("/products/add.html", admin.ProductForm)
-	r.Get("/products/{id}/edit.html", admin.ProductForm)
-	r.Get("/slug.html", admin.Slug)
-	r.With(pages.Paginate).With(flash.Middleware).Get("/blog.html", admin.BlogList)
-	r.With(forms.ParseOptionalID).Get("/blog/add.html", admin.BlogForm)
-	r.With(forms.ParseID).Get("/blog/{id}/edit.html", admin.BlogForm)
-	r.With(pages.Paginate).With(flash.Middleware).Get("/tags.html", admin.TagList)
-	r.Get("/tags/add.html", admin.TagForm)
-	r.Get("/tags/{id}/edit.html", admin.TagForm)
-	r.With(pages.Paginate).With(flash.Middleware).Get("/filters.html", admin.FilterList)
-	r.Get("/filters/add.html", admin.FilterForm)
-	r.Get("/filters/{id}/edit.html", admin.FilterForm)
-	r.With(pages.Paginate).With(flash.Middleware).Get("/orders.html", admin.OrderList)
-	r.Get("/orders/{id}/edit.html", admin.OrderForm)
-	r.Get("/settings.html", admin.SettingsForm)
-	r.With(pages.Paginate).With(flash.Middleware).Get("/seo.html", admin.SeoList)
-	r.Get("/seo/{id}/edit.html", admin.SeoForm)
+func websiteMux() *http.ServeMux {
+	web := http.NewServeMux()
+	web.HandleFunc("GET /", website.Home)
+	web.HandleFunc("GET /blog", blog.ListHandler)
+	web.HandleFunc("GET /blog/{slug}", blog.ArticleHandler)
+	web.HandleFunc("GET /cart", carts.Handler)
+	web.HandleFunc("GET /otp", auth.Formhandler)
+	web.HandleFunc("GET /search", website.SearchHandler)
+	web.HandleFunc("GET /"+urls.Get("product", "url")+"/{slug}", products.ProductHandler)
+	web.HandleFunc("GET /"+urls.Get("terms", "url"), website.StaticHandler)
+	web.HandleFunc("GET /"+urls.Get("about", "url"), website.StaticHandler)
+	web.HandleFunc("GET /"+urls.Get("categories", "url"), website.CategoriesHandler)
 
-	r.With(security.Csrf).Post("/demo.html", stats.Demo)
-	r.With(security.Csrf).With(forms.ParseMultipartForm).Post("/products/add.html", admin.ProductSave)
-	r.With(security.Csrf).With(forms.ParseMultipartForm).Post("/products/{id}/edit.html", admin.ProductSave)
-	r.With(security.Csrf).With(forms.ParseForm).With(pages.Paginate).Post("/products/{id}/delete.html", admin.ProductDelete)
-	r.With(security.Csrf).With(forms.ParseMultipartForm).Post("/tags/add.html", admin.TagSave)
-	r.With(security.Csrf).With(forms.ParseMultipartForm).Post("/tags/{id}/edit.html", admin.TagSave)
-	r.With(security.Csrf).With(forms.ParseForm).With(pages.Paginate).Post("/tags/{id}/delete.html", admin.TagDelete)
-	r.With(security.Csrf).With(forms.ParseForm).Post("/filters/add.html", admin.FilterSave)
-	r.With(security.Csrf).With(forms.ParseForm).Post("/filters/{id}/edit.html", admin.FilterSave)
-	r.With(security.Csrf).With(forms.ParseForm).With(pages.Paginate).Post("/filters/{id}/delete.html", admin.FilterDelete)
-	r.With(security.Csrf).With(forms.ParseOptionalID).With(forms.ParseMultipartForm).Post("/blog/add.html", admin.BlogSave)
-	r.With(security.Csrf).With(forms.ParseID).With(forms.ParseMultipartForm).Post("/blog/{id}/edit.html", admin.BlogSave)
-	r.With(security.Csrf).With(forms.ParseID).With(forms.ParseForm, pages.Paginate).Post("/blog/{id}/delete.html", admin.BlogDelete)
-	r.With(security.Csrf).With(forms.ParseForm).Post("/orders/{id}/status.html", admin.OrderUpdateStatus)
-	r.With(security.Csrf).With(forms.ParseForm).Post("/orders/{id}/note.html", admin.OrderAddNote)
-	r.With(security.Csrf).With(forms.ParseMultipartForm).Post("/contact-settings.html", admin.SettingsContactSave)
-	r.With(security.Csrf).With(forms.ParseForm).Post("/shop-settings.html", admin.SettingsShopSave)
-	r.With(security.Csrf).With(forms.ParseForm).Post("/locale.html", admin.EditLocale)
-	r.With(security.Csrf).With(forms.ParseForm).Post("/seo/{id}/edit.html", admin.SeoSave)
+	return web
+}
 
-	return r
+func accountMux() *http.ServeMux {
+	stat := http.NewServeMux()
+	stat.HandleFunc("GET /account/index", users.AccountHandler)
+	stat.HandleFunc("GET /account/address", users.AddressFormHandler)
+	stat.HandleFunc("GET /account/wish", products.WishesHandler)
+
+	account := http.NewServeMux()
+	account.Handle("GET /", stats.Middleware(stat))
+	account.HandleFunc("GET /account/orders", orders.OrdersHandler)
+	account.HandleFunc("GET /account/orders/{id}/detail", orders.OrderHandler)
+	account.HandleFunc("POST /account/address", users.AddressHandler)
+	account.HandleFunc("POST /account/wish/{id}/add", products.WishHandler)
+	account.HandleFunc("POST /account/wish/{id}/delete", products.UnWishHandler)
+
+	return account
 }
 
 func main() {
@@ -88,64 +167,39 @@ func main() {
 	// security.LoadCsp()
 	cache.Busting()
 
-	var router = chi.NewRouter()
+	admin := adminMux()
+	web := websiteMux()
+	account := accountMux()
+
+	app := http.NewServeMux()
+	app.Handle("GET /admin/", users.AdminOnly(admin))
+	app.Handle("GET /account/", users.AccountOnly(account))
+	app.Handle("GET /", stats.Middleware(web))
+	app.Handle("POST /admin/", users.AdminOnly(admin))
+	app.Handle("POST /account/", users.AccountOnly(account))
+	app.HandleFunc("GET /sso", auth.Formhandler)
+	app.HandleFunc("GET /addresses", addresses.Handler)
+	app.HandleFunc("GET /delivery", carts.DeliveryHandler)
+	app.HandleFunc("POST /otp", auth.OtpHandler)
+	app.HandleFunc("POST /login", auth.Loginhandler)
+	app.HandleFunc("POST /logout", auth.LogoutHandler)
+	app.HandleFunc("POST /cart/{id}/add", carts.AddHandler)
+	app.HandleFunc("POST /cart/{id}/delete", carts.DeleteHandler)
+	app.HandleFunc("POST /delivery", carts.DeliverySetHandler)
 
 	fs := http.FileServer(http.Dir("web/public"))
-	router.Handle("/public/*", http.StripPrefix("/public/", fs))
+	mux := http.NewServeMux()
+	mux.Handle("GET /public/", fs)
+	mux.Handle("GET /css/", fs)
+	mux.Handle("GET /js/", fs)
+	mux.Handle("GET /icons/", fs)
+	mux.Handle("GET /fonts/", fs)
+	mux.Handle("GET /favicon.ico", fs)
 
-	router.Group(func(r chi.Router) {
-		// router.Use(middleware.RealIP)
-		r.Use(httplog.RequestLogger(&l))
-		r.Use(security.Headers)
-		r.Use(users.Domain)
-		r.Use(htmx.Middleware)
-		r.Use(locales.Middleware)
-		r.Use(carts.Middleware)
+	mux.Handle("GET /", handler(app))
+	mux.Handle("POST /", handler(security.Csrf(app)))
 
-		if conf.Debug {
-			r.Use(seo.BlockRobots)
-		}
-
-		r.Mount("/admin", adminRouter())
-
-		r.With(stats.Middleware).Get("/", pages.Home)
-		r.With(stats.Middleware).With(pages.Paginate).Get("/blog.html", pages.Blog)
-		r.With(stats.Middleware).Get("/blog/{slug}.html", pages.Article)
-		r.With(stats.Middleware).Get(fmt.Sprintf("/%s/{slug}.html", seo.URLs["product"].URL), pages.Product)
-		r.With(stats.Middleware).Get(fmt.Sprintf("/%s.html", seo.URLs["terms"].URL), pages.Static)
-		r.With(stats.Middleware).Get(fmt.Sprintf("/%s.html", seo.URLs["about"].URL), pages.Static)
-		r.With(stats.Middleware).Get(fmt.Sprintf("/%s.html", seo.URLs["categories"].URL), pages.Categories)
-		r.With(stats.Middleware).Get("/addresses.html", pages.Addresses)
-		r.With(stats.Middleware).With(pages.Paginate).Get("/search.html", pages.Search)
-		r.With(stats.Middleware).With(users.Middleware).Get("/cart.html", pages.Cart)
-		r.With(users.Middleware).Get("/sso.html", auth.Form)
-		r.With(stats.Middleware).With(users.Middleware).Get("/otp.html", auth.Form)
-		r.With(carts.Redirect).Get("/delivery.html", pages.Delivery)
-
-		r.With(security.Csrf).With(users.Middleware).Post("/cart/{id}/add.html", pages.CartAdd)
-		r.With(security.Csrf).With(users.Middleware).Post("/cart/{id}/delete.html", pages.CartDelete)
-		r.With(security.Csrf).With(forms.ParseForm).Post("/otp.html", auth.Otp)
-		r.With(security.Csrf).With(forms.ParseForm).Post("/login.html", auth.Login)
-		r.With(security.Csrf).Post("/logout.html", auth.Logout)
-		r.With(security.Csrf).With(forms.ParseForm).Post("/delivery.html", pages.DeliverySet)
-
-		r.Route("/account", func(r chi.Router) {
-			r.Use(users.Middleware)
-			r.Use(users.AccountOnly)
-
-			r.Get("/index.html", pages.Account)
-			r.Get("/address.html", pages.AddressForm)
-			r.With(pages.Paginate).Get("/orders.html", pages.Orders)
-			r.Get("/orders/{id}/detail.html", pages.Order)
-			r.With(stats.Middleware).Get("/wish.html", pages.Wishes)
-
-			r.With(security.Csrf).Post("/address.html", pages.Address)
-			r.With(security.Csrf).Post("/wish/{id}/add.html", pages.Wish)
-			r.With(security.Csrf).Post("/wish/{id}/delete.html", pages.UnWish)
-		})
-	})
-
-	slog.LogAttrs(context.Background(), slog.LevelInfo, "starting server on addr", slog.String("addr", conf.ServerAddr))
-
-	http.ListenAndServe(conf.ServerAddr, router)
+	slog.Info("Starting server on", slog.String("address", conf.ServerAddr))
+	err := http.ListenAndServe(conf.ServerAddr, mux)
+	log.Fatal(err)
 }

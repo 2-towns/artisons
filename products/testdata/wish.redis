@@ -1,0 +1,2 @@
+HSET "user:1" id "1" email "arnaud@artisons.me" created_at 1705310389  created_at 1136160000 updated_at 1136160000  type "user" role "user"
+ZADD wish:1 1 "PDT1"

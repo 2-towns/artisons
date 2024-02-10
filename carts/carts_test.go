@@ -1,227 +1,206 @@
 package carts
 
 import (
+	"artisons/db"
 	"artisons/http/contexts"
-	"artisons/string/stringutil"
 	"artisons/tests"
 	"context"
-	"fmt"
+	"path"
+	"runtime"
 	"testing"
 )
 
-var cart Cart = Cart{ID: tests.CartID}
+var cur string
 
-func TestAddReturnsNilWhenSuccess(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
-	quantity := 1
-
-	if _, err := Add(ctx, tests.CartProductID, quantity); err != nil {
-		t.Fatalf(`Add(ctx, tests.CartProductID, quantity), %v, want nil, error`, err)
-	}
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	cur = path.Dir(filename) + "/"
 }
 
-func TestAddReturnsSuccessWhenCidDoesNotExist(t *testing.T) {
+func TestAdd(t *testing.T) {
 	ctx := tests.Context()
-	quantity := 1
+	c := Cart{ID: ""}
 
-	if cid, err := Add(ctx, tests.CartProductID, quantity); cid == "" || err != nil {
-		t.Fatalf(`Add(ctx, tests.CartProductID, quantity), %v, want nil, error`, err)
-	}
+	tests.ImportData(ctx, cur+"testdata/cart.redis")
+
+	t.Run("Product not found", func(t *testing.T) {
+		qty := 1
+
+		if cid, err := c.Add(ctx, "idontexist", qty); err == nil || err.Error() != "oops the data is not found" {
+			t.Fatalf(`cid = %s, err = %v, want "", nil, oops the data is not found`, cid, err)
+		}
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		qty := 1
+
+		if cid, err := c.Add(ctx, "PDT1", qty); cid == "" || err != nil {
+			t.Fatalf(`cid = %s, err = %v, want not empty, nil`, cid, err)
+		}
+	})
 }
 
-func TestAddReturnsErrorWhenPidIsInvalid(t *testing.T) {
-	pid, _ := stringutil.Random()
+func TestGet(t *testing.T) {
 	ctx := tests.Context()
-	quantity := 1
 
-	if cid, err := Add(ctx, pid, quantity); cid != "" || err == nil {
-		t.Fatalf(`Add(ctx, pid, quantity), %v, not want nil, error`, err)
-	}
+	tests.ImportData(ctx, cur+"testdata/cart.redis")
+
+	t.Run("Empty", func(t *testing.T) {
+		c := Cart{ID: ""}
+		cart, err := c.Get(ctx)
+
+		if err != nil {
+			t.Fatalf(`err = %v, want nil`, err)
+		}
+
+		if cart.ID != "" {
+			t.Fatalf(`id = %s, want ""`, cart.ID)
+		}
+
+		if len(cart.Products) != 0 {
+			t.Fatalf(`len(products) = %d, want 0`, len(cart.Products))
+		}
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		c := Cart{ID: "CAR1"}
+		cart, err := c.Get(ctx)
+
+		if err != nil {
+			t.Fatalf(`err = %v, want nil`, err)
+		}
+
+		if cart.ID == "" {
+			t.Fatalf(`id = %s, want not empty`, cart.ID)
+		}
+
+		if len(cart.Products) == 0 {
+			t.Fatalf(`len(products) = %d, want > 0`, len(cart.Products))
+		}
+	})
 }
 
-func TestRefreshCIDReturnsCidWhenSuccess(t *testing.T) {
+func TestDelete(t *testing.T) {
 	ctx := tests.Context()
-	cid, err := RefreshCID(ctx, tests.CartID)
+	c := Cart{ID: "CAR1"}
+
+	tests.ImportData(ctx, cur+"testdata/delete.redis")
+
+	t.Run("Does not exist", func(t *testing.T) {
+		qty := 1
+
+		if err := c.Delete(ctx, "idontexist", qty); err == nil || err.Error() != "oops the data is not found" {
+			t.Fatalf(`err = %v, want "", nil, oops the data is not found`, err)
+		}
+	})
+
+	t.Run("Success", func(t *testing.T) {
+		qty := 1
+
+		if err := c.Delete(ctx, "PDT1", qty); err != nil {
+			t.Fatalf(`err = %v, want not empty, nil`, err)
+		}
+
+		q, _ := db.Redis.HGet(ctx, "cart:CAR1", "PDT1").Result()
+		if q != "1" {
+			t.Fatalf(`qty1 = %s, want '1'`, q)
+		}
+	})
+}
+
+func TestRefresh(t *testing.T) {
+	ctx := tests.Context()
+	cid, err := RefreshCID(ctx, "CAR1")
 	if cid == "" || err != nil {
-		t.Fatalf("UpdateCID(ctx, '') = %s, %v, not want ', error", cid, err)
+		t.Fatalf(`cid = %s, err = %v, "", nil`, cid, err)
 	}
 }
 
-func TestRefreshCIDReturnsCidWhenCidExisting(t *testing.T) {
+func TestUpdateDelivery(t *testing.T) {
 	ctx := tests.Context()
-	s, _ := stringutil.Random()
-	cid, err := RefreshCID(ctx, s)
-	if cid == "" || err != nil {
-		t.Fatalf("UpdateCID(ctx, s) = %s, %v, want string, error", cid, err)
-	}
+	c := Cart{ID: "CAR1"}
+
+	t.Run("Success", func(t *testing.T) {
+		if err := c.UpdateDelivery(ctx, "collect"); err != nil {
+			t.Fatalf(`err = %v, want nil`, err)
+		}
+	})
+
+	t.Run("Invalid", func(t *testing.T) {
+		if err := c.UpdateDelivery(ctx, "iaminvalid"); err == nil || err.Error() != "you are not authorized to process this request" {
+			t.Fatalf(`err = %v, want "you are not authorized to process this request"`, err)
+		}
+	})
 }
 
-func TestGetReturnsCartWhenSuccess(t *testing.T) {
+func TestUpdatePayment(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
+	c := Cart{ID: "CAR1"}
 
-	c, err := Get(ctx)
-	if c.ID == "" || err != nil {
-		t.Fatalf(`Get(ctx) = %v, %v, want Cart, nil`, c, err)
-	}
+	t.Run("Success", func(t *testing.T) {
+		if err := c.UpdatePayment(ctx, "card"); err != nil {
+			t.Fatalf(`err = %v, want nil`, err)
+		}
+	})
+
+	t.Run("Invalid", func(t *testing.T) {
+		if err := c.UpdatePayment(ctx, "iaminvalid"); err == nil || err.Error() != "you are not authorized to process this request" {
+			t.Fatalf(`err = %v, want "you are not authorized to process this request"`, err)
+		}
+	})
 }
 
-func TestUpdateDeliveryReturnsNilWhenSuccess(t *testing.T) {
+func TestExists(t *testing.T) {
 	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, tests.CartID)
 
-	if err := UpdateDelivery(ctx, "collect"); err != nil {
-		t.Fatalf(`cart.UpdateDelivery(ctx, cid, "collect") = %v, want nil`, err)
-	}
+	tests.ImportData(ctx, cur+"testdata/cart.redis")
+
+	t.Run("Empty", func(t *testing.T) {
+		if res := Exists(ctx, ""); res {
+			t.Fatalf(`exists = true, want false`)
+		}
+	})
+
+	t.Run("Does not exist", func(t *testing.T) {
+		if res := Exists(ctx, "idontexist"); res {
+			t.Fatalf(`exists = true, want false`)
+		}
+	})
+
+	t.Run("Exists", func(t *testing.T) {
+		if res := Exists(ctx, "CAR1"); !res {
+			t.Fatalf(`exists = false, want true`)
+		}
+	})
 }
 
-func TestUpdateDeliveryWhenDeliveryIsInvalid(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, tests.CartID)
-
-	if err := UpdateDelivery(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf(`cart.UpdateDelivery(ctx, cid, "toto") = %v, want unauthorized`, err)
-	}
-}
-
-func TestUpdatePaymentReturnsNilWhenSuccess(t *testing.T) {
-	ctx := tests.Context()
-	if err := cart.UpdatePayment(ctx, "card"); err != nil {
-		t.Fatalf("cart.UpdatePayment(ctx, 'card') = %v, want nil", err)
-	}
-}
-
-func TestUpdatePaymentReturnsErrorWhenPaymentIsInvalid(t *testing.T) {
-	ctx := tests.Context()
-	if err := cart.UpdatePayment(ctx, "toto"); err == nil || err.Error() != "you are not authorized to process this request" {
-		t.Fatalf("cart.UpdatePayment(ctx, 'toto') = %v, want 'unauthorized'", err)
-	}
-}
-
-func TestGetIDReturnsUserIDWhenTheUserIsSignedIn(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.UserID, tests.UserID1)
-
-	cid, err := GetCID(ctx)
-	if err != nil || cid != fmt.Sprintf("%d", tests.UserID1) {
-		t.Fatalf(" getCID(ctx) = %s, %v, want '%s', nil", cid, err, tests.CartID)
-	}
-}
-
-func TestGetIDReturnsCartIDWhenTheUserIsNotSignedIn(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, tests.CartID)
-
-	cid, err := GetCID(ctx)
-	if err != nil || cid != tests.CartID {
-		t.Fatalf(" getCID(ctx) = %s, %v, want '%s', nil", cid, err, tests.CartID)
-	}
-}
-
-func TestDeleteReturnsNilWhenQuantityIsLowerThanTheCart(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
-	quantity := 1
-
-	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
-
-	if err := Delete(ctx, tests.ProductID1, quantity); err != nil {
-		t.Fatalf(`Delete(ctx, tests.ProductID1, quantity) = %v, want nil`, err)
-	}
-
-	qty := tests.Quantity(ctx, cart.ID, tests.ProductID1)
-
-	if qty != "1" {
-		t.Fatalf(`qty = %s, want '1'`, qty)
-	}
-}
-
-func TestDeleteReturnsNilWhenQuantityIsSameThanTheCart(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
-	quantity := 2
-
-	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
-
-	if err := Delete(ctx, tests.ProductID1, quantity); err != nil {
-		t.Fatalf(`Delete(ctx, tests.ProductID1, quantity) = %v, want nil`, err)
-	}
-
-	qty := tests.Quantity(ctx, cart.ID, tests.ProductID1)
-
-	if qty != "" {
-		t.Fatalf(`qty = %s, want ''`, qty)
-	}
-}
-
-func TestDeleteReturnsNilWhenQuantityIsMoreThanTheCart(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
-	quantity := 3
-
-	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
-
-	if err := Delete(ctx, tests.ProductID1, quantity); err != nil {
-		t.Fatalf(`Delete(ctx, tests.ProductID1, quantity) = %v, want nil`, err)
-	}
-
-	qty := tests.Quantity(ctx, cart.ID, tests.ProductID1)
-
-	if qty != "" {
-		t.Fatalf(`qty = %s, want ''`, qty)
-	}
-}
-
-func TestMergeReturnsErrorWhenUserIdDoesNotExist(t *testing.T) {
-	ctx := tests.Context()
-	exp := "you are not authorized to process this request"
-
-	if err := Merge(ctx); err == nil || err.Error() != exp {
-		t.Fatalf(`Merge(ctx) = %v, want '%s'`, err, exp)
-	}
-}
-
-func TestMergeReturnsErrorWhenCartIdDoesNotExist(t *testing.T) {
-	ctx := tests.Context()
-	ctx = context.WithValue(ctx, contexts.UserID, tests.UserID1)
-	ctx = context.WithValue(ctx, contexts.Cart, cart.ID)
-	ucart := fmt.Sprintf("%d", tests.UserID1)
-
-	tests.AddToCart(ctx, cart.ID, tests.ProductID1, "2")
-	tests.AddToCart(ctx, cart.ID, tests.ProductID2, "1")
-	tests.AddToCart(ctx, ucart, tests.ProductID1, "1")
-	tests.AddToCart(ctx, ucart, tests.ProductID2, "")
-
-	if err := Merge(ctx); err != nil {
-		t.Fatalf(`Merge(ctx) = %v, want nil`, err)
-	}
-
-	qty1 := tests.Quantity(ctx, ucart, tests.ProductID1)
-	if qty1 != "3" {
-		t.Fatalf(`qty1 = %s, want '3'`, qty1)
-	}
-
-	qty2 := tests.Quantity(ctx, ucart, tests.ProductID2)
-	if qty2 != "1" {
-		t.Fatalf(`qty2 = %s, want '1'`, qty2)
-	}
-}
-
-func TestExistsReturnsFalseWhenTheCartNotInContext(t *testing.T) {
+func TestMerge(t *testing.T) {
 	ctx := tests.Context()
 
-	if res := Exists(ctx, tests.CartID); res {
-		t.Fatalf(`Exists(ctx, tests.DoesNotExist) = true, want false`)
-	}
-}
+	tests.ImportData(ctx, cur+"testdata/merge.redis")
 
-func TestExistsReturnsTrueWhenTheCartExists(t *testing.T) {
-	ctx := tests.Context()
+	t.Run("Anonymous", func(t *testing.T) {
+		if err := Merge(ctx, "CAR1"); err == nil || err.Error() != "you are not authorized to process this request" {
+			t.Fatalf(`err = %v, want you are not authorized to process this request`, err)
+		}
+	})
 
-	tests.AddToCart(ctx, tests.CartID, tests.ProductID1, "1")
+	t.Run("Success", func(t *testing.T) {
+		ctx := tests.Context()
+		ctx = context.WithValue(ctx, contexts.UserID, 1)
 
-	if res := Exists(ctx, tests.CartID); !res {
-		t.Fatalf(`Exists(ctx, tests.CartID,) = false, want true`)
-	}
+		if err := Merge(ctx, "CAR1"); err != nil {
+			t.Fatalf(`Merge(ctx) = %v, want nil`, err)
+		}
+
+		qty1, _ := db.Redis.HGet(ctx, "cart:1", "PDT1").Result()
+		if qty1 != "3" {
+			t.Fatalf(`qty1 = %s, want '3'`, qty1)
+		}
+
+		qty2, _ := db.Redis.HGet(ctx, "cart:1", "PDT2").Result()
+		if qty2 != "1" {
+			t.Fatalf(`qty2 = %s, want '1'`, qty2)
+		}
+	})
 }

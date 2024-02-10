@@ -1,0 +1,3 @@
+HSET "blog:1" id "1" title "Mangez de l'ail" slug "mangez-de-lail" description "c'est bon" status "online" image "blog/1.jpeg" type "blog" created_at 1136160000 updated_at 1136160000 
+HSET blog:2 id 2 title "Mangez de l'oignon !" description "C\'est un antiseptique." status "online" slug "mangez-de-l-oignon" lang "en" image "blog/1.jpeg" type "cms" created_at 1136160000 updated_at 1136160000 
+SET "blog_next_id" 2

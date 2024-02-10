@@ -2,8 +2,6 @@ package forms
 
 import (
 	"artisons/conf"
-	"artisons/http/contexts"
-	"artisons/http/httperrors"
 	"context"
 	"fmt"
 	"io"
@@ -14,14 +12,8 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"strconv"
 	"time"
-
-	"github.com/go-chi/chi/v5"
 )
-
-type Form struct {
-}
 
 func upload(ctx context.Context, file multipart.File, header *multipart.FileHeader, filename, folder string) (string, error) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "uploading image", slog.String("image", header.Filename), slog.Int64("size", header.Size), slog.Any("headers", header.Header))
@@ -50,72 +42,6 @@ func upload(ctx context.Context, file multipart.File, header *multipart.FileHead
 	}
 
 	return filepath, nil
-}
-
-func ParseForm(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		if err := r.ParseForm(); err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-			httperrors.HXCatch(w, ctx, "something went wrong")
-			return
-		}
-
-		ctx = context.WithValue(ctx, contexts.Form, Form{})
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func ParseMultipartForm(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		if err := r.ParseMultipartForm(conf.MaxUploadSize); err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the form", slog.String("error", err.Error()))
-			httperrors.HXCatch(w, ctx, "something went wrong")
-			return
-		}
-
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func ParseOptionalID(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-
-		id := chi.URLParam(r, "id")
-		if id != "" {
-			val, err := strconv.ParseInt(id, 10, 64)
-			if err != nil {
-				slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
-				httperrors.Page(w, ctx, "oops the data is not found", 404)
-				return
-			}
-
-			ctx = context.WithValue(ctx, contexts.ID, val)
-		}
-
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func ParseID(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		id := chi.URLParam(r, "id")
-
-		val, err := strconv.ParseInt(id, 10, 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the id", slog.Any("id", id), slog.String("error", err.Error()))
-			httperrors.Page(w, ctx, "oops the data is not found", 404)
-			return
-		}
-
-		ctx = context.WithValue(ctx, contexts.ID, int(val))
-
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
 }
 
 func Upload(r *http.Request, folder string, images []string) ([]string, error) {

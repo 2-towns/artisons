@@ -4,7 +4,7 @@
     <h1>{{uitranslate .Lang "Delivery"}}</h1>
     <h1>{{uitranslate .Lang "Choose your delivery mode"}}</h1>
 
-    <form hx-post="/delivery.html">
+    <form hx-post="/delivery">
         {{range .Deliveries}}
         <div class="delivery-row" id="{{.}}-row">
             <div>
@@ -30,7 +30,7 @@
         {{end}}
         <div class="delivery-footer">
             <div class="delivery-footer-row">
-                <a href="/cart.html" class="button button-cancel delivery-footer-back">
+                <a href="/cart" class="button button-cancel delivery-footer-back">
                     {{uitranslate .Lang "Back"}}
                 </a>
                 <button class="button button-primary">

@@ -342,7 +342,7 @@ func Find(ctx context.Context, pid string) (Product, error) {
 
 	if pid == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty product id")
-		return Product{}, errors.New("input:id")
+		return Product{}, errors.New("oops the data is not found")
 	}
 
 	if exists, err := db.Redis.Exists(ctx, "product:"+pid).Result(); exists == 0 || err != nil {
@@ -475,15 +475,6 @@ func Search(ctx context.Context, q Query, offset, num int) (SearchResults, error
 
 		products = append(products, product)
 	}
-
-	// user, ok := ctx.Value(contexts.User).(users.User)
-	// if !ok || user.Role != "admin" {
-	// 	tra := map[string]string{
-	// 		"query": fmt.Sprintf("'%s'", qs),
-	// 	}
-
-	// 	go tracking.Log(ctx, "product_search", tra)
-	// }
 
 	return SearchResults{
 		Total:    int(total),

@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/text/language"
 )
 
@@ -57,7 +56,6 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 
 func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	end := ctx.Value(contexts.Domain).(string)
 
 	data := struct {
 		Lang    language.Tag
@@ -69,13 +67,12 @@ func InputMessage(w http.ResponseWriter, ctx context.Context, msg string) {
 	w.Header().Set("HX-Retarget", fmt.Sprintf("#%s-error", key))
 	w.Header().Set("HX-Reswap", fmt.Sprintf("innerHTML show:#%s-row:top", key))
 
-	var t *template.Template
-
-	if end == "front" {
-		t = templates.Pages["hx-input-error"]
-	} else {
-		t = itpl
-	}
+	var t *template.Template = templates.Pages["hx-input-error"]
+	// if end == "front" {
+	// 	t = templates.Pages["hx-input-error"]
+	// } else {
+	// 	t = itpl
+	// }
 
 	if err := t.Execute(w, &data); err != nil {
 		slog.Error("cannot render the template", slog.String("error", err.Error()))
@@ -109,7 +106,7 @@ func HXCatch(w http.ResponseWriter, ctx context.Context, msg string) {
 // Alert display an error message through a banner
 func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
-	rid, _ := ctx.Value(middleware.RequestIDKey).(string)
+	rid, _ := ctx.Value(contexts.RequestID).(string)
 
 	data := struct {
 		Lang    language.Tag
@@ -136,7 +133,7 @@ func Alert(w http.ResponseWriter, ctx context.Context, msg string) {
 func Page(w http.ResponseWriter, ctx context.Context, msg string, code int) {
 	lang := ctx.Value(contexts.Locale).(language.Tag)
 
-	rid := ctx.Value(middleware.RequestIDKey).(string)
+	rid := ctx.Value(contexts.RequestID).(string)
 	data := struct {
 		Lang    language.Tag
 		Code    int

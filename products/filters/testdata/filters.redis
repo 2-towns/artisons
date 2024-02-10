@@ -1,0 +1,4 @@
+HSET "filter:colors" "key" "colors" "label" "Colors" "editable" "0" "values" "red;yellow;white;pink;blue;green" created_at 1136160000 updated_at 1136160000 
+HSET "filter:sizes" "key" "sizes" "label" "Sizes" "editable" "1" "values" "S;M" created_at 1136160000 updated_at 1136160000 
+ZADD "filters" 1 "colors" 1 "sizes" 
+ZADD "filters:active" 1 "colors" 1 "sizes" 

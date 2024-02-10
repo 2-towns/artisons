@@ -2,10 +2,10 @@
 
 <header class="header header-navbar">
 	<div class="container header-container">
-		<a class="row row-align" href="/admin/index.html">
-			<img src="/public/icons/logo.svg" width="110" height="32" alt="Logo" />
+		<a class="row row-align" href="/admin/index">
+			<img src="/icons/logo.svg" width="110" height="32" alt="Logo" />
 		</a>
-		<a href="#" hx-post="/logout.html" class="button header-navbar-button">
+		<a href="#" hx-post="/logout" class="button header-navbar-button">
 			{{translate .Lang "Logout"}}
 		</a>
 	</div>
@@ -17,7 +17,7 @@
 			<li
 				class='row header-menu-item {{if eq .Page "Dashboard"}} header-menu-item-active {{end}}'>
 
-				<a href="/admin/index.html" class="row row-align header-menu-link">
+				<a href="/admin/index" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "home.svg" .}} </span>
 
 					<span class="nav-link-title">
@@ -28,7 +28,7 @@
 
 			<li
 				class='row header-menu-item {{if eq .Page "Products"}} header-menu-item-active {{end}}'>
-				<a href="/admin/products.html" class="row row-align header-menu-link">
+				<a href="/admin/products" class="row row-align header-menu-link">
 					<span class="header-menu-icon">
 						{{template "building-store.svg" .}}
 					</span>
@@ -41,7 +41,7 @@
 
 			<li
 				class='row header-menu-item {{if eq .Page "Orders"}} header-menu-item-active {{end}}'>
-				<a href="/admin/orders.html" class="row row-align header-menu-link">
+				<a href="/admin/orders" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "receipt.svg" .}} </span>
 
 					<span class="nav-link-title">
@@ -52,7 +52,7 @@
 
 			<li
 				class='row header-menu-item {{if eq .Page "Filters"}} header-menu-item-active {{end}}'>
-				<a href="/admin/filters.html" class="row row-align header-menu-link">
+				<a href="/admin/filters" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "filter.svg" .}} </span>
 
 					<span class="nav-link-title">
@@ -63,7 +63,7 @@
 
 			<li
 				class='row header-menu-item {{if eq .Page "Tags"}} header-menu-item-active {{end}}'>
-				<a href="/admin/tags.html" class="row row-align header-menu-link">
+				<a href="/admin/tags" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "tag.svg" .}} </span>
 
 					<span class="nav-link-title">
@@ -74,7 +74,7 @@
 
 			<li
 				class='row header-menu-item {{if eq .Page "CMS"}} header-menu-item-active {{end}}'>
-				<a href="/admin/blog.html" class="row row-align header-menu-link">
+				<a href="/adminblog" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "article.svg" .}} </span>
 
 					<span class="nav-link-title">
@@ -85,7 +85,7 @@
 
 			<li
 				class='row header-menu-item {{if eq .Page "Settings"}} header-menu-item-active {{end}}'>
-				<a href="/admin/settings.html" class="row row-align header-menu-link">
+				<a href="/admin/settings" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "settings.svg" .}} </span>
 
 					<span class="nav-link-title">
@@ -96,7 +96,7 @@
 
 			<li
 				class='row header-menu-item {{if eq .Page "SEO"}} header-menu-item-active {{end}}'>
-				<a href="/admin/seo.html" class="row row-align header-menu-link">
+				<a href="/admin/seo" class="row row-align header-menu-link">
 					<span class="header-menu-icon"> {{template "seo.svg" .}} </span>
 
 					<span class="nav-link-title">

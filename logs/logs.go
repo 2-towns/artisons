@@ -2,14 +2,12 @@
 package logs
 
 import (
-	"context"
 	"artisons/http/contexts"
 	"artisons/users"
+	"context"
 	"log"
 	"log/slog"
 	"os"
-
-	"github.com/go-chi/chi/v5/middleware"
 )
 
 type RequestIDHandler struct {
@@ -17,7 +15,7 @@ type RequestIDHandler struct {
 }
 
 func (h RequestIDHandler) Handle(ctx context.Context, r slog.Record) error {
-	if rid, ok := ctx.Value(middleware.RequestIDKey).(string); ok {
+	if rid, ok := ctx.Value(contexts.RequestID).(string); ok {
 		r.Add("request_id", slog.StringValue(rid))
 	}
 

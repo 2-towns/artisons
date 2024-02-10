@@ -1,0 +1,4 @@
+HSET "tag:mens" "key" "mens" "label" "Mens" created_at 1136160000 updated_at 1136160000 "children" "clothes;shoes" 
+HSET "tag:womens" "key" "womens" "label" "Womens" created_at 1136160000 updated_at 1136160000 "children" "clothes;shoes" 
+ZADD "tags:root" 1 "mens" 1 "womens"
+ZADD "tags" 1 "mens" 1 "womens"

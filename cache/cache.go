@@ -1,9 +1,9 @@
 package cache
 
 import (
+	"artisons/conf"
 	"crypto/md5"
 	"encoding/hex"
-	"artisons/conf"
 	"log"
 	"log/slog"
 	"os"
@@ -30,7 +30,7 @@ func load(folder string, ext string) {
 			continue
 		}
 
-		buf, err := os.ReadFile(path.Join(folder, name))
+		buf, err := os.ReadFile(path.Join(conf.WorkingSpace+folder, name))
 
 		if err != nil {
 			log.Fatal(err)

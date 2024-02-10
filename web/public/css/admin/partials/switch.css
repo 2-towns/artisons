@@ -2,13 +2,13 @@
 	background-position: right center;
 	border: none;
 	background-color: var(--primary);
-	--switch-bg: url(/public/icons/switch-checked.svg);
+	--switch-bg: url(/icons/switch-checked.svg);
 	--switch-border-color: var(--primary);
 }
 
 .switch {
 	--switch-border-color: var(--border-color);
-	--switch-bg: url(/public/icons/switch.svg);
+	--switch-bg: url(/icons/switch.svg);
 	height: 1.25rem;
 	transition:
 		background-color 0.3s,

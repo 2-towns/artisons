@@ -1,6 +1,6 @@
 {{define "body"}}
 
-<form hx-post="/account/address.html">
+<form hx-post="/account/address">
     <div class="form-row" id="firstname-row">
         <label class="input-label" for="firstname">
             {{uitranslate .Lang "Firstname"}}
@@ -108,7 +108,7 @@
 
     <div class="card-footer box">
         <div class="form row row-between row-gap">
-            <a href="/account/index.html" class="button row row-align fill">
+            <a href="/account/index" class="button row row-align fill">
                 {{uitranslate .Lang "Back"}}
             </a>
             <button class="button button-primary fill">

@@ -265,7 +265,7 @@ func Find(ctx context.Context, key string) (Filter, error) {
 
 	if key == "" {
 		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate empty filter key")
-		return Filter{}, errors.New("input:id")
+		return Filter{}, errors.New("oops the data is not found")
 	}
 
 	if exists, err := db.Redis.Exists(ctx, "filter:"+key).Result(); exists == 0 || err != nil {

@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-func TestGellAllReturnsDataWhenSuccess(t *testing.T) {
+func TestGetAll(t *testing.T) {
 	c := tests.Context()
 
 	data, err := GetAll(c, 14)
 
 	if err != nil {
-		t.Fatalf(`GetAll(c, 14) = %s, want nil`, err.Error())
+		t.Fatalf(`err = %s, want nil`, err.Error())
 	}
 
 	if len(data) != 6 {

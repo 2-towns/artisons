@@ -1,7 +1,3 @@
-<div id="scripts" hx-swap-oob="true">
-	<script src='/public/js/otp.js?v{{cachebuster "otp.js"}}'></script>
-</div>
-
 <article id="otp" class="card box">
 	<h2 class="text-center">{{translate .Lang "Check your inbox"}}</h2>
 
@@ -12,7 +8,7 @@
 		"Please click the link to confirm your address or enter the otp code below."}}
 	</p>
 
-	<form hx-post="/login.html" class="form-row-single">
+	<form hx-post="/login" class="form-row-single">
 		<div id="otp-row" class="form-row-single">
 			<div class="row row-between row-gap">
 				<input

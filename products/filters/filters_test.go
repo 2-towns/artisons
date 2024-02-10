@@ -2,116 +2,122 @@ package filters
 
 import (
 	"artisons/tests"
+	"errors"
+	"fmt"
+	"path"
+	"reflect"
+	"runtime"
 	"testing"
 	"time"
 )
 
 var filter Filter = Filter{
-	Key:       tests.FilterColorKey,
+	Key:       "colors",
 	Editable:  true,
-	Label:     tests.FilterColorLabel,
+	Label:     "colors",
 	Score:     1,
 	Values:    []string{"yellow", "blue"},
 	Active:    true,
 	UpdatedAt: time.Now(),
 }
+var cur string
 
-func TestValidateReturnsErrorWhenTheKeyIsEmpty(t *testing.T) {
-	c := tests.Context()
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	cur = path.Dir(filename) + "/"
+}
 
-	f := filter
-	f.Key = ""
+func TestValidate(t *testing.T) {
+	ctx := tests.Context()
 
-	if err := f.Validate(c); err == nil || err.Error() != "input:key" {
-		t.Fatalf(`f.Validate(c) = %v, want 'input:key'`, err.Error())
+	var tests = []struct {
+		name  string
+		field string
+		value string
+		err   error
+	}{
+		{"key=", "Key", "", errors.New("input:key")},
+		{"key=hello!", "Key", "hello!", errors.New("input:key")},
+		{"label=", "Label", "", errors.New("input:label")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := filter
+
+			reflect.ValueOf(&f).Elem().FieldByName(tt.field).SetString(tt.value)
+
+			if err := f.Validate(ctx); fmt.Sprintf("%v", err) != fmt.Sprintf("%v", tt.err) {
+				t.Fatalf("err = %v, want %v", err, tt.err)
+			}
+		})
 	}
 }
 
-func TestValidateReturnsErrorWhenTheKeyIsInvalid(t *testing.T) {
-	c := tests.Context()
+func TestFind(t *testing.T) {
+	ctx := tests.Context()
 
-	f := filter
-	f.Key = "hello!"
+	tests.ImportData(ctx, cur+"testdata/filters.redis")
 
-	if err := f.Validate(c); err == nil || err.Error() != "input:key" {
-		t.Fatalf(`f.Validate(c) = %v, want 'input:key'`, err.Error())
+	var tests = []struct {
+		name string
+		key  string
+		err  error
+	}{
+		{"key=colors", "colors", nil},
+		{"key=idontexist", "idontexist", errors.New("oops the data is not found")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := Find(ctx, tt.key); fmt.Sprintf("%v", err) != fmt.Sprintf("%v", tt.err) {
+				t.Fatalf("err = %v, want %v", err, tt.err)
+			}
+		})
 	}
 }
 
-func TestValidateReturnsErrorWhenLabelIsEmpty(t *testing.T) {
-	c := tests.Context()
-
-	f := filter
-	f.Label = ""
-
-	if err := f.Validate(c); err == nil || err.Error() != "input:label" {
-		t.Fatalf(`ta.Validate(c) = %v, want 'input:label'`, err.Error())
-	}
-}
-
-func TestFindReturnsFilterWhenTheKeyExists(t *testing.T) {
-	c := tests.Context()
-
-	filter, err := Find(c, tests.FilterColorKey)
-
-	if err != nil {
-		t.Fatalf(`Find(c, tests.FilterColorKey) = %v, want nil`, err.Error())
-	}
-
-	if filter.Key == "" {
-		t.Fatalf(`tag.Key = %s, want not empty`, filter.Key)
-	}
-
-	if filter.Label == "" {
-		t.Fatalf(`tag.Label = %s, want not empty`, filter.Label)
-	}
-}
-
-func TestFindReturnsEmptyFilterWhenTheKeyDoesNotExist(t *testing.T) {
-	c := tests.Context()
-
-	if _, err := Find(c, tests.DoesNotExist); err == nil || err.Error() != "oops the data is not found" {
-		t.Fatalf(`Find(c, tests.DoesNotExist) = %v, want nil`, err.Error())
-	}
-}
-
-func TestSaveReturnsNilWhenEmptyWhenSuccess(t *testing.T) {
+func TestSave(t *testing.T) {
 	c := tests.Context()
 
 	if _, err := filter.Save(c); err != nil {
-		t.Fatalf(`filter.Save(c) = %v, want nil`, err)
+		t.Fatalf(`err = %v, want nil`, err)
 	}
 }
 
-func TestListReturnsFilters(t *testing.T) {
-	c := tests.Context()
+func TestList(t *testing.T) {
+	ctx := tests.Context()
 
-	r, err := List(c, 0, 10)
+	tests.ImportData(ctx, cur+"testdata/filters.redis")
+
+	r, err := List(ctx, 0, 10)
 	if err != nil {
-		t.Fatalf(`List(c) = %v, want nil`, err)
+		t.Fatalf(`err = %v, want nil`, err)
 	}
 
 	if r.Total == 0 {
-		t.Fatalf(`r.Total = %d, want > 0`, r.Total)
+		t.Fatalf(`total = %d, want > 0`, r.Total)
 	}
 
 	if len(r.Filters) == 0 {
-		t.Fatalf(`len(r.Filters) = %d, want > 0`, len(r.Filters))
+		t.Fatalf(`len(filters) = %d, want > 0`, len(r.Filters))
 	}
 
 	filter := r.Filters[0]
 
 	if filter.Key == "" {
-		t.Fatalf(`filter.Key = %s, want not empty`, filter.Key)
+		t.Fatalf(`key = %s, want not empty`, filter.Key)
 	}
 }
 
-func TestActivesReturnsFilters(t *testing.T) {
-	c := tests.Context()
+func TestActives(t *testing.T) {
+	ctx := tests.Context()
 
-	filters, err := Actives(c)
+	tests.ImportData(ctx, cur+"testdata/filters.redis")
+
+	filters, err := Actives(ctx)
 	if err != nil {
-		t.Fatalf(`Actives(c) = %v, want nil`, err)
+		t.Fatalf(`err = %v, want nil`, err)
 	}
 
 	if len(filters) == 0 {
@@ -121,62 +127,76 @@ func TestActivesReturnsFilters(t *testing.T) {
 	filter := filters[0]
 
 	if filter.Key == "" {
-		t.Fatalf(`filter.Key = %s, want not empty`, filter.Key)
+		t.Fatalf(`key = %s, want not empty`, filter.Key)
 	}
 }
 
-func TestDeleteReturnsErrorWhenKeyIsEmpty(t *testing.T) {
-	c := tests.Context()
+func TestDelete(t *testing.T) {
+	ctx := tests.Context()
 
-	if err := Delete(c, ""); err == nil || err.Error() != "input:key" {
-		t.Fatalf(`Delete(c, "") = %v, want 'input:key'`, err)
+	tests.ImportData(ctx, cur+"testdata/filters.redis")
+
+	var tests = []struct {
+		name string
+		key  string
+		err  error
+	}{
+		{"key=", "", errors.New("input:key")},
+		{"key=filters", "filters", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := Delete(ctx, tt.key); fmt.Sprintf("%v", err) != fmt.Sprintf("%v", tt.err) {
+				t.Fatalf("err = %v, want %v", err, tt.err)
+			}
+		})
 	}
 }
 
-func TestDeleteReturnsNilWhenSuccess(t *testing.T) {
-	c := tests.Context()
+func TestExists(t *testing.T) {
+	ctx := tests.Context()
 
-	if err := Delete(c, tests.FilterToDeleteKey); err != nil {
-		t.Fatalf(`Delete(c, tests.FilterToDeleteKey) = %v, want nil`, err)
+	tests.ImportData(ctx, cur+"testdata/filters.redis")
+
+	var tests = []struct {
+		name   string
+		key    string
+		exists bool
+	}{
+		{"key=colors", "colors", true},
+		{"key=idontexist", "idontexist", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if exists, err := Exists(ctx, tt.key); err != nil || exists != tt.exists {
+				t.Fatalf("exists = %v, err = %v, want %v, nil", exists, err, tt.exists)
+			}
+		})
 	}
 }
 
-func TestExistsReturnsTrueWhenFilterDoesExist(t *testing.T) {
-	c := tests.Context()
+func TestEditable(t *testing.T) {
+	ctx := tests.Context()
 
-	if exists, err := Exists(c, tests.FilterColorKey); !exists || err != nil {
-		t.Fatalf(`Exists(c, tests.FilterColorKey) = %v, %v, want true', nil`, exists, err)
+	tests.ImportData(ctx, cur+"testdata/filters.redis")
+
+	var tests = []struct {
+		name   string
+		key    string
+		exists bool
+	}{
+		{"key=colors", "colors", false},
+		{"key=sizes", "sizes", true},
+		{"key=idontexist", "idontexist", false},
 	}
-}
 
-func TestExistsReturnsFalseWhenFilterDoesNotExist(t *testing.T) {
-	c := tests.Context()
-
-	if exists, err := Exists(c, tests.DoesNotExist); exists || err != nil {
-		t.Fatalf(`Exists(c, tests.DoesNotExist) = %v, %v, want false', nil`, exists, err)
-	}
-}
-
-func TestEditableReturnsFalseWhenFilterIsNotEditable(t *testing.T) {
-	c := tests.Context()
-
-	if editable, err := Editable(c, tests.FilterColorKey); editable || err != nil {
-		t.Fatalf(`Exists(c, tests.FilterColorKey) = %v, %v, want false', nil`, editable, err)
-	}
-}
-
-func TestEditableReturnsTrueWhenFilterIsEditable(t *testing.T) {
-	c := tests.Context()
-
-	if editable, err := Editable(c, tests.FilterSizeKey); !editable || err != nil {
-		t.Fatalf(`Exists(c, tests.FilterSizeKey) = %v, %v, want true', nil`, editable, err)
-	}
-}
-
-func TestEditableReturnsFalseWhenEditableFilterThatDoesNotExist(t *testing.T) {
-	c := tests.Context()
-
-	if editable, err := Editable(c, tests.DoesNotExist); editable || err != nil {
-		t.Fatalf(`Exists(c, tests.DoesNotExist) = %v, %v, want false', nil`, editable, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if exists, err := Editable(ctx, tt.key); err != nil || exists != tt.exists {
+				t.Fatalf("exists = %v, err = %v, want %v, nil", exists, err, tt.exists)
+			}
+		})
 	}
 }

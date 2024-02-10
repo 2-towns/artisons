@@ -4,14 +4,12 @@ package locales
 import (
 	"artisons/conf"
 	"artisons/db"
-	"artisons/http/contexts"
 	"artisons/validators"
 	"context"
 	"errors"
 	"fmt"
 	"log"
 	"log/slog"
-	"net/http"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -47,29 +45,6 @@ var trans = map[language.Tag]*message.Printer{
 
 // Console is the default language for console
 var Console language.Tag = language.English
-
-// Middleware load the detected language in the context.
-// It looks into Accept-Language header and fallback
-// to english language when the detected language is
-// missing or not recognized.
-func Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// langs := strings.Split(r.Header.Get("Accept-Language"), "-")
-		var tag language.Tag
-
-		// create new context from `r` request context, and assign key `"user"`
-		// to value of `"123"`
-		ctx := context.WithValue(r.Context(), contexts.Locale, tag)
-
-		// call the next handler in the chain, passing the response writer and
-		// the updated request object with the new context value.
-		//
-		// note: context.Context values are nested, so any previously set
-		// values will be accessible as well, and the new `"user"` key
-		// will be accessible from this point forward.
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
 
 func Translate(l language.Tag, msg string, attr ...interface{}) string {
 	t := trans[l]
