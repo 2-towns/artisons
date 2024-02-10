@@ -51,6 +51,8 @@ func init() {
 func TestIsValidDelivery(t *testing.T) {
 	ctx := tests.Context()
 
+	tests.ImportData(ctx, cur+"testdata/orders.redis")
+
 	var tests = []struct {
 		name  string
 		value string
@@ -92,6 +94,8 @@ func TestIsValidPayment(t *testing.T) {
 
 func TestIsValidate(t *testing.T) {
 	ctx := tests.Context()
+
+	tests.ImportData(ctx, cur+"testdata/orders.redis")
 
 	var tests = []struct {
 		name  string

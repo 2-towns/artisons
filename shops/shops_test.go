@@ -2,11 +2,20 @@ package shops
 
 import (
 	"artisons/tests"
+	"path"
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/go-faker/faker/v4"
 )
+
+var cur string
+
+func init() {
+	_, filename, _, _ := runtime.Caller(0)
+	cur = path.Dir(filename) + "/"
+}
 
 var ra faker.RealAddress = faker.GetRealAddress()
 var shop Contact = Contact{
@@ -45,6 +54,8 @@ func TestSave(t *testing.T) {
 
 func TestDeliveries(t *testing.T) {
 	ctx := tests.Context()
+
+	tests.ImportData(ctx, cur+"testdata/deliveries.redis")
 
 	del, err := Deliveries(ctx)
 	if err != nil || len(del) == 0 {

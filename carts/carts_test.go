@@ -120,6 +120,8 @@ func TestUpdateDelivery(t *testing.T) {
 	ctx := tests.Context()
 	c := Cart{ID: "CAR1"}
 
+	tests.ImportData(ctx, cur+"testdata/cart.redis")
+
 	t.Run("Success", func(t *testing.T) {
 		if err := c.UpdateDelivery(ctx, "collect"); err != nil {
 			t.Fatalf(`err = %v, want nil`, err)
