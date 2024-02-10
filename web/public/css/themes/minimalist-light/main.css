@@ -647,32 +647,164 @@ option {
 	width: 85%;
 	margin: auto;
 	margin-bottom: 5rem;
-	padding: 1.5rem;
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
 
 	.product-img-container {
-		display: flex;
-		justify-content: center;
-		border-radius: var(--border-radius-2);
-		margin: auto;
 		margin-top: 1rem;
 		display: flex;
 		align-items: flex-start;
 		gap: .75rem;
-		overflow-x: auto;
 		scrollbar-width: thin;
-		scrollbar-color: var(--gray) var(--gray-light);
+		display: flex;
+		overflow-x: auto;
+		white-space: nowrap;
 
-		.product-img {
+		.product-details-img {
 			border-radius: var(--border-radius-2);
-			height: 13.75rem;
+			height: 15rem;
 			align-self: stretch;
 		}
 	}
 
+	.product-details-info {
+		font-weight: 700;
 
+		.product-details-price {
+			color: var(--primary);
+			margin-bottom: 1rem;
+		}
+
+		.product-details-description {
+			font-size: .85rem;
+			font-weight: 450;
+			color: var(--gray-darker);
+			margin: auto;
+		}
+	}
+
+	.product-details-select.size {
+		width: 100%;
+		border-radius: var(--border-radius-2);
+		border: none;
+		padding: .3125rem 0rem;
+		display: flex;
+		justify-content: space-between;
+		background-color: var(--gray-light);
+		padding: 1rem;
+		font-weight: 450;
+		font-size: 20px;
+		align-items: center;
+		margin-bottom: 1rem;
+
+		select {
+			border: none;
+			padding: .3125rem 0rem;
+			text-align: center;
+			background-color: var(--gray-light);
+			font-weight: 700;
+			font-size: 20px;
+			padding-right: 0.5rem;
+			appearance: none;
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			background: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.01 12.85L13.39 15.47C12.62 16.24 11.36 16.24 10.59 15.47L4.07996 8.94995M19.92 8.94995L18.88 9.98995' stroke='%23272727' stroke-width='1.5' stroke-miterlimit='10' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E") no-repeat right center;
+			background-color: var(--gray-light);
+			padding-right: 30px;
+
+			option {
+				background-color: var(--gray-light);
+				font-size: 20px;
+				font-weight: bold;
+			}
+		}
+	}
+
+
+	.product-details-select.color {
+		width: 100%;
+		border-radius: var(--border-radius-2);
+		border: none;
+		padding: .3125rem 0rem;
+		display: flex;
+		justify-content: space-between;
+		background-color: var(--gray-light);
+		padding: 1rem;
+		font-weight: 450;
+		font-size: 20px;
+		align-items: center;
+		margin-bottom: 1rem;
+
+		select {
+			border: none;
+			padding: .3125rem 0rem;
+			text-align: center;
+			background-color: var(--gray-light);
+			font-weight: 600;
+			font-size: 20px;
+			padding-right: 0.5rem;
+			appearance: none;
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			background: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.01 12.85L13.39 15.47C12.62 16.24 11.36 16.24 10.59 15.47L4.07996 8.94995M19.92 8.94995L18.88 9.98995' stroke='%23272727' stroke-width='1.5' stroke-miterlimit='10' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E") no-repeat right center;
+			background-color: var(--gray-light);
+			padding-right: 30px;
+
+			option {
+				background-color: var(--gray-light);
+				font-size: 20px;
+				font-weight: 600;
+			}
+		}
+	}
+
+	.product-details-select.quantity {
+		width: 100%;
+		border-radius: var(--border-radius-2);
+		border: none;
+		padding: .3125rem 0rem;
+		display: flex;
+		justify-content: space-between;
+		background-color: var(--gray-light);
+		padding: 1rem;
+		font-weight: 450;
+		font-size: 20px;
+		align-items: center;
+		margin-bottom: 1rem;
+
+		select {
+			border: none;
+			padding: .3125rem 0rem;
+			text-align: center;
+			background-color: var(--gray-light);
+			font-weight: 600;
+			font-size: 20px;
+			padding-right: 0.5rem;
+			appearance: none;
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			background: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.01 12.85L13.39 15.47C12.62 16.24 11.36 16.24 10.59 15.47L4.07996 8.94995M19.92 8.94995L18.88 9.98995' stroke='%23272727' stroke-width='1.5' stroke-miterlimit='10' stroke-linecap='round' stroke-linejoin='round' /%3E%3C/svg%3E") no-repeat right center;
+			background-color: var(--gray-light);
+			padding-right: 30px;
+
+			option {
+				background-color: var(--gray-light);
+				font-size: 20px;
+				font-weight: 600;
+			}
+		}
+	}
+
+	.btn {
+		display: flex;
+		justify-content: space-around;
+		width: 100%;
+		margin-top: 2.5rem;
+		background-color: var(--primary);
+		font-size: 1.2rem;
+		font-weight: 450;
+	}
 }
 
 
