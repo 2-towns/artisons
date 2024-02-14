@@ -7,7 +7,7 @@
 	margin: auto;
 }
 
-.wishlist {
+.wishlist-container {
 	width: 85%;
 	margin: auto;
 	margin-top: 1rem;
@@ -89,6 +89,4 @@
 			margin-right: 1rem;
 		}
 	}
-
-
 }
