@@ -1,0 +1,35 @@
+.article-container {
+	width: 85%;
+	margin: auto;
+	margin-bottom: 5rem;
+	padding: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	background: var(--gray-light);
+	border-radius: var(--border-radius-2);
+
+	.article-title {
+		font-size: 1.5rem;
+		font-weight: bold;
+	}
+
+	.article-date {
+		font-size: .875rem;
+		font-weight: 450;
+	}
+
+	.article-img {
+		width: 100%;
+		border-radius: var(--border-radius-2);
+	}
+
+
+	.article-content {
+		font-size: 1rem;
+		font-weight: 450;
+		white-space: pre-line;
+		margin: auto;
+	}
+
+}

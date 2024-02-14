@@ -1,0 +1,53 @@
+.bottom-nav {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background-color: #ffffff;
+	box-shadow: 0 -0.125rem .3125rem rgba(0, 0, 0, 0.1);
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	height: 4rem;
+	z-index: 5;
+}
+
+.nav-item.home-svg {
+	svg {
+		path {
+			stroke: gray;
+
+		}
+
+	}
+}
+
+.nav-item.categories-svg {
+	svg {
+		width: 1.625rem;
+		height: 1.625rem;
+
+		g {
+			path {
+				stroke-linecap: round;
+				stroke-linejoin: round;
+			}
+		}
+	}
+}
+
+.nav-item.wish-svg {
+	svg {
+		width: 24px;
+		height: 24px;
+
+		path {
+			stroke: gray;
+			stroke-opacity: 0.5;
+			stroke-width: 1;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+	}
+}

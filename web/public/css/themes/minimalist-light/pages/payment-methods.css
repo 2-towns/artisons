@@ -1,0 +1,39 @@
+.header-payment-methods {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 3rem 0;
+	width: 85%;
+	margin: auto;
+}
+
+.payment-methods {
+	width: 85%;
+	margin: auto;
+	margin-top: 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+
+	.payment-method-list {
+		.label {
+			font-family: Gabarito;
+			font-size: 1rem;
+			font-style: normal;
+			font-weight: 700;
+			line-height: normal;
+		}
+
+		.payment-method {
+			border-radius: var(--border-radius-2);
+			background: var(--gray-light);
+			padding: 1rem;
+			display: flex;
+			justify-content: space-between;
+			width: 100%;
+			max-width: 100%;
+			margin-top: 1rem;
+			align-items: center;
+		}
+	}
+}

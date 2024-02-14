@@ -1,0 +1,35 @@
+.card {
+	form {
+		width: 85%;
+		height: 100vh;
+		margin: auto;
+		margin-top: 1.5rem;
+		border-radius: var(--border-radius-2);
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		text-align: center;
+
+		.form-field {
+			width: 100%;
+			border-radius: var(--border-radius-2);
+			border: none;
+			padding: 1.25rem;
+			background-color: var(--gray-light);
+		}
+
+		.form-field:focus {
+			outline: none;
+			border: none;
+		}
+
+		.form-field:hover {
+			border: none;
+		}
+
+		.btn {
+			margin-top: 5rem;
+			background-color: var(--primary);
+		}
+	}
+}

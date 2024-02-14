@@ -1,0 +1,61 @@
+.header-account {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 3rem 0;
+	width: 85%;
+	margin: auto;
+}
+
+.account {
+	width: 85%;
+	margin: auto;
+	margin-top: 1.5rem;
+
+	.identity {
+		border-radius: var(--border-radius-2);
+		background: var(--gray-light);
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		align-items: start;
+		gap: 1rem;
+
+		.name {
+			font-weight: bold;
+		}
+
+		.mail,
+		.phone {
+			font-style: normal;
+			font-weight: 450;
+			color: var(--gray-darker);
+		}
+	}
+
+	.address {
+		margin-top: 1.5rem;
+		border-radius: var(--border-radius-2);
+		background: var(--gray-light);
+		padding: 1rem;
+		display: flex;
+		width: 100%;
+		justify-content: space-between;
+
+		.address-info {
+			font-style: normal;
+			font-weight: 450;
+			color: var(--gray-darker);
+		}
+	}
+
+	.wishlist {
+		margin-top: 1.5rem;
+		border-radius: var(--border-radius-2);
+		background: var(--gray-light);
+		padding: 1rem;
+		display: flex;
+		width: 100%;
+		justify-content: space-between;
+	}
+}
