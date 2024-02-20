@@ -411,10 +411,8 @@ func (c Cart) CalculateTotal(ctx context.Context) (float64, error) {
 		return 0, err
 	}
 
-	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", c.Delivery, total, del)
-
 	if c.Delivery != "collect" && total < del {
-		fees = shops.Data.DeliveryFees
+		fees = del
 	}
 
 	total += fees
