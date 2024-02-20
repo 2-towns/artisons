@@ -1,7 +1,7 @@
 HSET "cart:123" "PDT1" "2"
 HSET "cart:1" "PDT1" "1"
 HSET "cart:1" "PDT2" "1"
-EXPIRE "cart:CAR1" 3600
+EXPIRE "cart:123" 3600
 HSET product:PDT1 id "PDT1" sku "SKU1" title "T\-shirt Tester c\'est douter" description "T\-shirt développeur unisexe Tester c\'est douter" slug "t\-shirt\-tester\-c\-est\-douter" status "online" currency "EUR" price "100.5" quantity "1" weight "105.82" meta "color_blue;color_blue cyan" tags "clothes" image_1 "PDT1.jpeg" image_2 "PDT1.jpeg" type "product" created_at 1136160000 updated_at 1136160000 
 ZADD deliveries 1 "colissimo" 1 "collect" 
 ZADD payments 1 "cash"  
