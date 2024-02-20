@@ -207,7 +207,7 @@ func TestMerge(t *testing.T) {
 	ctx := tests.Context()
 
 	t.Run("Anonymous", func(t *testing.T) {
-		tests.ImportData(ctx, cur+"testdata/merge.redis")
+		tests.ImportData(ctx, cur+"testdata/cart.redis")
 
 		if err := Merge(ctx, 123); err == nil || err.Error() != "you are not authorized to process this request" {
 			t.Fatalf(`err = %v, want you are not authorized to process this request`, err)
@@ -224,12 +224,12 @@ func TestMerge(t *testing.T) {
 			t.Fatalf(`Merge(ctx) = %v, want nil`, err)
 		}
 
-		qty1, _ := db.Redis.HGet(ctx, "cart:1:products", "PDT1").Result()
+		qty1, _ := db.Redis.HGet(ctx, "cart:1", "PDT1").Result()
 		if qty1 != "3" {
 			t.Fatalf(`qty1 = %s, want '3'`, qty1)
 		}
 
-		qty2, _ := db.Redis.HGet(ctx, "cart:1:products", "PDT2").Result()
+		qty2, _ := db.Redis.HGet(ctx, "cart:1", "PDT2").Result()
 		if qty2 != "1" {
 			t.Fatalf(`qty2 = %s, want '1'`, qty2)
 		}
