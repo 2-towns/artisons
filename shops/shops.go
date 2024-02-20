@@ -96,60 +96,6 @@ func init() {
 		log.Fatalln(err)
 	}
 
-	var items int = 0
-	if d["items"] != "" {
-		i, err := strconv.ParseInt(d["items"], 10, 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the items", slog.String("items", d["items"]), slog.String("error", err.Error()))
-		} else {
-			items = int(i)
-		}
-	}
-
-	var min float64 = 0
-	if d["min"] != "" {
-		min, err = strconv.ParseFloat(d["min"], 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("min", d["min"]), slog.String("error", err.Error()))
-		}
-	}
-
-	var width int = 0
-	if d["image_width"] != "" {
-		i, err := strconv.ParseInt(d["image_width"], 10, 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image_width", slog.String("image_width", d["image_width"]), slog.String("error", err.Error()))
-		} else {
-			width = int(i)
-		}
-	}
-
-	var height int = 0
-	if d["image_height"] != "" {
-		i, err := strconv.ParseInt(d["image_height"], 10, 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image_height", slog.String("image_height", d["image_width"]), slog.String("error", err.Error()))
-		} else {
-			height = int(i)
-		}
-	}
-
-	var deliveryFees float64 = 0
-	if d["delivery_fees"] != "" {
-		deliveryFees, err = strconv.ParseFloat(d["delivery_fees"], 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("delivery_fees", d["delivery_fees"]), slog.String("error", err.Error()))
-		}
-	}
-
-	var deliveryFreeFees float64 = 0
-	if d["delivery_free_fees"] != "" {
-		deliveryFreeFees, err = strconv.ParseFloat(d["delivery_free_fees"], 64)
-		if err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("delivery_free_fees", d["delivery_free_fees"]), slog.String("error", err.Error()))
-		}
-	}
-
 	updatedAt, err := strconv.ParseInt(d["updated_at"], 10, 64)
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelError, "cannot parse the updated at", slog.String("error", err.Error()), slog.String("updated_at", d["updated_at"]))
@@ -169,24 +115,7 @@ func init() {
 			Banner3:   d["banner_3"],
 			UpdatedAt: time.Unix(updatedAt, 0),
 		},
-		ShopSettings: ShopSettings{
-			Guest:                   d["guest"] == "1",
-			Quantity:                d["quantity"] == "1",
-			New:                     d["new"] == "1",
-			Items:                   items,
-			Min:                     min,
-			Redirect:                d["redirect"] == "1",
-			Cache:                   d["cache"] == "1",
-			GmapKey:                 d["gmap_key"],
-			FuzzySearch:             d["fuzzy_search"] == "1",
-			ExactMatchSearch:        d["exact_match_search"] == "1",
-			Color:                   d["color"],
-			ImageWidth:              width,
-			ImageHeight:             height,
-			DeliveryFees:            deliveryFees,
-			DeliveryFreeFees:        deliveryFreeFees,
-			ThrowsWhenPaymentFailed: d["throws_when_payment_failed"] == "1",
-		},
+		ShopSettings: parseShopSettings(ctx, d),
 	}
 }
 
@@ -244,6 +173,82 @@ func (s Contact) Save(ctx context.Context) (string, error) {
 	Data.Contact = s
 
 	return "", nil
+}
+
+func parseShopSettings(ctx context.Context, data map[string]string) ShopSettings {
+	var items int = 0
+	if data["items"] != "" {
+		i, err := strconv.ParseInt(data["items"], 10, 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the items", slog.String("items", data["items"]), slog.String("error", err.Error()))
+		} else {
+			items = int(i)
+		}
+	}
+
+	var err error
+	var min float64 = 0
+	if data["min"] != "" {
+		min, err = strconv.ParseFloat(data["min"], 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("min", data["min"]), slog.String("error", err.Error()))
+		}
+	}
+
+	var width int = 0
+	if data["image_width"] != "" {
+		i, err := strconv.ParseInt(data["image_width"], 10, 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image_width", slog.String("image_width", data["image_width"]), slog.String("error", err.Error()))
+		} else {
+			width = int(i)
+		}
+	}
+
+	var height int = 0
+	if data["image_height"] != "" {
+		i, err := strconv.ParseInt(data["image_height"], 10, 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image_height", slog.String("image_height", data["image_width"]), slog.String("error", err.Error()))
+		} else {
+			height = int(i)
+		}
+	}
+
+	var deliveryFees float64 = 0
+	if data["delivery_fees"] != "" {
+		deliveryFees, err = strconv.ParseFloat(data["delivery_fees"], 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("delivery_fees", data["delivery_fees"]), slog.String("error", err.Error()))
+		}
+	}
+
+	var deliveryFreeFees float64 = 0
+	if data["delivery_free_fees"] != "" {
+		deliveryFreeFees, err = strconv.ParseFloat(data["delivery_free_fees"], 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("delivery_free_fees", data["delivery_free_fees"]), slog.String("error", err.Error()))
+		}
+	}
+
+	return ShopSettings{
+		Guest:                   data["guest"] == "1",
+		Quantity:                data["quantity"] == "1",
+		New:                     data["new"] == "1",
+		Items:                   items,
+		Min:                     min,
+		Redirect:                data["redirect"] == "1",
+		Cache:                   data["cache"] == "1",
+		GmapKey:                 data["gmap_key"],
+		FuzzySearch:             data["fuzzy_search"] == "1",
+		ExactMatchSearch:        data["exact_match_search"] == "1",
+		Color:                   data["color"],
+		ImageWidth:              width,
+		ImageHeight:             height,
+		DeliveryFees:            deliveryFees,
+		DeliveryFreeFees:        deliveryFreeFees,
+		ThrowsWhenPaymentFailed: data["throws_when_payment_failed"] == "1",
+	}
 }
 
 func (s ShopSettings) Save(ctx context.Context) (string, error) {
@@ -414,4 +419,22 @@ func IsValidPayment(ctx context.Context, p string) bool {
 	l.LogAttrs(ctx, slog.LevelInfo, "the payment is valid")
 
 	return true
+}
+
+func DeliveryFreeFees(ctx context.Context) (float64, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "retrieving shop delivery free fees")
+
+	d, err := db.Redis.HGet(ctx, "shop", "delivery_free_fees").Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get shop delivery free fees info", slog.String("error", err.Error()))
+		return 0, errors.New("something went wrong")
+	}
+
+	val, err := strconv.ParseFloat(d, 64)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse shop delivery free fees info", slog.String("error", err.Error()))
+		return 0, errors.New("something went wrong")
+	}
+
+	return val, nil
 }
