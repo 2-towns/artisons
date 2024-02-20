@@ -14,6 +14,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing an order with invalid status shows an error 
 POST {{host}}/admin/orders/ORD1/status
 HX-Request: true
+[Cookies]
+wsid: 444444 
 [FormParams]
 status: hello
 HTTP 200
@@ -25,6 +27,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing an order with status shows success 
 POST {{host}}/admin/orders/ORD1/status
 HX-Request: true
+[Cookies]
+wsid: 444444 
 [FormParams]
 status: delivering
 HTTP 200
@@ -34,6 +38,8 @@ xpath "normalize-space(//p/text())" == "The data has been saved successfully."
 
 # Accessing the order show the status selected
 GET {{host}}/admin/orders/ORD1/edit
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 xpath "//option[@value='delivering'][@selected]" exists 
@@ -41,6 +47,8 @@ xpath "//option[@value='delivering'][@selected]" exists
 # Editing an order with status for the next iteration
 POST {{host}}/admin/orders/ORD1/status
 HX-Request: true
+[Cookies]
+wsid: 444444 
 [FormParams]
 status: processing
 HTTP 200

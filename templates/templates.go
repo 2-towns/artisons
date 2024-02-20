@@ -112,6 +112,9 @@ func init() {
 	buildTemplate("delivery", []string{
 		fmt.Sprintf("%s/web/views/delivery.html", conf.WorkingSpace),
 	})
+	buildTemplate("payment", []string{
+		fmt.Sprintf("%s/web/views/payment.html", conf.WorkingSpace),
+	})
 }
 
 func Build(name string) *template.Template {

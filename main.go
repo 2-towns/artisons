@@ -8,8 +8,6 @@ import (
 	"artisons/carts"
 	"artisons/conf"
 	"artisons/http/contexts"
-	"artisons/http/cookies"
-	"artisons/http/httphelpers"
 	"artisons/http/security"
 	"artisons/locales"
 	"artisons/logs"
@@ -40,6 +38,7 @@ func handler(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, contexts.Locale, conf.DefaultLocale)
 		ctx = context.WithValue(ctx, contexts.HX, r.Header.Get("HX-Request") == "true")
 		ctx = context.WithValue(ctx, contexts.Tracking, conf.EnableTrackingLog)
+		ctx = context.WithValue(ctx, contexts.ThrowsWhenPaymentFailed, shops.Data.ThrowsWhenPaymentFailed)
 
 		slog.LogAttrs(
 			ctx,
@@ -71,13 +70,6 @@ func handler(next http.Handler) http.Handler {
 
 		if conf.Debug {
 			w.Header().Set("X-Robots-Tag", "noindex")
-		}
-
-		cid, err := r.Cookie(cookies.CartID)
-		if err == nil {
-			slog.LogAttrs(ctx, slog.LevelInfo, "cart id detected", slog.String("cid", cid.Value))
-			c := httphelpers.NewCookie(cookies.CartID, cid.Value, int(conf.Cookie.MaxAge))
-			http.SetCookie(w, &c)
 		}
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -119,7 +111,7 @@ func adminMux() *http.ServeMux {
 	admin.HandleFunc("POST /admin/blog/{id}/edit", blog.AdminSaveHandler)
 	admin.HandleFunc("POST /admin/blog/{id}/delete", blog.AdminDeleteHandler)
 	admin.HandleFunc("POST /admin/orders/{id}/status", orders.OrderUpdateStatus)
-	admin.HandleFunc("POST /admin/orders/{id}/note", orders.OrderAddNote)
+	admin.HandleFunc("POST /admin/orders/{id}/note", orders.OrderAddNoteHandler)
 	admin.HandleFunc("POST /admin/contact-settings", shops.SettingsContactSave)
 	admin.HandleFunc("POST /admin/shop-settings", shops.SettingsShopSave)
 	admin.HandleFunc("POST /admin/seo/{id}/edit", seo.AdminSaveHandler)
@@ -180,8 +172,12 @@ func main() {
 	app.HandleFunc("GET /sso", auth.Formhandler)
 	app.HandleFunc("GET /addresses", addresses.Handler)
 	app.HandleFunc("GET /delivery", carts.DeliveryHandler)
+	app.HandleFunc("GET /cart/address", carts.AddressFormHandler)
+	app.HandleFunc("GET /payment", carts.PaymentHandler)
+	app.HandleFunc("POST /payment", carts.PaymentProcessHandler)
+	app.HandleFunc("POST /cart/address", carts.AddressHandler)
 	app.HandleFunc("POST /otp", auth.OtpHandler)
-	app.HandleFunc("POST /login", auth.Loginhandler)
+	app.HandleFunc("POST /login", auth.LoginHandler)
 	app.HandleFunc("POST /logout", auth.LogoutHandler)
 	app.HandleFunc("POST /cart/{id}/add", carts.AddHandler)
 	app.HandleFunc("POST /cart/{id}/delete", carts.DeleteHandler)

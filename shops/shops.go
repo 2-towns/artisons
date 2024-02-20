@@ -48,7 +48,13 @@ type ShopSettings struct {
 	Items int
 
 	// Mininimum order
-	Min int
+	Min float64
+
+	ThrowsWhenPaymentFailed bool
+
+	DeliveryFees float64
+
+	DeliveryFreeFees float64
 
 	// Redirect after  the product was added to the cart
 	Redirect bool
@@ -100,13 +106,11 @@ func init() {
 		}
 	}
 
-	var min int = 0
+	var min float64 = 0
 	if d["min"] != "" {
-		i, err := strconv.ParseInt(d["min"], 10, 64)
+		min, err = strconv.ParseFloat(d["min"], 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("min", d["min"]), slog.String("error", err.Error()))
-		} else {
-			min = int(i)
 		}
 	}
 
@@ -121,12 +125,28 @@ func init() {
 	}
 
 	var height int = 0
-	if d["image_width"] != "" {
+	if d["image_height"] != "" {
 		i, err := strconv.ParseInt(d["image_height"], 10, 64)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the image_height", slog.String("image_height", d["image_width"]), slog.String("error", err.Error()))
 		} else {
 			height = int(i)
+		}
+	}
+
+	var deliveryFees float64 = 0
+	if d["delivery_fees"] != "" {
+		deliveryFees, err = strconv.ParseFloat(d["delivery_fees"], 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("delivery_fees", d["delivery_fees"]), slog.String("error", err.Error()))
+		}
+	}
+
+	var deliveryFreeFees float64 = 0
+	if d["delivery_free_fees"] != "" {
+		deliveryFreeFees, err = strconv.ParseFloat(d["delivery_free_fees"], 64)
+		if err != nil {
+			slog.LogAttrs(ctx, slog.LevelError, "cannot parse the min", slog.String("delivery_free_fees", d["delivery_free_fees"]), slog.String("error", err.Error()))
 		}
 	}
 
@@ -150,19 +170,22 @@ func init() {
 			UpdatedAt: time.Unix(updatedAt, 0),
 		},
 		ShopSettings: ShopSettings{
-			Guest:            d["guest"] == "1",
-			Quantity:         d["quantity"] == "1",
-			New:              d["new"] == "1",
-			Items:            items,
-			Min:              min,
-			Redirect:         d["redirect"] == "1",
-			Cache:            d["cache"] == "1",
-			GmapKey:          d["gmap_key"],
-			FuzzySearch:      d["fuzzy_search"] == "1",
-			ExactMatchSearch: d["exact_match_search"] == "1",
-			Color:            d["color"],
-			ImageWidth:       width,
-			ImageHeight:      height,
+			Guest:                   d["guest"] == "1",
+			Quantity:                d["quantity"] == "1",
+			New:                     d["new"] == "1",
+			Items:                   items,
+			Min:                     min,
+			Redirect:                d["redirect"] == "1",
+			Cache:                   d["cache"] == "1",
+			GmapKey:                 d["gmap_key"],
+			FuzzySearch:             d["fuzzy_search"] == "1",
+			ExactMatchSearch:        d["exact_match_search"] == "1",
+			Color:                   d["color"],
+			ImageWidth:              width,
+			ImageHeight:             height,
+			DeliveryFees:            deliveryFees,
+			DeliveryFreeFees:        deliveryFreeFees,
+			ThrowsWhenPaymentFailed: d["throws_when_payment_failed"] == "1",
 		},
 	}
 }
@@ -256,6 +279,11 @@ func (s ShopSettings) Save(ctx context.Context) (string, error) {
 		exactMatchSearch = "1"
 	}
 
+	throwsWhenPaymentFailed := "0"
+	if s.ThrowsWhenPaymentFailed {
+		throwsWhenPaymentFailed = "1"
+	}
+
 	cache := "0"
 	if s.Cache {
 		cache = "1"
@@ -267,7 +295,7 @@ func (s ShopSettings) Save(ctx context.Context) (string, error) {
 		"quantity", quantity,
 		"new", new,
 		"items", fmt.Sprintf("%d", s.Items),
-		"min", fmt.Sprintf("%d", s.Min),
+		"min", fmt.Sprintf("%2f", s.Min),
 		"redirect", redirect,
 		"cache", cache,
 		"gmap_key", s.GmapKey,
@@ -276,6 +304,9 @@ func (s ShopSettings) Save(ctx context.Context) (string, error) {
 		"color", s.Color,
 		"image_width", s.ImageWidth,
 		"image_height", s.ImageHeight,
+		"delivery_fees", s.DeliveryFees,
+		"delivery_free_fees", s.DeliveryFreeFees,
+		"throws_when_payment_failed", throwsWhenPaymentFailed,
 		"updated_at", now.Unix(),
 	).Result()
 
@@ -294,11 +325,93 @@ func Deliveries(ctx context.Context) ([]string, error) {
 
 	del, err := db.Redis.ZRange(ctx, "deliveries", 0, 999).Result()
 	if err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot save the shop", slog.String("error", err.Error()))
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the deliveries", slog.String("error", err.Error()))
 		return []string{}, errors.New("something went wrong")
 	}
 
 	slog.LogAttrs(ctx, slog.LevelInfo, "got deliveries", slog.Int("length", len(del)))
 
 	return del, nil
+}
+
+func Payments(ctx context.Context) ([]string, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "getting payments")
+
+	pay, err := db.Redis.ZRange(ctx, "payments", 0, 999).Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get the payments", slog.String("error", err.Error()))
+		return []string{}, errors.New("something went wrong")
+	}
+
+	slog.LogAttrs(ctx, slog.LevelInfo, "got payments", slog.Int("length", len(pay)))
+
+	return pay, nil
+}
+
+func Pay(ctx context.Context, oid string, payment string) (string, error) {
+	l := slog.With(slog.String("order", oid), slog.String("payment", payment))
+
+	switch payment {
+	case "cash":
+		{
+			l.LogAttrs(ctx, slog.LevelInfo, "payment success")
+			return "", nil
+		}
+	default:
+		{
+			l.LogAttrs(ctx, slog.LevelError, "the payment method does not exist")
+			return "", errors.New("you are not authorized to process this request")
+		}
+	}
+
+}
+
+// IsValidDelivery returns true if the delivery
+// is valid. The values can be "collect" or "home".
+// The "collect" value can be used only if it's allowed
+// in the settings.
+func IsValidDelivery(ctx context.Context, d string) bool {
+	l := slog.With(slog.String("delivery", d))
+	l.LogAttrs(ctx, slog.LevelInfo, "checking delivery validity")
+
+	del, err := Deliveries(ctx)
+	if err != nil {
+		return false
+	}
+
+	if err := validators.V.Var(d, "oneof="+strings.Join(del, " ")); err != nil {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate  the delivery", slog.String("error", err.Error()))
+		return false
+	}
+
+	if d == "home" && !conf.HasHomeDelivery {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot continue while the home is not activated")
+		return false
+	}
+
+	l.LogAttrs(ctx, slog.LevelInfo, "the delivery is valid")
+
+	return true
+}
+
+// IsValidPayment returns true if the payment
+// is valid. The values can be "card", "cash", "bitcoin" or "wire".
+// The payments can be enablee or disabled in the settings.
+func IsValidPayment(ctx context.Context, p string) bool {
+	l := slog.With(slog.String("payment", p))
+	l.LogAttrs(ctx, slog.LevelInfo, "checking payment validity")
+
+	pay, err := Payments(ctx)
+	if err != nil {
+		return false
+	}
+
+	if err := validators.V.Var(p, "oneof="+strings.Join(pay, " ")); err != nil {
+		l.LogAttrs(ctx, slog.LevelInfo, "cannot validate the payment", slog.String("error", err.Error()))
+		return false
+	}
+
+	l.LogAttrs(ctx, slog.LevelInfo, "the payment is valid")
+
+	return true
 }

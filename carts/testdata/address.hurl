@@ -1,7 +1,7 @@
 # The address form is displayed
-GET {{host}}/account/address
+GET {{host}}/cart/address
 [Cookies]
-wsid: 333333 
+wsid: 444444 
 HTTP 200
 [Asserts]
 xpath "//input[@name='firstname']" exists
@@ -13,10 +13,8 @@ xpath "//input[@name='zipcode']" exists
 xpath "//input[@name='phone']" exists
 
 # Saving the address without firstname shows an error 
-POST {{host}}/account/address
+POST {{host}}/cart/address
 HX-Request: true
-[Cookies]
-wsid: 333333 
 [FormParams]
 firstname: 
 lastname: Deville
@@ -32,10 +30,8 @@ header "HX-Reswap" == "innerHTML show:#firstname-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Saving the address without lastname shows an error 
-POST {{host}}/account/address
+POST {{host}}/cart/address
 HX-Request: true
-[Cookies]
-wsid: 333333 
 [FormParams]
 firstname: Arnaud
 lastname: 
@@ -51,10 +47,8 @@ header "HX-Reswap" == "innerHTML show:#lastname-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Saving the address without street shows an error 
-POST {{host}}/account/address
+POST {{host}}/cart/address
 HX-Request: true
-[Cookies]
-wsid: 333333 
 [FormParams]
 firstname: Arnaud
 lastname: Deville
@@ -70,10 +64,8 @@ header "HX-Reswap" == "innerHTML show:#street-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Saving the address without city shows an error 
-POST {{host}}/account/address
+POST {{host}}/cart/address
 HX-Request: true
-[Cookies]
-wsid: 333333 
 [FormParams]
 firstname: Arnaud
 lastname: Deville
@@ -89,10 +81,8 @@ header "HX-Reswap" == "innerHTML show:#city-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Saving the address without zipcode shows an error 
-POST {{host}}/account/address
+POST {{host}}/cart/address
 HX-Request: true
-[Cookies]
-wsid: 333333 
 [FormParams]
 firstname: Arnaud
 lastname: Deville
@@ -108,10 +98,8 @@ header "HX-Reswap" == "innerHTML show:#zipcode-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Saving the address without phone shows an error 
-POST {{host}}/account/address
+POST {{host}}/cart/address
 HX-Request: true
-[Cookies]
-wsid: 333333 
 [FormParams]
 firstname: Arnaud
 lastname: Deville
@@ -127,10 +115,8 @@ header "HX-Reswap" == "innerHTML show:#phone-row:top"
 xpath "normalize-space(//div[@class='form-error']/text())" == "The data is invalid." 
 
 # Saving the address works with data
-POST {{host}}/account/address
+POST {{host}}/cart/address
 HX-Request: true
-[Cookies]
-wsid: 333333 
 [FormParams]
 firstname: Arnaud
 lastname: Deville
@@ -141,4 +127,4 @@ zipcode: 59000
 phone: 6012432122
 HTTP 200
 [Asserts]
-xpath "normalize-space(//b[@class='alert-success-title alert-title']/text())" == "Success" 
+header "HX-Redirect" == "/payment"

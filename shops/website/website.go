@@ -9,7 +9,6 @@ import (
 	"artisons/shops"
 	"artisons/tags/tree"
 	"artisons/templates"
-	"artisons/tracking"
 	"artisons/users"
 	"html/template"
 	"log/slog"
@@ -165,9 +164,6 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		httperrors.Catch(w, ctx, err.Error(), 500)
 		return
 	}
-
-	tra := map[string]string{"query": r.URL.RawQuery}
-	go tracking.Log(ctx, "product_search", tra)
 
 	pag := p.Build(ctx, res.Total, len(res.Products))
 

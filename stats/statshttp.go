@@ -7,10 +7,8 @@ import (
 	"artisons/http/httperrors"
 	"artisons/http/httphelpers"
 	"artisons/templates"
-	"artisons/tracking"
 	"artisons/users"
 	"context"
-	"fmt"
 	"html/template"
 	"log"
 	"log/slog"
@@ -192,13 +190,6 @@ func Middleware(next http.Handler) http.Handler {
 			URL:     r.URL.Path,
 			Referer: r.Referer(),
 		})
-
-		data := map[string]string{
-			"url":     r.URL.Path,
-			"referer": fmt.Sprintf("'%s'", r.Referer()),
-			"ua":      fmt.Sprintf("'%s'", r.Header.Get("User-agent")),
-		}
-		go tracking.Log(ctx, "access", data)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

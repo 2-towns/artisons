@@ -9,9 +9,6 @@ type ContextKey string
 // User is the context key used to store the lang
 const User ContextKey = "user"
 
-// Form is the current form object
-const Form ContextKey = "form"
-
 // Device is the context key used to store the lang
 const Device ContextKey = "device"
 
@@ -29,3 +26,6 @@ const HXTarget ContextKey = "hx-target"
 const AlertTarget ContextKey = "alert"
 
 const Tracking ContextKey = "tracking"
+
+// ThrowsWhenPaymentFailed placed in the context is easier for testing
+const ThrowsWhenPaymentFailed ContextKey = "throws-when-payment-failed"

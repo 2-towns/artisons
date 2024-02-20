@@ -14,6 +14,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Add a note shows success 
 POST {{host}}/admin/orders/ORD1/note
 HX-Request: true
+[Cookies]
+wsid: 444444 
 [FormParams]
 note: Ta commande tu te la gardes !
 HTTP 200
@@ -24,6 +26,8 @@ xpath "normalize-space(//div[@class='box list-item'][last()]/b[text()='Ta comman
 
 # Accessing the order show the note 
 GET {{host}}/admin/orders/ORD1/edit
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 xpath "normalize-space(//div[@class='box list-item'][last()]/b[text()='Ta commande tu te la gardes !'])" exists

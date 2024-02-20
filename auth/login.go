@@ -8,13 +8,13 @@ import (
 	"artisons/http/httperrors"
 	"artisons/http/httphelpers"
 	"artisons/templates"
-	"artisons/tracking"
 	"artisons/users"
 	"context"
 	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"golang.org/x/text/language"
@@ -125,7 +125,7 @@ func OtpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Loginhandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := users.Context(r, w)
 	_, ok := ctx.Value(contexts.User).(users.User)
 	if ok {
@@ -161,9 +161,6 @@ func Loginhandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]string{"sid": u.SID, "otp": otp, "email": email}
-	go tracking.Log(ctx, "login", data)
-
 	ctx = context.WithValue(ctx, contexts.User, u)
 
 	cookie := httphelpers.NewCookie(cookies.SessionID, u.SID, int(conf.Cookie.MaxAge))
@@ -172,11 +169,14 @@ func Loginhandler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.Header.Get("HX-Current-Url"), "/sso") && u.Role == "admin" {
 		w.Header().Set("HX-Redirect", "/admin/index")
 	} else {
-		cid, err := r.Cookie(cookies.CartID)
-		if err == nil && carts.Exists(ctx, cid.Value) {
-			if err := carts.Merge(ctx, cid.Value); err != nil {
-				httperrors.HXCatch(w, ctx, err.Error())
-				return
+		coo, err := r.Cookie(cookies.CartID)
+		if err == nil {
+			cid, err := strconv.ParseInt(coo.Value, 10, 64)
+			if err == nil {
+				if err := carts.Merge(ctx, int(cid)); err != nil {
+					httperrors.HXCatch(w, ctx, err.Error())
+					return
+				}
 			}
 		}
 

@@ -45,4 +45,4 @@ HX-Request: true
 delivery: colissimo
 HTTP 200
 [Asserts]
-header "HX-Redirect" == "/payment.html"
+header "HX-Redirect" == "/cart/address"

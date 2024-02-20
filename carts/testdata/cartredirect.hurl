@@ -17,6 +17,8 @@ xpath "normalize-space(//b[@class='alert-success-title alert-title']/text())" ==
 POST {{host}}/cart/PDT1/add
 HX-Current-Url: /product/t-shirt-tester-c-est-douter
 HX-Request: true
+[Cookies]
+wsid: 444444 
 [FormParams]
 quantity: 1
 HTTP 200
@@ -26,6 +28,8 @@ header "HX-Redirect" == "/cart"
 # Editing the shop settings to not redirect after adding to cart shows success 
 POST {{host}}/admin/shop-settings
 HX-Request: true
+[Cookies]
+wsid: 444444 
 [FormParams]
 items: 10
 min: 10

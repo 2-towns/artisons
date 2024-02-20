@@ -5,6 +5,7 @@ import (
 	"artisons/db"
 	"artisons/http/contexts"
 	"artisons/http/referer"
+	"artisons/products"
 	"artisons/string/stringutil"
 	"artisons/users"
 	"cmp"
@@ -417,15 +418,15 @@ func Visit(ctx context.Context, ua useragent.UserAgent, data VisitData) error {
 	return nil
 }
 
-func Order(ctx context.Context, id string, quantites map[string]int, total float64) error {
+func Order(ctx context.Context, id string, pds []products.Product, total float64) error {
 	l := slog.With(slog.String("id", id), slog.Float64("total", total))
 	l.LogAttrs(ctx, slog.LevelInfo, "store order statistics")
 
 	now := time.Now().Format("20060102")
 	pipe := db.Redis.Pipeline()
 
-	for pid, q := range quantites {
-		pipe.ZIncrBy(ctx, "stats:products:most:"+now, float64(q), pid)
+	for _, p := range pds {
+		pipe.ZIncrBy(ctx, "stats:products:most:"+now, float64(p.Quantity), p.ID)
 	}
 
 	pipe.IncrByFloat(ctx, "stats:orders:revenues:"+now, total)

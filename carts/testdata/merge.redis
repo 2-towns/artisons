@@ -1,4 +1,0 @@
-HSET "cart:CAR1" "PDT1" "2"
-HSET "cart:CAR1" "PDT2" "1"
-HSET "cart:1" "PDT1" "1"
-HSET "cart:1" "PDT2" "0"

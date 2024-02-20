@@ -21,6 +21,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with an invalid price shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -30,8 +32,6 @@ quantity: 1
 status: online
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#price-error" 
@@ -41,6 +41,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product without title shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: 
 description: 100 % coton pour les couleurs unies
@@ -50,8 +52,6 @@ quantity: 1
 status: online
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#title-error" 
@@ -61,6 +61,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product without description shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 
@@ -70,8 +72,6 @@ quantity: 1
 status: online
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#description-error" 
@@ -81,6 +81,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with bad sku shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -90,8 +92,6 @@ quantity: 1
 status: online
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#sku-error" 
@@ -101,6 +101,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product without quantity shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -110,8 +112,6 @@ quantity:
 status: online
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#quantity-error" 
@@ -121,6 +121,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with bad quantity shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -130,8 +132,6 @@ quantity: abc
 status: online
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#quantity-error" 
@@ -141,6 +141,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with bad weight shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -151,8 +153,6 @@ status: online
 weight: abc
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#weight-error" 
@@ -162,6 +162,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with bad discount shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -172,8 +174,6 @@ status: online
 discount: abc
 tags: winter cold
 image_1:file,image.jpg;
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#discount-error" 
@@ -183,6 +183,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with a bad picture shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -193,8 +195,6 @@ status: online
 tags: winter cold
 image_1:file,image.txt;
 slug: t-shirt-developpeur-unisexe-javascript-park-with-bad-picture-{{time}}
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image_1-error" 
@@ -204,6 +204,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with a bad image shows an error 
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -215,8 +217,6 @@ tags: winter cold
 image_1:file,image.jpg;
 image_2:file,image.txt;
 slug: t-shirt-developpeur-unisexe-javascript-park-with-bad-image-{{time}}
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#image_2-error" 
@@ -226,6 +226,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product with correct data works
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -239,8 +241,6 @@ tags: winter cold
 image_1:file,image.jpg;
 image_2:file,image.jpg;
 slug: slug-edit-{{time}}
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products"
@@ -252,6 +252,8 @@ cookie "flash[Path]" == "/"
 # Editing a product with only required fields works
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -260,8 +262,6 @@ quantity: 1
 status: online
 image_1:file,image.jpg;
 slug: slug-edit-only-required-{{time}}
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products"
@@ -273,6 +273,8 @@ cookie "flash[Path]" == "/"
 # Editing product with existing slug shows an error
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -280,8 +282,6 @@ price: 123.5
 quantity: 1
 status: online
 slug: t-shirt-tester-c-est-douter
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Retarget" == "#slug-error" 
@@ -291,6 +291,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Editing a product without image works
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -298,8 +300,6 @@ price: 123.5
 quantity: 1
 status: online
 slug: slug-without-image-{{time}}
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products"
@@ -311,14 +311,14 @@ cookie "flash[Path]" == "/"
 # Verify that the image 2 checkbox exists
 GET {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
 price: 123.5
 quantity: 1
 status: online
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 xpath "//input[@name='image_2_delete']" exists
@@ -326,6 +326,8 @@ xpath "//input[@name='image_2_delete']" exists
 # Editing a product while deleting the image 2 works
 POST {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -334,8 +336,6 @@ quantity: 1
 status: online
 image_2_delete: on
 slug: slug-whilte-deleting-image-2-{{time}}
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 header "HX-Redirect" == "/admin/products"
@@ -343,14 +343,14 @@ header "HX-Redirect" == "/admin/products"
 # Verify that the image 2 checkbox does not exists
 GET {{host}}/admin/products/PDT2/edit
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
 price: 123.5
 quantity: 1
 status: online
-[Cookies]
-wsid: 333333
 HTTP 200
 [Asserts]
 xpath "//input[@name='image_2_delete']" not exists

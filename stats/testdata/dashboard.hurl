@@ -18,6 +18,8 @@ xpath "//input[@id='days'][@value='7']" exists
 # Change the pagination
 GET {{host}}/admin/index?days=14
 HX-Request: true
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 xpath "//select[@name='days'][@hx-get='/admin']" not exists

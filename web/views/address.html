@@ -1,6 +1,6 @@
 {{define "body"}}
 
-<form hx-post="/account/address">
+<form hx-post="{{.URL}}">
     <div class="form-row" id="firstname-row">
         <label class="input-label" for="firstname">
             {{uitranslate .Lang "Firstname"}}
@@ -11,7 +11,7 @@
                name="firstname"
                required
                class="input"
-               value="{{if .User.Address.Firstname}}{{.User.Address.Firstname}}{{end}}" />
+               value="{{if .Address.Firstname}}{{.Address.Firstname}}{{end}}" />
 
         <div id="firstname-error"></div>
     </div>
@@ -26,7 +26,7 @@
                name="lastname"
                required
                class="input"
-               value="{{if .User.Address.Lastname}}{{.User.Address.Lastname}}{{end}}" />
+               value="{{if .Address.Lastname}}{{.Address.Lastname}}{{end}}" />
 
         <div id="lastname-error"></div>
     </div>
@@ -41,7 +41,7 @@
                name="street"
                required
                class="input"
-               value="{{if .User.Address.Street}}{{.User.Address.Street}}{{end}}" />
+               value="{{if .Address.Street}}{{.Address.Street}}{{end}}" />
 
         <div id="street-error"></div>
     </div>
@@ -55,7 +55,7 @@
                id="complementary"
                name="complementary"
                class="input"
-               value="{{if .User.Address.Complementary}}{{.User.Address.Complementary}}{{end}}" />
+               value="{{if .Address.Complementary}}{{.Address.Complementary}}{{end}}" />
 
         <div id="complementary-error"></div>
     </div>
@@ -70,7 +70,7 @@
                name="city"
                required
                class="input"
-               value="{{if .User.Address.City}}{{.User.Address.City}}{{end}}" />
+               value="{{if .Address.City}}{{.Address.City}}{{end}}" />
 
         <div id="city-error"></div>
     </div>
@@ -85,7 +85,7 @@
                name="zipcode"
                required
                class="input"
-               value="{{if .User.Address.Zipcode}}{{.User.Address.Zipcode}}{{end}}" />
+               value="{{if .Address.Zipcode}}{{.Address.Zipcode}}{{end}}" />
 
         <div id="zipcode-error"></div>
     </div>
@@ -101,7 +101,7 @@
                typ="tel"
                required
                class="input"
-               value="{{if .User.Address.Phone}}{{.User.Address.Phone}}{{end}}" />
+               value="{{if .Address.Phone}}{{.Address.Phone}}{{end}}" />
 
         <div id="phone-error"></div>
     </div>

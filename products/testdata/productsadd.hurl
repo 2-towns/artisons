@@ -21,6 +21,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with an invalid price shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -39,6 +41,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product without title shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: 
 description: 100 % coton pour les couleurs unies
@@ -57,6 +61,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product without description shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 
@@ -75,6 +81,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with bad sku shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -93,6 +101,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product without quantity shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -111,6 +121,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with bad quantity shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -129,6 +141,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with bad weight shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -148,6 +162,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with bad discount shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -167,6 +183,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product without file shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -185,6 +203,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with a bad picture shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -204,6 +224,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with a bad image shows an error 
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -224,6 +246,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding product with existing slug shows an error
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -246,6 +270,8 @@ xpath "normalize-space(//div[@class='form-error']/text())" == "The data is inval
 # Adding a product with correct data works
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies
@@ -270,6 +296,8 @@ cookie "flash[Path]" == "/"
 # Adding a product with only required fields works
 POST {{host}}/admin/products/add
 HX-Request: true
+[Cookies]
+wsid: 444444
 [MultipartFormData]
 title: T-shirt développeur unisexe JavaScript Park
 description: 100 % coton pour les couleurs unies

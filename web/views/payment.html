@@ -1,0 +1,46 @@
+{{define "body"}}
+
+<div class="payment">
+    <h1>{{uitranslate .Lang "Payment"}}</h1>
+    <h1>{{uitranslate .Lang "Choose your payment method"}}</h1>
+
+    <form hx-post="/payement">
+        {{range .Payments}}
+        <div class="payment-row" id="{{.}}-row">
+            <div>
+                <label class="label" for="{{.}}">
+                    {{uitranslate $.Lang .}}
+                </label>
+
+                <small class="input-help">
+                    {{uitranslate $.Lang (print . "_description")}}
+                </small>
+                <div id="{{.}}-error"></div>
+            </div>
+            <div>
+                <label class="">
+                    <input
+                           id="{{.}}"
+                           name="payment"
+                           class="checkbox"
+                           type="checkbox" />
+                </label>
+            </div>
+        </div>
+        {{end}}
+        <div class="delivery-footer">
+            <div class="delivery-footer-row">
+                <a href="/cart" class="button button-cancel delivery-footer-back">
+                    {{uitranslate .Lang "Back"}}
+                </a>
+                <button class="button button-primary">
+                    <div id="spinner" class="htmx-indicator htmx-spinner"></div>
+
+                    {{uitranslate .Lang "Choose"}}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{{end}}

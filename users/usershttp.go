@@ -1,6 +1,7 @@
 package users
 
 import (
+	"artisons/addresses"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
@@ -12,7 +13,6 @@ import (
 	"artisons/templates"
 	"context"
 	"errors"
-	"log"
 	"log/slog"
 	"net/http"
 
@@ -68,13 +68,11 @@ func Context(r *http.Request, w http.ResponseWriter) context.Context {
 		http.SetCookie(w, &c)
 
 		return ctx
-	} else {
-		// Refresh the cookie
-		c := httphelpers.NewCookie(cookies.SessionID, sid.Value, int(conf.Cookie.MaxAge))
-		http.SetCookie(w, &c)
 	}
 
-	ctx = context.WithValue(ctx, contexts.User, user)
+	if user.ID > 0 {
+		ctx = context.WithValue(ctx, contexts.User, user)
+	}
 
 	return ctx
 }
@@ -86,7 +84,6 @@ func AccountOnly(next http.Handler) http.Handler {
 
 		if !ok {
 			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
-			//httperrors.Catch(w, ctx, "you are not authorized to process this request", 401)
 			http.Redirect(w, r, "/otp", http.StatusFound)
 			return
 		}
@@ -97,6 +94,9 @@ func AccountOnly(next http.Handler) http.Handler {
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot refresh the session", slog.String("error", err.Error()))
 		}
+
+		c := httphelpers.NewCookie(cookies.SessionID, user.SID, int(conf.Cookie.MaxAge))
+		http.SetCookie(w, &c)
 	})
 }
 
@@ -108,7 +108,6 @@ func AdminOnly(next http.Handler) http.Handler {
 
 		if !ok {
 			slog.LogAttrs(ctx, slog.LevelInfo, "no session cookie found")
-			//httperrors.Catch(w, ctx, "you are not authorized to process this request", 401)
 			http.Redirect(w, r, "/sso", http.StatusFound)
 			return
 		}
@@ -122,12 +121,13 @@ func AdminOnly(next http.Handler) http.Handler {
 		w.Header().Set("X-Robots-Tag", "noindex")
 		next.ServeHTTP(w, r.WithContext(ctx))
 
-		log.Println("admin donene !!!")
-
 		err := user.RefreshSession(ctx)
 		if err != nil {
 			slog.LogAttrs(ctx, slog.LevelError, "cannot refresh the session", slog.String("error", err.Error()))
 		}
+
+		c := httphelpers.NewCookie(cookies.SessionID, user.SID, int(conf.Cookie.MaxAge))
+		http.SetCookie(w, &c)
 	})
 }
 
@@ -156,15 +156,17 @@ func AddressFormHandler(w http.ResponseWriter, r *http.Request) {
 	user := ctx.Value(contexts.User).(User)
 
 	data := struct {
-		Lang language.Tag
-		Shop shops.Settings
-		Tags []tree.Leaf
-		User User
+		Lang    language.Tag
+		Shop    shops.Settings
+		Tags    []tree.Leaf
+		Address addresses.Address
+		URL     string
 	}{
 		lang,
 		shops.Data,
 		tree.Tree,
-		user,
+		user.Address,
+		"/account/address",
 	}
 
 	if err := templates.Pages["address"].Execute(w, &data); err != nil {
@@ -183,7 +185,7 @@ func AddressHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a := Address{
+	a := addresses.Address{
 		Firstname:     r.FormValue("firstname"),
 		Lastname:      r.FormValue("lastname"),
 		Street:        r.FormValue("street"),
@@ -198,7 +200,7 @@ func AddressHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.Save(ctx, user.ID); err != nil {
+	if err := user.SaveAddress(ctx, a); err != nil {
 		httperrors.HXCatch(w, ctx, err.Error())
 		return
 	}

@@ -119,7 +119,7 @@ func SettingsShopSave(w http.ResponseWriter, r *http.Request) {
 
 	min := r.FormValue("min")
 	if r.FormValue("min") != "" {
-		val, err := strconv.ParseInt(min, 10, 64)
+		val, err := strconv.ParseFloat(min, 64)
 		if err != nil {
 			ctx = context.WithValue(ctx, contexts.HXTarget, "#alert-shop")
 			slog.LogAttrs(ctx, slog.LevelInfo, "cannot use the min value", slog.String("min", min))
@@ -127,7 +127,7 @@ func SettingsShopSave(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		s.Min = int(val)
+		s.Min = val
 	}
 
 	err := s.Validate(ctx)

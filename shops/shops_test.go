@@ -2,6 +2,7 @@ package shops
 
 import (
 	"artisons/tests"
+	"fmt"
 	"path"
 	"reflect"
 	"runtime"
@@ -60,5 +61,85 @@ func TestDeliveries(t *testing.T) {
 	del, err := Deliveries(ctx)
 	if err != nil || len(del) == 0 {
 		t.Fatalf(`err = %v, want nil`, err)
+	}
+}
+
+func TestPayments(t *testing.T) {
+	ctx := tests.Context()
+
+	tests.ImportData(ctx, cur+"testdata/payments.redis")
+
+	del, err := Payments(ctx)
+	if err != nil || len(del) == 0 {
+		t.Fatalf(`err = %v, want nil`, err)
+	}
+}
+
+func TestPay(t *testing.T) {
+	ctx := tests.Context()
+
+	tests.ImportData(ctx, cur+"testdata/payments.redis")
+
+	var tests = []struct {
+		name    string
+		oid     string
+		payment string
+		err     error
+	}{
+		{"cash", "ORD1", "cash", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := Pay(ctx, tt.oid, tt.payment); fmt.Sprintf("%s", err) != fmt.Sprintf("%s", tt.err) {
+				t.Fatalf(`err = %v, want %v`, err, tt.err)
+			}
+		})
+	}
+}
+
+func TestIsValidDelivery(t *testing.T) {
+	ctx := tests.Context()
+
+	tests.ImportData(ctx, cur+"testdata/deliveries.redis")
+
+	var tests = []struct {
+		name  string
+		value string
+		valid bool
+	}{
+		{"collect", "collect", true},
+		{"idontexist", "idontexist", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if valid := IsValidDelivery(ctx, tt.value); valid != tt.valid {
+				t.Fatalf(`valid = %v, want %v`, valid, tt.valid)
+			}
+		})
+	}
+}
+
+func TestIsValidPayment(t *testing.T) {
+	ctx := tests.Context()
+
+	tests.ImportData(ctx, cur+"testdata/payments.redis")
+
+	var tests = []struct {
+		name  string
+		value string
+		valid bool
+	}{
+		{"cash", "cash", true},
+		{"idontexist", "idontexist", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if valid := IsValidPayment(ctx, tt.value); valid != tt.valid {
+				t.Fatalf(`valid = %v, want %v`, valid, tt.valid)
+			}
+		})
 	}
 }

@@ -1,15 +1,14 @@
 package orders
 
 import (
+	"artisons/addresses"
 	"artisons/conf"
 	"artisons/products"
 	"artisons/tests"
-	"artisons/users"
 	"errors"
 	"fmt"
 	"os"
 	"path"
-	"reflect"
 	"runtime"
 	"strings"
 	"testing"
@@ -20,16 +19,20 @@ import (
 )
 
 var order Order = Order{
-	ID:       "ORD1",
-	UID:      1,
-	Delivery: "collect",
-	Payment:  "cash",
-	Total:    105.5,
-	Quantities: map[string]int{
-		"PDT1": 1,
-	},
-	DeliveryCost: 5,
-	Address: users.Address{
+	ID:           "ORD1",
+	UID:          1,
+	Delivery:     "collect",
+	Payment:      "cash",
+	Total:        105.5,
+	DeliveryFees: 5,
+	Products: []products.Product{{
+		ID:       "PDT1",
+		Title:    "T-shirt Tester c'est douter",
+		Slug:     "t-shirt-tester-c-est-douter",
+		Price:    100.5,
+		Quantity: 1,
+	}},
+	Address: addresses.Address{
 		Firstname:     "Arnaud",
 		Lastname:      "Arnaud",
 		City:          "Oran",
@@ -46,84 +49,6 @@ var cur string
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	cur = path.Dir(filename) + "/"
-}
-
-func TestIsValidDelivery(t *testing.T) {
-	ctx := tests.Context()
-
-	tests.ImportData(ctx, cur+"testdata/orders.redis")
-
-	var tests = []struct {
-		name  string
-		value string
-		valid bool
-	}{
-		{"collect", "collect", true},
-		{"idontexist", "idontexist", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if valid := IsValidDelivery(ctx, tt.value); valid != tt.valid {
-				t.Fatalf(`valid = %v, want %v`, valid, tt.valid)
-			}
-		})
-	}
-}
-
-func TestIsValidPayment(t *testing.T) {
-	ctx := tests.Context()
-
-	var tests = []struct {
-		name  string
-		value string
-		valid bool
-	}{
-		{"cash", "cash", true},
-		{"idontexist", "idontexist", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if valid := IsValidPayment(ctx, tt.value); valid != tt.valid {
-				t.Fatalf(`valid = %v, want %v`, valid, tt.valid)
-			}
-		})
-	}
-}
-
-func TestIsValidate(t *testing.T) {
-	ctx := tests.Context()
-
-	tests.ImportData(ctx, cur+"testdata/orders.redis")
-
-	var tests = []struct {
-		name  string
-		field string
-		value string
-		err   error
-	}{
-		{"delivery=idontexist", "Delivery", "idontexist", errors.New("you are not authorized to process this request")},
-		{"payment=idontexist", "Payment", "idontexist", errors.New("you are not authorized to process this request")},
-		{"payment=idontexist", "Payment", "idontexist", errors.New("you are not authorized to process this request")},
-		{"quantities=", "Quantities", "", errors.New("the cart is empty")},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			o := order
-
-			if tt.field == "Quantities" {
-				o.Quantities = map[string]int{}
-			} else if tt.field != "" {
-				reflect.ValueOf(&o).Elem().FieldByName(tt.field).SetString(tt.value)
-			}
-
-			if err := o.Validate(ctx); fmt.Sprintf("%s", err) != fmt.Sprintf("%s", tt.err) {
-				t.Fatalf(`err = %v, want %s`, err, tt.err)
-			}
-		})
-	}
 }
 
 func TestUpdateStatus(t *testing.T) {
@@ -217,10 +142,7 @@ func TestSendConfirmationEmail(t *testing.T) {
 	message.SetString(language.English, "link", "Link")
 	message.SetString(language.English, "email_order_confirmationfooter", "\nSee you around,\nThe Customer Experience Team at artisons shop")
 
-	o, _ := order.WithProducts(ctx)
-	o = o.WithTotal()
-
-	tpl, err := o.SendConfirmationEmail(ctx)
+	tpl, err := order.SendConfirmationEmail(ctx)
 	if err != nil {
 		t.Fatalf(`err %v, want  nil`, err)
 	}
@@ -238,29 +160,7 @@ func TestSendConfirmationEmail(t *testing.T) {
 	}
 }
 
-func TestTotal(t *testing.T) {
-	var tests = []struct {
-		name     string
-		products []products.Product
-		total    float64
-	}{
-		{"total=65", []products.Product{{Quantity: 1, Price: 11}, {Quantity: 2, Price: 24.5}}, 65},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			o := order
-			o.Products = tt.products
-			o = o.WithTotal()
-
-			if o.Total != tt.total {
-				t.Fatalf(`total = %f, want %f`, o.Total, tt.total)
-			}
-		})
-	}
-}
-
-func TestSearchReturnsOrdersWhenStatusIsFound(t *testing.T) {
+func TestSearch(t *testing.T) {
 	ctx := tests.Context()
 
 	tests.Del(ctx, "order")
@@ -291,5 +191,4 @@ func TestSearchReturnsOrdersWhenStatusIsFound(t *testing.T) {
 			}
 		})
 	}
-
 }

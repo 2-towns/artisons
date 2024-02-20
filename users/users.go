@@ -2,6 +2,7 @@
 package users
 
 import (
+	"artisons/addresses"
 	"artisons/conf"
 	"artisons/db"
 	"artisons/http/contexts"
@@ -14,10 +15,8 @@ import (
 	"log/slog"
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -30,7 +29,7 @@ type User struct {
 
 	Email     string
 	ID        int
-	Address   Address
+	Address   addresses.Address
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Otp       string
@@ -40,16 +39,6 @@ type User struct {
 	Role string
 
 	Demo bool
-}
-
-type Address struct {
-	Lastname      string `validate:"required"`
-	Firstname     string `validate:"required"`
-	City          string `validate:"required"`
-	Street        string `validate:"required"`
-	Complementary string
-	Zipcode       string `validate:"required"`
-	Phone         string `validate:"required"`
 }
 
 type Query struct {
@@ -143,17 +132,6 @@ func (u User) Delete(ctx context.Context) error {
 	return nil
 }
 
-func (a Address) Validate(ctx context.Context) error {
-	if err := validators.V.Struct(a); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user", slog.String("error", err.Error()))
-		field := err.(validator.ValidationErrors)[0]
-		low := strings.ToLower(field.Field())
-		return fmt.Errorf("input:%s", low)
-	}
-
-	return nil
-}
-
 func parse(ctx context.Context, m map[string]string) (User, error) {
 	l := slog.With(slog.String("user_id", m["id"]))
 
@@ -186,7 +164,7 @@ func parse(ctx context.Context, m map[string]string) (User, error) {
 		Email: m["email"],
 		Otp:   m["otp"],
 		Lang:  language.Make(m["lang"]),
-		Address: Address{
+		Address: addresses.Address{
 			Lastname:      m["lastname"],
 			Firstname:     m["firstname"],
 			Street:        m["street"],
@@ -204,31 +182,18 @@ func parse(ctx context.Context, m map[string]string) (User, error) {
 
 // Save attachs an address to an user.
 // The data are stored with:
-// - user:id => the address
-func (a Address) Save(ctx context.Context, id int) error {
-	slog.LogAttrs(ctx, slog.LevelInfo, "saving the address")
+func (u User) SaveAddress(ctx context.Context, a addresses.Address) error {
+	slog.LogAttrs(ctx, slog.LevelInfo, "saving address")
 
-	if id == 0 {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot validate the user id while it is empty")
-		return errors.New("something went wrong")
+	err := a.Save(ctx, fmt.Sprintf("user:%d", u.ID))
+	if err != nil {
+		return err
 	}
 
-	if _, err := db.Redis.HSet(ctx, fmt.Sprintf("user:%d", id),
-		"firstname", a.Firstname,
-		"lastname", a.Lastname,
-		"complementary", a.Complementary,
-		"city", a.City,
-		"phone", a.Phone,
-		"zipcode", a.Zipcode,
-		"street", a.Street,
-	).Result(); err != nil {
-		slog.LogAttrs(ctx, slog.LevelError, "cannot store the user", slog.String("error", err.Error()))
-		return errors.New("something went wrong")
-	}
-
-	slog.LogAttrs(ctx, slog.LevelInfo, "the address is saved")
+	slog.LogAttrs(ctx, slog.LevelInfo, "address saved successfullly")
 
 	return nil
+
 }
 
 // Login authenicate user with a otp code.
@@ -331,7 +296,6 @@ func Login(ctx context.Context, email, otp, device string) (User, error) {
 		key := fmt.Sprintf("user:%d", uid)
 		rdb.HSet(ctx, key,
 			"updated_at", now.Unix(),
-			// TODO: get the lang from the browser and match with the ones on the server
 			"lang", conf.DefaultLocale.String(),
 		)
 		rdb.HSetNX(ctx, key, "id", uid)

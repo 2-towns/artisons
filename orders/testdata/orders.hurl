@@ -11,6 +11,8 @@ xpath "//table/tbody/tr" count > 0
 # Access the orders with huge page shoes empty message
 GET {{host}}/admin/orders?page=100
 HX-Request: true
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 body contains "No results found." 
@@ -18,6 +20,8 @@ body contains "No results found."
 # Search orders by id 
 GET {{host}}/admin/orders?q=ORD1
 HX-Request: true
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 body not contains "No results found." 
@@ -27,6 +31,8 @@ xpath "//a[@href='/admin/orders/ORD1/edit']" exists
 # Search orders by status 
 GET {{host}}/admin/orders?q=created
 HX-Request: true
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 body not contains "No results found."
@@ -36,6 +42,8 @@ xpath "//a[@href='/admin/orders/ORD2/edit']" exists
 # Search orders by delivery 
 GET {{host}}/admin/orders?q=Home
 HX-Request: true
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 body not contains "No results found." 
@@ -45,6 +53,8 @@ xpath "//a[@href='/admin/orders/ORD1/edit']" exists
 # Search orders by payment 
 GET {{host}}/admin/orders?q=Card
 HX-Request: true
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 body not contains "No results found." 
@@ -54,6 +64,8 @@ xpath "//a[@href='/admin/orders/ORD1/edit']" exists
 # Search orders by non existing keyword shows empty message 
 GET {{host}}/admin/orders?q=totoisverydangerous
 HX-Request: true
+[Cookies]
+wsid: 444444 
 HTTP 200
 [Asserts]
 body contains "No results found." 

@@ -8,6 +8,12 @@ import (
 
 func LoadEn() {
 	// Errors
+
+	message.SetString(language.English, "the minimum amount is not reached", "The minimum amount is not reached.")
+	message.SetString(language.English, "the order is created successfully", "The order is created successfully.")
+	message.SetString(language.English, "the payment method is not allowed", "The payment method is not allowed.")
+	message.SetString(language.English, "some products are not available anymore", "Some products are not available anymore.")
+	message.SetString(language.English, "the cart does not exist", "The cart does not exist.")
 	message.SetString(language.English, "the data is not found", "The data is not found.")
 	message.SetString(language.English, "the data is invalid", "The data is invalid.")
 	message.SetString(language.English, "the session is expired", "Your session is expired, please refresh your page.")

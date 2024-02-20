@@ -4,7 +4,6 @@ import (
 	"artisons/http/cookies"
 	"artisons/http/httperrors"
 	"artisons/http/httphelpers"
-	"artisons/tracking"
 	"artisons/users"
 	"log/slog"
 	"net/http"
@@ -21,9 +20,6 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 		cookie := httphelpers.NewCookie(cookies.SessionID, user.SID, -1)
 		http.SetCookie(w, &cookie)
-
-		data := map[string]string{"sid": user.SID}
-		go tracking.Log(ctx, "logout", data)
 
 		if err != nil {
 			httperrors.HXCatch(w, ctx, err.Error())
