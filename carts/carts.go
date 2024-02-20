@@ -410,7 +410,7 @@ func (c Cart) CalculateTotal(ctx context.Context) (float64, error) {
 
 	total += fees
 
-	_, err := db.Redis.HSet(ctx, fmt.Sprintf("cart:%d", c.ID), "total", total, "delivery_fees", fees).Result()
+	_, err := db.Redis.HSet(ctx, fmt.Sprintf("cart:%d:info", c.ID), "total", total, "delivery_fees", fees).Result()
 	if err != nil {
 		slog.LogAttrs(ctx, slog.LevelInfo, "cannot set the cart total")
 		return 0, errors.New("something went wrong")
