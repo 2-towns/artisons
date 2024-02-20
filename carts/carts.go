@@ -406,12 +406,17 @@ func (c Cart) CalculateTotal(ctx context.Context) (float64, error) {
 
 	var fees float64 = 0
 
-	del, err := shops.DeliveryFreeFees(ctx)
+	free, err := shops.DeliveryFreeFees(ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	if c.Delivery != "collect" && total < del {
+	if c.Delivery != "collect" && total < free {
+		del, err := shops.DeliveryFees(ctx)
+		if err != nil {
+			return 0, err
+		}
+
 		fees = del
 	}
 
