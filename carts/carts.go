@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"math/rand"
 	"strconv"
@@ -142,6 +143,7 @@ func (c Cart) Validate(ctx context.Context) error {
 		amount += float64(value.Quantity) * value.Price
 	}
 
+	log.Println("min!!!!!!!!!!!!!!!!!!!!!!!!!!!!", shops.Data.Min, amount)
 	if amount < shops.Data.Min {
 		l.LogAttrs(ctx, slog.LevelInfo, "the minimum amount is not reached", slog.Float64("amount", amount), slog.Float64("min", shops.Data.Min))
 		return errors.New("the minimum amount is not reached")
@@ -408,6 +410,8 @@ func (c Cart) CalculateTotal(ctx context.Context) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	log.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!", c.Delivery, total, del)
 
 	if c.Delivery != "collect" && total < del {
 		fees = shops.Data.DeliveryFees
