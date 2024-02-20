@@ -456,3 +456,21 @@ func DeliveryFees(ctx context.Context) (float64, error) {
 
 	return val, nil
 }
+
+func MinDelivery(ctx context.Context) (float64, error) {
+	slog.LogAttrs(ctx, slog.LevelInfo, "retrieving shop delivery fees")
+
+	d, err := db.Redis.HGet(ctx, "shop", "min").Result()
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot get shop delivery free fees info", slog.String("error", err.Error()))
+		return 0, errors.New("something went wrong")
+	}
+
+	val, err := strconv.ParseFloat(d, 64)
+	if err != nil {
+		slog.LogAttrs(ctx, slog.LevelError, "cannot parse shop delivery free fees info", slog.String("error", err.Error()))
+		return 0, errors.New("something went wrong")
+	}
+
+	return val, nil
+}
