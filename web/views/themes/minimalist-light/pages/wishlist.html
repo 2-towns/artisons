@@ -5,7 +5,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport"
-				content="width=device-width, initial-scale=1.0">
+		  content="width=device-width, initial-scale=1.0">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&display=swap" rel="stylesheet">
@@ -20,93 +20,34 @@
 	</header>
 
 	<main class="wishlist-container">
+		{{ if .Empty }}
+		<p>No results found.</p>
+		{{else}}
+		{{ range .Products}}
 		<div class="wishlist-card">
 			<img class="wishlist-card-img" src="/web/views/themes/minimalist-light/pages/assets/gilet.png"
-					 alt="Shorts">
+				 alt="Shorts">
 			<div class="wishlist-card-info">
-				<p class="wishlist-card-title">Gilet Nike</p>
-				<p class="wishlist-card-price">80.90€</p>
+				<p class="wishlist-card-title">{{.Title}}</p>
+				<p class="wishlist-card-price">{{.Price}}€</p>
 			</div>
 			<a class="like" href="/like/slug+ou+id">
 				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 					<path d="M13.7267 3.31466C14.3134 3.97466 14.6667 4.84133 14.6667 5.79466C14.6667 10.4613 10.3467 13.2147 8.41337 13.8813C8.18671 13.9613 7.81337 13.9613 7.58671 13.8813C5.65337 13.2147 1.33337 10.4613 1.33337 5.79466C1.33337 3.73466 2.99337 2.06799 5.04004 2.06799C6.25337 2.06799 7.32671 2.65466 8.00004 3.56133C8.34256 3.09858 8.78869 2.72248 9.3027 2.46316C9.81672 2.20383 10.3843 2.0685 10.96 2.06799"
-								stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-				</svg></a>
-		</div>
-		<div class="wishlist-card">
-			<img class="wishlist-card-img"
-					 src="/web/views/themes/minimalist-light/pages/assets/tongues.png"
-					 alt="Shorts">
-			<div class="wishlist-card-info">
-				<p class="wishlist-card-title">Tongues noirtes</p>
-				<p class="wishlist-card-price">35.00€</p>
-			</div>
-			<a class="like" href="/like/slug+ou+id">
-				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M13.7267 3.31466C14.3134 3.97466 14.6667 4.84133 14.6667 5.79466C14.6667 10.4613 10.3467 13.2147 8.41337 13.8813C8.18671 13.9613 7.81337 13.9613 7.58671 13.8813C5.65337 13.2147 1.33337 10.4613 1.33337 5.79466C1.33337 3.73466 2.99337 2.06799 5.04004 2.06799C6.25337 2.06799 7.32671 2.65466 8.00004 3.56133C8.34256 3.09858 8.78869 2.72248 9.3027 2.46316C9.81672 2.20383 10.3843 2.0685 10.96 2.06799"
-								stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-				</svg></a>
-		</div>
-		<div class="wishlist-card">
-			<img class="wishlist-card-img" src="/web/views/themes/minimalist-light/pages/assets/veste.png"
-					 alt="Shorts">
-			<div class="wishlist-card-info">
-				<p class="wishlist-card-title">Veste Nike</p>
-				<p class="wishlist-card-price">85.90€</p>
-			</div><a class="like" href="/like/slug+ou+id">
-				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M13.7267 3.31466C14.3134 3.97466 14.6667 4.84133 14.6667 5.79466C14.6667 10.4613 10.3467 13.2147 8.41337 13.8813C8.18671 13.9613 7.81337 13.9613 7.58671 13.8813C5.65337 13.2147 1.33337 10.4613 1.33337 5.79466C1.33337 3.73466 2.99337 2.06799 5.04004 2.06799C6.25337 2.06799 7.32671 2.65466 8.00004 3.56133C8.34256 3.09858 8.78869 2.72248 9.3027 2.46316C9.81672 2.20383 10.3843 2.0685 10.96 2.06799"
-								stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-				</svg></a>
-		</div>
-		<div class="wishlist-card">
-			<img class="wishlist-card-img" src="/web/views/themes/minimalist-light/pages/assets/gilet.png"
-					 alt="Shorts">
-			<div class="wishlist-card-info">
-				<p class="wishlist-card-title">Gilet Nike</p>
-				<p class="wishlist-card-price">80.90€</p>
-			</div>
-			<a class="like" href="/like/slug+ou+id">
-				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M13.7267 3.31466C14.3134 3.97466 14.6667 4.84133 14.6667 5.79466C14.6667 10.4613 10.3467 13.2147 8.41337 13.8813C8.18671 13.9613 7.81337 13.9613 7.58671 13.8813C5.65337 13.2147 1.33337 10.4613 1.33337 5.79466C1.33337 3.73466 2.99337 2.06799 5.04004 2.06799C6.25337 2.06799 7.32671 2.65466 8.00004 3.56133C8.34256 3.09858 8.78869 2.72248 9.3027 2.46316C9.81672 2.20383 10.3843 2.0685 10.96 2.06799"
-								stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-				</svg></a>
-		</div>
-		<div class="wishlist-card">
-			<img class="wishlist-card-img"
-					 src="/web/views/themes/minimalist-light/pages/assets/tongues.png"
-					 alt="Shorts">
-			<div class="wishlist-card-info">
-				<p class="wishlist-card-title">Tongues noirtes</p>
-				<p class="wishlist-card-price">35.00€</p>
-			</div>
-			<a class="like" href="/like/slug+ou+id">
-				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M13.7267 3.31466C14.3134 3.97466 14.6667 4.84133 14.6667 5.79466C14.6667 10.4613 10.3467 13.2147 8.41337 13.8813C8.18671 13.9613 7.81337 13.9613 7.58671 13.8813C5.65337 13.2147 1.33337 10.4613 1.33337 5.79466C1.33337 3.73466 2.99337 2.06799 5.04004 2.06799C6.25337 2.06799 7.32671 2.65466 8.00004 3.56133C8.34256 3.09858 8.78869 2.72248 9.3027 2.46316C9.81672 2.20383 10.3843 2.0685 10.96 2.06799"
-								stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-				</svg></a>
-		</div>
-		<div class="wishlist-card">
-			<img class="wishlist-card-img" src="/web/views/themes/minimalist-light/pages/assets/veste.png"
-					 alt="Shorts">
-			<div class="wishlist-card-info">
-				<p class="wishlist-card-title">Veste Nike</p>
-				<p class="wishlist-card-price">85.90€</p>
-			</div>
-			<a class="like" href="/like/slug+ou+id">
-				<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M13.7267 3.31466C14.3134 3.97466 14.6667 4.84133 14.6667 5.79466C14.6667 10.4613 10.3467 13.2147 8.41337 13.8813C8.18671 13.9613 7.81337 13.9613 7.58671 13.8813C5.65337 13.2147 1.33337 10.4613 1.33337 5.79466C1.33337 3.73466 2.99337 2.06799 5.04004 2.06799C6.25337 2.06799 7.32671 2.65466 8.00004 3.56133C8.34256 3.09858 8.78869 2.72248 9.3027 2.46316C9.81672 2.20383 10.3843 2.0685 10.96 2.06799"
-								stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+						  stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 				</svg></a>
 		</div>
 
+		{{end}}
+
+		{{end}}
 	</main>
 
 	<nav class="bottom-nav">
 		<a href="/home" class="nav-item home-svg">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path d="M22 10.498C22 9.288 21.19 7.738 20.2 7.048L14.02 2.718C12.62 1.738 10.37 1.788 9.02 2.838L3.63 7.038C2.73 7.738 2 9.228 2 10.358V17.768C2 20.088 3.89 21.988 6.21 21.988H17.79C20.11 21.988 22 20.088 22 17.778V14.678M12 17.988V14.988"
-							stroke="#8E6CEF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+					  stroke="#8E6CEF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 			</svg>
 
 		</a>
@@ -114,7 +55,7 @@
 		<a href="/categories" class="nav-item categories-svg">
 			<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
 				<path fill="#888888"
-							d="M10.115 18.5q-.212 0-.356-.144T9.615 18t.144-.356q.144-.143.356-.143H19.5q.213 0 .356.144q.144.144.144.357t-.144.356q-.143.143-.356.143zm0-6q-.212 0-.356-.144T9.615 12t.144-.356q.144-.143.356-.143H19.5q.213 0 .356.144q.144.144.144.357t-.144.356q-.143.143-.356.143zm0-6q-.212 0-.356-.144t-.144-.357t.144-.356q.144-.143.356-.143H19.5q.213 0 .356.144q.144.144.144.357t-.144.356q-.143.143-.356.143zM5.327 19.327q-.547 0-.937-.39T4 18t.39-.937q.39-.39.937-.39t.937.39q.39.39.39.937t-.39.937q-.39.39-.937.39m0-6q-.547 0-.937-.39T4 12t.39-.937q.39-.39.937-.39t.937.39q.39.39.39.937t-.39.937q-.39.39-.937.39m0-6q-.547 0-.937-.39T4 6t.39-.937q.39-.39.937-.39t.937.39q.39.39.39.937t-.39.937q-.39.39-.937.39" />
+					  d="M10.115 18.5q-.212 0-.356-.144T9.615 18t.144-.356q.144-.143.356-.143H19.5q.213 0 .356.144q.144.144.144.357t-.144.356q-.143.143-.356.143zm0-6q-.212 0-.356-.144T9.615 12t.144-.356q.144-.143.356-.143H19.5q.213 0 .356.144q.144.144.144.357t-.144.356q-.143.143-.356.143zm0-6q-.212 0-.356-.144t-.144-.357t.144-.356q.144-.143.356-.143H19.5q.213 0 .356.144q.144.144.144.357t-.144.356q-.143.143-.356.143zM5.327 19.327q-.547 0-.937-.39T4 18t.39-.937q.39-.39.937-.39t.937.39q.39.39.39.937t-.39.937q-.39.39-.937.39m0-6q-.547 0-.937-.39T4 12t.39-.937q.39-.39.937-.39t.937.39q.39.39.39.937t-.39.937q-.39.39-.937.39m0-6q-.547 0-.937-.39T4 6t.39-.937q.39-.39.937-.39t.937.39q.39.39.39.937t-.39.937q-.39.39-.937.39" />
 			</svg>
 
 		</a>
@@ -123,8 +64,8 @@
 		<a href="/account" class="nav-item">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path d="M15.68 3.96C16.16 4.67 16.4401 5.52 16.4401 6.44C16.4301 8.84 14.54 10.79 12.16 10.87C12.06 10.86 11.94 10.86 11.83 10.87C9.62005 10.8 7.83005 9.11 7.59005 6.95C7.30005 4.38 9.41005 2 11.99 2M6.99005 14.56C4.57005 16.18 4.57005 18.82 6.99005 20.43C9.74005 22.27 14.25 22.27 17 20.43C19.42 18.81 19.42 16.17 17 14.56C14.27 12.73 9.76005 12.73 6.99005 14.56Z"
-							stroke="#272727" stroke-opacity="0.5" stroke-width="1.5" stroke-linecap="round"
-							stroke-linejoin="round" />
+					  stroke="#272727" stroke-opacity="0.5" stroke-width="1.5" stroke-linecap="round"
+					  stroke-linejoin="round" />
 			</svg>
 
 
@@ -132,7 +73,7 @@
 		<a href="/wish" class="nav-item wish-svg">
 			<svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
 				<path d="M13.7267 2.31478C14.3134 2.97478 14.6667 3.84145 14.6667 4.79478C14.6667 9.46145 10.3467 12.2148 8.41337 12.8814C8.18671 12.9614 7.81337 12.9614 7.58671 12.8814C5.65337 12.2148 1.33337 9.46145 1.33337 4.79478C1.33337 2.73478 2.99337 1.06812 5.04004 1.06812C6.25337 1.06812 7.32671 1.65478 8.00004 2.56145C8.34256 2.0987 8.78869 1.7226 9.3027 1.46328C9.81672 1.20396 10.3843 1.06862 10.96 1.06812"
-							stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+					  stroke="#272727" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 			</svg>
 
 		</a>
